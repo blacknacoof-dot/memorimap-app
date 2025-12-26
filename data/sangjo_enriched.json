@@ -1,0 +1,876 @@
+[
+  {
+    "id": "fc_new_1",
+    "rank": 1,
+    "name": "프리드라이프",
+    "homepage": "https://www.freedlife.com",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_1.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "5.0",
+    "reviewCount": 990,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_2",
+    "rank": 2,
+    "name": "교원라이프",
+    "homepage": "https://www.kyowonlife.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_2.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "5.0",
+    "reviewCount": 980,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_3",
+    "rank": 3,
+    "name": "대명스테이션",
+    "homepage": "https://www.daemyungstation.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_3.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.9",
+    "reviewCount": 970,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_4",
+    "rank": 4,
+    "name": "더케이예다함",
+    "homepage": "https://www.yedaham.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_4.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.9",
+    "reviewCount": 960,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_5",
+    "rank": 5,
+    "name": "보람상조개발",
+    "homepage": "https://www.boram.com",
+    "phone": "1588-0000",
+    "imageUrl": "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=800",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.9",
+    "reviewCount": 950,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_6",
+    "rank": 6,
+    "name": "보람상조라이프",
+    "homepage": "https://www.boram.com",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_6.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.9",
+    "reviewCount": 940,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_7",
+    "rank": 7,
+    "name": "부모사랑",
+    "homepage": "https://www.bumosarang.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_7.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.9",
+    "reviewCount": 930,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_8",
+    "rank": 8,
+    "name": "보람상조리더스",
+    "homepage": "https://www.boram.com",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_8.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.8",
+    "reviewCount": 920,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_9",
+    "rank": 9,
+    "name": "더피플라이프",
+    "homepage": "https://www.thepeoplelife.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_9.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.8",
+    "reviewCount": 910,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_10",
+    "rank": 10,
+    "name": "더리본",
+    "homepage": "https://www.the-reborn.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=800",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.8",
+    "reviewCount": 900,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_11",
+    "rank": 11,
+    "name": "보람상조피플",
+    "homepage": "https://www.boram.com",
+    "phone": "1588-0000",
+    "imageUrl": "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=800",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.8",
+    "reviewCount": 890,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_12",
+    "rank": 12,
+    "name": "효원상조",
+    "homepage": "https://www.hwsj.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_12.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.8",
+    "reviewCount": 880,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_13",
+    "rank": 13,
+    "name": "늘곁애라이프온",
+    "homepage": "https://www.lifeon.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_13.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.7",
+    "reviewCount": 870,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_14",
+    "rank": 14,
+    "name": "평화누리",
+    "homepage": "https://www.phnuri.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_14.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.7",
+    "reviewCount": 860,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_15",
+    "rank": 15,
+    "name": "SJ산림조합상조",
+    "homepage": "https://www.sjsangjo.com",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_15.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.7",
+    "reviewCount": 850,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_16",
+    "rank": 16,
+    "name": "보람상조애니콜",
+    "homepage": "https://www.boram.com",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_16.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.7",
+    "reviewCount": 840,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_17",
+    "rank": 17,
+    "name": "에이치디투어존",
+    "homepage": "https://www.htourzone.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_17.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.7",
+    "reviewCount": 830,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_18",
+    "rank": 18,
+    "name": "휴먼라이프",
+    "homepage": "https://www.humanlifesj.com",
+    "phone": "1588-0000",
+    "imageUrl": "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=800",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.6",
+    "reviewCount": 820,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_19",
+    "rank": 19,
+    "name": "제이케이",
+    "homepage": "https://www.jk-life.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_19.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.6",
+    "reviewCount": 810,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_20",
+    "rank": 20,
+    "name": "대노복지사업단",
+    "homepage": "https://www.koreapeople.net",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_20.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.6",
+    "reviewCount": 800,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_21",
+    "rank": 21,
+    "name": "경우라이프",
+    "homepage": "https://www.kwlife.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_21.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.6",
+    "reviewCount": 790,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_22",
+    "rank": 22,
+    "name": "다온플랜",
+    "homepage": "https://www.daonplan.com",
+    "phone": "1588-0000",
+    "imageUrl": "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=800",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.6",
+    "reviewCount": 780,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_23",
+    "rank": 23,
+    "name": "에이플러스라이프",
+    "homepage": "https://www.apluslife.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_23.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.5",
+    "reviewCount": 770,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_24",
+    "rank": 24,
+    "name": "현대에스라이프",
+    "homepage": "https://www.hyundaislife.com",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_24.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.5",
+    "reviewCount": 760,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_25",
+    "rank": 25,
+    "name": "한라상조",
+    "homepage": "https://www.hallasangjo.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_25.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.5",
+    "reviewCount": 750,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_26",
+    "rank": 26,
+    "name": "보람상조실로암",
+    "homepage": "https://www.boram.com",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_26.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.5",
+    "reviewCount": 740,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_27",
+    "rank": 27,
+    "name": "디에스라이프",
+    "homepage": "https://www.sangjo.com",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_27.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.5",
+    "reviewCount": 730,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_28",
+    "rank": 28,
+    "name": "엘비라이프",
+    "homepage": "https://www.elbeelife.com",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_28.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.4",
+    "reviewCount": 720,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_29",
+    "rank": 29,
+    "name": "금호라이프",
+    "homepage": "https://www.kumholife.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_29.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.4",
+    "reviewCount": 710,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_30",
+    "rank": 30,
+    "name": "크리스찬상조",
+    "homepage": "https://www.4christian.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_30.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.4",
+    "reviewCount": 700,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_31",
+    "rank": 31,
+    "name": "우정라이프",
+    "homepage": "https://www.ujeonglife.com",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_31.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.4",
+    "reviewCount": 690,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_32",
+    "rank": 32,
+    "name": "보훈상조",
+    "homepage": "https://www.bohoon.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_32.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.4",
+    "reviewCount": 680,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_33",
+    "rank": 33,
+    "name": "용인공원라이프",
+    "homepage": "https://www.yonginparklife.com",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_33.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.3",
+    "reviewCount": 670,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_34",
+    "rank": 34,
+    "name": "불국토",
+    "homepage": "https://www.bulgukto.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=800",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.3",
+    "reviewCount": 660,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_35",
+    "rank": 35,
+    "name": "대한라이프보증",
+    "homepage": "",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_35.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.3",
+    "reviewCount": 650,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_36",
+    "rank": 36,
+    "name": "우리제주상조",
+    "homepage": "https://www.woorijeju-sangjo.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_36.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.3",
+    "reviewCount": 640,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_37",
+    "rank": 37,
+    "name": "유토피아퓨처",
+    "homepage": "https://www.utopiafuture.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_37.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.3",
+    "reviewCount": 630,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_38",
+    "rank": 38,
+    "name": "다나상조",
+    "homepage": "https://www.danasj.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_38.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.2",
+    "reviewCount": 620,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_39",
+    "rank": 39,
+    "name": "아가페라이프",
+    "homepage": "https://www.agapelife.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=800",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.2",
+    "reviewCount": 610,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_40",
+    "rank": 40,
+    "name": "웰리빙라이프",
+    "homepage": "https://www.yeadream.com",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_40.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.2",
+    "reviewCount": 600,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_41",
+    "rank": 41,
+    "name": "삼육리더스라이프",
+    "homepage": "https://www.sda36sj.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_41.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.2",
+    "reviewCount": 590,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_42",
+    "rank": 42,
+    "name": "우리관광",
+    "homepage": "",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_42.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.2",
+    "reviewCount": 580,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_43",
+    "rank": 43,
+    "name": "세종라이프",
+    "homepage": "https://www.sjlife.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_43.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.1",
+    "reviewCount": 570,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_44",
+    "rank": 44,
+    "name": "삼우라이프",
+    "homepage": "",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_44.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.1",
+    "reviewCount": 560,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_45",
+    "rank": 45,
+    "name": "태양라이프",
+    "homepage": "",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_45.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.1",
+    "reviewCount": 550,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  },
+  {
+    "id": "fc_new_46",
+    "rank": 46,
+    "name": "새부산상조",
+    "homepage": "",
+    "phone": "1588-0000",
+    "imageUrl": "/images/logos/fc_new_46.png",
+    "description": "믿을 수 있는 상조 서비스",
+    "rating": "4.1",
+    "reviewCount": 540,
+    "features": [
+      "전국 의전망",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "회원 전용 혜택"
+    ]
+  }
+]

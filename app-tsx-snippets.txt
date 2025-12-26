@@ -1,0 +1,35 @@
+// ============================================
+// App.tsx에 추가할 코드 조각들
+// ============================================
+
+// 📍 위치 1: 라인 29 다음 (lazy load imports 섹션)
+const SangjoConsultationModal = React.lazy(() => import('./components/Consultation/SangjoConsultationModal').then(m => ({ default: m.SangjoConsultationModal })));
+
+// 📍 위치 2: 라인 80 다음 (Funeral Company State 섹션)
+const [showSangjoAIConsult, setShowSangjoAIConsult] = useState(false);
+
+// 📍 위치 3: 라인 1108-1111 교체 (FuneralCompanySheet의 onConsult prop)
+// 기존:
+onConsult={() => {
+  showToast("상담 신청이 접수되었습니다. 곧 연락드리겠습니다.");
+  setSelectedFuneralCompany(null);
+}}
+
+// 변경 후:
+onOpenAIConsult={() => {
+  setShowSangjoAIConsult(true);
+}}
+
+// 📍 위치 4: 라인 1115 다음 (selectedFuneralCompany 블록 다음)
+{
+  showSangjoAIConsult && (
+    <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20"><div className="bg-white p-3 rounded-full shadow-lg"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div></div>}>
+      <SangjoConsultationModal
+        onClose={() => {
+          setShowSangjoAIConsult(false);
+          setSelectedFuneralCompany(null);
+        }}
+      />
+    </Suspense>
+  )
+}

@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Additional custom styles if needed, but prefer tailwind classes */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/* STRICT RULE: Cursor MUST ALWAYS be default arrow */
+/* This includes inputs, buttons, links - everything. */
+* {
+  cursor: default !important;
+}

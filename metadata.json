@@ -1,0 +1,7 @@
+{
+  "name": "Copy of Copy of Copy of 추모맵",
+  "description": "지도 기반 납골당·추모공원 찾기 및 예약 서비스",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
