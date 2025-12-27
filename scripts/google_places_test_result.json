@@ -1,0 +1,29 @@
+{
+  "name": "Daejeon Memorial Park",
+  "formattedAddress": "160 Sangboanwit-gil, Seo-gu, Daejeon, South Korea",
+  "phone": "042-602-2500",
+  "website": "http://www.djsiseol.or.kr/",
+  "googleMapsUri": "https://maps.google.com/?cid=17312215191377895061&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+  "rating": 4.2,
+  "userRatingCount": 36,
+  "openingHours": [
+    "Monday: 9:00 AM – 6:00 PM",
+    "Tuesday: 9:00 AM – 6:00 PM",
+    "Wednesday: 9:00 AM – 6:00 PM",
+    "Thursday: 9:00 AM – 6:00 PM",
+    "Friday: 9:00 AM – 6:00 PM",
+    "Saturday: 9:00 AM – 6:00 PM",
+    "Sunday: 9:00 AM – 6:00 PM"
+  ],
+  "location": {
+    "latitude": 36.2838766,
+    "longitude": 127.3394209
+  },
+  "photos": [
+    "https://places.googleapis.com/v1/places/ChIJnQr13HdNZTURlV4zFf5XQfA/photos/AZLasHoylG-Ig6stHZW7IV5CEZ1NioPib7oBVhN7VEOjzLVPBs8oRc8E0T3fSeOAZd-5PsbQDtReHvcYdbbiE0-uZCno9rBZ6lq-ODifsDK0rEZ9j0YGhfpQjvm4cmP5IIOVIJdx_1tX4ASmRgOHIR_rdEIsFxDkQ8ros9eQroMcGHAGW-Pu5N8V0Eeepq3yiDrc56rs7jj6TbJcLvzs6zhtzoMDBLRQ1FEkQimxfWplljAFq0ySdkKkIFruTYNrVhVqpGNeNqB_q9dMEs3zKfoBZe89A1YW2OeYaKAon_Ar0Qjdwl8nF7H4znLvytwYhC3Odnr1VgBRQ_bBtnfStcRFFEbkHFV-MsiKi559vqvfAGmWd11et0YRrgEyNmAngTuQUx2n3dSYmCgBQ56-qimmXHal79q4ebRGjuoGXSXImdUThuw18ZcXub-8ZoosqA/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg",
+    "https://places.googleapis.com/v1/places/ChIJnQr13HdNZTURlV4zFf5XQfA/photos/AZLasHqZRJiMXkTTV-opIvds9gmE2Ofhm0E0N5GYVI73BBFXebSmyVI_W5rZ4FKjwfnCzCptsacLVRxNep-29lbh2uBh9EQBxKf7AeAMBgr-iMaMXK5css9KHumHJK75-e8BG3WxnXFc1zq3ekNGaQm66Fq9pw9mlr_qTb9QOunhlWIrd56hJBKn07t2YkINjoxfaYgAD-SVgvxiP8aPfh_-NVnGTCUsDTmjxNnRSjm4aCeLT-ByJqyxMWFgtR5alt4ng6chTFXlVOF323EzR_zDzfc3v7DSNhru4KhaZEuTcPW04nxbg7qWC_Rp9sgct5pljqzn_uLRB2nA8XRucDgq6FAo-CYMrCYaDHuDp9I8ToCMoBuHwnCdxol-rtuvoksN9MIq3fEXJHq8eKyT4RonfiCHLL0SmhYjqOgmyoddRgHY/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg",
+    "https://places.googleapis.com/v1/places/ChIJnQr13HdNZTURlV4zFf5XQfA/photos/AZLasHqNM_bHeC8IHc1EIfuscEeS2DW2vKt66l-h-OCWv4SJSheJtcwYtqI-rYKj_aVcSMJx-8p3_tn0zAAgvW8QXvs0TBT-zWe0iOx2PpYrpbhzjsJv-dcGyOwFCDAF1cHzFmk4OfBcG8LR0g6Eq7r_EL1BUhatO1HJ0koMqNPKaiJVEPlRb2rTeM12XziRYxMXLWzQZmlVuO4nb-z_EavHVoZMsUtyzVTlqFUtjTHknPzJ5YtwsjwEQlZJa-YprhASACcTAq8EB37qbKCBCfdHTFTqY-aPj2PNjKHPcqR0AbC6Rh9GhXxOJVqJsOkX7tK29T9_0AQZBTpOPZNSROmu0zZYlx30FR-OeWxypnw-4jggHZq2_2B7KmzTk20jcVVDm3c-3pLT7sO-hkBr06EY33IGrdSokoyfFIqIupK2ow/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg",
+    "https://places.googleapis.com/v1/places/ChIJnQr13HdNZTURlV4zFf5XQfA/photos/AZLasHoRYIw2KkRJrrxKu4vHBFRUxmhHG90JLcljgwu7MchHLokcKCbdn1Kv0CaszaXno3BA9EEm4koofNbD3U185m62EfiFDGKHLelFobDsLtRRVaBEhktHn3cdaSxXX3VSCz41o_oT_iDt0Qjc6LMBTasgtO85NzSY7RwFp4zqQ75Lr1Yy2jY4swuOlGt_xfFeriOSQ_A5ynAKtt0occQAvynNZCkz0TKAcwZRMse-vscsfyo0r21YB0fBlwn_2ejQpyeg_LHN1WdUtvR_HJ0Oi4-Gip9uYJzk5ixfp0CipBiYfEWv8oPHKmFbhYxuwFyrQyspzt8ksmqm3Z3hXgBV8gYdkoUMGWNJ3J43tgNBpLSpZ_5t6k6FDGQKbOnwyM6XSD6NmehVQ53j1XgLULzSc5lWf5od0E4LuSVDyZkTO6w/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg",
+    "https://places.googleapis.com/v1/places/ChIJnQr13HdNZTURlV4zFf5XQfA/photos/AZLasHq-b-ykNIyzfDZHRIK3wo5fhB-rmMonNJ8HNv-EdZXtba0X4T4aqg5MgwrVM0JcktRAGcNJ5f5qqoOj2yfo3qJURoGf6r1eHpkq4PLFZoNMw96H4t0Z7FDUhzzLOm-3Ud1ijv6Y3xIKPUj_Sacksv0K8MM7d8_3s7IpiAnS3J_L4sUt-5mZvkPUW5Tk07yP4rk6dlnt5SSLnrxLx2s6ctar3V-oqZWe9OnTyfSXVCAriFeUA8ukY_Phib4YojqrhIFz0lHmgavtKyP95QHe1hzF_S7ODaCHAj9azlWFVPfjbw7F2V36z7K5qS4KTx5LNUm1d8NPhCiDAOmssCMYz7Ur6QzGYrc9uEXKdQee2Tx2ljmimf613Mts9O1iv_iq4UfqDY3XMn88s8G0q3Bs0jAjORrEASStMNSta_EjfTM/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+  ]
+}

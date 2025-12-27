@@ -144,6 +144,7 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
     }
 
     const [step, setStep] = useState<ConsultationStep>('GUIDE');
+    const [contractData, setContractData] = useState<ContractData>({});
 
     const [faqs, setFaqs] = useState<any[]>([]);
     // ... activeCompany로 변경

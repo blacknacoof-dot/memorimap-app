@@ -24,5 +24,17 @@ export default defineConfig({
     //     });
     //   }
     // }
-  ]
+  ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          leaflet: ['leaflet', 'react-leaflet-cluster', 'react-leaflet'],
+          ui: ['lucide-react', 'framer-motion']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000 // Raise limit slightly to avoid noise
+  }
 });

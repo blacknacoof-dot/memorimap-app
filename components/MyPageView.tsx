@@ -7,7 +7,11 @@ import { ReservationList } from './ReservationList';
 import { ReservationDetailModal } from './ReservationDetailModal';
 import { EditProfileModal } from './EditProfileModal';
 import { LegalModal } from './LegalModal';
-import { Info } from 'lucide-react';
+import { Info, Heart } from 'lucide-react';
+import { favoriteService, Favorite } from '../services/favoriteService';
+import { useNavigate } from 'react-router-dom'; // If used, or rely on onNavigate
+// Actually onNavigate is passed as prop.
+import { toast } from 'sonner';
 
 interface Props {
     isLoggedIn: boolean;
@@ -34,17 +38,20 @@ export const MyPageView: React.FC<Props> = ({
     const [myReservations, setMyReservations] = useState<Reservation[]>(propReservations);
     const [isLoadingReviews, setIsLoadingReviews] = useState(false);
     const [isLoadingReservations, setIsLoadingReservations] = useState(false);
-    const [activeTab, setActiveTab] = useState<'pending' | 'confirmed' | 'cancelled'>('pending');
+    const [activeTab, setActiveTab] = useState<'pending' | 'confirmed' | 'cancelled' | 'favorites'>('pending');
     const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
     const [showEditProfile, setShowEditProfile] = useState(false);
     const [showLegalModal, setShowLegalModal] = useState(false);
     const [userPhone, setUserPhone] = useState<string>('');
+    const [myFavorites, setMyFavorites] = useState<Favorite[]>([]);
+    const [isLoadingFavorites, setIsLoadingFavorites] = useState(false);
 
     useEffect(() => {
         if (isLoggedIn && user) {
             fetchMyReviews();
             fetchMyReservations();
             fetchUserPhone();
+            fetchMyFavorites();
         }
     }, [isLoggedIn, user]);
 
@@ -77,6 +84,31 @@ export const MyPageView: React.FC<Props> = ({
             console.error(err);
         } finally {
             setIsLoadingReservations(false);
+        }
+    };
+
+    const fetchMyFavorites = async () => {
+        if (!user) return;
+        setIsLoadingFavorites(true);
+        try {
+            const data = await favoriteService.getFavorites(user.id);
+            setMyFavorites(data || []);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsLoadingFavorites(false);
+        }
+    };
+
+    const handleRemoveFavorite = async (facilityId: string) => {
+        if (!user) return;
+        if (!confirm('즐겨찾기를 해제하시겠습니까?')) return;
+        try {
+            await favoriteService.toggleFavorite(user.id, facilityId);
+            setMyFavorites(prev => prev.filter(f => f.facility_id !== facilityId));
+            toast.success('즐겨찾기가 해제되었습니다.');
+        } catch (err) {
+            toast.error('오류가 발생했습니다.');
         }
     };
 
@@ -204,11 +236,10 @@ export const MyPageView: React.FC<Props> = ({
             {/* Reservations Section */}
             <h3 className="font-bold mb-4 border-l-4 border-primary pl-3">나의 예약 내역</h3>
 
-            {/* Tabs */}
-            <div className="flex gap-2 mb-4">
+            <div className="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
                 <button
                     onClick={() => setActiveTab('pending')}
-                    className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${activeTab === 'pending'
+                    className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'pending'
                         ? 'bg-primary text-white'
                         : 'bg-white text-gray-600 hover:bg-gray-50'
                         }`}
@@ -217,7 +248,7 @@ export const MyPageView: React.FC<Props> = ({
                 </button>
                 <button
                     onClick={() => setActiveTab('confirmed')}
-                    className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${activeTab === 'confirmed'
+                    className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'confirmed'
                         ? 'bg-primary text-white'
                         : 'bg-white text-gray-600 hover:bg-gray-50'
                         }`}
@@ -226,17 +257,90 @@ export const MyPageView: React.FC<Props> = ({
                 </button>
                 <button
                     onClick={() => setActiveTab('cancelled')}
-                    className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${activeTab === 'cancelled'
+                    className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'cancelled'
                         ? 'bg-primary text-white'
                         : 'bg-white text-gray-600 hover:bg-gray-50'
                         }`}
                 >
                     취소 ({myReservations.filter(r => r.status === 'cancelled').length})
                 </button>
+                <button
+                    onClick={() => setActiveTab('favorites')}
+                    className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors whitespace-nowrap flex items-center justify-center gap-1 ${activeTab === 'favorites'
+                        ? 'bg-primary text-white'
+                        : 'bg-white text-gray-600 hover:bg-gray-50'
+                        }`}
+                >
+                    <Heart size={14} fill={activeTab === 'favorites' ? 'currentColor' : 'none'} />
+                    즐겨찾기 ({myFavorites.length})
+                </button>
             </div>
 
             <div className="mb-8">
-                {isLoadingReservations ? (
+                {activeTab === 'favorites' ? (
+                    isLoadingFavorites ? (
+                        <div className="text-center py-10">
+                            <Loader2 size={32} className="animate-spin text-primary mx-auto" />
+                        </div>
+                    ) : myFavorites.length === 0 ? (
+                        <div className="text-center py-10 text-gray-400 bg-white rounded-xl border border-dashed">
+                            즐겨찾기한 시설이 없습니다.
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            {myFavorites.map(fav => {
+                                const facility = fav.memorial_spaces;
+                                if (!facility) return null;
+                                return (
+                                    <div key={fav.id} className="bg-white border rounded-xl p-4 hover:shadow-md transition-shadow relative">
+                                        <div className="flex gap-4">
+                                            <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden shrink-0">
+                                                {facility.imageUrl ? (
+                                                    <img src={facility.imageUrl} alt={facility.name} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-gray-400">No Image</div>
+                                                )}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex justify-between items-start">
+                                                    <h3 className="font-bold text-gray-900 truncate pr-6">{facility.name}</h3>
+                                                    <button
+                                                        onClick={() => handleRemoveFavorite(facility.id)}
+                                                        className="text-red-500 hover:bg-red-50 p-1 rounded-full absolute top-3 right-3"
+                                                        title="즐겨찾기 해제"
+                                                    >
+                                                        <Heart size={18} fill="currentColor" />
+                                                    </button>
+                                                </div>
+                                                <p className="text-xs text-gray-500 mt-1 truncate">{facility.address}</p>
+                                                <div className="flex items-center gap-2 mt-2">
+                                                    <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px] font-medium">
+                                                        {facility.type === 'charnel' ? '봉안시설' :
+                                                            facility.type === 'natural' ? '자연장' :
+                                                                facility.type === 'funeral' ? '장례식장' :
+                                                                    facility.type === 'sea' ? '해양장' :
+                                                                        facility.type === 'pet' ? '동물장' : '공원묘지'}
+                                                    </span>
+                                                    <div className="flex items-center text-xs text-yellow-500 font-bold">
+                                                        <Star size={12} fill="currentColor" />
+                                                        <span className="ml-0.5">{Math.round(facility.rating || 0)}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {/* Optional: Add View Details Button if needed, or rely on facility sheet opening elsewhere? */
+                                            /* Assuming onNavigate or separate handler to open sheet. */
+                                            /* Currently MyPageView doesn't seem to trigger sheet open directly for facilities list */
+                                            /* Typically MyPage allows managing reservations/reviews. Favorites usually navigate to facility detail. */
+                                            /* Since I don't see 'onOpenFacility' prop, I might need to just show them or link if possible. */
+                                            /* For now, I'll assume users just view them here. */
+                                        }
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )
+                ) : isLoadingReservations ? (
                     <div className="text-center py-10">
                         <Loader2 size={32} className="animate-spin text-primary mx-auto" />
                     </div>

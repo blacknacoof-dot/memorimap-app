@@ -1,0 +1,8018 @@
+[
+  {
+    "장례식장명": "(복)대구가톨릭사회복지회논공 장례식장",
+    "빈소접객실": "20~50만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 200000,
+    "room_price_max": 500000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "(유)금강장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "12만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "(유)동이리장례식장",
+    "빈소접객실": "2~3만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 19000,
+    "room_price_max": 29000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "(유)무안병원장례식장",
+    "빈소접객실": "40만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 400000,
+    "room_price_max": 400000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "(유)브이아이피장례타운",
+    "빈소접객실": "80~300만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 800000,
+    "room_price_max": 3000000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "(유)성인천장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "15만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "(유)신광 익산병원장례식장",
+    "빈소접객실": "2~3만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 18000,
+    "room_price_max": 32000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "(유)예수병원장례식장",
+    "빈소접객실": "23~83만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 233334,
+    "room_price_max": 833334,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "(유)우석개발",
+    "빈소접객실": "43~72만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 432000,
+    "room_price_max": 720000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "(유)은파장례문화원",
+    "빈소접객실": "5~10만원",
+    "안치실이용료": null,
+    "room_price_min": 49000,
+    "room_price_max": 95000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "(유)익산팔봉장례식장",
+    "빈소접객실": "3~3만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 25000,
+    "room_price_max": 33000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "(유)한솔장례식장",
+    "빈소접객실": "2~3만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 20000,
+    "room_price_max": 33000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "(의)동재의료재단오차드장례식장",
+    "빈소접객실": "180~190만원",
+    "안치실이용료": "40만원",
+    "room_price_min": 1800000,
+    "room_price_max": 1900000,
+    "morgue_price": 400000
+  },
+  {
+    "장례식장명": "(재)하늘가장례식장",
+    "빈소접객실": "48~144만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 480000,
+    "room_price_max": 1440000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "(주) 비이케이더블유 좋은장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "15만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "(주) 비케이더블유 좋은강안병원지점",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "(주)광양장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "20만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 200000
+  },
+  {
+    "장례식장명": "(주)광주국빈장례문화원",
+    "빈소접객실": "150~260만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 1500000,
+    "room_price_max": 2600000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "(주)구례장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "(주)금성장례식장",
+    "빈소접객실": "90~150만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 900000,
+    "room_price_max": 1500000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "(주)기흥장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "(주)디엑스앤브이엑스 제천지점 장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 2500
+  },
+  {
+    "장례식장명": "(주)모악장례문화원",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "(주)비이케이더블유 좋은삼선병원지점",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "(주)서원 바른장례식장",
+    "빈소접객실": "2~3만원",
+    "안치실이용료": null,
+    "room_price_min": 15000,
+    "room_price_max": 30000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "(주)세종병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "14만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 144000
+  },
+  {
+    "장례식장명": "(주)시민장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "(주)안면도장례식장",
+    "빈소접객실": "2~2만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 15000,
+    "room_price_max": 20000,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "(주)영천장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "(주)영천장례식장(영남대학교영천병원지점)",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "(주)예담 활주로장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "20만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 200000
+  },
+  {
+    "장례식장명": "(주)울산국화원장례식장 북울산지점",
+    "빈소접객실": "75~96만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 750000,
+    "room_price_max": 960000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "(주)원지산청장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "(주)장례식장아시아드",
+    "빈소접객실": "45~119만원",
+    "안치실이용료": "15만원",
+    "room_price_min": 450000,
+    "room_price_max": 1190000,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "(주)제이엔에이실업",
+    "빈소접객실": "52~70만원",
+    "안치실이용료": "30만원",
+    "room_price_min": 520000,
+    "room_price_max": 700000,
+    "morgue_price": 300000
+  },
+  {
+    "장례식장명": "(주)중앙병원장례식장",
+    "빈소접객실": "40~96만원",
+    "안치실이용료": null,
+    "room_price_min": 400000,
+    "room_price_max": 960000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "(주)착한전문장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "(주)천지문화원 (천지장례식장)",
+    "빈소접객실": "120~290만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 1200000,
+    "room_price_max": 2900000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "(주)코스모스제일장례식장",
+    "빈소접객실": "50~150만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 500000,
+    "room_price_max": 1500000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "(주)한국효려(한국병원장례식장)",
+    "빈소접객실": "50~100만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 500000,
+    "room_price_max": 1000000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "(주)한빛장례식장",
+    "빈소접객실": "100~140만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 1000000,
+    "room_price_max": 1400000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "(주)합천장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "21C한일병원장례식장",
+    "빈소접객실": "50~70만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 500000,
+    "room_price_max": 700000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "BHS한서병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "DS병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "11만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 108000
+  },
+  {
+    "장례식장명": "SMG연세병원장례식장",
+    "빈소접객실": "55~120만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 550000,
+    "room_price_max": 1200000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "Sh수협장례식장",
+    "빈소접객실": "2~5만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 20000,
+    "room_price_max": 50000,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "e좋은병원장례식장",
+    "빈소접객실": "2~3만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 15000,
+    "room_price_max": 25000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "k병원장례식장 예지원",
+    "빈소접객실": "71~132만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 708000,
+    "room_price_max": 1320000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "가남베스트장례식장",
+    "빈소접객실": "2~3만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 18000,
+    "room_price_max": 30000,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "가야장례식장",
+    "빈소접객실": "2~3만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 15000,
+    "room_price_max": 25000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "가톨릭대학교 은평성모장례식장",
+    "빈소접객실": "3~290만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 30000,
+    "room_price_max": 2904000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "가톨릭대학교대전성모병원장례식장",
+    "빈소접객실": "48~130만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 480000,
+    "room_price_max": 1296000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "가평군농협효문화센터",
+    "빈소접객실": "2만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 21000,
+    "room_price_max": 21000,
+    "morgue_price": 4500
+  },
+  {
+    "장례식장명": "가평연새장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "갑을녹산병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "갑을장유병원장례식장",
+    "빈소접객실": "60~80만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 600000,
+    "room_price_max": 800000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "강경장례식장",
+    "빈소접객실": "2~4만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 16000,
+    "room_price_max": 37000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "강남병원장례식장",
+    "빈소접객실": "31~58만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 312000,
+    "room_price_max": 576000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "강동경희대학교병원장례식장",
+    "빈소접객실": "58~163만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 576000,
+    "room_price_max": 1632000,
+    "morgue_price": 52800
+  },
+  {
+    "장례식장명": "강동성심병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "강릉동인병원장례식장",
+    "빈소접객실": "28~45만원",
+    "안치실이용료": null,
+    "room_price_min": 280000,
+    "room_price_max": 450000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "강릉아나병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "강릉아산병원장례식장",
+    "빈소접객실": "2~4만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 16000,
+    "room_price_max": 35000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "강북장례식장",
+    "빈소접객실": "70만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 700000,
+    "room_price_max": 700000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "강북전문장례식장",
+    "빈소접객실": "45~100만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 450000,
+    "room_price_max": 1000000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "강북휴요양병원장례식장",
+    "빈소접객실": "120~150만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 1200000,
+    "room_price_max": 1500000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "강산병원장례식장",
+    "빈소접객실": "35~60만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 350000,
+    "room_price_max": 600000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "강서개화장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "14만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 144000
+  },
+  {
+    "장례식장명": "강서장례식장",
+    "빈소접객실": "74~84만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 744000,
+    "room_price_max": 840000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "강서중앙장례식장",
+    "빈소접객실": "4~6만원",
+    "안치실이용료": null,
+    "room_price_min": 39000,
+    "room_price_max": 59000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "강원대학교병원장례식장",
+    "빈소접객실": "1~4만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 10000,
+    "room_price_max": 35000,
+    "morgue_price": 2000
+  },
+  {
+    "장례식장명": "강원도속초의료원 장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 2700
+  },
+  {
+    "장례식장명": "강원도영월의료원장례예식장",
+    "빈소접객실": "0~2만원",
+    "안치실이용료": null,
+    "room_price_min": 4200,
+    "room_price_max": 15000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "강원효장례식장/문화원",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "강진군산림조합추모관장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "강진영락장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "강진의료원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "강진장례식장",
+    "빈소접객실": "20만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 200000,
+    "room_price_max": 200000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "강화병원장례식장",
+    "빈소접객실": "48~72만원",
+    "안치실이용료": "27만원",
+    "room_price_min": 480000,
+    "room_price_max": 720000,
+    "morgue_price": 270000
+  },
+  {
+    "장례식장명": "강화장례식장",
+    "빈소접객실": "62~72만원",
+    "안치실이용료": "30만원",
+    "room_price_min": 624000,
+    "room_price_max": 720000,
+    "morgue_price": 300000
+  },
+  {
+    "장례식장명": "거금장례식장",
+    "빈소접객실": "25만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 250000,
+    "room_price_max": 250000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "거제백병원농협장례식장",
+    "빈소접객실": "35~90만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 350000,
+    "room_price_max": 900000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "거창장례식장",
+    "빈소접객실": "50~90만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 500000,
+    "room_price_max": 900000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "거창적십자병원장례식장",
+    "빈소접객실": "30~46만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 300000,
+    "room_price_max": 456000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "건국대학교병원장례식장",
+    "빈소접객실": "65~144만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 648000,
+    "room_price_max": 1440000,
+    "morgue_price": 79200
+  },
+  {
+    "장례식장명": "건국대학교충주병원장례식장",
+    "빈소접객실": "35~68만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 354000,
+    "room_price_max": 680000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "건양대학교병원장례식장",
+    "빈소접객실": "48~228만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 480000,
+    "room_price_max": 2280000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "검단탑병원장례식장",
+    "빈소접객실": "58~84만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 576000,
+    "room_price_max": 840000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "경기도의료원 수원병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "경기도의료원 안성병원장례식장(휴업)",
+    "빈소접객실": "2~3만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 15000,
+    "room_price_max": 30000,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "경기도의료원 의정부병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "경기도의료원 이천병원장례식장",
+    "빈소접객실": "2~4만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 20000,
+    "room_price_max": 40000,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "경기도의료원 파주병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "경기도의료원 포천병원장례식장",
+    "빈소접객실": "25~84만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 252000,
+    "room_price_max": 840000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "경남도립노인전문병원장례식장",
+    "빈소접객실": "1만원",
+    "안치실이용료": null,
+    "room_price_min": 10000,
+    "room_price_max": 10000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "경남요양병원장례식장",
+    "빈소접객실": "10~20만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 100000,
+    "room_price_max": 200000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "경북대학교병원장례식장",
+    "빈소접객실": "33~103만원",
+    "안치실이용료": null,
+    "room_price_min": 330000,
+    "room_price_max": 1032000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "경산장례식장",
+    "빈소접객실": "2~8만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 15000,
+    "room_price_max": 80000,
+    "morgue_price": 6000
+  },
+  {
+    "장례식장명": "경산중앙병원장례예식장",
+    "빈소접객실": "42~84만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 420000,
+    "room_price_max": 840000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "경상국립대학교병원장례식장",
+    "빈소접객실": "1~90만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 11000,
+    "room_price_max": 900000,
+    "morgue_price": 7000
+  },
+  {
+    "장례식장명": "경상남도 마산의료원 장례식장",
+    "빈소접객실": "1~71만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 5475,
+    "room_price_max": 712800,
+    "morgue_price": 2000
+  },
+  {
+    "장례식장명": "경상북도포항의료원",
+    "빈소접객실": "2~4만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 16000,
+    "room_price_max": 39000,
+    "morgue_price": 2000
+  },
+  {
+    "장례식장명": "경안장례식장",
+    "빈소접객실": "43~100만원",
+    "안치실이용료": null,
+    "room_price_min": 430000,
+    "room_price_max": 1000000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "경주전문장례식장",
+    "빈소접객실": "51~90만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 510000,
+    "room_price_max": 900000,
+    "morgue_price": 84000
+  },
+  {
+    "장례식장명": "경주하늘마루장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "경찰병원장례식장",
+    "빈소접객실": "46~104만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 458400,
+    "room_price_max": 1044000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "경희병원장례식장",
+    "빈소접객실": "70만원",
+    "안치실이용료": "15만원",
+    "room_price_min": 700000,
+    "room_price_max": 700000,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "경희의료원장례식장",
+    "빈소접객실": "64~180만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 636000,
+    "room_price_max": 1800000,
+    "morgue_price": 52800
+  },
+  {
+    "장례식장명": "계룡장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 45000
+  },
+  {
+    "장례식장명": "계명대학교경주동산병원장례식장",
+    "빈소접객실": "57~132만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 570000,
+    "room_price_max": 1320000,
+    "morgue_price": 67200
+  },
+  {
+    "장례식장명": "계명대학교대구동산병원장례식장",
+    "빈소접객실": "38~69만원",
+    "안치실이용료": null,
+    "room_price_min": 384000,
+    "room_price_max": 690000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "계명대학교동산병원백합원",
+    "빈소접객실": "50~180만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 504000,
+    "room_price_max": 1800000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "고금번영회장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "고덕장례문화원",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "고려대구로병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "11만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 108000
+  },
+  {
+    "장례식장명": "고려대안산병원장례식장",
+    "빈소접객실": "58~173만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 576000,
+    "room_price_max": 1728000,
+    "morgue_price": 4500
+  },
+  {
+    "장례식장명": "고려대학교안암병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 4500
+  },
+  {
+    "장례식장명": "고려병원장례식장",
+    "빈소접객실": "2~3만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 20000,
+    "room_price_max": 30000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "고령대가야장례식장",
+    "빈소접객실": "60만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 600000,
+    "room_price_max": 600000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "고령영생병원장례식장",
+    "빈소접객실": "30~60만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 300000,
+    "room_price_max": 600000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "고령전문장례식장",
+    "빈소접객실": "60만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 600000,
+    "room_price_max": 600000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "고색의료재단 장례식장",
+    "빈소접객실": "2~3만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 23000,
+    "room_price_max": 25000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "고성성심병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "고성영락원장례식장",
+    "빈소접객실": "89~99만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 890000,
+    "room_price_max": 990000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "고성장례식장",
+    "빈소접객실": "1만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 6000,
+    "room_price_max": 6000,
+    "morgue_price": 3500
+  },
+  {
+    "장례식장명": "고성장례식장화라주식회사",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "고성제일요양병원장례식장",
+    "빈소접객실": "70~99만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 700000,
+    "room_price_max": 990000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "고신대병원 장례식장",
+    "빈소접객실": "30~130만원",
+    "안치실이용료": "15만원",
+    "room_price_min": 300000,
+    "room_price_max": 1300000,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "고아농협 장례문화원",
+    "빈소접객실": "3~4만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 29000,
+    "room_price_max": 41000,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "고은장례식장",
+    "빈소접객실": "108만원",
+    "안치실이용료": null,
+    "room_price_min": 1080000,
+    "room_price_max": 1080000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "고인돌장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "고전장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "고창우리장례식장",
+    "빈소접객실": "50~70만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 500000,
+    "room_price_max": 700000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "고흥봉황장례식장",
+    "빈소접객실": "15~50만원",
+    "안치실이용료": null,
+    "room_price_min": 150000,
+    "room_price_max": 500000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "곡성섬진장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "40만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 400000
+  },
+  {
+    "장례식장명": "곡성옥과장례식장",
+    "빈소접객실": "3만원",
+    "안치실이용료": "9만원",
+    "room_price_min": 29000,
+    "room_price_max": 29000,
+    "morgue_price": 90000
+  },
+  {
+    "장례식장명": "곡성장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "곤지암농협장례문화원",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "곤지암장례식장",
+    "빈소접객실": "60~100만원",
+    "안치실이용료": null,
+    "room_price_min": 600000,
+    "room_price_max": 1000000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "공도장례식장(영화원)",
+    "빈소접객실": "2~4만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 18000,
+    "room_price_max": 40000,
+    "morgue_price": 8000
+  },
+  {
+    "장례식장명": "공생병원장례식장",
+    "빈소접객실": "15~48만원",
+    "안치실이용료": "20만원",
+    "room_price_min": 150000,
+    "room_price_max": 480000,
+    "morgue_price": 200000
+  },
+  {
+    "장례식장명": "공주의료원장례식장",
+    "빈소접객실": "24~72만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 240000,
+    "room_price_max": 720000,
+    "morgue_price": 48000
+  },
+  {
+    "장례식장명": "공주장례식장",
+    "빈소접객실": "48~96만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 480000,
+    "room_price_max": 960000,
+    "morgue_price": 45000
+  },
+  {
+    "장례식장명": "관산정남진장례식장",
+    "빈소접객실": "40만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 400000,
+    "room_price_max": 400000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "관인농협장례식장",
+    "빈소접객실": "60만원",
+    "안치실이용료": "11만원",
+    "room_price_min": 600000,
+    "room_price_max": 600000,
+    "morgue_price": 108000
+  },
+  {
+    "장례식장명": "광명성애병원장례식장",
+    "빈소접객실": "80~100만원",
+    "안치실이용료": null,
+    "room_price_min": 800000,
+    "room_price_max": 1000000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "광양백운장례식장",
+    "빈소접객실": "5~6만원",
+    "안치실이용료": null,
+    "room_price_min": 50000,
+    "room_price_max": 60000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "광양서울병원장례식장",
+    "빈소접객실": "96~108만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 960000,
+    "room_price_max": 1080000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "광양우리병원장례식장",
+    "빈소접객실": "3~6만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 30000,
+    "room_price_max": 55000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "광적장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "광주남문장례식장(주)",
+    "빈소접객실": "70~240만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 700000,
+    "room_price_max": 2400000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "광주병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "12만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "광주보람장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "30만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 300000
+  },
+  {
+    "장례식장명": "광주보훈병원장례식장",
+    "빈소접객실": "2만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 24000,
+    "room_price_max": 24000,
+    "morgue_price": 2500
+  },
+  {
+    "장례식장명": "광주수완장례식장",
+    "빈소접객실": "100~180만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 1000000,
+    "room_price_max": 1800000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "광탄현대병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "괴산동부장례식장",
+    "빈소접객실": "55~80만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 550000,
+    "room_price_max": 800000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "괴산장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "15만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "괴정병원장례식장",
+    "빈소접객실": "48~82만원",
+    "안치실이용료": "15만원",
+    "room_price_min": 480000,
+    "room_price_max": 820000,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "교원예움 평택장례식장",
+    "빈소접객실": "48~120만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 480000,
+    "room_price_max": 1200000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "교하장례식장",
+    "빈소접객실": "3~3만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 25000,
+    "room_price_max": 33000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "구례병원장례식장",
+    "빈소접객실": "48만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 480000,
+    "room_price_max": 480000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "구례효사랑병원장례식장",
+    "빈소접객실": "48만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 480000,
+    "room_price_max": 480000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "구로성심병원장례식장",
+    "빈소접객실": "50만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 504000,
+    "room_price_max": 504000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "구룡장례식장",
+    "빈소접객실": "36~55만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 360000,
+    "room_price_max": 552000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "구리장례식장",
+    "빈소접객실": "40~60만원",
+    "안치실이용료": "30만원",
+    "room_price_min": 400000,
+    "room_price_max": 600000,
+    "morgue_price": 300000
+  },
+  {
+    "장례식장명": "구미가톨릭요양병원장례식장",
+    "빈소접객실": "48~90만원",
+    "안치실이용료": null,
+    "room_price_min": 480000,
+    "room_price_max": 900000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "구미장례식장해원",
+    "빈소접객실": "48~156만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 480000,
+    "room_price_max": 1560000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "구미제일요양병원장례식장",
+    "빈소접객실": "1~4만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 13000,
+    "room_price_max": 39000,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "구미천사요양병원장례식장",
+    "빈소접객실": "50~80만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 500000,
+    "room_price_max": 800000,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "구미푸른요양병원장례식장",
+    "빈소접객실": "53~84만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 528000,
+    "room_price_max": 840000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "구병원장례식장",
+    "빈소접객실": "55~84만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 552000,
+    "room_price_max": 840000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "구호전장례식장",
+    "빈소접객실": "80~160만원",
+    "안치실이용료": "15만원",
+    "room_price_min": 800000,
+    "room_price_max": 1600000,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "국립중앙의료원",
+    "빈소접객실": "28~108만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 276000,
+    "room_price_max": 1080000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "국민건강보험공단일산병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "9만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 87840
+  },
+  {
+    "장례식장명": "국민요양병원장례식장",
+    "빈소접객실": "35~60만원",
+    "안치실이용료": "15만원",
+    "room_price_min": 350000,
+    "room_price_max": 600000,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "국민장례식장",
+    "빈소접객실": "60~156만원",
+    "안치실이용료": "14만원",
+    "room_price_min": 600000,
+    "room_price_max": 1560000,
+    "morgue_price": 144000
+  },
+  {
+    "장례식장명": "국제성모장례식장",
+    "빈소접객실": "55~362만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 552000,
+    "room_price_max": 3624000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "국화원문경장례식장",
+    "빈소접객실": "48~84만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 480000,
+    "room_price_max": 840000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "국화향기",
+    "빈소접객실": "41~120만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 408000,
+    "room_price_max": 1200000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "군산의료원장례식장 오행원",
+    "빈소접객실": "1~3만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 10000,
+    "room_price_max": 30000,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "군산장례식장",
+    "빈소접객실": "4~7만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 40000,
+    "room_price_max": 65000,
+    "morgue_price": 10000
+  },
+  {
+    "장례식장명": "군위농협장례식장",
+    "빈소접객실": "2~4만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 20000,
+    "room_price_max": 35000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "군자장례식장",
+    "빈소접객실": "3~5만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 32000,
+    "room_price_max": 45000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "굿뉴스요양병원장례식장",
+    "빈소접객실": "50~70만원",
+    "안치실이용료": null,
+    "room_price_min": 500000,
+    "room_price_max": 700000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "굿모닝병원장례식장",
+    "빈소접객실": "20~55만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 200000,
+    "room_price_max": 550000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "규암농협장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "그랜드부민장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 2500
+  },
+  {
+    "장례식장명": "그랜드중앙장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 2500
+  },
+  {
+    "장례식장명": "그린장례문화원주식회사",
+    "빈소접객실": "90~270만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 900000,
+    "room_price_max": 2700000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "근로복지공단 인천병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 1670
+  },
+  {
+    "장례식장명": "근로복지공단 태백병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "4만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 36000
+  },
+  {
+    "장례식장명": "근로복지공단대전병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 2000
+  },
+  {
+    "장례식장명": "금강병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "금강쉴낙원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50400
+  },
+  {
+    "장례식장명": "금강장례식장",
+    "빈소접객실": "65~150만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 654000,
+    "room_price_max": 1504000,
+    "morgue_price": 3500
+  },
+  {
+    "장례식장명": "금사장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "금호장례식장",
+    "빈소접객실": "4~160만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 40000,
+    "room_price_max": 1600000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "기장병원장례식장",
+    "빈소접객실": "40~50만원",
+    "안치실이용료": null,
+    "room_price_min": 400000,
+    "room_price_max": 500000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "길병원장례식장",
+    "빈소접객실": "2~6만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 17000,
+    "room_price_max": 61000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "김녕농협 장례문화센터",
+    "빈소접객실": "1만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 10000,
+    "room_price_max": 10000,
+    "morgue_price": 2000
+  },
+  {
+    "장례식장명": "김제우석병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "6만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "김제장례식장",
+    "빈소접객실": "3~5만원",
+    "안치실이용료": null,
+    "room_price_min": 30000,
+    "room_price_max": 45000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "김천시민장례식장",
+    "빈소접객실": "40~70만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 400000,
+    "room_price_max": 700000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "김천요양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "김천의료원장례식장",
+    "빈소접객실": "25~60만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 250000,
+    "room_price_max": 600000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "김천제일병원장례식장",
+    "빈소접객실": "3~60만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 27500,
+    "room_price_max": 600000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "김해시민장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "234만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 2340000
+  },
+  {
+    "장례식장명": "김해전문장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "김해한솔병원장례식장",
+    "빈소접객실": "45~80만원",
+    "안치실이용료": "14만원",
+    "room_price_min": 450000,
+    "room_price_max": 800000,
+    "morgue_price": 140000
+  },
+  {
+    "장례식장명": "김화장례문화원",
+    "빈소접객실": "35~75만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 350000,
+    "room_price_max": 750000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "나눔병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "12만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "나주애향장례식장",
+    "빈소접객실": "55~135만원",
+    "안치실이용료": "30만원",
+    "room_price_min": 550000,
+    "room_price_max": 1350000,
+    "morgue_price": 300000
+  },
+  {
+    "장례식장명": "나주예림장례식장",
+    "빈소접객실": "60만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 600000,
+    "room_price_max": 600000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "나주장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "나주종합병원장례식장",
+    "빈소접객실": "40만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 400000,
+    "room_price_max": 400000,
+    "morgue_price": 75000
+  },
+  {
+    "장례식장명": "나주중앙요양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "나주한국병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "나주효사랑병원장례식장",
+    "빈소접객실": "80만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 800000,
+    "room_price_max": 800000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "나진장례식장",
+    "빈소접객실": "38~130만원",
+    "안치실이용료": null,
+    "room_price_min": 384000,
+    "room_price_max": 1296000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "낙원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "남구미요양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "남도장례식장",
+    "빈소접객실": "48~65만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 480000,
+    "room_price_max": 650000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "남동스카이장례식장",
+    "빈소접객실": "61~243만원",
+    "안치실이용료": "14만원",
+    "room_price_min": 607200,
+    "room_price_max": 2428800,
+    "morgue_price": 144000
+  },
+  {
+    "장례식장명": "남악장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "24만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 240000
+  },
+  {
+    "장례식장명": "남양주국민병원장례식장",
+    "빈소접객실": "30만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 300000,
+    "room_price_max": 300000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "남양주장례식장(구 남양동산)",
+    "빈소접객실": null,
+    "안치실이용료": "17만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 170000
+  },
+  {
+    "장례식장명": "남양주한양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "남울산보람국화원",
+    "빈소접객실": "60~108만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 600000,
+    "room_price_max": 1080000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "남원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "남지요양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "남천안 장례식장",
+    "빈소접객실": "2~4만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 20000,
+    "room_price_max": 35000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "남해병원장례식장",
+    "빈소접객실": "2만원",
+    "안치실이용료": null,
+    "room_price_min": 20000,
+    "room_price_max": 20000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "남해전문장례식장",
+    "빈소접객실": "2~3만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 15000,
+    "room_price_max": 25000,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "노원을지대학교병원장례식장",
+    "빈소접객실": "48~156만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 480000,
+    "room_price_max": 1560000,
+    "morgue_price": 84000
+  },
+  {
+    "장례식장명": "녹동농협 장례식장",
+    "빈소접객실": "4만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 40000,
+    "room_price_max": 40000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "녹동현대병원장례식장",
+    "빈소접객실": "3~4만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 30000,
+    "room_price_max": 35000,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "녹십자요양병원장례식장",
+    "빈소접객실": "35만원",
+    "안치실이용료": "15만원",
+    "room_price_min": 350000,
+    "room_price_max": 350000,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "논산장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "농협연합장례식장",
+    "빈소접객실": "2~60만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 15000,
+    "room_price_max": 600000,
+    "morgue_price": 8000
+  },
+  {
+    "장례식장명": "농협장례문화원",
+    "빈소접객실": "53~84만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 528000,
+    "room_price_max": 840000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "뉴고려병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "뉴타운장례식장",
+    "빈소접객실": "43~240만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 432000,
+    "room_price_max": 2400000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "늘푸른장례식장",
+    "빈소접객실": "40~60만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 400000,
+    "room_price_max": 600000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "다니엘병원장례식장(구 늘푸른장례식장)",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "다대수병원장례식장",
+    "빈소접객실": "48~59만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 480000,
+    "room_price_max": 590000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "다보스병원장례식장(영문의료재단)",
+    "빈소접객실": "6만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 55000,
+    "room_price_max": 55000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "다사랑중앙병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "다인농협장례식장",
+    "빈소접객실": "36~41만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 360000,
+    "room_price_max": 408000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "단국대학교병원 천안장례식장",
+    "빈소접객실": "2~4만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 20000,
+    "room_price_max": 40000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "단양군립노인요양병원장례식장",
+    "빈소접객실": "7만원",
+    "안치실이용료": "4만원",
+    "room_price_min": 70000,
+    "room_price_max": 70000,
+    "morgue_price": 40000
+  },
+  {
+    "장례식장명": "단양장례식장",
+    "빈소접객실": "38~60만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 384000,
+    "room_price_max": 600000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "담양동산병원장례식장",
+    "빈소접객실": "85만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 850000,
+    "room_price_max": 850000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "담양제일장례식장",
+    "빈소접객실": "85~120만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 850000,
+    "room_price_max": 1200000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "당진종합병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "당진중앙장례식장",
+    "빈소접객실": "10~60만원",
+    "안치실이용료": "15만원",
+    "room_price_min": 100000,
+    "room_price_max": 600000,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "대구가톨릭대학교의료원 장례식장",
+    "빈소접객실": "31~86만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 312000,
+    "room_price_max": 864000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "대구기독병원장례식장",
+    "빈소접객실": "53~82만원",
+    "안치실이용료": null,
+    "room_price_min": 528000,
+    "room_price_max": 816000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "대구병원장례식장",
+    "빈소접객실": "43~60만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 432000,
+    "room_price_max": 600000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "대구보훈병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "6만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "대구시민전문장례식장",
+    "빈소접객실": "32~149만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 324000,
+    "room_price_max": 1488000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "대구요양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "대구의료원 국화원 장례식장",
+    "빈소접객실": "30~120만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 300000,
+    "room_price_max": 1200000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "대구전문장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "대구파티마병원장례식장",
+    "빈소접객실": "34~116만원",
+    "안치실이용료": null,
+    "room_price_min": 340000,
+    "room_price_max": 1160000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "대동병원장례식장",
+    "빈소접객실": "50~90만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 500000,
+    "room_price_max": 900000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "대성장례센터",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "대성장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "대소장례식장",
+    "빈소접객실": "48~72만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 480000,
+    "room_price_max": 720000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "대송장례식장",
+    "빈소접객실": "50~90만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 500000,
+    "room_price_max": 900000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "대연장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "대영장례식장",
+    "빈소접객실": "4~70만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 35000,
+    "room_price_max": 700000,
+    "morgue_price": 10000
+  },
+  {
+    "장례식장명": "대우병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "대전보훈병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 48000
+  },
+  {
+    "장례식장명": "대전선병원장례식장",
+    "빈소접객실": "58~74만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 576000,
+    "room_price_max": 744000,
+    "morgue_price": 48000
+  },
+  {
+    "장례식장명": "대전을지대학교병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 48000
+  },
+  {
+    "장례식장명": "대전장례식장",
+    "빈소접객실": "43~65만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 432000,
+    "room_price_max": 648000,
+    "morgue_price": 48000
+  },
+  {
+    "장례식장명": "대천역전장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "대청병원 장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "대한병원장례식장",
+    "빈소접객실": "20~85만원",
+    "안치실이용료": "9만원",
+    "room_price_min": 200000,
+    "room_price_max": 850000,
+    "morgue_price": 90000
+  },
+  {
+    "장례식장명": "대한장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "대한적십자사상주병원장례식장",
+    "빈소접객실": "35~43만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 348000,
+    "room_price_max": 432000,
+    "morgue_price": 48000
+  },
+  {
+    "장례식장명": "더원실업 우란장례식장",
+    "빈소접객실": "35~51만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 350000,
+    "room_price_max": 510000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "더조은장례식장",
+    "빈소접객실": "3~90만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 28000,
+    "room_price_max": 900000,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "도계장례식장",
+    "빈소접객실": "10만원",
+    "안치실이용료": null,
+    "room_price_min": 100000,
+    "room_price_max": 100000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "도리안장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "도민장례식장",
+    "빈소접객실": "60~108만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 600000,
+    "room_price_max": 1080000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "독산장례식장",
+    "빈소접객실": "3~3만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 25000,
+    "room_price_max": 30000,
+    "morgue_price": 9000
+  },
+  {
+    "장례식장명": "동강병원장례식장",
+    "빈소접객실": "32~45만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 320000,
+    "room_price_max": 450000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "동광양장례식장",
+    "빈소접객실": "4~5만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 42000,
+    "room_price_max": 50000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "동국대학교경주병원장례식장",
+    "빈소접객실": "22~165만원",
+    "안치실이용료": "2만원",
+    "room_price_min": 216000,
+    "room_price_max": 1650000,
+    "morgue_price": 20000
+  },
+  {
+    "장례식장명": "동국대학교일산장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "동군산병원장례예식장",
+    "빈소접객실": "120~255만원",
+    "안치실이용료": "30만원",
+    "room_price_min": 1200000,
+    "room_price_max": 2550000,
+    "morgue_price": 300000
+  },
+  {
+    "장례식장명": "동남권원자력의학원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "동두천장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "12만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "동두천중앙성모장례식장",
+    "빈소접객실": "3~4만원",
+    "안치실이용료": null,
+    "room_price_min": 30000,
+    "room_price_max": 35000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "동래봉생병원장례식장",
+    "빈소접객실": "30~40만원",
+    "안치실이용료": null,
+    "room_price_min": 300000,
+    "room_price_max": 400000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "동래한서병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "동마산장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "동백장례식장",
+    "빈소접객실": "3~4만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 30000,
+    "room_price_max": 43000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "동부요양병원 장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "동산병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "15만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "동서천 장례식장",
+    "빈소접객실": "60만원",
+    "안치실이용료": null,
+    "room_price_min": 600000,
+    "room_price_max": 600000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "동수원장례식장",
+    "빈소접객실": "24~36만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 240000,
+    "room_price_max": 360000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "동신병원장례식장",
+    "빈소접객실": "3~3만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 25000,
+    "room_price_max": 30000,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "동아대학교병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "동아메디병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "동안산병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "동의의료원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "동인병원장례식장",
+    "빈소접객실": "2~4만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 23000,
+    "room_price_max": 40000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "동일죽장례식장",
+    "빈소접객실": "30~70만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 300000,
+    "room_price_max": 700000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "동전주 장례문화원",
+    "빈소접객실": "84~106만원",
+    "안치실이용료": null,
+    "room_price_min": 840000,
+    "room_price_max": 1056000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "동주병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "12만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "동창원장례식장",
+    "빈소접객실": "40~80만원",
+    "안치실이용료": "9만원",
+    "room_price_min": 400000,
+    "room_price_max": 800000,
+    "morgue_price": 90000
+  },
+  {
+    "장례식장명": "동해전문장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "드림병원장례식장",
+    "빈소접객실": "48~84만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 480000,
+    "room_price_max": 840000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "마량장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "6만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "마송장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "11만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 108000
+  },
+  {
+    "장례식장명": "만평장례식장",
+    "빈소접객실": "80~190만원",
+    "안치실이용료": "15만원",
+    "room_price_min": 800000,
+    "room_price_max": 1900000,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "맑은샘병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "메디인병원장례식장",
+    "빈소접객실": "48~120만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 480000,
+    "room_price_max": 1200000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "메디팜병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "메디힐병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 84000
+  },
+  {
+    "장례식장명": "메디힐장례식장",
+    "빈소접객실": "3~3만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 25000,
+    "room_price_max": 34000,
+    "morgue_price": 6000
+  },
+  {
+    "장례식장명": "메리놀병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "15만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "면목녹색병원 장례식장",
+    "빈소접객실": "4만원",
+    "안치실이용료": "24만원",
+    "room_price_min": 40000,
+    "room_price_max": 40000,
+    "morgue_price": 240000
+  },
+  {
+    "장례식장명": "명덕효요양병원부속백화원",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "명품병원장례문화원",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 8500
+  },
+  {
+    "장례식장명": "모레아장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "목포기독병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "목포성심장례문화원",
+    "빈소접객실": "30~50만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 300000,
+    "room_price_max": 500000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "목포시의료원장례식장",
+    "빈소접객실": "40~60만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 400000,
+    "room_price_max": 600000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "목포장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "25만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 250000
+  },
+  {
+    "장례식장명": "목포하당장례식장",
+    "빈소접객실": "90~160만원",
+    "안치실이용료": "30만원",
+    "room_price_min": 900000,
+    "room_price_max": 1600000,
+    "morgue_price": 300000
+  },
+  {
+    "장례식장명": "무안제일병원 무안장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "21만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 210000
+  },
+  {
+    "장례식장명": "무안초당병원장례식장",
+    "빈소접객실": "40만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 400000,
+    "room_price_max": 400000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "무주군보건의료원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "15만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "문경장례식장",
+    "빈소접객실": "3~3만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 26000,
+    "room_price_max": 30000,
+    "morgue_price": 9000
+  },
+  {
+    "장례식장명": "문경제일병원장례식장",
+    "빈소접객실": "2~3만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 20000,
+    "room_price_max": 25000,
+    "morgue_price": 8000
+  },
+  {
+    "장례식장명": "문산장례문화원",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "문산장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "문요양병원장례식장",
+    "빈소접객실": "54~90만원",
+    "안치실이용료": "9만원",
+    "room_price_min": 540000,
+    "room_price_max": 900000,
+    "morgue_price": 90000
+  },
+  {
+    "장례식장명": "미루병원장례식장",
+    "빈소접객실": "70~80만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 700000,
+    "room_price_max": 800000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "밀양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "밀양시민장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "바른병원장례식장",
+    "빈소접객실": "60~70만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 600000,
+    "room_price_max": 700000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "반송장례식장",
+    "빈소접객실": "10~35만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 100000,
+    "room_price_max": 350000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "배방장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "12만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "배성병원장례식장",
+    "빈소접객실": "65~96만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 648000,
+    "room_price_max": 960000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "백년장례문화원",
+    "빈소접객실": "40~90만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 400000,
+    "room_price_max": 900000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "백병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 8000
+  },
+  {
+    "장례식장명": "백악관장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "24만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 240000
+  },
+  {
+    "장례식장명": "백제병원장례식장",
+    "빈소접객실": "10~80만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 100000,
+    "room_price_max": 800000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "벌교삼성병원장례식장",
+    "빈소접객실": "3~40만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 30000,
+    "room_price_max": 400000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "벌교장례식장",
+    "빈소접객실": "3~50만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 30000,
+    "room_price_max": 500000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "벌교중앙장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "법성장례식장",
+    "빈소접객실": "18만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 180000,
+    "room_price_max": 180000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "베스트장례식장",
+    "빈소접객실": "40~108만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 400000,
+    "room_price_max": 1080000,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "별그리다(사담재)",
+    "빈소접객실": "5만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 50000,
+    "room_price_max": 50000,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "보람김해장례식장",
+    "빈소접객실": "30~160만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 300000,
+    "room_price_max": 1600000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "보람상조개발(주)양산부산대병원장례식장",
+    "빈소접객실": "60~105만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 600000,
+    "room_price_max": 1050000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "보람상조라이프(주)천안국빈장례식장",
+    "빈소접객실": "4~6만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 35000,
+    "room_price_max": 60000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "보람의정부장례식장",
+    "빈소접객실": "2~12만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 17500,
+    "room_price_max": 118750,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "보람인천장례식장",
+    "빈소접객실": "62~144만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 624000,
+    "room_price_max": 1440000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "보성아산병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "보성우리장례식장",
+    "빈소접객실": "20~30만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 200000,
+    "room_price_max": 300000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "보성장례식장",
+    "빈소접객실": "15~30만원",
+    "안치실이용료": null,
+    "room_price_min": 150000,
+    "room_price_max": 300000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "보은농협장례식장",
+    "빈소접객실": "60~72만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 600000,
+    "room_price_max": 720000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "보은요양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "보정장례식장",
+    "빈소접객실": "66~96만원",
+    "안치실이용료": "9만원",
+    "room_price_min": 660000,
+    "room_price_max": 960000,
+    "morgue_price": 90000
+  },
+  {
+    "장례식장명": "복음병원장례식장",
+    "빈소접객실": "50~80만원",
+    "안치실이용료": "14만원",
+    "room_price_min": 500000,
+    "room_price_max": 800000,
+    "morgue_price": 140000
+  },
+  {
+    "장례식장명": "복지장례문화원",
+    "빈소접객실": "53~151만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 528000,
+    "room_price_max": 1512000,
+    "morgue_price": 100800
+  },
+  {
+    "장례식장명": "봉담장례문화원",
+    "빈소접객실": "29~108만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 290000,
+    "room_price_max": 1080000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "봉동호스피스장례식장",
+    "빈소접객실": "70~180만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 700000,
+    "room_price_max": 1800000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "봉생병원장례식장",
+    "빈소접객실": "30~60만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 300000,
+    "room_price_max": 600000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "봉화군산림조합장례식장",
+    "빈소접객실": "4~62만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 35000,
+    "room_price_max": 624000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "봉화장례식장",
+    "빈소접객실": "3~4만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 30000,
+    "room_price_max": 35000,
+    "morgue_price": 8000
+  },
+  {
+    "장례식장명": "부곡온천병원장례식장",
+    "빈소접객실": "3~50만원",
+    "안치실이용료": "15만원",
+    "room_price_min": 25000,
+    "room_price_max": 500000,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "부림요양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "부산광역시의료원장례식장",
+    "빈소접객실": "10~73만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 100000,
+    "room_price_max": 730000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "부산대학교병원장례식장",
+    "빈소접객실": "20~35만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 200000,
+    "room_price_max": 350000,
+    "morgue_price": 3750
+  },
+  {
+    "장례식장명": "부산백병원 장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "부산보훈병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "부산성모병원장례식장",
+    "빈소접객실": "41~130만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 408000,
+    "room_price_max": 1300800,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "부산영락공원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "부산전문장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "12만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "부성장례식장",
+    "빈소접객실": "25~60만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 250000,
+    "room_price_max": 600000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "부안호남장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "부안효병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "부천성모병원장례식장",
+    "빈소접객실": "52~217만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 516000,
+    "room_price_max": 2172000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "부천장례식장",
+    "빈소접객실": "1~4만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 9000,
+    "room_price_max": 39000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "북신안농협장례식장",
+    "빈소접객실": "2만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 15000,
+    "room_price_max": 15000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "분당서울대학교병원 장례식장",
+    "빈소접객실": "50~166만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 504000,
+    "room_price_max": 1656000,
+    "morgue_price": 75000
+  },
+  {
+    "장례식장명": "분당제생병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3500
+  },
+  {
+    "장례식장명": "분당차병원장례식장",
+    "빈소접객실": "50~125만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 500000,
+    "room_price_max": 1250000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "비에스종합병원장례식장",
+    "빈소접객실": "80~100만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 800000,
+    "room_price_max": 1000000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "빛 장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "빛가람장례식장",
+    "빈소접객실": "1만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 10000,
+    "room_price_max": 10000,
+    "morgue_price": 6000
+  },
+  {
+    "장례식장명": "빛가람종합병원장례식장",
+    "빈소접객실": "100만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 1000000,
+    "room_price_max": 1000000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "사랑의병원장례식장",
+    "빈소접객실": "3~5만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 30000,
+    "room_price_max": 50000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "사비장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "사천공설장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "사천시농협장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "사하구민장례식장",
+    "빈소접객실": "60~96만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 600000,
+    "room_price_max": 960000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "산림조합 장성장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "산청경호장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "산청장례식장",
+    "빈소접객실": "60~100만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 600000,
+    "room_price_max": 1000000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "삼목장례프리드",
+    "빈소접객실": "100만원",
+    "안치실이용료": "20만원",
+    "room_price_min": 1000000,
+    "room_price_max": 1000000,
+    "morgue_price": 200000
+  },
+  {
+    "장례식장명": "삼봉장례식장",
+    "빈소접객실": "130~220만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 1300000,
+    "room_price_max": 2200000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "삼성병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "삼성서울병원장례식장",
+    "빈소접객실": "72~450만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 720000,
+    "room_price_max": 4500000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "삼성장례문화원",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "삼성장례식장",
+    "빈소접객실": "30~50만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 300000,
+    "room_price_max": 500000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "삼성창원병원장례식장",
+    "빈소접객실": "9~98만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 90000,
+    "room_price_max": 984000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "삼신전문장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "15만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "삼육병원장례식장",
+    "빈소접객실": "50~130만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 500000,
+    "room_price_max": 1300000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "삼육서울병원 추모관(구위생병원)",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 84000
+  },
+  {
+    "장례식장명": "삼일병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "30만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 300000
+  },
+  {
+    "장례식장명": "삼척의료원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 2700
+  },
+  {
+    "장례식장명": "삼천포서울병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "삼천포장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "상주성모병원 장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "상주시민장례식장",
+    "빈소접객실": "50~80만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 500000,
+    "room_price_max": 800000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "상주장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "새고창장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "새금산병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "새동산병원 장례식장(구 365병원장례식장)",
+    "빈소접객실": "2~3만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 20000,
+    "room_price_max": 25000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "새로운장례식장",
+    "빈소접객실": "48~72만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 480000,
+    "room_price_max": 720000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "새롬병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "6만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "새마을장례식장",
+    "빈소접객실": "70만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 700000,
+    "room_price_max": 700000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "새만금장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "새미소요양병원장례식장",
+    "빈소접객실": "2~6만원",
+    "안치실이용료": null,
+    "room_price_min": 20000,
+    "room_price_max": 60000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "새소망병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "12만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "새웅상요양병원장례식장",
+    "빈소접객실": "35~45만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 350000,
+    "room_price_max": 450000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "새진교장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "새천년장례식장",
+    "빈소접객실": "67~151만원",
+    "안치실이용료": "17만원",
+    "room_price_min": 672000,
+    "room_price_max": 1512000,
+    "morgue_price": 168000
+  },
+  {
+    "장례식장명": "새통영병원장례식장",
+    "빈소접객실": "2~3만원",
+    "안치실이용료": null,
+    "room_price_min": 15000,
+    "room_price_max": 25000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "샘안양병원장례식장",
+    "빈소접객실": "0~90만원",
+    "안치실이용료": "15만원",
+    "room_price_min": 20,
+    "room_price_max": 900000,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "서귀포의료원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3350
+  },
+  {
+    "장례식장명": "서논산장례식장",
+    "빈소접객실": "15만원",
+    "안치실이용료": "15만원",
+    "room_price_min": 150000,
+    "room_price_max": 150000,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "서부산시민장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "20만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 200000
+  },
+  {
+    "장례식장명": "서산의료원상례원",
+    "빈소접객실": "2~3만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 20000,
+    "room_price_max": 30000,
+    "morgue_price": 2500
+  },
+  {
+    "장례식장명": "서산장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "서석장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "2만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 20000
+  },
+  {
+    "장례식장명": "서세종농협장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "서안동농협장례식장",
+    "빈소접객실": "46~96만원",
+    "안치실이용료": null,
+    "room_price_min": 460000,
+    "room_price_max": 960000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "서요양병원장례식장",
+    "빈소접객실": "48~72만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 480000,
+    "room_price_max": 720000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "서울대학교병원장례식장",
+    "빈소접객실": "45~355만원",
+    "안치실이용료": null,
+    "room_price_min": 450000,
+    "room_price_max": 3550000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "서울백병원장례식장",
+    "빈소접객실": "96~108만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 960000,
+    "room_price_max": 1080000,
+    "morgue_price": 84000
+  },
+  {
+    "장례식장명": "서울산국화원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "12만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "서울성모장례식장",
+    "빈소접객실": "60~460만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 600000,
+    "room_price_max": 4596000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "서울아산병원 장례식장",
+    "빈소접객실": "69~443만원",
+    "안치실이용료": "9만원",
+    "room_price_min": 690000,
+    "room_price_max": 4430000,
+    "morgue_price": 88800
+  },
+  {
+    "장례식장명": "서울적십자병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "서울좋은병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "9만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 90000
+  },
+  {
+    "장례식장명": "서울특별시 동부병원 장례식장",
+    "빈소접객실": "33~41만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 329040,
+    "room_price_max": 411300,
+    "morgue_price": 59230
+  },
+  {
+    "장례식장명": "서울특별시 서울의료원 장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "서울특별시보라매병원장례식장",
+    "빈소접객실": "69~81만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 691300,
+    "room_price_max": 808000,
+    "morgue_price": 95370
+  },
+  {
+    "장례식장명": "서울현대요양병원장례식장",
+    "빈소접객실": "84~96만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 840000,
+    "room_price_max": 960000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "서정리장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "9만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 90000
+  },
+  {
+    "장례식장명": "서천장례식장",
+    "빈소접객실": "2~3만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 18600,
+    "room_price_max": 29600,
+    "morgue_price": 6000
+  },
+  {
+    "장례식장명": "서천한국장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "서해안장례식장",
+    "빈소접객실": "20만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 200000,
+    "room_price_max": 200000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "서해장례문화원",
+    "빈소접객실": "3~4만원",
+    "안치실이용료": "27만원",
+    "room_price_min": 30000,
+    "room_price_max": 35000,
+    "morgue_price": 270000
+  },
+  {
+    "장례식장명": "석곡농협장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "50만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 500000
+  },
+  {
+    "장례식장명": "선산 국화원 전문 장례식장",
+    "빈소접객실": "50~110만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 504000,
+    "room_price_max": 1104000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "선산전문장례식장",
+    "빈소접객실": "40~100만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 400000,
+    "room_price_max": 999984,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "성가롤로병원장례식장",
+    "빈소접객실": "1~4만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 14533,
+    "room_price_max": 41667,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "성남시의료원장례식장",
+    "빈소접객실": "2~96만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 15000,
+    "room_price_max": 960000,
+    "morgue_price": 2500
+  },
+  {
+    "장례식장명": "성남시장례식장",
+    "빈소접객실": "0~2만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 2650,
+    "room_price_max": 20000,
+    "morgue_price": 1875
+  },
+  {
+    "장례식장명": "성남중앙병원장례식장",
+    "빈소접객실": "38~95만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 380000,
+    "room_price_max": 950000,
+    "morgue_price": 95000
+  },
+  {
+    "장례식장명": "성모병원장례예식장",
+    "빈소접객실": null,
+    "안치실이용료": "15만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "성모장례식장",
+    "빈소접객실": "40~50만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 400000,
+    "room_price_max": 500000,
+    "morgue_price": 75000
+  },
+  {
+    "장례식장명": "성민병원 장례식장",
+    "빈소접객실": "10~78만원",
+    "안치실이용료": "9만원",
+    "room_price_min": 100000,
+    "room_price_max": 780000,
+    "morgue_price": 90000
+  },
+  {
+    "장례식장명": "성빈센트병원 장례식장",
+    "빈소접객실": "56~131만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 564000,
+    "room_price_max": 1308000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "성산현대요양병원장례식장",
+    "빈소접객실": "40~50만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 400000,
+    "room_price_max": 500000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "성서병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "성서요양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "성심요양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "성심장례식장",
+    "빈소접객실": "65~108만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 648000,
+    "room_price_max": 1080000,
+    "morgue_price": 48000
+  },
+  {
+    "장례식장명": "성애장례식장",
+    "빈소접객실": "60~90만원",
+    "안치실이용료": "14만원",
+    "room_price_min": 600000,
+    "room_price_max": 900000,
+    "morgue_price": 144000
+  },
+  {
+    "장례식장명": "성월장례문화원",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "성제장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "2만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 15000
+  },
+  {
+    "장례식장명": "성주국화원전문장례식장",
+    "빈소접객실": "72만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 720000,
+    "room_price_max": 720000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "성주효병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "세광병원장례식장",
+    "빈소접객실": "60만원",
+    "안치실이용료": null,
+    "room_price_min": 600000,
+    "room_price_max": 600000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "세명병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "세민병원장례식장",
+    "빈소접객실": "55~79만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 552000,
+    "room_price_max": 792000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "세민에스백합원장례식장",
+    "빈소접객실": "35~90만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 350000,
+    "room_price_max": 900000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "세안종합병원장례식장",
+    "빈소접객실": "40만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 400000,
+    "room_price_max": 400000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "세웅병원장례식장",
+    "빈소접객실": "15~40만원",
+    "안치실이용료": "15만원",
+    "room_price_min": 150000,
+    "room_price_max": 400000,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "세인트병원장례식장",
+    "빈소접객실": "48~120만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 480000,
+    "room_price_max": 1200000,
+    "morgue_price": 79200
+  },
+  {
+    "장례식장명": "세일장례식장(구.복사골)",
+    "빈소접객실": "2~5만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 20000,
+    "room_price_max": 45000,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "세종병원장례식장",
+    "빈소접객실": "1~4만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 12500,
+    "room_price_max": 40000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "세종여주병원장례식장",
+    "빈소접객실": "2~4만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 20000,
+    "room_price_max": 35000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "세종충남대학교병원 쉴낙원 장례식장",
+    "빈소접객실": "84~108만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 840000,
+    "room_price_max": 1080000,
+    "morgue_price": 84000
+  },
+  {
+    "장례식장명": "세화병원장례식장",
+    "빈소접객실": "1~3만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 8333,
+    "room_price_max": 25000,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "센텀장례식장",
+    "빈소접객실": "50~120만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 500000,
+    "room_price_max": 1200000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "센트럴병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "소망장례식장",
+    "빈소접객실": "27~67만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 265000,
+    "room_price_max": 665000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "속초동해장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "속초보광병원장례식장",
+    "빈소접객실": "1~1만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 5000,
+    "room_price_max": 10000,
+    "morgue_price": 2700
+  },
+  {
+    "장례식장명": "속초우리장례식장(휴업)",
+    "빈소접객실": "48~60만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 480000,
+    "room_price_max": 600000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "송도하나장례문화원",
+    "빈소접객실": null,
+    "안치실이용료": "12만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "송산장례문화원",
+    "빈소접객실": "80~110만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 800000,
+    "room_price_max": 1100000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "송산장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "송원장례문화원",
+    "빈소접객실": "84만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 840000,
+    "room_price_max": 840000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "송정사랑병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "송정장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "송탄장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "송탄중앙병원장례식장",
+    "빈소접객실": "50~96만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 500000,
+    "room_price_max": 960000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "송현장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "수성메트로병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "수성연도실",
+    "빈소접객실": "43만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 432000,
+    "room_price_max": 432000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "수성요양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "수원시연화장장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 45000
+  },
+  {
+    "장례식장명": "수원요양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "수장례식장",
+    "빈소접객실": "30~80만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 300000,
+    "room_price_max": 800000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "순창군보건의료원장례식장",
+    "빈소접객실": "20~25만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 200000,
+    "room_price_max": 250000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "순창온누리장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "순창요양병원장례식장",
+    "빈소접객실": "20만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 200000,
+    "room_price_max": 200000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "순창장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "순창현대장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "24만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 240000
+  },
+  {
+    "장례식장명": "순천의료원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 2100
+  },
+  {
+    "장례식장명": "순천중앙병원장례식장",
+    "빈소접객실": "0~65만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 2100,
+    "room_price_max": 650000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "순천한국병원장례식장",
+    "빈소접객실": "2~5만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 20800,
+    "room_price_max": 50000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "순천향대학병원장례식장",
+    "빈소접객실": "53~216만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 528000,
+    "room_price_max": 2160000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "순천향부천장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "순천향장례식장",
+    "빈소접객실": "20~80만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 200000,
+    "room_price_max": 800000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "순천향천안장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "숭례관장례식장",
+    "빈소접객실": "48~72만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 480000,
+    "room_price_max": 720000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "쉴낙원 남대전장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 48000
+  },
+  {
+    "장례식장명": "쉴낙원 당진 장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "쉴낙원 오산동탄 장례식장",
+    "빈소접객실": "15~129만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 150000,
+    "room_price_max": 1290000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "쉴낙원갈마성심장례식장",
+    "빈소접객실": "67~125만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 672000,
+    "room_price_max": 1248000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "쉴낙원경기장례식장",
+    "빈소접객실": "96~348만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 960000,
+    "room_price_max": 3480000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "쉴낙원김포장례식장",
+    "빈소접객실": "75~193만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 750000,
+    "room_price_max": 1930000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "쉴낙원서울장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "12만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "쉴낙원인천장례식장",
+    "빈소접객실": "10~180만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 100000,
+    "room_price_max": 1800000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "스카이장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "15만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "시민장례식장",
+    "빈소접객실": "65~90만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 650000,
+    "room_price_max": 900000,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "시영의료재단 영동병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "6만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "시티병원장례식장",
+    "빈소접객실": "60~108만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 600000,
+    "room_price_max": 1080000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "시티장례문화원",
+    "빈소접객실": "90~300만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 900000,
+    "room_price_max": 3000000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "시화병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "12만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "시흥누리병원장례식장",
+    "빈소접객실": "40~108만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 396000,
+    "room_price_max": 1080000,
+    "morgue_price": 6000
+  },
+  {
+    "장례식장명": "시흥우리장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "시흥장례원",
+    "빈소접객실": null,
+    "안치실이용료": "12만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "신가병원장례식장",
+    "빈소접객실": "50~60만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 500000,
+    "room_price_max": 600000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "신광천장례식장",
+    "빈소접객실": "3~4만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 30000,
+    "room_price_max": 35000,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "신세계병원장례식장",
+    "빈소접객실": "65~110만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 650000,
+    "room_price_max": 1100000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "신정장례문화원",
+    "빈소접객실": "40~98만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 400000,
+    "room_price_max": 984000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "신천연합병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "신천제일병원장례식장",
+    "빈소접객실": "5~80만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 50000,
+    "room_price_max": 800000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "신평장례식장",
+    "빈소접객실": "35~50만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 350000,
+    "room_price_max": 500000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "신풍장례문화원",
+    "빈소접객실": "48~96만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 480000,
+    "room_price_max": 960000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "신협서해병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 6000
+  },
+  {
+    "장례식장명": "신화장례식장",
+    "빈소접객실": "3~4만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 25000,
+    "room_price_max": 40000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "실로암사랑요양병원장례식장",
+    "빈소접객실": "2~3만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 20000,
+    "room_price_max": 30000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "씨티장례식장",
+    "빈소접객실": "80만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 800000,
+    "room_price_max": 800000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "아너스힐병원장례식장",
+    "빈소접객실": "84~180만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 840000,
+    "room_price_max": 1800000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "아산유리요양병원 장례식장",
+    "빈소접객실": "72~96만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 720000,
+    "room_price_max": 960000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "아산충무병원 국화원",
+    "빈소접객실": "3~4만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 30000,
+    "room_price_max": 35000,
+    "morgue_price": 7000
+  },
+  {
+    "장례식장명": "아주대학병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "아주조은요양병원 장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "안강중앙병원장례식장",
+    "빈소접객실": "60만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 600000,
+    "room_price_max": 600000,
+    "morgue_price": 65000
+  },
+  {
+    "장례식장명": "안덕장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "안동농협장례식장",
+    "빈소접객실": "42~50만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 420000,
+    "room_price_max": 500000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "안동병원장례식장",
+    "빈소접객실": "40~99만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 400000,
+    "room_price_max": 990000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "안동의료원 장례식장 국화원",
+    "빈소접객실": "30~120만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 300000,
+    "room_price_max": 1200000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "안동전문장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "안산온누리병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "안산장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "9만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 90000
+  },
+  {
+    "장례식장명": "안심병원장례식장",
+    "빈소접객실": "58~82만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 580000,
+    "room_price_max": 820000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "안양메트로병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 6000
+  },
+  {
+    "장례식장명": "안양장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "12만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "안중장례문화센타",
+    "빈소접객실": "48~84만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 480000,
+    "room_price_max": 840000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "양산서울요양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "양산시민장례호텔",
+    "빈소접객실": "60~195만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 600000,
+    "room_price_max": 1950000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "양산장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "양서농협장례문화원",
+    "빈소접객실": "50~190만원",
+    "안치실이용료": "20만원",
+    "room_price_min": 500000,
+    "room_price_max": 1900000,
+    "morgue_price": 200000
+  },
+  {
+    "장례식장명": "양수삼성장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 8000
+  },
+  {
+    "장례식장명": "양양장례문화원",
+    "빈소접객실": "2만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 15000,
+    "room_price_max": 15000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "양주소망장례식장",
+    "빈소접객실": "3~4만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 25000,
+    "room_price_max": 35000,
+    "morgue_price": 8000
+  },
+  {
+    "장례식장명": "양주장례문화원",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "양주한국병원장례문화원 주식회사",
+    "빈소접객실": null,
+    "안치실이용료": "24만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 240000
+  },
+  {
+    "장례식장명": "양지요양병원장례식장",
+    "빈소접객실": "60~90만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 600000,
+    "room_price_max": 900000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "양천효병원장례식장",
+    "빈소접객실": "36~60만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 360000,
+    "room_price_max": 600000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "양평 갈월장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "24만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 240000
+  },
+  {
+    "장례식장명": "양평병원장례식장",
+    "빈소접객실": "80만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 800000,
+    "room_price_max": 800000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "양평장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "언양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "에스병원장례식장",
+    "빈소접객실": "67~110만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 672000,
+    "room_price_max": 1100000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "에스엘 부평지점 세림병원 장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "엠마오사랑병원장례식장",
+    "빈소접객실": "5만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 50000,
+    "room_price_max": 50000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "엠마우스병원 장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "엠지(MG)새마을금고 장례식장",
+    "빈소접객실": "1~2만원",
+    "안치실이용료": "4만원",
+    "room_price_min": 10000,
+    "room_price_max": 15000,
+    "morgue_price": 40000
+  },
+  {
+    "장례식장명": "여수강남요양병원장례식장",
+    "빈소접객실": "5~7만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 47000,
+    "room_price_max": 69000,
+    "morgue_price": 7000
+  },
+  {
+    "장례식장명": "여수보람장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 8000
+  },
+  {
+    "장례식장명": "여수장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 9750
+  },
+  {
+    "장례식장명": "여수전남병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 6000
+  },
+  {
+    "장례식장명": "여수제일병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 6000
+  },
+  {
+    "장례식장명": "여의도성모장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "여주시민장례문화원",
+    "빈소접객실": "4~5만원",
+    "안치실이용료": null,
+    "room_price_min": 35000,
+    "room_price_max": 45000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "여주장례식장",
+    "빈소접객실": "60~72만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 600000,
+    "room_price_max": 720000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "여천장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 9750
+  },
+  {
+    "장례식장명": "여천전남병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 7000
+  },
+  {
+    "장례식장명": "연세대학교 강남장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "9만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 88800
+  },
+  {
+    "장례식장명": "연세대학교 신촌장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "연세대학교 용인장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "9만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 88800
+  },
+  {
+    "장례식장명": "연세대학교 원주장례식장",
+    "빈소접객실": "1~4만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 11000,
+    "room_price_max": 43000,
+    "morgue_price": 3300
+  },
+  {
+    "장례식장명": "연세병원장례식장",
+    "빈소접객실": "72~84만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 720000,
+    "room_price_max": 840000,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "연세에스병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "연세요양병원장례식장",
+    "빈소접객실": "54만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 540000,
+    "room_price_max": 540000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "연세장례식장",
+    "빈소접객실": "72~120만원",
+    "안치실이용료": "14만원",
+    "room_price_min": 720000,
+    "room_price_max": 1200000,
+    "morgue_price": 144000
+  },
+  {
+    "장례식장명": "연수송도장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 84000
+  },
+  {
+    "장례식장명": "연천군장례식장",
+    "빈소접객실": "13~33만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 130000,
+    "room_price_max": 325000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "영광농협장례식장(영광낙원장례식장)",
+    "빈소접객실": null,
+    "안치실이용료": "6만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "영광장례식장",
+    "빈소접객실": "40~50만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 400000,
+    "room_price_max": 500000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "영광종합병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "영남대학교의료원 장례식장",
+    "빈소접객실": "38~150만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 384000,
+    "room_price_max": 1500000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "영남제일병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "영덕아산병원",
+    "빈소접객실": "38~48만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 384000,
+    "room_price_max": 480000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "영덕전문장례식장",
+    "빈소접객실": "2~4만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 20000,
+    "room_price_max": 35000,
+    "morgue_price": 6000
+  },
+  {
+    "장례식장명": "영덕제일요양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 6000
+  },
+  {
+    "장례식장명": "영덕효요양병원장례식장",
+    "빈소접객실": "2~58만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 20000,
+    "room_price_max": 576000,
+    "morgue_price": 6000
+  },
+  {
+    "장례식장명": "영동병원장례식장",
+    "빈소접객실": "2~80만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 23000,
+    "room_price_max": 800000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "영동장례식장",
+    "빈소접객실": "3~3만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 25000,
+    "room_price_max": 32000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "영동제일장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "영등포장례식장",
+    "빈소접객실": "3~6만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 25000,
+    "room_price_max": 55000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "영락원전문장례식장",
+    "빈소접객실": "79~98만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 790000,
+    "room_price_max": 980000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "영북농협장례식장",
+    "빈소접객실": "2만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 20000,
+    "room_price_max": 20000,
+    "morgue_price": 4500
+  },
+  {
+    "장례식장명": "영산요양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "6만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "영산포농협장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "30만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 300000
+  },
+  {
+    "장례식장명": "영산포제일병원장례식장",
+    "빈소접객실": "3~3만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 25000,
+    "room_price_max": 31250,
+    "morgue_price": 6250
+  },
+  {
+    "장례식장명": "영암군산림조합추모관",
+    "빈소접객실": "72~84만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 720000,
+    "room_price_max": 840000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "영암농협장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "영암장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "영암효병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "9만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 90000
+  },
+  {
+    "장례식장명": "영양병원장례식장",
+    "빈소접객실": "35만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 350000,
+    "room_price_max": 350000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "영양전문장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "영월장례식장",
+    "빈소접객실": "0만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 4500,
+    "room_price_max": 4500,
+    "morgue_price": 3500
+  },
+  {
+    "장례식장명": "영주 국화원장례식장",
+    "빈소접객실": "2~4만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 21000,
+    "room_price_max": 42000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "영주장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "영주적십자병원장례식장",
+    "빈소접객실": "3~39만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 30000,
+    "room_price_max": 390000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "영천국화원전문장례식장",
+    "빈소접객실": "24~132만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 240000,
+    "room_price_max": 1320000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "영천영락원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "6만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "영천참좋은요양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "예담장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "예드림장례식장",
+    "빈소접객실": "3~4만원",
+    "안치실이용료": "14만원",
+    "room_price_min": 25000,
+    "room_price_max": 40000,
+    "morgue_price": 140000
+  },
+  {
+    "장례식장명": "예산명지병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "예산장례식장",
+    "빈소접객실": "3~4만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 30000,
+    "room_price_max": 35000,
+    "morgue_price": 7000
+  },
+  {
+    "장례식장명": "예산종합병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "예지 장례식장",
+    "빈소접객실": "65~84만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 650000,
+    "room_price_max": 840000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "예지원장례식장",
+    "빈소접객실": "70~100만원",
+    "안치실이용료": "18만원",
+    "room_price_min": 700000,
+    "room_price_max": 1000000,
+    "morgue_price": 180000
+  },
+  {
+    "장례식장명": "예천권병원장례식장",
+    "빈소접객실": "35~45만원",
+    "안치실이용료": null,
+    "room_price_min": 350000,
+    "room_price_max": 450000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "예천농협장례식장",
+    "빈소접객실": "29~48만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 288000,
+    "room_price_max": 480000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "예천장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 4170
+  },
+  {
+    "장례식장명": "오산장례식장",
+    "빈소접객실": "40~135만원",
+    "안치실이용료": "9만원",
+    "room_price_min": 400000,
+    "room_price_max": 1350000,
+    "morgue_price": 90000
+  },
+  {
+    "장례식장명": "오산한국병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "오수장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 48000
+  },
+  {
+    "장례식장명": "오포장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "옥곡장례식장",
+    "빈소접객실": "5~7만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 52000,
+    "room_price_max": 67000,
+    "morgue_price": 8000
+  },
+  {
+    "장례식장명": "옥당장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "옥산전문장례예식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "옥천농협장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "6만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "옥천성모장례식장",
+    "빈소접객실": "2~4만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 15000,
+    "room_price_max": 35000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "온고을장례식장",
+    "빈소접객실": "75~156만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 750000,
+    "room_price_max": 1560000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "온누리장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "9만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 90000
+  },
+  {
+    "장례식장명": "온양장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "19만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 192000
+  },
+  {
+    "장례식장명": "온종합병원 장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "13만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 130000
+  },
+  {
+    "장례식장명": "완도대성병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "6만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "완도장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 10000
+  },
+  {
+    "장례식장명": "왜관병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "용문장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "15만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "용상안동병원장례식장",
+    "빈소접객실": "25~60만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 250000,
+    "room_price_max": 600000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "용원장례식장",
+    "빈소접객실": "40~72만원",
+    "안치실이용료": "15만원",
+    "room_price_min": 400000,
+    "room_price_max": 720000,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "용인 평온의 숲장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "용인서울병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "용인시민장례문화원",
+    "빈소접객실": "3~5만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 26000,
+    "room_price_max": 49000,
+    "morgue_price": 7000
+  },
+  {
+    "장례식장명": "용인제일메디장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "우리병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "우리병원장례예식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "우리요양병원 장례식장",
+    "빈소접객실": "3~4만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 30000,
+    "room_price_max": 35000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "우리장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "우선종합(주)장례식장",
+    "빈소접객실": "30만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 300000,
+    "room_price_max": 300000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "우수영장례식장",
+    "빈소접객실": "30~48만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 300000,
+    "room_price_max": 480000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "우주장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "6만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "운경의료재단곽병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "운정장례식장",
+    "빈소접객실": "2~5만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 15000,
+    "room_price_max": 50000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "울릉군보건의료원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "2만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 24000
+  },
+  {
+    "장례식장명": "울산국화원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "12만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "울산대학교병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "12만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 115000
+  },
+  {
+    "장례식장명": "울산병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "울산시티병원장례식장",
+    "빈소접객실": "39~94만원",
+    "안치실이용료": "20만원",
+    "room_price_min": 390000,
+    "room_price_max": 940000,
+    "morgue_price": 200000
+  },
+  {
+    "장례식장명": "울산영락원",
+    "빈소접객실": "39~140만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 390000,
+    "room_price_max": 1400000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "울산하늘공원(장례식장)",
+    "빈소접객실": "3~27만원",
+    "안치실이용료": "4만원",
+    "room_price_min": 30000,
+    "room_price_max": 274000,
+    "morgue_price": 40000
+  },
+  {
+    "장례식장명": "울진군의료원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 67200
+  },
+  {
+    "장례식장명": "웅상중앙병원장례식장",
+    "빈소접객실": "30~60만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 300000,
+    "room_price_max": 600000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "웅천장례식장",
+    "빈소접객실": "4만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 44000,
+    "room_price_max": 44000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "원광종합병원장례식장",
+    "빈소접객실": "48~120만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 480000,
+    "room_price_max": 1200000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "원당연세장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 6000
+  },
+  {
+    "장례식장명": "원당장례식장(주)문베스트",
+    "빈소접객실": "3~5만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 25000,
+    "room_price_max": 50000,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "원병원장례식장",
+    "빈소접객실": "3~84만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 30000,
+    "room_price_max": 840000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "원자력병원장례식장",
+    "빈소접객실": "7~108만원",
+    "안치실이용료": null,
+    "room_price_min": 72000,
+    "room_price_max": 1080000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "원주의료원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3300
+  },
+  {
+    "장례식장명": "원진녹색병원장례식장",
+    "빈소접객실": "25~120만원",
+    "안치실이용료": "15만원",
+    "room_price_min": 250000,
+    "room_price_max": 1200000,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "웰니스1004병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 84000
+  },
+  {
+    "장례식장명": "위더스요양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "유림장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "유성선병원장례식장",
+    "빈소접객실": "36~180만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 360000,
+    "room_price_max": 1800000,
+    "morgue_price": 48000
+  },
+  {
+    "장례식장명": "유성한가족병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "유한회사보람",
+    "빈소접객실": "3~5만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 25000,
+    "room_price_max": 51000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "윤서병원장례식장",
+    "빈소접객실": "40~79만원",
+    "안치실이용료": "14만원",
+    "room_price_min": 400000,
+    "room_price_max": 792000,
+    "morgue_price": 144000
+  },
+  {
+    "장례식장명": "은평요양병원장례식장",
+    "빈소접객실": "45~130만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 450000,
+    "room_price_max": 1300000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "은하수공원장례식장",
+    "빈소접객실": "1~3만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 9000,
+    "room_price_max": 25000,
+    "morgue_price": 2000
+  },
+  {
+    "장례식장명": "음성농협장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "의)증평장례식장",
+    "빈소접객실": "90~120만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 900000,
+    "room_price_max": 1200000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "의령사랑병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "6만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "의령전문장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 4200
+  },
+  {
+    "장례식장명": "의성성심요양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 7000
+  },
+  {
+    "장례식장명": "의성전문장례식장",
+    "빈소접객실": "48~60만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 480000,
+    "room_price_max": 600000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "의성제일장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "의성중부농협장례식장",
+    "빈소접객실": "48~60만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 480000,
+    "room_price_max": 600000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "의정부성모장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "의정부을지대학교병원 장례식장",
+    "빈소접객실": "1~11만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 14600,
+    "room_price_max": 112500,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "의정부장례예식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "이담 장례식장",
+    "빈소접객실": "2~4만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 15000,
+    "room_price_max": 35000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "이대목동병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "이대서울병원장례식장",
+    "빈소접객실": "96~389만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 960000,
+    "room_price_max": 3888000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "이래인장례식장",
+    "빈소접객실": "3~4만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 25000,
+    "room_price_max": 35000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "이로운요양병원장례식장",
+    "빈소접객실": "3~4만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 30000,
+    "room_price_max": 41000,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "인월장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "20만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 200000
+  },
+  {
+    "장례식장명": "인제대학교상계백병원장례식장",
+    "빈소접객실": "48~60만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 480000,
+    "room_price_max": 600000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "인제장례식장",
+    "빈소접객실": "24~36만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 240000,
+    "room_price_max": 360000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "인창병원장례식장",
+    "빈소접객실": "18~88만원",
+    "안치실이용료": null,
+    "room_price_min": 180000,
+    "room_price_max": 880000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "인천가족공원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 8000
+  },
+  {
+    "장례식장명": "인천광역시의료원 장례식장",
+    "빈소접객실": "45~150만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 450000,
+    "room_price_max": 1500000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "인천기독병원장례식장",
+    "빈소접객실": "60~84만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 600000,
+    "room_price_max": 840000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "인천사랑병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "6만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 55200
+  },
+  {
+    "장례식장명": "인천삼성장례문화원",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "인천성모장례식장",
+    "빈소접객실": "31~242만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 312000,
+    "room_price_max": 2424000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "인천적십자병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "12만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "인하대병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3750
+  },
+  {
+    "장례식장명": "일곡병원장례식장",
+    "빈소접객실": "70~90만원",
+    "안치실이용료": "20만원",
+    "room_price_min": 700000,
+    "room_price_max": 900000,
+    "morgue_price": 200000
+  },
+  {
+    "장례식장명": "일산백장례서비스(주)",
+    "빈소접객실": "79~138만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 792000,
+    "room_price_max": 1380000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "일산복음병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "일산장례식장",
+    "빈소접객실": "64~106만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 640000,
+    "room_price_max": 1060000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "임실 중앙장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "임실군보건의료원장례식장",
+    "빈소접객실": "20만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 200000,
+    "room_price_max": 200000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "자굴산장례식장",
+    "빈소접객실": "45~65만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 450000,
+    "room_price_max": 650000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "자연병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "15만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "자인병원장례식장",
+    "빈소접객실": "50만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 500000,
+    "room_price_max": 500000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "자인전문장례식장",
+    "빈소접객실": "60~108만원",
+    "안치실이용료": null,
+    "room_price_min": 600000,
+    "room_price_max": 1080000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "장곡농협홍주장례식장",
+    "빈소접객실": "2~5만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 20000,
+    "room_price_max": 45000,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "장례식장 평화원",
+    "빈소접객실": "10~104만원",
+    "안치실이용료": null,
+    "room_price_min": 100000,
+    "room_price_max": 1044000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "장례식장상예원",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 7000
+  },
+  {
+    "장례식장명": "장성병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "장수군보건의료원장례식장",
+    "빈소접객실": "12~20만원",
+    "안치실이용료": null,
+    "room_price_min": 120000,
+    "room_price_max": 200000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "장유누가병원 장례식장",
+    "빈소접객실": "60~130만원",
+    "안치실이용료": "15만원",
+    "room_price_min": 600000,
+    "room_price_max": 1300000,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "장호원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "장흥병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "장흥우리병원중앙장례식장",
+    "빈소접객실": "40~45만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 400000,
+    "room_price_max": 450000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "전곡효사랑병원장례식장",
+    "빈소접객실": "3~45만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 30000,
+    "room_price_max": 450000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "전남대학교병원장례식장",
+    "빈소접객실": "35~50만원",
+    "안치실이용료": "4만원",
+    "room_price_min": 350000,
+    "room_price_max": 500000,
+    "morgue_price": 42000
+  },
+  {
+    "장례식장명": "전남중앙병원장례식장",
+    "빈소접객실": "35만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 350000,
+    "room_price_max": 350000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "전북대학교병원장례식장",
+    "빈소접객실": "60~132만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 600000,
+    "room_price_max": 1320000,
+    "morgue_price": 48000
+  },
+  {
+    "장례식장명": "전주고려병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "전주병원장례식장",
+    "빈소접객실": "96~180만원",
+    "안치실이용료": "15만원",
+    "room_price_min": 960000,
+    "room_price_max": 1800000,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "전주시민장례문화원",
+    "빈소접객실": "70~350만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 700000,
+    "room_price_max": 3500000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "정다운 장례식장",
+    "빈소접객실": "30~40만원",
+    "안치실이용료": "15만원",
+    "room_price_min": 300000,
+    "room_price_max": 400000,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "정다운병원장례식장",
+    "빈소접객실": "20~80만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 200000,
+    "room_price_max": 800000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "정다운장례문화원",
+    "빈소접객실": "3만원",
+    "안치실이용료": null,
+    "room_price_min": 30000,
+    "room_price_max": 30000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "정병원 장례식장",
+    "빈소접객실": "55~72만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 552000,
+    "room_price_max": 720000,
+    "morgue_price": 48000
+  },
+  {
+    "장례식장명": "정선군사북장례식장",
+    "빈소접객실": "34만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 336000,
+    "room_price_max": 336000,
+    "morgue_price": 2500
+  },
+  {
+    "장례식장명": "정선병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "4만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 36000
+  },
+  {
+    "장례식장명": "정선장례식장",
+    "빈소접객실": "19~72만원",
+    "안치실이용료": null,
+    "room_price_min": 192000,
+    "room_price_max": 720000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "정요양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "정읍사랑병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "정읍아산병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 8000
+  },
+  {
+    "장례식장명": "정읍장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "정읍호남장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 11000
+  },
+  {
+    "장례식장명": "제일병원장례식장",
+    "빈소접객실": "60~100만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 600000,
+    "room_price_max": 1000000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "제일장례문화원",
+    "빈소접객실": "30~50만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 300000,
+    "room_price_max": 500000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "제일장례식장",
+    "빈소접객실": "36~96만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 360000,
+    "room_price_max": 960000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "제일조은병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "제일효병원장례식장",
+    "빈소접객실": "36~96만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 360000,
+    "room_price_max": 960000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "제주그린장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "제주대학교병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "6만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "제주의료원장례식장",
+    "빈소접객실": "15만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 150000,
+    "room_price_max": 150000,
+    "morgue_price": 3750
+  },
+  {
+    "장례식장명": "제천노인병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 1500
+  },
+  {
+    "장례식장명": "제천서울병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "6만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "제천세종장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 48000
+  },
+  {
+    "장례식장명": "조선대학교병원장례식장",
+    "빈소접객실": "40~150만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 400000,
+    "room_price_max": 1500000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "조암장례식장",
+    "빈소접객실": "24~144만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 240000,
+    "room_price_max": 1440000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "조은금강병원장례식장",
+    "빈소접객실": "52~195만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 520000,
+    "room_price_max": 1950000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "조치원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "주문진장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "주식회사 건양대부여장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 2000
+  },
+  {
+    "장례식장명": "주식회사 헤븐앤어스",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "주식회사구민장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "주식회사정겨운(우신장례식장)",
+    "빈소접객실": "82만원",
+    "안치실이용료": "19만원",
+    "room_price_min": 816000,
+    "room_price_max": 816000,
+    "morgue_price": 192000
+  },
+  {
+    "장례식장명": "주식회사하늘정원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 2700
+  },
+  {
+    "장례식장명": "중앙U병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "15만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "중앙대학교광명병원장례식장",
+    "빈소접객실": "105~170만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 1050000,
+    "room_price_max": 1700000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "중앙대학교병원장례식장",
+    "빈소접객실": "108~226만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 1080000,
+    "room_price_max": 2256000,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "중앙병원장례식장",
+    "빈소접객실": "45만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 450000,
+    "room_price_max": 450000,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "중앙병원장례예식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "중앙요양병원 장례식장(구.가야기독)",
+    "빈소접객실": "55~100만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 550000,
+    "room_price_max": 1000000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "중앙장례식장",
+    "빈소접객실": "2~150만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 20000,
+    "room_price_max": 1500000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "증평대한장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "증평현대장례식장",
+    "빈소접객실": "90~120만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 900000,
+    "room_price_max": 1200000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "지샘병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "15만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "진교장례식장",
+    "빈소접객실": "35~50만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 350000,
+    "room_price_max": 500000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "진도군산림조합직영추모관장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "15만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "진도장례식장",
+    "빈소접객실": "50만원",
+    "안치실이용료": "15만원",
+    "room_price_min": 500000,
+    "room_price_max": 500000,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "진도전남병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 75000
+  },
+  {
+    "장례식장명": "진보병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "진부장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "3만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 32000
+  },
+  {
+    "장례식장명": "진영병원 장례식장",
+    "빈소접객실": "40~60만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 400000,
+    "room_price_max": 600000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "진영전문장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "진주시민장례식장 (주)휴드림",
+    "빈소접객실": "58~120만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 576000,
+    "room_price_max": 1200000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "진천장례식장",
+    "빈소접객실": "60~80만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 600000,
+    "room_price_max": 800000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "진천제일장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "차병원장례식장",
+    "빈소접객실": "3~3만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 25000,
+    "room_price_max": 29000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "참사랑장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "참조은요양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "창녕군공설장례식장",
+    "빈소접객실": "5~10만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 50000,
+    "room_price_max": 100000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "창녕전문 장례식장",
+    "빈소접객실": "20~50만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 200000,
+    "room_price_max": 500000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "창선공익장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5500
+  },
+  {
+    "장례식장명": "창원경상대학교병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "창원시립상복공원장례식장",
+    "빈소접객실": "20~57만원",
+    "안치실이용료": "4만원",
+    "room_price_min": 196200,
+    "room_price_max": 572500,
+    "morgue_price": 40000
+  },
+  {
+    "장례식장명": "창원파티마병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "6만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "창원한마음병원장례식장",
+    "빈소접객실": "40~180만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 400000,
+    "room_price_max": 1800000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "천안삼거리국화원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 48000
+  },
+  {
+    "장례식장명": "천안의료원장례식장",
+    "빈소접객실": "31~58만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 312000,
+    "room_price_max": 576000,
+    "morgue_price": 48000
+  },
+  {
+    "장례식장명": "천안장례식장",
+    "빈소접객실": "2~4만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 20000,
+    "room_price_max": 40000,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "천안충무병원 국화원장례식장",
+    "빈소접객실": "4만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 35000,
+    "room_price_max": 35000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "천안하늘공원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 6000
+  },
+  {
+    "장례식장명": "천주성삼병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "철원병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "철원장례문화원",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "첨단요양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "청구성심병원장례식장",
+    "빈소접객실": "4~80만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 40000,
+    "room_price_max": 800000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "청기와장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "12만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "청기와장례식장(계양점)",
+    "빈소접객실": "50~168만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 500000,
+    "room_price_max": 1680000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "청송군보건의료원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "청십자병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "청양농협 장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "청양훈병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 2500
+  },
+  {
+    "장례식장명": "청주병원장례식장",
+    "빈소접객실": "56~100만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 560000,
+    "room_price_max": 1000000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "청주성모병원 장례식장",
+    "빈소접객실": "55~99만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 550000,
+    "room_price_max": 990000,
+    "morgue_price": 48000
+  },
+  {
+    "장례식장명": "청주시장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "3만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 30000
+  },
+  {
+    "장례식장명": "청주의료원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 2000
+  },
+  {
+    "장례식장명": "청주탑요양병원장례식장",
+    "빈소접객실": "54~120만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 540000,
+    "room_price_max": 1200000,
+    "morgue_price": 48000
+  },
+  {
+    "장례식장명": "청하요양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "12만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "초정유진 장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 48000
+  },
+  {
+    "장례식장명": "추모원장례식장",
+    "빈소접객실": "72만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 720000,
+    "room_price_max": 720000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "추병원장례식장",
+    "빈소접객실": "2~2만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 16000,
+    "room_price_max": 22000,
+    "morgue_price": 8000
+  },
+  {
+    "장례식장명": "춘천장례식장",
+    "빈소접객실": "3~7만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 30000,
+    "room_price_max": 65000,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "춘추장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "춘해병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "15만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "충남대학교병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 2000
+  },
+  {
+    "장례식장명": "충북대학교병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "3만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 31440
+  },
+  {
+    "장례식장명": "충주기독장례식장",
+    "빈소접객실": "38~68만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 380000,
+    "room_price_max": 680000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "충주병원장례식장(주)",
+    "빈소접객실": "20~90만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 200000,
+    "room_price_max": 900000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "충주영광장례식장",
+    "빈소접객실": "20~90만원",
+    "안치실이용료": null,
+    "room_price_min": 200000,
+    "room_price_max": 900000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "충주의료원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "6만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "충효경주장례식장",
+    "빈소접객실": "55~90만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 550000,
+    "room_price_max": 900000,
+    "morgue_price": 65000
+  },
+  {
+    "장례식장명": "칠곡경북대학교병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "케이마디병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "코리아병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 84000
+  },
+  {
+    "장례식장명": "큰길장례문화원",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "큰사랑요양병원장례식장",
+    "빈소접객실": "35~60만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 350000,
+    "room_price_max": 600000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "탄금장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 84000
+  },
+  {
+    "장례식장명": "태릉성심장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "태백문화장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "태찬장례예식장",
+    "빈소접객실": null,
+    "안치실이용료": "6만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "통영서울병원장례식장",
+    "빈소접객실": "2~3만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 15000,
+    "room_price_max": 30000,
+    "morgue_price": 6000
+  },
+  {
+    "장례식장명": "통영전문장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 6000
+  },
+  {
+    "장례식장명": "파라밀장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "15만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "파주보람장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "6만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "파주성모요양병원부설장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "6만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "평창군장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "3만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 32000
+  },
+  {
+    "장례식장명": "포천장례문화원",
+    "빈소접객실": null,
+    "안치실이용료": "12만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 117000
+  },
+  {
+    "장례식장명": "포항e병원장례식장",
+    "빈소접객실": "39~71만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 386000,
+    "room_price_max": 714000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "포항국화원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "포항성모병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 2000
+  },
+  {
+    "장례식장명": "포항세명기독병원장례식장",
+    "빈소접객실": "58~124만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 576000,
+    "room_price_max": 1242000,
+    "morgue_price": 48000
+  },
+  {
+    "장례식장명": "포항시민전문장례식장",
+    "빈소접객실": "5만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 50000,
+    "room_price_max": 50000,
+    "morgue_price": 48000
+  },
+  {
+    "장례식장명": "포항제일장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "풍기성심요양병원장례식장",
+    "빈소접객실": "45만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 450000,
+    "room_price_max": 450000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "풍기전문장례식장",
+    "빈소접객실": "30~40만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 300000,
+    "room_price_max": 400000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "프라임장례원",
+    "빈소접객실": "30~80만원",
+    "안치실이용료": "13만원",
+    "room_price_min": 300000,
+    "room_price_max": 800000,
+    "morgue_price": 125000
+  },
+  {
+    "장례식장명": "플러스단원병원장례문화원",
+    "빈소접객실": "60만원",
+    "안치실이용료": "12만원",
+    "room_price_min": 600000,
+    "room_price_max": 600000,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "하귀농협장례식장",
+    "빈소접객실": "2~50만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 16600,
+    "room_price_max": 500000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "하나원전문장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 81600
+  },
+  {
+    "장례식장명": "하나장례식장",
+    "빈소접객실": "20~135만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 200000,
+    "room_price_max": 1350000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "하남성심병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "하남시 마루공원(장례식장)",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 48000
+  },
+  {
+    "장례식장명": "하늘공원장례식장",
+    "빈소접객실": "48만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 480000,
+    "room_price_max": 480000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "하늘원장례식장",
+    "빈소접객실": "1~2만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 9000,
+    "room_price_max": 16000,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "하늘원장례예식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "하늘재전문장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "하늘전문장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "12만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "하동병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "6만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "하동우리들병원장례식장",
+    "빈소접객실": "10~20만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 100000,
+    "room_price_max": 200000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "하동장례식장",
+    "빈소접객실": "40만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 400000,
+    "room_price_max": 400000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "하양전문장례식장",
+    "빈소접객실": "2~3만원",
+    "안치실이용료": null,
+    "room_price_min": 20000,
+    "room_price_max": 25000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "학교법인 원불교대학원 모현장례식장",
+    "빈소접객실": "1~4만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 10000,
+    "room_price_max": 35000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "학교법인영산학원 산본장례식장",
+    "빈소접객실": "2~4만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 20000,
+    "room_price_max": 40000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "학교법인영산학원시민장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "12만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "한강성심병원장례식장",
+    "빈소접객실": "41~168만원",
+    "안치실이용료": "14만원",
+    "room_price_min": 408000,
+    "room_price_max": 1680000,
+    "morgue_price": 144000
+  },
+  {
+    "장례식장명": "한결장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 84000
+  },
+  {
+    "장례식장명": "한국병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "한국보훈복지의료공단중앙보훈병원",
+    "빈소접객실": "63~99만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 630480,
+    "room_price_max": 994560,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "한국장례문화원",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "한길장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "한도병원장례식장",
+    "빈소접객실": "2~4만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 15000,
+    "room_price_max": 35000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "한독병원장례식장",
+    "빈소접객실": "50~60만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 500000,
+    "room_price_max": 600000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "한림대 강남성심병원장례식장",
+    "빈소접객실": "67~79만원",
+    "안치실이용료": "14만원",
+    "room_price_min": 672000,
+    "room_price_max": 792000,
+    "morgue_price": 144000
+  },
+  {
+    "장례식장명": "한림대동탄성심병원장례식장",
+    "빈소접객실": "107~287만원",
+    "안치실이용료": "14만원",
+    "room_price_min": 1070000,
+    "room_price_max": 2870000,
+    "morgue_price": 140000
+  },
+  {
+    "장례식장명": "한림대성심병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "15만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 150000
+  },
+  {
+    "장례식장명": "한림병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "한림정낭장례예식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "한마음병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "한마음효장례식장",
+    "빈소접객실": "19~50만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 192000,
+    "room_price_max": 504000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "한별장례문화원",
+    "빈소접객실": "50만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 500000,
+    "room_price_max": 500000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "한사랑병원장례문화센타",
+    "빈소접객실": null,
+    "안치실이용료": "12만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "한서장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 8000
+  },
+  {
+    "장례식장명": "한성병원장례식장",
+    "빈소접객실": "60~90만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 600000,
+    "room_price_max": 900000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "한솔장례식장",
+    "빈소접객실": "20~45만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 200000,
+    "room_price_max": 450000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "한양대학교구리병원장례식장",
+    "빈소접객실": "48~96만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 480000,
+    "room_price_max": 960000,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "한양대학병원장례식장",
+    "빈소접객실": "55~245만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 554000,
+    "room_price_max": 2449000,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "한일병원장례식장",
+    "빈소접객실": "60~100만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 600000,
+    "room_price_max": 1000000,
+    "morgue_price": 6000
+  },
+  {
+    "장례식장명": "한중프라임장례식장",
+    "빈소접객실": "45~65만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 450000,
+    "room_price_max": 650000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "한패밀리병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "함안하늘공원장례식장",
+    "빈소접객실": "19~73만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 193000,
+    "room_price_max": 726000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "함양성심병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "함양장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "함양제일장례식장",
+    "빈소접객실": "60~90만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 600000,
+    "room_price_max": 900000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "함평농협장례식장",
+    "빈소접객실": "2~3만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 20000,
+    "room_price_max": 25000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "함평성심병원장례식장",
+    "빈소접객실": "30만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 300000,
+    "room_price_max": 300000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "함평장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "합덕장례식장",
+    "빈소접객실": "96만원",
+    "안치실이용료": null,
+    "room_price_min": 960000,
+    "room_price_max": 960000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "합천고려병원 장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "합천추모공원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "해남국제장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "해남우리병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "해남장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "해남종합병원장례식장",
+    "빈소접객실": "45~110만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 450000,
+    "room_price_max": 1100000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "해남현대장례식장",
+    "빈소접객실": "30~70만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 300000,
+    "room_price_max": 700000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "해동병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "해성장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 8500
+  },
+  {
+    "장례식장명": "해운대백병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "행림병원 장례식장",
+    "빈소접객실": "20~60만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 200000,
+    "room_price_max": 600000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "행복한병원장례식장",
+    "빈소접객실": "30~60만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 300000,
+    "room_price_max": 600000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "허병원장례식장",
+    "빈소접객실": "55~120만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 552000,
+    "room_price_max": 1200000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "현대S라이프(주)연세병원장례식장",
+    "빈소접객실": "15~70만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 150000,
+    "room_price_max": 700000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "현대병원장례식장",
+    "빈소접객실": "45~85만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 450000,
+    "room_price_max": 850000,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "현대장례문화원",
+    "빈소접객실": "38~136만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 380000,
+    "room_price_max": 1360000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "현대장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "혜민병원장례식장",
+    "빈소접객실": "48~96만원",
+    "안치실이용료": "8만원",
+    "room_price_min": 480000,
+    "room_price_max": 960000,
+    "morgue_price": 84000
+  },
+  {
+    "장례식장명": "혜성병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "혜원성모병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "혜인요양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "호남장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 6000
+  },
+  {
+    "장례식장명": "호반병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "홍성의료원장례식장",
+    "빈소접객실": "1~4만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 10000,
+    "room_price_max": 40000,
+    "morgue_price": 3500
+  },
+  {
+    "장례식장명": "홍성추모공원장례식장",
+    "빈소접객실": "1~2만원",
+    "안치실이용료": null,
+    "room_price_min": 13500,
+    "room_price_max": 19000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "홍익병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "홍천군장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 1000
+  },
+  {
+    "장례식장명": "홍천아산병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "홍천장례문화원",
+    "빈소접객실": "2~4만원",
+    "안치실이용료": null,
+    "room_price_min": 18000,
+    "room_price_max": 38000,
+    "morgue_price": null
+  },
+  {
+    "장례식장명": "화성장례문화원",
+    "빈소접객실": null,
+    "안치실이용료": "1만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 8000
+  },
+  {
+    "장례식장명": "화성중앙종합병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 72000
+  },
+  {
+    "장례식장명": "화성함백산장례식장",
+    "빈소접객실": "15~40만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 150000,
+    "room_price_max": 400000,
+    "morgue_price": 45000
+  },
+  {
+    "장례식장명": "화순장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "화순전남대학교병원장례식장",
+    "빈소접객실": "24~60만원",
+    "안치실이용료": "4만원",
+    "room_price_min": 235200,
+    "room_price_max": 600000,
+    "morgue_price": 35000
+  },
+  {
+    "장례식장명": "화천군공설장례식장",
+    "빈소접객실": "0~0만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 2083,
+    "room_price_max": 4166,
+    "morgue_price": 2083
+  },
+  {
+    "장례식장명": "황금요양병원 장례식장",
+    "빈소접객실": "72~96만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 720000,
+    "room_price_max": 960000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "황산장례문화원",
+    "빈소접객실": "5~80만원",
+    "안치실이용료": "5만원",
+    "room_price_min": 50000,
+    "room_price_max": 800000,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "회천농협장례문화원",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "횡성삼성병원장례식장",
+    "빈소접객실": "1~2만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 10000,
+    "room_price_max": 15000,
+    "morgue_price": 8000
+  },
+  {
+    "장례식장명": "횡성장례문화센터",
+    "빈소접객실": "1만원",
+    "안치실이용료": "1만원",
+    "room_price_min": 10000,
+    "room_price_max": 10000,
+    "morgue_price": 5000
+  },
+  {
+    "장례식장명": "효경G병원장례식장",
+    "빈소접객실": "2~4만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 21000,
+    "room_price_max": 37000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "효병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "12만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 120000
+  },
+  {
+    "장례식장명": "효사랑요양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "효사랑장례문화원",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "효사랑장례식장",
+    "빈소접객실": "40~90만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 400000,
+    "room_price_max": 900000,
+    "morgue_price": 100000
+  },
+  {
+    "장례식장명": "효산병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "효성병원 장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "5만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 50000
+  },
+  {
+    "장례식장명": "효성병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "7만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "효신전문장례식장",
+    "빈소접객실": "72만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 720000,
+    "room_price_max": 720000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "효원장례문화센타",
+    "빈소접객실": "48~80만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 480000,
+    "room_price_max": 800000,
+    "morgue_price": 60000
+  },
+  {
+    "장례식장명": "효자원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "0만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 3000
+  },
+  {
+    "장례식장명": "효자장례타운",
+    "빈소접객실": null,
+    "안치실이용료": "8만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 80000
+  },
+  {
+    "장례식장명": "휴앤유병원장례식장",
+    "빈소접객실": "60~91만원",
+    "안치실이용료": "10만원",
+    "room_price_min": 600000,
+    "room_price_max": 910000,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "흥덕장례식장",
+    "빈소접객실": "3만원",
+    "안치실이용료": "7만원",
+    "room_price_min": 30000,
+    "room_price_max": 30000,
+    "morgue_price": 70000
+  },
+  {
+    "장례식장명": "흥해경희요양병원장례식장",
+    "빈소접객실": null,
+    "안치실이용료": "10만원",
+    "room_price_min": null,
+    "room_price_max": null,
+    "morgue_price": 96000
+  },
+  {
+    "장례식장명": "희망병원장례식장",
+    "빈소접객실": "1~2만원",
+    "안치실이용료": "0만원",
+    "room_price_min": 12000,
+    "room_price_max": 16000,
+    "morgue_price": 4000
+  },
+  {
+    "장례식장명": "희윤요양병원 장례식장",
+    "빈소접객실": "30~35만원",
+    "안치실이용료": "6만원",
+    "room_price_min": 300000,
+    "room_price_max": 350000,
+    "morgue_price": 60000
+  }
+]

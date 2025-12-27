@@ -14,3 +14,34 @@ body,
 * {
   cursor: default !important;
 }
+
+/* Filter scrollbar: Hidden on mobile (touch), visible on PC (mouse) */
+.filter-scroll {
+  scrollbar-width: none; /* Firefox default: hidden */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+.filter-scroll::-webkit-scrollbar {
+  display: none; /* Chrome/Safari default: hidden */
+}
+
+/* On PC/mouse devices: show a thin subtle scrollbar */
+@media (pointer: fine) {
+  .filter-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+  .filter-scroll::-webkit-scrollbar {
+    display: block;
+    height: 4px;
+  }
+  .filter-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .filter-scroll::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 2px;
+  }
+  .filter-scroll::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+}

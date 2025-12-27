@@ -1,6 +1,5 @@
 ﻿import React, { useState, useEffect, Suspense } from 'react';
 import { HashRouter } from 'react-router-dom';
-import L from 'leaflet';
 import MapComponent, { MapRef } from './components/MapContainer';
 import { FacilitySheet } from './components/FacilitySheet';
 import { ReservationModal } from './components/ReservationModal';
@@ -80,7 +79,7 @@ const App: React.FC = () => {
   const [isBooking, setIsBooking] = useState(false);
   const [viewState, setViewState] = useState<ViewState>(ViewState.MAP);
   const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showPromo, setShowPromo] = useState(true); // Promo Banner State
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -271,7 +270,7 @@ const App: React.FC = () => {
         while (hasMore) {
           const { data, error } = await supabase
             .from('memorial_spaces')
-            .select('id, name, lat, lng, type, religion, address, rating, review_count, image_url, phone, is_verified, data_source, price_range, naver_booking_url')
+            .select('id, name, lat, lng, type, religion, address, rating, review_count, image_url, phone, is_verified, data_source, price_range, naver_booking_url, prices')
             .range(page * pageSize, (page + 1) * pageSize - 1);
 
           if (error) throw error;
@@ -310,7 +309,7 @@ const App: React.FC = () => {
               description: '',
               features: [],
               phone: item.phone || '',
-              prices: [],
+              prices: item.prices || [],
               galleryImages: [],
               reviews: [],
               naverBookingUrl: item.naver_booking_url || undefined,
@@ -368,7 +367,7 @@ const App: React.FC = () => {
         if (selectedFilter === '봉안시설' && f.type !== 'charnel') return false;
         if (selectedFilter === '자연장' && f.type !== 'natural') return false;
         if (selectedFilter === '해양장' && f.type !== 'sea') return false;
-        if (selectedFilter === '동물장묘' && f.type !== 'pet') return false;
+        if (selectedFilter === '동물장례' && f.type !== 'pet') return false;
       }
     }
     return true;
@@ -685,6 +684,7 @@ const App: React.FC = () => {
         return (
           <div className="h-full relative">
             <div className="h-full overflow-y-auto pt-24 pb-20 px-4 bg-gray-50">
+              {/* 필터와 배너 유무에 따른 여백 계산 */}
               {/* 필터와 배너 유무에 따른 여백 계산 */}
               {showFilters && !showPromo && <div className="h-10"></div>}
               {!showFilters && showPromo && <div className="h-16"></div>}
@@ -1105,6 +1105,8 @@ const App: React.FC = () => {
                   )
                 }
 
+
+
                 {
                   viewState !== ViewState.MY_PAGE && (
                     <button
@@ -1157,20 +1159,24 @@ const App: React.FC = () => {
               {/* Filter Bar */}
               {
                 showFilters && (viewState === ViewState.MAP || viewState === ViewState.LIST) && (
-                  <div className="absolute top-20 left-0 right-0 z-20 flex gap-1.5 overflow-x-auto pb-2 no-scrollbar pl-4 pr-4">
-                    {/* Simplified Filters: User Request */}
-                    {['전체', '장례식장', '봉안시설', '자연장', '해양장', '공원묘지', '동물장묘'].map((f, i, arr) => (
-                      <button
-                        key={f}
-                        onClick={() => setSelectedFilter(f)}
-                        className={`px-3 py-1.5 rounded-full text-[11px] font-medium shadow-sm border whitespace-nowrap transition-colors ${i === arr.length - 1 ? 'mr-6' : ''} ${selectedFilter === f
-                          ? 'bg-primary text-white border-primary'
-                          : 'bg-white/90 backdrop-blur text-gray-900 hover:bg-white'
-                          }`}
-                      >
-                        {f}
-                      </button>
-                    ))}
+                  <div className="absolute top-20 left-0 right-0 z-20 overflow-x-auto filter-scroll touch-pan-x">
+                    <div className="flex gap-2 px-4 pb-2 w-max">
+                      {/* Simplified Filters: User Request */}
+                      {['전체', '장례식장', '봉안시설', '자연장', '공원묘지', '동물장례', '해양장'].map((f) => (
+                        <button
+                          key={f}
+                          onClick={() => setSelectedFilter(f)}
+                          className={`px-3 py-1.5 rounded-full text-[11px] font-medium shadow-sm border whitespace-nowrap transition-colors flex-shrink-0 ${selectedFilter === f
+                            ? 'bg-primary text-white border-primary'
+                            : 'bg-white/90 backdrop-blur text-gray-900 hover:bg-white'
+                            }`}
+                        >
+                          {f}
+                        </button>
+                      ))}
+                      {/* Explicit Spacer for Scroll - Larger to ensure no cut-off on tiny screens */}
+                      <div className="w-16 shrink-0 h-4" />
+                    </div>
                   </div>
                 )
               }

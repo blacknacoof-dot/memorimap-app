@@ -17,6 +17,7 @@
     "axios": "^1.13.2",
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.3",
+    "iconv-lite": "^0.7.1",
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3",
     "lucide-react": "^0.344.0",
@@ -26,7 +27,9 @@
     "react-leaflet": "^4.2.1",
     "react-leaflet-cluster": "^3.0.0",
     "react-markdown": "^10.1.0",
-    "react-router-dom": "^6.22.3"
+    "react-router-dom": "^6.22.3",
+    "string-similarity-js": "^2.1.4",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/leaflet": "^1.9.8",

@@ -823,18 +823,25 @@ export const FACILITIES: Facility[] = [
     address: '부산광역시 해운대구 달맞이길 62',
     lat: 35.1612,
     lng: 129.1585,
-    priceRange: '50~200만원',
+    priceRange: '30~80만원',
     rating: 4.8,
     reviewCount: 98,
-    imageUrl: 'https://images.unsplash.com/photo-1516108317508-6788f6a160e6?q=80&w=800&auto=format&fit=crop',
-    description: '부산 앞바다의 푸른 물결 위에서 고인을 자유롭게 보내드리는 고품격 해양 장례 서비스입니다.',
-    features: ['해운대 출항', '프리미엄 요트', '추모 음악', '유골 산골'],
+    imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop',
+    description: '부산 앞바다의 푸른 물결 위에서 고인을 자유롭게 보내드리는 고품격 해양 장례 서비스입니다. 수영만 요트경기장에서 출항하며, GPS 기반 해상 안장확인서를 발급해드립니다.',
+    features: ['해운대 출항', '프리미엄 요트', '추모 음악', '유골 산골', '위령 천도제', '안장확인서 발급'],
     phone: '051-744-1004',
     prices: [
-      { type: '요트 해양장', price: '80만원' },
-      { type: '가족 전용선', price: '180만원' },
+      { type: '가족 해양장 (6인)', price: '30만원' },
+      { type: '가족 해양장 (10인)', price: '40~50만원' },
+      { type: '가족 해양장 (20인)', price: '60만원' },
+      { type: '가족 해양장 (30인)', price: '70~80만원' },
+      { type: '위령제/제사상', price: '10만원' },
+      { type: '헌화용 국화', price: '3만원' },
     ],
-    galleryImages: [],
+    galleryImages: [
+      'https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=600&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1505142468610-359e7d316be0?q=80&w=600&auto=format&fit=crop'
+    ],
     reviews: []
   },
   {
