@@ -438,9 +438,9 @@ export const FacilitySheet: React.FC<Props> = ({
                 // New Detailed Price Info Rendering from Public Data
                 <div className="border rounded-xl overflow-hidden text-sm">
                   <div className="bg-gray-50 flex font-bold py-2 border-b text-gray-500 text-xs text-center">
-                    <div className="w-1/3 px-2">품목</div>
-                    <div className="w-1/3 px-2">세부내용</div>
-                    <div className="w-1/3 px-2">규격</div>
+                    <div className="w-2/5 px-2">품목</div>
+                    <div className="w-1/5 px-2">카테고리</div>
+                    <div className="w-2/5 px-2">가격</div>
                   </div>
                   {facility.priceInfo.items.filter((p: any) => {
                     if (facility.type === 'funeral') {
@@ -450,31 +450,30 @@ export const FacilitySheet: React.FC<Props> = ({
                     }
                     return true;
                   }).map((p: any, idx: number) => {
-                    // 데이터 보정 로직
-                    let displaySpec = p.spec || '';
-                    let displayPrice = p.price;
-                    let priceNum = parseInt(String(p.price).replace(/[^0-9]/g, ''));
+                    // 가격 표시 로직 수정: price 필드의 숫자를 만원 단위로 변환
+                    let displayPrice = '-';
+                    const priceNum = parseInt(String(p.price).replace(/[^0-9]/g, ''));
 
-                    // '가격' 컬럼에 '60평', '기준' 등의 텍스트가 있는 경우 -> 규격으로 이동
-                    if (String(p.price).includes('평') || String(p.price).includes('기준')) {
-                      displaySpec = `${displaySpec} ${p.price}`.trim();
-                      displayPrice = ''; // 가격 정보 없음
-                      priceNum = NaN;
-                    }
-                    // 가격이 500원 미만인데 100이상인 경우 (110원 -> 110평 오인식 가능성)
-                    // 단, '개', '권' 등 단위가 없어야 함. 
-                    else if (priceNum > 0 && priceNum < 500 && !String(p.price).includes('원')) {
-                      displaySpec = `${displaySpec} ${priceNum}평`.trim(); // 추정
-                      displayPrice = '';
-                      priceNum = NaN;
+                    if (!isNaN(priceNum) && priceNum > 0) {
+                      if (priceNum >= 10000) {
+                        // 10000원 이상이면 만원 단위로 표시
+                        const manwon = Math.round(priceNum / 10000);
+                        displayPrice = `${manwon.toLocaleString()}만원`;
+                      } else {
+                        // 10000원 미만은 원 단위로 표시
+                        displayPrice = `${priceNum.toLocaleString()}원`;
+                      }
+                    } else if (String(p.price).includes('만원') || String(p.price).includes('원')) {
+                      // 이미 포맷된 가격이면 그대로 사용
+                      displayPrice = p.price;
                     }
 
                     return (
                       <div key={idx} className="flex items-center py-3 border-b last:border-0 hover:bg-gray-50">
-                        <div className="w-1/3 px-2 text-gray-800 font-medium text-center break-keep">{p.item}</div>
-                        <div className="w-1/3 px-2 text-gray-500 text-xs text-center break-all">{p.category !== p.item ? p.category : '-'}</div>
-                        <div className="w-1/3 px-2 text-gray-500 text-xs text-center break-all font-medium text-blue-600">
-                          {displaySpec || '-'}
+                        <div className="w-2/5 px-2 text-gray-800 font-medium text-center break-keep text-xs">{p.item}</div>
+                        <div className="w-1/5 px-2 text-gray-400 text-[10px] text-center break-all">{p.category || '-'}</div>
+                        <div className="w-2/5 px-2 text-blue-600 text-sm text-center font-bold">
+                          {displayPrice}
                         </div>
                       </div>
                     );
@@ -482,12 +481,26 @@ export const FacilitySheet: React.FC<Props> = ({
                 </div>
               ) : (
                 // Legacy Prices Rendering
-                facility.prices.map((p, idx) => (
-                  <div key={idx} className="flex justify-between items-center border-b pb-3">
-                    <span className="text-gray-600">{p.type}</span>
-                    <span className="text-xs text-blue-600 font-medium italic">상담 문의</span>
+                facility.prices && facility.prices.length > 0 ? (
+                  <div className="border rounded-xl overflow-hidden text-sm">
+                    <div className="bg-gray-50 flex font-bold py-2 border-b text-gray-500 text-xs text-center">
+                      <div className="w-1/3 px-2">품목</div>
+                      <div className="w-1/3 px-2">상세</div>
+                      <div className="w-1/3 px-2">가격</div>
+                    </div>
+                    {facility.prices.map((p: any, idx: number) => (
+                      <div key={idx} className="flex items-center py-3 border-b last:border-0 hover:bg-gray-50">
+                        <div className="w-1/3 px-2 text-gray-800 font-medium text-center text-xs">{p.item || p.type || '-'}</div>
+                        <div className="w-1/3 px-2 text-gray-400 text-[10px] text-center">{p.detail || '-'}</div>
+                        <div className="w-1/3 px-2 text-blue-600 text-sm text-center font-bold">{p.price || '상담 문의'}</div>
+                      </div>
+                    ))}
                   </div>
-                ))
+                ) : (
+                  <div className="text-center py-8 text-gray-400 text-sm">
+                    가격 정보가 없습니다. 상담 문의를 이용해주세요.
+                  </div>
+                )
               )}
 
               <div className="bg-yellow-50 p-3 rounded-lg text-xs text-gray-600 mt-4 leading-relaxed">
@@ -511,7 +524,7 @@ export const FacilitySheet: React.FC<Props> = ({
             <span className="text-[10px] mt-1 font-medium">길찾기</span>
           </button>
 
-          {facility.naverBookingUrl && (
+          {facility.naverBookingUrl && facility.naverBookingUrl.length > 10 && String(facility.id) !== '3' && (
             <button
               onClick={() => window.open(facility.naverBookingUrl, '_blank')}
               className="flex-1 bg-[#03C75A] text-white py-3 rounded-xl font-bold shadow-lg shadow-green-600/20 active:scale-95 transition-transform flex items-center justify-center gap-2"
@@ -525,7 +538,7 @@ export const FacilitySheet: React.FC<Props> = ({
             onClick={onBook}
             className="flex-1 bg-primary text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/30 active:scale-95 transition-transform"
           >
-            {facility.naverBookingUrl ? '방문 예약' : '방문 예약하기'}
+            {facility.naverBookingUrl && facility.naverBookingUrl.length > 10 ? '방문 예약' : '방문 예약하기'}
           </button>
         </div>
       </div>
