@@ -454,18 +454,19 @@ export const FacilitySheet: React.FC<Props> = ({
                     let displayPrice = '-';
                     const priceNum = parseInt(String(p.price).replace(/[^0-9]/g, ''));
 
-                    if (!isNaN(priceNum) && priceNum > 0) {
-                      if (priceNum >= 10000) {
-                        // 10000원 이상이면 만원 단위로 표시
-                        const manwon = Math.round(priceNum / 10000);
-                        displayPrice = `${manwon.toLocaleString()}만원`;
-                      } else {
-                        // 10000원 미만은 원 단위로 표시
-                        displayPrice = `${priceNum.toLocaleString()}원`;
-                      }
-                    } else if (String(p.price).includes('만원') || String(p.price).includes('원')) {
-                      // 이미 포맷된 가격이면 그대로 사용
+                    // 10000원 미만은 잘못된 데이터로 간주하여 '-' 표시 (단, 0원은 제외하거나 필요시 처리)
+                    // 예: 4000원 -> 잘못된 데이터
+                    if (!isNaN(priceNum) && priceNum >= 10000) {
+                      const manwon = Math.round(priceNum / 10000);
+                      displayPrice = `${manwon.toLocaleString()}만원`;
+                    } else if (String(p.price).includes('만원')) {
+                      // 이미 '만원'이 포함된 문자열이면 그대로 표시
                       displayPrice = p.price;
+                    } else if (String(p.price).includes('문의') || String(p.price).includes('상담')) {
+                      displayPrice = '상담 문의';
+                    } else {
+                      // 그 외(10000원 미만 숫자 등)는 표시하지 않음
+                      displayPrice = '-';
                     }
 
                     return (
@@ -488,13 +489,22 @@ export const FacilitySheet: React.FC<Props> = ({
                       <div className="w-1/3 px-2">상세</div>
                       <div className="w-1/3 px-2">가격</div>
                     </div>
-                    {facility.prices.map((p: any, idx: number) => (
-                      <div key={idx} className="flex items-center py-3 border-b last:border-0 hover:bg-gray-50">
-                        <div className="w-1/3 px-2 text-gray-800 font-medium text-center text-xs">{p.item || p.type || '-'}</div>
-                        <div className="w-1/3 px-2 text-gray-400 text-[10px] text-center">{p.detail || '-'}</div>
-                        <div className="w-1/3 px-2 text-blue-600 text-sm text-center font-bold">{p.price || '상담 문의'}</div>
-                      </div>
-                    ))}
+                    {facility.prices.map((p: any, idx: number) => {
+                      let displayPrice = p.price || '상담 문의';
+                      // 레거시 가격 데이터도 검증 (10000원 미만 숫자만 있는 경우 필터링)
+                      const priceNum = p.price ? parseInt(String(p.price).replace(/[^0-9]/g, '')) : 0;
+                      if (!isNaN(priceNum) && priceNum > 0 && priceNum < 10000 && !String(p.price).includes('만원')) {
+                        displayPrice = '-';
+                      }
+
+                      return (
+                        <div key={idx} className="flex items-center py-3 border-b last:border-0 hover:bg-gray-50">
+                          <div className="w-1/3 px-2 text-gray-800 font-medium text-center text-xs">{p.item || p.type || '-'}</div>
+                          <div className="w-1/3 px-2 text-gray-400 text-[10px] text-center">{p.detail || '-'}</div>
+                          <div className="w-1/3 px-2 text-blue-600 text-sm text-center font-bold">{displayPrice}</div>
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-400 text-sm">

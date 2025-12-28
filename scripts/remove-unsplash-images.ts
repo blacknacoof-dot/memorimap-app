@@ -1,56 +1,65 @@
 
 import { createClient } from '@supabase/supabase-js';
-import * as path from 'path';
 import * as dotenv from 'dotenv';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
 
-// Load Env
+// Load environment variables
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const envPath = path.resolve(process.cwd(), '.env.local');
 dotenv.config({ path: envPath });
 
-const supabase = createClient(
-    process.env.VITE_SUPABASE_URL || '',
-    process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || ''
-);
+const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseServiceKey) {
+    console.error('Missing Supabase credentials');
+    process.exit(1);
+}
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 async function removeUnsplashImages() {
-    console.log("🧹 Unsplash 이미지 제거 작업 시작...");
+    console.log('🔍 Scanning for Unsplash images...');
 
-    // 먼저 카운트 확인
-    const { count, error: countError } = await supabase
-        .from('memorial_spaces')
+    // 1. Count before deletion
+    const { count: beforeCount, error: countError } = await supabase
+        .from('facility_images')
         .select('*', { count: 'exact', head: true })
         .ilike('image_url', '%unsplash%');
 
     if (countError) {
-        console.error("❌ 카운트 조회 실패:", countError);
+        console.error('Error counting images:', countError);
         return;
     }
 
-    console.log(`📋 제거 대상(Unsplash): ${count}개`);
+    console.log(`Found ${beforeCount} Unsplash images to delete.`);
 
-    // 업데이트 실행
-    const { error: updateError } = await supabase
-        .from('memorial_spaces')
-        .update({ image_url: null })
+    if (beforeCount === 0) {
+        console.log('No images to delete.');
+        return;
+    }
+
+    // 2. Delete
+    const { error: deleteError } = await supabase
+        .from('facility_images')
+        .delete()
         .ilike('image_url', '%unsplash%');
 
-    if (updateError) {
-        console.error("❌ 업데이트 실패:", updateError);
-    } else {
-        console.log("✅ 성공적으로 제거되었습니다 (NULL 처리).");
+    if (deleteError) {
+        console.error('Error deleting images:', deleteError);
+        return;
     }
 
-    // Placeholder도 제거?
-    // User specifically said Unsplash, but probably implies all fake images.
-    // Let's check 'placeholder' too.
-    const { error: updateError2 } = await supabase
-        .from('memorial_spaces')
-        .update({ image_url: null })
-        .ilike('image_url', '%placeholder%');
+    // 3. Verify
+    const { count: afterCount } = await supabase
+        .from('facility_images')
+        .select('*', { count: 'exact', head: true })
+        .ilike('image_url', '%unsplash%');
 
-    if (!updateError2) {
-        console.log("✅ Placeholder 이미지도 제거되었습니다.");
-    }
+    console.log(`Deletion complete. Remaining Unsplash images: ${afterCount}`);
+    console.log(`Successfully deleted ${beforeCount - (afterCount || 0)} images.`);
 }
 
 removeUnsplashImages();
