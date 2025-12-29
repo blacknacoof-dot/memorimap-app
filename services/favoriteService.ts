@@ -1,4 +1,4 @@
-import { supabase } from '../supabaseClient';
+import { supabase } from '../lib/supabaseClient';
 
 export interface Favorite {
     id: string;
@@ -13,7 +13,7 @@ export const favoriteService = {
     async getFavorites(userId: string) {
         const { data, error } = await supabase
             .from('favorites')
-            .select('*, memorial_spaces(*)')
+            .select('*')
             .eq('user_id', userId)
             .order('created_at', { ascending: false });
 

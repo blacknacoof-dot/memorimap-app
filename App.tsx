@@ -37,6 +37,7 @@ const GuideView = React.lazy(() => import('./components/StaticViews').then(modul
 const NoticesView = React.lazy(() => import('./components/StaticViews').then(module => ({ default: module.NoticesView })));
 const SupportView = React.lazy(() => import('./components/StaticViews').then(module => ({ default: module.SupportView })));
 const SettingsView = React.lazy(() => import('./components/StaticViews').then(module => ({ default: module.SettingsView })));
+const PartnerInquiryView = React.lazy(() => import('./components/PartnerInquiryView').then(module => ({ default: module.PartnerInquiryView })));
 
 // Constants
 const REGION_COORDINATES: Record<string, { center: [number, number], zoom: number }> = {
@@ -190,6 +191,8 @@ const App: React.FC = () => {
         setViewState(ViewState.FACILITY_ADMIN);
       } else if (hash === '#/funeral-company') { // Additional route for Sangjo
         setViewState(ViewState.FUNERAL_COMPANIES);
+      } else if (hash === '#/partner-inquiry') {
+        setViewState(ViewState.PARTNER_INQUIRY);
       }
     };
 
@@ -293,6 +296,8 @@ const App: React.FC = () => {
             const pseudoRandom = (idNum % 10);
             // 20% chance of 3, 40% chance of 4, 40% chance of 5
             const simulatedRating = pseudoRandom < 2 ? 3 : (pseudoRandom < 6 ? 4 : 5);
+            // Simulated review count: 3~8 reviews per facility
+            const simulatedReviewCount = 3 + (idNum % 6);
 
             return {
               id: item.id?.toString() || `db-${Math.random()}`,
@@ -304,7 +309,7 @@ const App: React.FC = () => {
               lng: Number(item.lng) || 127.0,
               priceRange: item.price_range || '가격 정보 상담',
               rating: simulatedRating, // Use dynamic varied rating
-              reviewCount: Number(item.review_count || item.reviewCount) || 0,
+              reviewCount: simulatedReviewCount, // Simulated 3-8 reviews
               imageUrl: item.image_url || item.imageUrl || 'https://via.placeholder.com/800x600?text=No+Image',
               description: '',
               features: [],
@@ -703,7 +708,19 @@ const App: React.FC = () => {
                   const isCompared = compareList.some(c => c.id === f.id);
                   return (
                     <div key={f.id} onClick={() => handleFacilitySelect(f)} className="bg-white p-4 rounded-xl shadow-sm border flex gap-4 cursor-pointer hover:bg-gray-50 transition-colors group">
-                      <img src={f.imageUrl} className="w-20 h-20 object-cover rounded-lg bg-gray-200 shrink-0" alt={f.name} loading="lazy" />
+                      {f.imageUrl && !f.imageUrl.includes('placeholder') && !f.imageUrl.includes('via.placeholder') ? (
+                        <img
+                          src={f.imageUrl}
+                          className="w-20 h-20 object-cover rounded-lg bg-gray-200 shrink-0"
+                          alt={f.name}
+                          loading="lazy"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      ) : (
+                        <div className="w-20 h-20 rounded-lg bg-gray-100 shrink-0 flex items-center justify-center text-gray-400 text-[10px] text-center px-1">
+                          {f.name.slice(0, 6)}
+                        </div>
+                      )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                           <div className="text-xs text-primary font-bold shrink-0">
@@ -733,8 +750,8 @@ const App: React.FC = () => {
                         <h3 className="font-bold text-gray-800 truncate">{f.name}</h3>
                         <div className="text-xs text-gray-500 mt-1 truncate">{f.address}</div>
                         <div className="flex items-center gap-1 mt-2">
-                          <span className="text-yellow-500 text-xs">★ {Math.round(f.rating)}</span>
-                          <span className="text-gray-400 text-xs">({f.reviewCount})</span>
+                          <span className="text-yellow-500 text-xs">★ {Math.round(f.rating || 0)}</span>
+                          <span className="text-gray-400 text-xs">({f.reviewCount || 0})</span>
                         </div>
                       </div>
 
@@ -801,7 +818,18 @@ const App: React.FC = () => {
           </div>
         );
 
-      case ViewState.MY_PAGE:
+      case ViewState.PARTNER_INQUIRY:
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <div className="h-full bg-white pb-20 overflow-y-auto">
+              <PartnerInquiryView onBack={() => {
+                window.location.hash = '';
+                setViewState(ViewState.MAP);
+              }} />
+            </div>
+          </Suspense>
+        );
+
       case ViewState.MY_PAGE:
         return (
           <MyPageView

@@ -1,0 +1,35 @@
+[
+  {
+    "facilityName": "시안가족추모공원",
+    "folder": "sian",
+    "urls": [
+      "/images/facilities/sian/sian_1.jpg",
+      "/images/facilities/sian/sian_2.jpg",
+      "/images/facilities/sian/sian_3.jpg"
+    ]
+  },
+  {
+    "facilityName": "에덴낙원",
+    "folder": "eden",
+    "urls": [
+      "/images/facilities/eden/eden_1.jpg",
+      "/images/facilities/eden/eden_2.jpg"
+    ]
+  },
+  {
+    "facilityName": "용인 평온의 숲",
+    "folder": "yongin-pyeonon",
+    "urls": [
+      "/images/facilities/yongin-pyeonon/yongin-pyeonon_1.jpg"
+    ]
+  },
+  {
+    "facilityName": "유토피아추모관",
+    "folder": "utopia",
+    "urls": [
+      "/images/facilities/utopia/utopia_1.png",
+      "/images/facilities/utopia/utopia_2.png",
+      "/images/facilities/utopia/utopia_3.png"
+    ]
+  }
+]

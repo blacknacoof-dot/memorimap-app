@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { favoriteService } from '../services/favoriteService';
 import { Facility, Reservation } from '../types';
 import { X, Star, MapPin, Phone, Clock, Navigation, Heart, Check, Scale, Bot, Award, Crown, ShieldCheck, MessageSquare, ChevronLeft, ChevronRight, Image as ImageIcon, Gift } from 'lucide-react';
 import { incrementAiUsage } from '../lib/queries';
@@ -12,7 +13,7 @@ interface Props {
   onBook: () => void;
   onViewMap?: () => void;
   isLoggedIn: boolean;
-  currentUser: { name: string } | null;
+  currentUser: { id: string; name: string } | null;
   onAddReview: (facilityId: string, content: string, rating: number) => void;
   onLoginRequired: () => void;
   isInCompareList: boolean;
@@ -48,6 +49,50 @@ export const FacilitySheet: React.FC<Props> = ({
 
   // Review Refresh State
   const [reviewRefreshTrigger, setReviewRefreshTrigger] = useState(0);
+
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  // Check Favorite Status
+  useEffect(() => {
+    const checkFav = async () => {
+      if (isLoggedIn && currentUser && currentUser.id) {
+        try {
+          const status = await favoriteService.checkFavorite(currentUser.id, facility.id);
+          setIsFavorite(status);
+        } catch (e) {
+          console.error('Failed to check favorite status', e);
+        }
+      } else {
+        setIsFavorite(false);
+      }
+    };
+    checkFav();
+  }, [facility.id, isLoggedIn, currentUser]);
+
+  const handleToggleFavorite = async () => {
+    if (!isLoggedIn || !currentUser) {
+      onLoginRequired();
+      return;
+    }
+
+    try {
+      // Optimistic UI update
+      const newStatus = !isFavorite;
+      setIsFavorite(newStatus);
+
+      // Actual API call
+      const result = await favoriteService.toggleFavorite(currentUser.id, facility.id);
+
+      // Sync just in case
+      if (result !== newStatus) {
+        setIsFavorite(result);
+      }
+    } catch (e) {
+      console.error('Failed to toggle favorite', e);
+      // Revert on error
+      setIsFavorite(!isFavorite);
+    }
+  };
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -259,8 +304,8 @@ export const FacilitySheet: React.FC<Props> = ({
                 <div>
                   <div className="flex items-center gap-1 text-yellow-500 mb-1">
                     <Star size={16} fill="currentColor" />
-                    <span className="font-bold text-black">{Math.round(facility.rating)}</span>
-                    <span className="text-gray-400 text-sm">({facility.reviewCount} reviews)</span>
+                    <span className="font-bold text-black">{Math.round(facility.rating || 0)}</span>
+                    <span className="text-gray-400 text-sm">({facility.reviewCount || 0}개 리뷰)</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-500 text-sm">
                     <MapPin size={16} />
@@ -275,38 +320,40 @@ export const FacilitySheet: React.FC<Props> = ({
                     )}
                   </div>
                 </div>
-                <button className="text-gray-400"><Heart size={24} /></button>
+                <button
+                  onClick={handleToggleFavorite}
+                  className={`transition-colors ${isFavorite ? 'text-red-500' : 'text-gray-400 hover:text-red-400'}`}
+                >
+                  <Heart size={24} fill={isFavorite ? "currentColor" : "none"} />
+                </button>
               </div>
 
-              {/* Photo Gallery Preview Section */}
-              <div>
-                <div className="flex justify-between items-center mb-3">
-                  <h3 className="font-bold text-gray-800">시설 둘러보기</h3>
-                  <button
-                    onClick={() => setActiveTab('photos')}
-                    className="text-xs text-primary flex items-center gap-0.5 hover:underline font-medium"
-                  >
-                    더보기 <ChevronRight size={14} />
-                  </button>
-                </div>
-                <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar snap-x">
-                  {facility.galleryImages && facility.galleryImages.length > 0 ? (
-                    facility.galleryImages.map((img, idx) => (
+              {/* Photo Gallery Preview Section - Only show if images exist */}
+              {facility.galleryImages && facility.galleryImages.length > 0 && (
+                <div>
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="font-bold text-gray-800">시설 둘러보기</h3>
+                    <button
+                      onClick={() => setActiveTab('photos')}
+                      className="text-xs text-primary flex items-center gap-0.5 hover:underline font-medium"
+                    >
+                      더보기 <ChevronRight size={14} />
+                    </button>
+                  </div>
+                  <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar snap-x">
+                    {facility.galleryImages.map((img, idx) => (
                       <img
                         key={idx}
                         src={img}
                         alt={`preview-${idx}`}
                         className="w-32 h-24 object-cover rounded-lg flex-none snap-start cursor-pointer hover:opacity-90 active:scale-95 transition-transform border border-gray-100"
                         onClick={() => setLightboxIndex(idx)}
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                       />
-                    ))
-                  ) : (
-                    <div className="w-full py-6 text-center text-gray-400 text-xs bg-gray-50 rounded-lg">
-                      등록된 사진이 없습니다.
-                    </div>
-                  )}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div>
                 <h3 className="font-bold mb-2 text-gray-800">시설 소개</h3>
@@ -377,23 +424,24 @@ export const FacilitySheet: React.FC<Props> = ({
                 <ImageIcon size={20} className="text-primary" />
                 시설 갤러리
               </h3>
-              <div className="grid grid-cols-2 gap-2">
-                {facility.galleryImages && facility.galleryImages.length > 0 ? (
-                  facility.galleryImages.map((img, idx) => (
+              {facility.galleryImages && facility.galleryImages.length > 0 ? (
+                <div className="grid grid-cols-2 gap-2">
+                  {facility.galleryImages.map((img, idx) => (
                     <img
                       key={idx}
                       src={img}
                       alt={`gallery-${idx}`}
                       className="w-full h-32 object-cover rounded-lg hover:opacity-90 transition-opacity cursor-pointer border"
                       onClick={() => setLightboxIndex(idx)}
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                     />
-                  ))
-                ) : (
-                  <div className="col-span-2 text-center py-10 text-gray-400 bg-gray-50 rounded-xl">
-                    등록된 사진이 없습니다.
-                  </div>
-                )}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16 text-gray-400 bg-gray-50 rounded-xl">
+                  등록된 사진이 없습니다.
+                </div>
+              )}
             </div>
           )}
 
@@ -454,25 +502,36 @@ export const FacilitySheet: React.FC<Props> = ({
                     let displayPrice = '-';
                     const priceNum = parseInt(String(p.price).replace(/[^0-9]/g, ''));
 
-                    // 10000원 미만은 잘못된 데이터로 간주하여 '-' 표시 (단, 0원은 제외하거나 필요시 처리)
-                    // 예: 4000원 -> 잘못된 데이터
-                    if (!isNaN(priceNum) && priceNum >= 10000) {
+                    // 모든 추모시설은 최소 100만원 이상이어야 유효한 가격
+                    const minPriceThreshold = 1000000;
+
+                    if (!isNaN(priceNum) && priceNum >= minPriceThreshold) {
                       const manwon = Math.round(priceNum / 10000);
                       displayPrice = `${manwon.toLocaleString()}만원`;
                     } else if (String(p.price).includes('만원')) {
-                      // 이미 '만원'이 포함된 문자열이면 그대로 표시
-                      displayPrice = p.price;
+                      // 이미 '만원'이 포함된 문자열이면 검증 후 표시
+                      const manwonMatch = String(p.price).match(/(\d+)/);
+                      if (manwonMatch) {
+                        const manwonValue = parseInt(manwonMatch[1]) * 10000;
+                        if (manwonValue < 1000000) {
+                          displayPrice = '-';
+                        } else {
+                          displayPrice = p.price;
+                        }
+                      } else {
+                        displayPrice = p.price;
+                      }
                     } else if (String(p.price).includes('문의') || String(p.price).includes('상담')) {
                       displayPrice = '상담 문의';
                     } else {
-                      // 그 외(10000원 미만 숫자 등)는 표시하지 않음
+                      // 그 외(최소 금액 미만 숫자 등)는 표시하지 않음
                       displayPrice = '-';
                     }
 
                     return (
                       <div key={idx} className="flex items-center py-3 border-b last:border-0 hover:bg-gray-50">
                         <div className="w-2/5 px-2 text-gray-800 font-medium text-center break-keep text-xs">{p.item}</div>
-                        <div className="w-1/5 px-2 text-gray-400 text-[10px] text-center break-all">{p.category || '-'}</div>
+                        <div className="w-1/5 px-2 text-gray-400 text-[10px] text-center break-all">{(p.category === '1위 기준' ? '기본형' : p.category) || '-'}</div>
                         <div className="w-2/5 px-2 text-blue-600 text-sm text-center font-bold">
                           {displayPrice}
                         </div>
@@ -491,16 +550,23 @@ export const FacilitySheet: React.FC<Props> = ({
                     </div>
                     {facility.prices.map((p: any, idx: number) => {
                       let displayPrice = p.price || '상담 문의';
-                      // 레거시 가격 데이터도 검증 (10000원 미만 숫자만 있는 경우 필터링)
+                      // 레거시 가격 데이터도 검증 (100만원 미만 필터링)
                       const priceNum = p.price ? parseInt(String(p.price).replace(/[^0-9]/g, '')) : 0;
-                      if (!isNaN(priceNum) && priceNum > 0 && priceNum < 10000 && !String(p.price).includes('만원')) {
+                      const minPriceThreshold = 1000000;
+
+                      if (!isNaN(priceNum) && priceNum > 0 && priceNum < minPriceThreshold && !String(p.price).includes('만원')) {
                         displayPrice = '-';
+                      } else if (String(p.price).includes('만원')) {
+                        const manwonMatch = String(p.price).match(/(\d+)/);
+                        if (manwonMatch && parseInt(manwonMatch[1]) < 100) {
+                          displayPrice = '-';
+                        }
                       }
 
                       return (
                         <div key={idx} className="flex items-center py-3 border-b last:border-0 hover:bg-gray-50">
                           <div className="w-1/3 px-2 text-gray-800 font-medium text-center text-xs">{p.item || p.type || '-'}</div>
-                          <div className="w-1/3 px-2 text-gray-400 text-[10px] text-center">{p.detail || '-'}</div>
+                          <div className="w-1/3 px-2 text-gray-400 text-[10px] text-center">{(p.detail === '1위 기준' ? '기본형' : p.detail) || '-'}</div>
                           <div className="w-1/3 px-2 text-blue-600 text-sm text-center font-bold">{displayPrice}</div>
                         </div>
                       );

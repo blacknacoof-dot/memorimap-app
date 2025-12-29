@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, User, Calendar, Heart, Settings, HelpCircle, LogOut, ChevronRight, Bell, BookOpen, LogIn } from 'lucide-react';
+import { X, User, Calendar, Heart, Settings, HelpCircle, LogOut, ChevronRight, Bell, BookOpen, LogIn, Building2 } from 'lucide-react';
 import { ViewState } from '../types';
 
 interface Props {
@@ -152,6 +152,9 @@ export const SideMenu: React.FC<Props> = ({
           <div className="text-xs font-bold text-gray-400 mb-2 px-3 mt-6">고객 지원</div>
           <MenuItem icon={HelpCircle} label="고객센터 / 자주 묻는 질문" onClick={() => handleNav(ViewState.SUPPORT)} />
           <MenuItem icon={Settings} label="앱 설정" onClick={() => handleNav(ViewState.SETTINGS)} />
+
+          <div className="border-t mx-4 my-2"></div>
+          <MenuItem icon={Building2} label="업체 입점/제휴 문의" onClick={() => handleNav(ViewState.PARTNER_INQUIRY)} />
         </div>
 
         {/* Footer */}

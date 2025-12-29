@@ -12,14 +12,19 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-async function removeDuplicate() {
-  console.log('Deleting duplicate ID: 9...');
-  const { error } = await supabase.from('memorial_spaces').delete().eq('id', 9);
-  if (error) {
-    console.error('Error deleting:', error);
-  } else {
-    console.log('Successfully deleted duplicate ID: 9');
-  }
+// Duplicates found: 제일장례식장 (160), 내리공설묘지 (444)
+const DUPLICATES_TO_DELETE = [160, 444];
+
+async function deleteDuplicates() {
+    console.log('Deleting remaining duplicates...');
+
+    for (const id of DUPLICATES_TO_DELETE) {
+        const { error } = await supabase.from('memorial_spaces').delete().eq('id', id);
+        if (error) console.error(`Failed to delete ID ${id}:`, error.message);
+        else console.log(`Deleted ID ${id}`);
+    }
+
+    console.log('Done!');
 }
 
-removeDuplicate();
+deleteDuplicates();

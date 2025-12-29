@@ -12,14 +12,9 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-async function removeDuplicate() {
-  console.log('Deleting duplicate ID: 9...');
-  const { error } = await supabase.from('memorial_spaces').delete().eq('id', 9);
-  if (error) {
-    console.error('Error deleting:', error);
-  } else {
-    console.log('Successfully deleted duplicate ID: 9');
-  }
+async function count() {
+  const { count, error } = await supabase.from('memorial_spaces').select('*', { count: 'exact', head: true });
+  if (error) console.error(error);
+  else console.log('Total count:', count);
 }
-
-removeDuplicate();
+count();

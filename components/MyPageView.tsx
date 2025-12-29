@@ -289,8 +289,8 @@ export const MyPageView: React.FC<Props> = ({
                     ) : (
                         <div className="space-y-3">
                             {myFavorites.map(fav => {
-                                const facility = fav.memorial_spaces;
-                                if (!facility) return null;
+                                const facility = facilities.find(f => String(f.id) === String(fav.facility_id));
+                                if (!facility) return null; // Or show 'Unavailable Facility'
                                 return (
                                     <div key={fav.id} className="bg-white border rounded-xl p-4 hover:shadow-md transition-shadow relative">
                                         <div className="flex gap-4">
