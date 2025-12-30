@@ -54,7 +54,7 @@ export interface Review {
 
 export type AiTone = 'polite' | 'warm' | 'factual';
 export type FacilityType = 'FUNERAL_HOME' | 'MEMORIAL_PARK' | 'SANGJO';
-export type AiActionType = 'NONE' | 'RESERVE' | 'MAP' | 'CALL_MANAGER';
+export type AiActionType = 'NONE' | 'RESERVE' | 'MAP' | 'CALL_MANAGER' | 'RECOMMEND' | 'SWITCH_TO_CONSULT' | 'SHOW_FORM_A';
 
 export interface Facility {
   id: string;

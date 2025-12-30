@@ -40,7 +40,7 @@ export const RecommendationStarter: React.FC<Props> = ({ onSelectIntent }) => {
     ] as const;
 
     return (
-        <div className="fixed bottom-24 right-4 z-40 flex flex-col items-end gap-4 pointer-events-none">
+        <div className="fixed bottom-24 right-4 z-[1000] flex flex-col items-end gap-4 pointer-events-none">
             {/* Menu Overlay */}
             {isOpen && (
                 <div className="flex flex-col gap-3 mb-2 pointer-events-auto animate-in slide-in-from-bottom-5 fade-in duration-300">
@@ -73,15 +73,21 @@ export const RecommendationStarter: React.FC<Props> = ({ onSelectIntent }) => {
             {/* Main Trigger Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`pointer-events-auto relative group flex items-center justify-center w-16 h-16 rounded-full shadow-xl transition-all duration-300 ${isOpen ? 'bg-gray-800 rotate-90' : 'bg-primary hover:scale-110'
+                className={`pointer-events-auto relative group flex items-center justify-center w-14 h-14 rounded-2xl shadow-xl transition-all duration-300 ${isOpen ? 'bg-gray-800 rotate-90' : 'bg-[#fff9c4] hover:scale-110 border-2 border-orange-200'
                     }`}
             >
                 {isOpen ? (
-                    <X size={28} className="text-white" />
+                    <X size={24} className="text-white" />
                 ) : (
                     <>
-                        <Bot size={32} className="text-white animate-bounce-subtle" />
-                        <span className="absolute -top-2 -right-2 w-4 h-4 bg-red-500 rounded-full border-2 border-white animate-pulse" />
+                        {/* Character Icon */}
+                        <Bot size={28} className="text-orange-500" />
+
+                        {/* Red Blinking Notification Dot */}
+                        <span className="absolute -top-1 -right-1 flex h-5 w-5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-5 w-5 bg-red-500 border-2 border-white"></span>
+                        </span>
 
                         {/* Tooltip Label */}
                         <div className="absolute right-20 bg-white px-4 py-2 rounded-xl shadow-lg border border-primary/20 whitespace-nowrap hidden group-hover:flex items-center gap-2 animate-in slide-in-from-right-2">
