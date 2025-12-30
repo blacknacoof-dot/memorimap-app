@@ -1,19 +1,189 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Facility } from '../../types';
 import { sendMessageToGemini, ChatMessage, ActionType } from '../../services/geminiService';
-import { MessageCircle, X, Send, MapPin, Phone, CalendarCheck, Loader2, Bot, Sparkles, ChevronLeft } from 'lucide-react';
+import { MessageCircle, X, Send, MapPin, Phone, CalendarCheck, Loader2, Bot, Sparkles, ChevronLeft, Users, Star, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { PetChatInterface } from '../Consultation/PetChatInterface';
 
 interface Props {
     facility: Facility;
+    allFacilities?: Facility[];
     onAction: (action: ActionType) => void;
     onClose: () => void;
+    currentUser: any;
+    initialIntent?: 'funeral_home' | 'memorial_facility' | 'pet_funeral' | 'general' | null;
+    onSearchFacilities?: (region: string) => Facility[];
+    onSwitchToFacility?: (facility: Facility) => void;
+    onNavigateToFacility?: (facility: Facility) => void;
 }
 
-export const ChatInterface: React.FC<Props> = ({ facility, onAction, onClose }) => {
-    const isPetFacility = facility.type === 'pet';
 
-    if (isPetFacility) {
+
+interface FormProps {
+    onSubmit: (text: string) => void;
+}
+
+const FuneralRequestForm: React.FC<FormProps> = ({ onSubmit }) => {
+    const [step, setStep] = useState(1);
+    const [region, setRegion] = useState('');
+    const [guestCount, setGuestCount] = useState('');
+    const [priorities, setPriorities] = useState<string[]>([]);
+    const [error, setError] = useState('');
+
+    const GUEST_OPTIONS = ['50명 미만', '100명', '200명', '300명 이상'];
+    const PRIORITY_OPTIONS = ['위치', '시설', '주차', '비용', '서비스'];
+
+    const handleNext = () => {
+        if (step === 1) {
+            const validSuffixes = ['동', '읍', '면', '가', '리', '로', '길', '구', '군', '시'];
+            const hasValidSuffix = validSuffixes.some(suffix => region.includes(suffix));
+
+            if (region.length < 2 || !hasValidSuffix) {
+                setError('정확한 법정동 또는 도로명을 입력해 주세요. (예: 신촌동, 역삼로)');
+                return;
+            }
+        }
+        if (step === 2 && !guestCount) {
+            setError('예상 조문객 수를 선택해 주세요.');
+            return;
+        }
+        setError('');
+        setStep(prev => prev + 1);
+    };
+
+    const handleSubmit = () => {
+        if (priorities.length === 0) {
+            setError('하나 이상의 우선순위를 선택해 주세요.');
+            return;
+        }
+        const finalText = `희망 지역: ${region}, 예상 조문객: ${guestCount}, 우선순위: ${priorities.join(', ')}`;
+        onSubmit(finalText);
+    };
+
+    const togglePriority = (option: string) => {
+        setPriorities(prev =>
+            prev.includes(option) ? prev.filter(p => p !== option) : [...prev, option]
+        );
+        setError('');
+    };
+
+    return (
+        <div className="mt-3 bg-slate-50 border border-slate-200 rounded-xl p-4 w-full animate-in fade-in zoom-in-95 duration-300">
+            {/* Progress Steps */}
+            <div className="flex items-center justify-between mb-4 px-1">
+                {[1, 2, 3].map(s => (
+                    <div key={s} className="flex items-center gap-2">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all ${step >= s ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-500'
+                            }`}>
+                            {s}
+                        </div>
+                        {s < 3 && <div className={`w-8 h-0.5 ${step > s ? 'bg-indigo-600' : 'bg-slate-200'}`} />}
+                    </div>
+                ))}
+            </div>
+
+            {/* Step 1: Region */}
+            {step === 1 && (
+                <div className="space-y-3">
+                    <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                        <MapPin size={14} className="text-indigo-600" />
+                        희망 지역을 알려주세요
+                    </label>
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            value={region}
+                            onChange={(e) => { setRegion(e.target.value); setError(''); }}
+                            placeholder="예: 서울 신촌동, 부산진구"
+                            className="flex-1 bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                            onKeyDown={(e) => e.key === 'Enter' && handleNext()}
+                        />
+                    </div>
+                    <p className="text-[10px] text-slate-400">동 단위까지 입력하시면 더 정확합니다.</p>
+                </div>
+            )}
+
+            {/* Step 2: Guest Count */}
+            {step === 2 && (
+                <div className="space-y-3">
+                    <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                        <Users size={14} className="text-indigo-600" />
+                        예상 조문객 수는 어느 정도인가요?
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                        {GUEST_OPTIONS.map(opt => (
+                            <button
+                                key={opt}
+                                onClick={() => { setGuestCount(opt); setError(''); }}
+                                className={`py-2 px-3 text-sm rounded-lg border transition-all ${guestCount === opt
+                                    ? 'bg-indigo-50 border-indigo-500 text-indigo-700 font-bold'
+                                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                                    }`}
+                            >
+                                {opt}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Step 3: Priorities */}
+            {step === 3 && (
+                <div className="space-y-3">
+                    <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                        <Star size={14} className="text-indigo-600" />
+                        가장 중요한 우선순위는? (중복 가능)
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                        {PRIORITY_OPTIONS.map(opt => (
+                            <button
+                                key={opt}
+                                onClick={() => togglePriority(opt)}
+                                className={`py-1.5 px-3 text-sm rounded-full border transition-all ${priorities.includes(opt)
+                                    ? 'bg-indigo-600 border-indigo-600 text-white font-bold shadow-md transform scale-105'
+                                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                                    }`}
+                            >
+                                {opt}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Error Message */}
+            {error && (
+                <div className="mt-3 flex items-center gap-1.5 text-red-500 text-xs animate-pulse">
+                    <AlertCircle size={12} />
+                    <span>{error}</span>
+                </div>
+            )}
+
+            {/* Navigation Buttons */}
+            <div className="mt-4 flex gap-2">
+                {step > 1 && (
+                    <button
+                        onClick={() => setStep(prev => prev - 1)}
+                        className="px-3 py-2 text-slate-500 text-xs hover:bg-slate-100 rounded-lg transition"
+                    >
+                        이전
+                    </button>
+                )}
+                <button
+                    onClick={step === 3 ? handleSubmit : handleNext}
+                    className="flex-1 bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold py-2.5 rounded-lg shadow-md active:scale-95 transition-all flex items-center justify-center gap-1"
+                >
+                    {step === 3 ? <><CheckCircle2 size={16} /> 완료</> : '다음'}
+                </button>
+            </div>
+        </div>
+    );
+};
+
+export const ChatInterface: React.FC<Props> = ({ facility, allFacilities = [], onAction, onClose, currentUser, initialIntent, onSwitchToFacility, onNavigateToFacility }) => {
+
+    const isPetFacility = facility.type === 'pet' || initialIntent === 'pet_funeral';
+
+    if (isPetFacility && facility.id !== 'maum-i') {
         return <PetChatInterface
             company={facility as any}
             onClose={onClose}
@@ -24,47 +194,87 @@ export const ChatInterface: React.FC<Props> = ({ facility, onAction, onClose }) 
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [recommendedCandidates, setRecommendedCandidates] = useState<Facility[]>([]);
     const scrollRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
     // FAQ Chips (Dynamic based on facility type)
     const FAQ_LIST_FUNERAL = [
-        { icon: "🚑", label: "운구요청", question: "지금 임종하셨습니다. 운구차(엠뷸런스)를 바로 보내줄 수 있나요? (긴급)" },
-        { icon: "💰", label: "가격안내", question: "빈소 사용료와 식사 비용 등 대략적인 장례 비용을 알려주세요." },
-        { icon: "🅿️", label: "주차안내", question: "조문객 주차 요금과 무료 주차 시간, 주차장 위치를 알려주세요." },
-        { icon: "📄", label: "준비서류", question: "장례 접수 시 필요한 서류(사망진단서 등)와 준비물을 상세히 알려주세요." },
+        { icon: "📍", label: "내 위치 주변", question: "내 주변에서 가장 가까운 장례식장을 찾아주세요." },
+        { icon: "👨‍👩‍👧‍👦", label: "가족장(소규모)", question: "조문객 50명 미만의 소규모 가족장 장례식장을 추천해 주세요." },
+        { icon: "🏢", label: "대학병원", question: "대학병원 장례식장 위주로 보여주세요." },
+        { icon: "💰", label: "비용 우선", question: "가격이 합리적이고 저렴한 장례식장을 찾아주세요." },
+        { icon: "🅿️", label: "주차 편리", question: "주차가 편리한 장례식장 위주로 추천해 주세요." },
     ];
 
     const FAQ_LIST_PET = [
-        { icon: "🚑", label: "픽업/이송", question: "아이가 무지개다리를 건넜어요. 픽업 와주실 수 있나요?" },
-        { icon: "💰", label: "장례비용", question: "기본 화장 비용과 장례 패키지 가격이 궁금해요." },
-        { icon: "⚱️", label: "유골안치", question: "화장 후 유골함 보관이나 메모리얼 스톤 제작이 가능한가요?" },
-        { icon: "📝", label: "예약절차", question: "장례 예약을 하고 싶습니다. 절차가 어떻게 되나요?" },
+        { icon: "🚗", label: "픽업 서비스 가능", question: "픽업 서비스가 가능한 곳을 찾아주세요." },
+        { icon: "🌙", label: "24시간 장례", question: "24시간 운영하는 반려동물 장례식장을 찾고 있어요." },
+        { icon: "💎", label: "메모리얼 스톤", question: "메모리얼 스톤 제작이 가능한 곳인가요?" },
+        { icon: "🐶", label: "강아지 장례", question: "강아지 장례 절차와 비용을 알려주세요." },
+        { icon: "🐱", label: "고양이 장례", question: "고양이 장례 전문 시설을 추천해주세요." },
     ];
 
-    const FAQ_LIST_DEFAULT = [
-        { icon: "💰", label: "가격/비용", question: "분양 가격과 관리비가 대략 얼마인가요?" },
-        { icon: "🗺️", label: "위치/교통", question: "대중교통으로 가는 방법과 셔틀버스 운행 여부가 궁금합니다." },
-        { icon: "📝", label: "계약 절차", question: "계약 진행 절차와 필요 서류를 알려주세요." },
-        { icon: "📞", label: "상담 연결", question: "상담원과 직접 통화하고 싶습니다." },
+    const FAQ_LIST_MEMORIAL = [
+        { icon: "🏛️", label: "실내 봉안당", question: "실내 봉안당 시설을 추천해 주세요." },
+        { icon: "🌳", label: "자연 속 수목장", question: "자연 친화적인 수목장을 찾고 있습니다." },
+        { icon: "✝️", label: "기독교/천주교 전용", question: "기독교 예식이 가능한 추모시설을 알려주세요." },
+        { icon: "☸️", label: "불교 전용", question: "불교 전용 납골당이나 추모공원을 찾아주세요." },
+        { icon: "💎", label: "가격 비교하기", question: "주변 시설들의 가격을 비교해 주세요." },
+    ];
+
+    const FAQ_LIST_CONCIERGE = [
+        { icon: "🏢", label: "장례식장 찾기", question: "장례식장을 찾고 있습니다." }, // Trigger Scenario A
+        { icon: "🌲", label: "추모시설 찾기", question: "납골당이나 수목장을 찾고 있습니다." }, // Trigger Scenario B
+        { icon: "🐶", label: "동물장례 찾기", question: "반려동물 장례식장을 찾고 있습니다." }, // Trigger Scenario C
+        { icon: "📞", label: "상담원 연결", question: "상담원과 직접 통화하고 싶습니다." }, // Trigger Scenario F
     ];
 
     const activeFaqList = isPetFacility
         ? FAQ_LIST_PET
-        : (facility.type === 'funeral' ? FAQ_LIST_FUNERAL : FAQ_LIST_DEFAULT);
+        : (initialIntent === 'memorial_facility' ? FAQ_LIST_MEMORIAL :
+            (initialIntent === 'funeral_home' ? FAQ_LIST_FUNERAL :
+                (initialIntent ? FAQ_LIST_CONCIERGE : (facility.type === 'funeral' ? FAQ_LIST_FUNERAL : FAQ_LIST_CONCIERGE))));
 
     // Initial Greeting
     useEffect(() => {
         if (messages.length === 0) {
             // Determine welcome message based on facility type
             const isFuneralHome = facility.type === 'funeral';
+            const userName = currentUser?.name || '고객';
 
             let defaultWelcome = ``;
-            if (isPetFacility) {
+
+            if (initialIntent) {
+                if (initialIntent === 'funeral_home') {
+                    // Scenario A: Funeral Home Form (Detected Intent)
+                    // Trigger Form A immediately
+                    defaultWelcome = `갑작스러운 소식에 마음이 무거우시겠습니다. 고인과 유족분들에게 가장 편안한 장례식장을 빠르게 찾아드리겠습니다.\n\n아래 양식을 작성해 주시면 조건에 딱 맞는 장례식장을 추천해 드립니다.`;
+                    setMessages([{
+                        role: 'model',
+                        text: defaultWelcome,
+                        timestamp: new Date(),
+                        action: 'SHOW_FORM_A'
+                    }]);
+                    setTimeout(() => inputRef.current?.focus(), 100);
+                    return; // Skip default setMessages below
+                } else if (initialIntent === 'memorial_facility') {
+                    // Scenario B: Memorial Facility Form
+                    defaultWelcome = `고인을 영원히 기억할 수 있는 평온한 안식처를 찾고 계신가요?\n원하시는 장묘 형태나 지역이 있으시다면 말씀해 주세요. 마음(Maeum)이 투명한 가격 정보로 안내해 드립니다.\n\n1. **희망 지역** (예: 경기 용인)\n2. **장묘 형태** (예: 봉안당, 수목장)\n3. **예산 범위** (예: 1,000만 원 이하)`;
+                } else if (initialIntent === 'pet_funeral') {
+                    // Scenario C: Pet Funeral Form
+                    defaultWelcome = `사랑하는 아이와의 이별, 얼마나 가슴 아프실지 짐작이 갑니다. 아이가 무지개다리를 편안히 건널 수 있도록, 믿을 수 있는 장례식장을 안내해 드릴까요?\n\n1. **희망 지역** (예: 서울 마포구)\n2. **아이 정보** (예: 강아지/5kg)\n3. **필요 서비스** (예: 픽업, 스톤제작)`;
+                } else {
+                    defaultWelcome = `반갑습니다, ${userName}님! **AI 마음이**입니다.\n무엇을 도와드릴까요?\n\n아래 버튼을 눌러 원하시는 서비스를 선택해 주세요.`;
+                }
+            } else if (isPetFacility) {
+                // Scenario C-like for specific facility
                 defaultWelcome = `안녕하세요. **${facility.name}** 반려동물 장례지도사입니다.\n소중한 아이와의 이별을 도와드리겠습니다. \n차분하고 아름다운 이별을 위해 무엇이든 물어보세요.`;
             } else if (isFuneralHome) {
-                defaultWelcome = `삼가 고인의 명복을 빕니다. **${facility.name}** 의전 매니저입니다. \n빈소 현황이나 절차에 대해 무엇이든 물어보세요.`;
+                // Scenario A-like for specific facility
+                defaultWelcome = `전화주셔서 감사합니다. **${facility.name}**입니다. \n빈소 현황이나 가격 등 궁금하신 점을 말씀해 주세요.`;
             } else {
+                // Scenario B-like for specific facility
                 defaultWelcome = `안녕하세요. **${facility.name}**입니다. \n고인을 위한 평온한 안식처를 찾으시나요? 시설 위치나 가격 등 무엇이든 물어보세요.`;
             }
 
@@ -78,7 +288,7 @@ export const ChatInterface: React.FC<Props> = ({ facility, onAction, onClose }) 
             // Auto-focus input on open
             setTimeout(() => inputRef.current?.focus(), 100);
         }
-    }, [facility, isPetFacility]);
+    }, [facility, isPetFacility, initialIntent, currentUser]);
 
     // Auto-scroll
     useEffect(() => {
@@ -178,23 +388,77 @@ export const ChatInterface: React.FC<Props> = ({ facility, onAction, onClose }) 
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 pb-4 no-scrollbar" ref={scrollRef}>
                 {messages.map((msg, idx) => (
                     <div key={idx} className={`flex w-full animate-in fade-in slide-in-from-bottom-2 duration-300 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[85%] p-4 text-sm leading-relaxed ${msg.role === 'user'
-                            ? `bg-slate-800 text-white rounded-2xl rounded-tr-sm shadow-sm`
-                            : 'bg-white text-slate-800 border border-slate-200 rounded-2xl rounded-tl-sm shadow-sm'
-                            }`}>
-                            <div className="whitespace-pre-wrap">{msg.text}</div>
+                        <div className={`max-w-[85%] flex flex-col items-start gap-2`}>
+                            <div className={`p-4 text-sm leading-relaxed ${msg.role === 'user'
+                                ? `bg-slate-800 text-white rounded-2xl rounded-tr-sm shadow-sm self-end`
+                                : 'bg-white text-slate-800 border border-slate-200 rounded-2xl rounded-tl-sm shadow-sm w-full'
+                                }`}>
+                                <div className="whitespace-pre-wrap">{msg.text}</div>
 
-                            {/* Action Buttons for AI messages */}
-                            {msg.role === 'model' && msg.action && msg.action !== 'NONE' && (
-                                <button
-                                    onClick={() => onAction(msg.action!)}
-                                    className="mt-3 w-full bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition font-bold shadow-sm"
-                                >
-                                    {msg.action === 'RESERVE' && <><CalendarCheck size={16} /> 예약 상담 접수</>}
-                                    {msg.action === 'MAP' && <><MapPin size={16} /> 오시는 길 보기</>}
-                                    {msg.action === 'CALL_MANAGER' && <><Phone size={16} /> 담당자 전화 연결</>}
-                                </button>
-                            )}
+                                {/* Action Buttons for AI messages */}
+                                {msg.role === 'model' && msg.action && msg.action !== 'NONE' && (
+                                    <>
+                                        {msg.action === 'SHOW_FORM_A' && (
+                                            <FuneralRequestForm onSubmit={(text) => handleSend(text)} />
+                                        )}
+
+                                        {msg.action === 'RECOMMEND' && recommendedCandidates.length > 0 && (
+                                            <div className="mt-3 flex flex-col gap-2">
+                                                {recommendedCandidates.map(cand => (
+                                                    <div
+                                                        key={cand.id}
+                                                        className="bg-slate-50 border border-slate-200 rounded-xl p-3 cursor-pointer hover:bg-slate-100 hover:border-indigo-300 transition-all active:scale-95 group"
+                                                        onClick={() => onSwitchToFacility && onSwitchToFacility(cand)}
+                                                    >
+                                                        <div className="flex gap-3">
+                                                            {cand.imageUrl && !cand.imageUrl.includes('placeholder') ? (
+                                                                <img src={cand.imageUrl} alt={cand.name} className="w-14 h-14 rounded-lg object-cover bg-slate-200 border border-slate-100" onError={(e) => (e.target as HTMLImageElement).style.display = 'none'} />
+                                                            ) : (
+                                                                <div className="w-14 h-14 rounded-lg bg-indigo-50 flex items-center justify-center text-xs text-indigo-400 font-bold border border-indigo-100 shrink-0">
+                                                                    {cand.name.slice(0, 2)}
+                                                                </div>
+                                                            )}
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-center justify-between mb-0.5">
+                                                                    <h4 className="font-bold text-slate-800 text-sm truncate">{cand.name}</h4>
+                                                                    <div className="flex items-center gap-1 text-[9px] bg-white border border-indigo-100 px-1.5 py-0.5 rounded-full text-indigo-600 font-bold">
+                                                                        AI 상담
+                                                                    </div>
+                                                                </div>
+                                                                <p className="text-xs text-slate-500 mb-1 truncate">{cand.address}</p>
+                                                                <div className="flex items-center gap-2 text-xs">
+                                                                    <span className="text-amber-500 flex items-center gap-0.5 font-bold"><Star size={10} fill="currentColor" /> {cand.rating}</span>
+                                                                    <span className="text-slate-400">리뷰 {cand.reviewCount}개</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                                <button
+                                                    className="w-full py-2 text-xs text-slate-400 hover:text-slate-600 underline transition mt-1"
+                                                    onClick={() => onAction('RECOMMEND')}
+                                                >
+                                                    전체 목록 더 보기
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        {/* Other Actions */}
+                                        {msg.action !== 'SHOW_FORM_A' && (msg.action !== 'RECOMMEND' || recommendedCandidates.length === 0) && (
+                                            <button
+                                                onClick={() => onAction(msg.action!)}
+                                                className="mt-3 w-full bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition font-bold shadow-sm"
+                                            >
+                                                {msg.action === 'RESERVE' && <><CalendarCheck size={16} /> 예약 상담 접수</>}
+                                                {msg.action === 'MAP' && <><MapPin size={16} /> 오시는 길 보기</>}
+                                                {msg.action === 'CALL_MANAGER' && <><Phone size={16} /> 담당자 전화 연결</>}
+                                                {msg.action === 'RECOMMEND' && <><Sparkles size={16} /> 추천 결과 보기</>}
+                                                {msg.action === 'SWITCH_TO_CONSULT' && <><Phone size={16} /> 전문 상담원 연결</>}
+                                            </button>
+                                        )}
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </div>
                 ))}

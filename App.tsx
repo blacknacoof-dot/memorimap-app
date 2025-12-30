@@ -8,6 +8,7 @@ import { ComparisonModal } from './components/ComparisonModal';
 import { LoginModal } from './components/LoginModal';
 import { SignUpModal } from './components/SignUpModal';
 import { Facility, Reservation, ViewState, Review, FuneralCompany } from './types';
+import { RecommendationStarter } from './components/RecommendationStarter';
 import { Consultation } from './types/consultation';
 import { Menu, Search, Filter, Crosshair, Map as MapIcon, User, List, Settings, Scale, Ticket, X, Check, AlertCircle, Database, Shield, Award, ArrowLeft, Bot, Loader2 } from 'lucide-react';
 import { FACILITIES } from './constants';
@@ -133,6 +134,8 @@ const App: React.FC = () => {
   // Auth State
   const { isSignedIn, user, isLoaded } = useUser();
   const { signOut } = useClerk();
+
+  const [initialChatIntent, setInitialChatIntent] = useState<'funeral_home' | 'memorial_facility' | 'pet_funeral' | 'general' | null>(null);
 
   // Helper to get display user info (Memoize to prevent infinite re-fetches)
   const userInfo = React.useMemo(() => {
@@ -660,7 +663,7 @@ const App: React.FC = () => {
               initialZoom={targetMapZoom}
             />
 
-            <div className="absolute bottom-20 right-4 z-30 flex flex-col gap-3 pointer-events-none">
+            <div className="absolute bottom-24 left-4 z-30 flex flex-col gap-3 pointer-events-none">
               <div className="flex flex-col gap-3 pointer-events-auto">
                 {compareList.length > 0 && (
                   <button
@@ -1357,6 +1360,37 @@ const App: React.FC = () => {
             )
           }
 
+          {/* AI Helper - Maum-i */}
+          {viewState === ViewState.MAP && !selectedFacility && !showComparison && !aiChatFacility && (
+            <RecommendationStarter
+              onSelectIntent={(intent) => {
+                setInitialChatIntent(intent);
+                setAiChatFacility({ name: '통합 AI 마음이', id: 'maum-i', type: 'assistant' } as any);
+              }}
+            />
+          )}
+
+          {/* Global Chat Interface (Maum-i or Specific Facility) */}
+          {aiChatFacility && (
+            <ChatInterface
+              facility={aiChatFacility}
+              allFacilities={facilities} // Pass all facilities for recommendation search
+              onAction={(action) => {
+                console.log('AI Action:', action);
+              }}
+              onClose={() => {
+                setAiChatFacility(null);
+                setInitialChatIntent(null);
+              }}
+              currentUser={userInfo}
+              initialIntent={initialChatIntent}
+              onNavigateToFacility={(facility) => {
+                // Switch chat context to the specific facility
+                setAiChatFacility(facility);
+              }}
+            />
+          )}
+
           {
             isBooking && selectedFacility && (
               <ReservationModal
@@ -1473,27 +1507,54 @@ const App: React.FC = () => {
               <div className="w-full h-full md:w-[420px] md:h-[85vh] md:rounded-2xl overflow-hidden bg-white shadow-2xl relative animate-in zoom-in-95 duration-300">
                 <ChatInterface
                   facility={aiChatFacility}
-                  onClose={() => setAiChatFacility(null)}
+                  currentUser={userInfo}
+                  initialIntent={initialChatIntent}
+                  onClose={() => {
+                    setAiChatFacility(null);
+                    setInitialChatIntent(null);
+                  }}
+                  onSearchFacilities={(region) => {
+                    // Simple Search Logic
+                    // 1. Filter by address containing region (e.g. "신촌동")
+                    const exactMatches = facilities.filter(f => f.address.includes(region) && f.type === 'funeral'); // Recommend Funeral Homes primarily for Scenario A
+
+                    // 2. Sort by Rating/Review
+                    const sorted = exactMatches.sort((a, b) => b.rating - a.rating || b.reviewCount - a.reviewCount);
+
+                    // 3. Fallback: If no exact matches, fuzzy search or broader region?
+                    // For now, return top 3 exact matches. If empty, maybe search "Seoul" if region is "Seoul Sinchon-dong"?
+                    // Let's stick to exact match of user input segment.
+
+                    return sorted.slice(0, 3);
+                  }}
+                  onSwitchToFacility={(target) => {
+                    // Switch the Chat Context
+                    setAiChatFacility(target);
+                    // Optional: Add a system message to history? 
+                    // ChatInterface handles its own history, so switching facility resets it (key change or new component).
+                    // Since 'aiChatFacility' changes, ChatInterface re-mounts? 
+                    // Yes, if we don't key it, it might re-render. Ideally key it by ID.
+                  }}
                   onAction={(action) => {
                     if (action === 'RESERVE') {
-                      // Handle reservation from chat
                       setAiChatFacility(null);
                       setSelectedFacility(aiChatFacility);
-
-                      // Auto-trigger urgent mode for Funeral Homes
                       if (aiChatFacility.type === 'funeral') {
                         setIsUrgentBooking(true);
                       }
-
                       setIsBooking(true);
                     } else if (action === 'MAP') {
-                      // Handle map from chat
                       setAiChatFacility(null);
                       setSelectedFacility(aiChatFacility);
                       handleViewOnMap();
                     } else if (action === 'CALL_MANAGER') {
                       alert(`담당자(${aiChatFacility.phone})에게 연결합니다.`);
                       window.location.href = `tel:${aiChatFacility.phone}`;
+                    } else if (action === 'RECOMMEND') {
+                      // Fallback generic recommend action (Show list view with filter?)
+                      setAiChatFacility(null);
+                      setSearchQuery(aiChatFacility.address.split(' ')[0] || ''); // Hacky context
+                      setViewState(ViewState.LIST);
                     }
                   }}
                 />

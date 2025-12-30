@@ -40,7 +40,7 @@ async function run() {
             console.log("   No coordinates found.");
         }
     } catch (e) {
-        console.error("   Geocoding failed", e.message);
+        console.error("   Geocoding failed", (e as any).message);
     }
 }
 
