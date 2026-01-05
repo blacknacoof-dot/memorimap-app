@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Building2, Phone, User, Send, CheckCircle, Upload, AlertCircle, FileText } from 'lucide-react';
+import { ArrowLeft, Building2, Phone, User, Send, CheckCircle, Upload, AlertCircle, FileText, MapPin } from 'lucide-react';
 import { useUser } from '../lib/auth';
+
+import { submitPartnerApplication } from '../lib/queries';
 
 interface Props {
     onBack: () => void;
@@ -14,6 +16,7 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
         companyName: '',
         managerName: '',
         phone: '',
+        address: '',
         email: '',
         type: 'funeral_home', // funeral_home, memorial_park, sangjo, pet, other
         message: ''
@@ -37,18 +40,25 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
         e.preventDefault();
         setIsSubmitting(true);
 
-        // TODO: Connect to backend
-        // Simulate upload and submission
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        console.log('Partner Inquiry Submitted:', {
-            ...formData,
-            userId: user?.id || 'anonymous',
-            file: selectedFile ? selectedFile.name : 'no file'
-        });
-
-        setIsSuccess(true);
-        setIsSubmitting(false);
+        try {
+            await submitPartnerApplication({
+                name: formData.companyName,
+                type: formData.type,
+                address: formData.address,
+                phone: formData.phone,
+                managerName: formData.managerName,
+                email: formData.email,
+                businessLicenseImage: selectedFile,
+                userId: user?.id
+            });
+            console.log('Submission success');
+            setIsSuccess(true);
+        } catch (error) {
+            console.error('Submission failed', error);
+            alert('신청 제출 중 오류가 발생했습니다.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -217,6 +227,21 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
                             </div>
 
                             <div className="space-y-1">
+                                <label className="text-sm font-bold text-gray-700">주소 <span className="text-red-500">*</span></label>
+                                <div className="relative">
+                                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                    <input
+                                        type="text"
+                                        name="address"
+                                        required
+                                        value={formData.address}
+                                        onChange={handleChange}
+                                        placeholder="사업장 주소 (시/군/구 포함)"
+                                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-1">
                                 <label className="text-sm font-bold text-gray-700">담당자명 <span className="text-red-500">*</span></label>
                                 <div className="relative">
                                     <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -272,7 +297,7 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
                         </p>
                     </form>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };

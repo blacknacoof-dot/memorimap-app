@@ -744,9 +744,10 @@ export const getPendingFacilities = async () => {
     try {
         const { data, error } = await supabase
             .from('memorial_spaces')
-            .select('*')
+            .select('id, name, type, address, phone, created_at, owner_user_id')
             .eq('is_verified', false)
-            .order('created_at', { ascending: false });
+            .order('created_at', { ascending: false })
+            .limit(50); // Prevent massive load
 
         if (error) throw error;
 
@@ -757,7 +758,7 @@ export const getPendingFacilities = async () => {
             type: item.type,
             address: item.address,
             phone: item.phone,
-            businessLicenseImage: item.business_license_image || null, // 사업자 등록증
+            businessLicenseImage: null, // 사업자 등록증 컬럼 없음
             createdAt: item.created_at,
             ownerUserId: item.owner_user_id
         }));
@@ -878,7 +879,7 @@ export const getAllSubscriptions = async () => {
             .from('facility_subscriptions')
             .select(`
                 *,
-                plan:subscription_plans(name),
+                plan:subscription_plans(name, price),
                 facility:memorial_spaces(name)
             `)
             .eq('status', 'active');
@@ -890,10 +891,52 @@ export const getAllSubscriptions = async () => {
             facilityName: s.facility?.name || 'Unknown',
             planName: s.plan?.name || 'Unknown',
             expiresAt: new Date(s.end_date).toLocaleDateString(),
-            price: 0 // Mock or join from plan price
+            price: s.plan?.price || 0
         }));
     } catch (e) {
         console.error('getAllSubscriptions error:', e);
         return [];
+    }
+};
+
+// 4. Partner Inquiry Submission
+export const submitPartnerApplication = async (data: {
+    name: string;
+    type: string;
+    address: string;
+    phone: string;
+    managerName: string;
+    email?: string;
+    businessLicenseImage?: File | null;
+    userId?: string;
+}) => {
+    try {
+        // 1. Upload Image if exists (Skip for now or mock URL)
+        let businessLicenseUrl = null;
+        if (data.businessLicenseImage) {
+            // Mock upload - in real app, use supabase.storage
+            businessLicenseUrl = `https://mock-storage.com/${Date.now()}_${data.businessLicenseImage.name}`;
+        }
+
+        // 2. Insert into memorial_spaces (as unverified)
+        const { error } = await supabase
+            .from('memorial_spaces')
+            .insert({
+                name: data.name,
+                type: data.type, // Ensure type matches DB enum or constraint
+                address: data.address, // Required
+                phone: data.phone,
+                is_verified: false, // Critical for Pending list
+                owner_user_id: data.userId || 'anon', // Use 'anon' if userId is undefined
+                // meta info stored in description or creating separate columns if needed
+                description: `담당자: ${data.managerName} (${data.email || 'No Email'})`,
+                // business_license_image: businessLicenseUrl // Column removed from schema
+            });
+
+        if (error) throw error;
+        return { success: true };
+    } catch (e) {
+        console.error('submitPartnerApplication error:', e);
+        throw e;
     }
 };
