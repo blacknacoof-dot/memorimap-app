@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient';
+﻿import { supabase } from './supabaseClient';
 import { Review, Reservation, Facility } from '../types';
 import { Consultation, Message } from '../types/consultation';
 
@@ -733,6 +733,167 @@ export const getFacilityFaqs = async (facilityId: string) => {
         return data || [];
     } catch (e) {
         console.error('Fetch FAQs error:', e);
+        return [];
+    }
+};
+
+// --- 슈퍼 관리자 기능 (입점, 소통, 구독) ---
+
+// 1. 입점 관리 (Approvals)
+export const getPendingFacilities = async () => {
+    try {
+        const { data, error } = await supabase
+            .from('memorial_spaces')
+            .select('*')
+            .eq('is_verified', false)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        // Map to Facility type (simplified)
+        return (data || []).map((item: any) => ({
+            id: item.id?.toString(),
+            name: item.name,
+            type: item.type,
+            address: item.address,
+            phone: item.phone,
+            businessLicenseImage: item.business_license_image || null, // 사업자 등록증
+            createdAt: item.created_at,
+            ownerUserId: item.owner_user_id
+        }));
+    } catch (e) {
+        console.error('getPendingFacilities error:', e);
+        return [];
+    }
+};
+
+export const approveFacility = async (facilityId: string) => {
+    try {
+        const { error } = await supabase
+            .from('memorial_spaces')
+            .update({
+                is_verified: true,
+                verified_at: new Date().toISOString()
+            })
+            .eq('id', facilityId);
+        if (error) throw error;
+    } catch (e) {
+        console.error('approveFacility error:', e);
+        throw e;
+    }
+};
+
+export const rejectFacility = async (facilityId: string) => {
+    try {
+        // 실제 삭제 또는 status='rejected' 업데이트. 여기선 삭제로 가정
+        const { error } = await supabase
+            .from('memorial_spaces')
+            .delete()
+            .eq('id', facilityId);
+        if (error) throw error;
+    } catch (e) {
+        console.error('rejectFacility error:', e);
+        throw e;
+    }
+};
+
+// 2. 소통 센터 (Communication) - 공지사항
+export const createNotice = async (title: string, content: string, category = 'general') => {
+    try {
+        const { error } = await supabase
+            .from('admin_notices')
+            .insert({
+                title,
+                content,
+                category,
+                author_id: (await supabase.auth.getUser()).data.user?.id
+            });
+        if (error) throw error;
+    } catch (e) {
+        console.error('createNotice error:', e);
+        throw e;
+    }
+};
+
+export const getNotices = async () => {
+    try {
+        const { data, error } = await supabase
+            .from('admin_notices')
+            .select('*')
+            .order('created_at', { ascending: false });
+        if (error) return []; // Table absence safety
+        return data.map((n: any) => ({
+            id: n.id,
+            title: n.title,
+            content: n.content,
+            category: n.category,
+            date: new Date(n.created_at).toLocaleDateString()
+        }));
+    } catch (e) {
+        return [];
+    }
+};
+
+// 2. 소통 센터 (Communication) - 1:1 문의
+export interface Inquiry {
+    id: string;
+    companyName: string;
+    type: string;
+    status: string;
+    message?: string; // Content if available
+    createdAt: string;
+}
+
+export const getInquiries = async (statusFilter?: string): Promise<Inquiry[]> => {
+    try {
+        let query = supabase
+            .from('partner_inquiries')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (statusFilter && statusFilter !== 'all') {
+            query = query.eq('status', statusFilter);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        return data.map((i: any) => ({
+            id: i.id,
+            companyName: i.company_name,
+            type: i.type,
+            status: i.status,
+            createdAt: new Date(i.created_at).toLocaleDateString()
+        }));
+    } catch (e) {
+        console.error('getInquiries error:', e);
+        return [];
+    }
+};
+
+// 3. 구독/매출 (Subscriptions)
+export const getAllSubscriptions = async () => {
+    try {
+        const { data, error } = await supabase
+            .from('facility_subscriptions')
+            .select(`
+                *,
+                plan:subscription_plans(name),
+                facility:memorial_spaces(name)
+            `)
+            .eq('status', 'active');
+
+        if (error) throw error;
+
+        return data.map((s: any) => ({
+            id: s.id,
+            facilityName: s.facility?.name || 'Unknown',
+            planName: s.plan?.name || 'Unknown',
+            expiresAt: new Date(s.end_date).toLocaleDateString(),
+            price: 0 // Mock or join from plan price
+        }));
+    } catch (e) {
+        console.error('getAllSubscriptions error:', e);
         return [];
     }
 };
