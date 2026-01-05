@@ -35,10 +35,10 @@ export const PartnerAdmissions: React.FC = () => {
         }
     };
 
-    const handleApprove = async (id: string, name: string) => {
+    const handleApprove = async (id: string, name: string, ownerId: string) => {
         if (!confirm(`${name} 업체의 입점을 승인하시겠습니까?`)) return;
         try {
-            await approveFacility(id);
+            await approveFacility(id, ownerId);
             alert('승인되었습니다.');
             loadFacilities();
         } catch (error) {
@@ -102,41 +102,49 @@ export const PartnerAdmissions: React.FC = () => {
                     </div>
                 ) : (
                     filtered.map(f => (
-                        <div key={f.id} className="bg-white p-5 rounded-xl border shadow-sm flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between hover:border-blue-200 transition-colors">
-                            <div className="flex-1 space-y-2">
-                                <div className="flex items-center gap-2">
+                        <div key={f.id} className="bg-white p-6 rounded-xl border shadow-sm flex flex-col md:flex-row gap-6 items-start md:items-center justify-between hover:border-blue-200 transition-all">
+                            <div className="flex-1 space-y-2 w-full">
+                                <div className="flex flex-wrap items-center gap-2">
                                     <h3 className="text-lg font-bold text-gray-900">{f.name}</h3>
-                                    <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded border border-gray-200 font-medium">
-                                        {f.type}
-                                    </span>
-                                    <span className="px-2 py-0.5 bg-amber-50 text-amber-600 text-xs rounded border border-amber-100 font-bold flex items-center gap-1">
-                                        <FileText size={10} /> 서류 검토 필요
-                                    </span>
+                                    <div className="flex items-center gap-1">
+                                        <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded border border-gray-200 font-medium whitespace-nowrap">
+                                            {f.type === 'funeral_home' ? '장례식장' :
+                                                f.type === 'memorial_park' ? '봉안/묘지' :
+                                                    f.type === 'sea' ? '해양장' :
+                                                        f.type === 'sangjo' ? '상조회사' :
+                                                            f.type === 'pet' ? '동물장묘' : f.type}
+                                        </span>
+                                        <span className="px-2 py-0.5 bg-amber-50 text-amber-600 text-xs rounded border border-amber-100 font-bold flex items-center gap-1 whitespace-nowrap">
+                                            <FileText size={10} /> 서류 검토 필요
+                                        </span>
+                                    </div>
                                 </div>
                                 <div className="text-sm text-gray-500 space-y-1">
-                                    <p className="flex items-center gap-1.5"><MapPin size={14} className="text-gray-400" /> {f.address}</p>
-                                    <p className="flex items-center gap-1.5"><Phone size={14} className="text-gray-400" /> {f.phone || '전화번호 없음'}</p>
-                                    <p className="flex items-center gap-1.5"><Building2 size={14} className="text-gray-400" /> 신청일: {new Date(f.createdAt).toLocaleDateString()}</p>
+                                    <p className="flex items-center gap-1.5"><MapPin size={14} className="text-gray-400 shrink-0" /> <span className="truncate">{f.address}</span></p>
+                                    <div className="flex flex-wrap gap-x-4 gap-y-1">
+                                        <p className="flex items-center gap-1.5"><Phone size={14} className="text-gray-400 shrink-0" /> {f.phone || '전화번호 없음'}</p>
+                                        <p className="flex items-center gap-1.5"><Building2 size={14} className="text-gray-400 shrink-0" /> 신청일: {new Date(f.createdAt).toLocaleDateString()}</p>
+                                    </div>
                                 </div>
                                 {f.businessLicenseImage && (
-                                    <a href={f.businessLicenseImage} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline mt-1">
-                                        <FileText size={12} /> 사업자등록증 보기
+                                    <a href={f.businessLicenseImage} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline mt-1 bg-blue-50 px-2 py-1 rounded">
+                                        <FileText size={12} /> 사업자등록증 확인
                                     </a>
                                 )}
                             </div>
 
-                            <div className="flex gap-2 w-full sm:w-auto">
+                            <div className="flex gap-2 w-full md:w-auto mt-4 md:mt-0">
                                 <button
-                                    onClick={() => handleApprove(f.id, f.name)}
-                                    className="flex-1 sm:flex-none flex items-center justify-center gap-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold text-sm transition-colors shadow-sm"
+                                    onClick={() => handleApprove(f.id, f.name, f.ownerUserId)}
+                                    className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-bold text-sm transition-all shadow-md active:scale-95 whitespace-nowrap"
                                 >
-                                    <CheckCircle size={16} /> 승인
+                                    <CheckCircle size={18} /> 승인
                                 </button>
                                 <button
                                     onClick={() => handleReject(f.id, f.name)}
-                                    className="flex-1 sm:flex-none flex items-center justify-center gap-1 px-4 py-2 bg-white text-gray-500 border border-gray-200 rounded-lg hover:bg-red-50 hover:text-red-500 hover:border-red-200 font-medium text-sm transition-colors"
+                                    className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-6 py-2.5 bg-red-50 text-red-600 border border-red-100 rounded-xl hover:bg-red-100 font-bold text-sm transition-all active:scale-95 whitespace-nowrap"
                                 >
-                                    <XCircle size={16} /> 거절
+                                    <XCircle size={18} /> 거절
                                 </button>
                             </div>
                         </div>

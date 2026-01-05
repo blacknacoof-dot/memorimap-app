@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Building2, Phone, User, Send, CheckCircle, Upload, AlertCircle, FileText, MapPin } from 'lucide-react';
+import { ArrowLeft, Building2, Phone, User, Send, CheckCircle, Upload, AlertCircle, FileText, MapPin, Search } from 'lucide-react';
 import { useUser } from '../lib/auth';
 
-import { submitPartnerApplication } from '../lib/queries';
+import { submitPartnerApplication, searchKnownFacilities } from '../lib/queries';
+import { FUNERAL_COMPANIES } from '../constants';
 
 interface Props {
     onBack: () => void;
@@ -18,12 +19,31 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
         phone: '',
         address: '',
         email: '',
-        type: 'funeral_home', // funeral_home, memorial_park, sangjo, pet, other
+        type: 'funeral_home', // funeral_home, memorial_park, sangjo, pet, sea
         message: ''
     });
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+
+    // Search related state
+    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [showResults, setShowResults] = useState(false);
+    const [isSearching, setIsSearching] = useState(false);
+    const wrapperRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+                setShowResults(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [wrapperRef]);
+
 
     // Pre-fill email if logged in
     useEffect(() => {
@@ -36,8 +56,62 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
         }
     }, [isSignedIn, user]);
 
+    // Search effect
+    useEffect(() => {
+        const timer = setTimeout(async () => {
+            if (formData.companyName.length >= 2) {
+                setIsSearching(true);
+                try {
+                    if (formData.type === 'sangjo') {
+                        // Search local constants for Sangjo
+                        const results = FUNERAL_COMPANIES.filter(c =>
+                            c.name.includes(formData.companyName)
+                        ).map(c => ({
+                            id: c.id,
+                            name: c.name,
+                            address: '전국 서비스 (본사)', // Sangjo usually doesn't have local address in this context
+                            phone: c.phone
+                        }));
+                        setSearchResults(results);
+                        setShowResults(true);
+                    } else {
+                        // Search DB for facilities
+                        const results = await searchKnownFacilities(formData.companyName, formData.type);
+                        setSearchResults(results);
+                        setShowResults(true);
+                    }
+                } catch (e) {
+                    console.error('Search error', e);
+                } finally {
+                    setIsSearching(false);
+                }
+            } else {
+                setSearchResults([]);
+                setShowResults(false);
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [formData.companyName, formData.type]);
+
+    const handleSelectFacility = (facility: any) => {
+        setFormData(prev => ({
+            ...prev,
+            companyName: facility.name,
+            address: facility.address || '',
+            phone: facility.phone || ''
+        }));
+        setShowResults(false);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!selectedFile) {
+            alert('사업자등록증 파일을 첨부해주세요.');
+            return;
+        }
+
         setIsSubmitting(true);
 
         try {
@@ -150,20 +224,21 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
                             <label className="text-sm font-bold text-gray-700 flex items-center gap-1">
                                 업종 구분 <span className="text-red-500">*</span>
                             </label>
-                            <div className="grid grid-cols-2 gap-2">
-                                {['funeral_home', 'memorial_park', 'sangjo', 'pet'].map((type) => (
+                            <div className="grid grid-cols-3 gap-2">
+                                {['funeral_home', 'memorial_park', 'sea', 'sangjo', 'pet'].map((type) => (
                                     <button
                                         key={type}
                                         type="button"
-                                        onClick={() => setFormData(prev => ({ ...prev, type }))}
-                                        className={`py-3 px-3 rounded-xl text-sm font-medium border transition-colors ${formData.type === type
+                                        onClick={() => setFormData(prev => ({ ...prev, type, companyName: '', address: '', phone: '' }))}
+                                        className={`py-3 px-2 rounded-xl text-sm font-medium border transition-colors ${formData.type === type
                                             ? 'bg-primary border-primary text-white shadow-md transform scale-[1.02]'
                                             : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
                                             }`}
                                     >
                                         {type === 'funeral_home' ? '장례식장' :
                                             type === 'memorial_park' ? '봉안/묘지' :
-                                                type === 'sangjo' ? '상조회사' : '동물장묘'}
+                                                type === 'sea' ? '해양장' :
+                                                    type === 'sangjo' ? '상조회사' : '동물장묘'}
                                     </button>
                                 ))}
                             </div>
@@ -185,7 +260,6 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
                                     onChange={handleFileChange}
                                     accept="image/*,.pdf"
                                     className="hidden"
-                                    required
                                 />
 
                                 {selectedFile ? (
@@ -210,7 +284,7 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
 
                         {/* 3. Basic Info */}
                         <div className="space-y-4">
-                            <div className="space-y-1">
+                            <div className="space-y-1 relative" ref={wrapperRef}>
                                 <label className="text-sm font-bold text-gray-700">업체명 <span className="text-red-500">*</span></label>
                                 <div className="relative">
                                     <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -220,10 +294,36 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
                                         required
                                         value={formData.companyName}
                                         onChange={handleChange}
-                                        placeholder="사업자등록증상의 상호명"
+                                        autoComplete="off"
+                                        placeholder={formData.type === 'sangjo' ? "상조회사/브랜드명 입력" : "업체명 검색/입력 (자동완성)"}
                                         className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                     />
+                                    {isSearching && (
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                            <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                                        </div>
+                                    )}
                                 </div>
+
+                                {/* Autocomplete Results */}
+                                {showResults && searchResults.length > 0 && (
+                                    <div className="absolute top-full left-0 right-0 z-20 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                                        <div className="p-2 text-xs text-gray-500 border-b bg-gray-50">
+                                            '{formData.companyName}' 검색 결과 (탭하여 정보 입력)
+                                        </div>
+                                        {searchResults.map((facility) => (
+                                            <button
+                                                key={facility.id}
+                                                type="button"
+                                                onClick={() => handleSelectFacility(facility)}
+                                                className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b last:border-0 transition-colors flex flex-col"
+                                            >
+                                                <span className="font-bold text-gray-900 text-sm">{facility.name}</span>
+                                                <span className="text-xs text-gray-500 truncate">{facility.address}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             <div className="space-y-1">
@@ -241,6 +341,7 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
                                     />
                                 </div>
                             </div>
+
                             <div className="space-y-1">
                                 <label className="text-sm font-bold text-gray-700">담당자명 <span className="text-red-500">*</span></label>
                                 <div className="relative">
@@ -297,7 +398,7 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
                         </p>
                     </form>
                 </div>
-            </div >
-        </div >
+            </div>
+        </div>
     );
 };

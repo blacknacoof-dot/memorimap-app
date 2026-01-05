@@ -7,7 +7,7 @@ import { ReservationList } from './ReservationList';
 import { ReservationDetailModal } from './ReservationDetailModal';
 import { EditProfileModal } from './EditProfileModal';
 import { LegalModal } from './LegalModal';
-import { Info, Heart } from 'lucide-react';
+import { Info, Heart, Star } from 'lucide-react';
 import { favoriteService, Favorite } from '../services/favoriteService';
 import { useNavigate } from 'react-router-dom'; // If used, or rely on onNavigate
 // Actually onNavigate is passed as prop.

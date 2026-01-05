@@ -363,7 +363,7 @@ export const FacilitySheet: React.FC<Props> = ({
               <div>
                 <h3 className="font-bold mb-2 text-gray-800">편의시설 및 특징</h3>
                 <div className="flex flex-wrap gap-2">
-                  {facility.features.map((feature, idx) => (
+                  {(facility.features || []).map((feature, idx) => (
                     <span key={idx} className="bg-secondary text-primary px-3 py-1 rounded-full text-xs font-medium">
                       {feature}
                     </span>

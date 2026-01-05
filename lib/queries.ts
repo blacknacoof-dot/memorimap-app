@@ -758,7 +758,7 @@ export const getPendingFacilities = async () => {
             type: item.type,
             address: item.address,
             phone: item.phone,
-            businessLicenseImage: null, // 사업자 등록증 컬럼 없음
+            businessLicenseImage: item.business_license_image,
             createdAt: item.created_at,
             ownerUserId: item.owner_user_id
         }));
@@ -768,8 +768,18 @@ export const getPendingFacilities = async () => {
     }
 };
 
-export const approveFacility = async (facilityId: string) => {
+export const approveFacility = async (facilityId: string, ownerId?: string) => {
     try {
+        // 1. Get facility type for role mapping
+        const { data: facility, error: fetchError } = await supabase
+            .from('memorial_spaces')
+            .select('type')
+            .eq('id', facilityId)
+            .single();
+
+        if (fetchError) throw fetchError;
+
+        // 2. Update facility status
         const { error } = await supabase
             .from('memorial_spaces')
             .update({
@@ -778,6 +788,26 @@ export const approveFacility = async (facilityId: string) => {
             })
             .eq('id', facilityId);
         if (error) throw error;
+
+        // 3. Promote owner to admin if ownerId is provided
+        if (ownerId) {
+            let newRole = 'facility_admin';
+            if (facility.type === 'sangjo') {
+                newRole = 'sangjo_branch_manager';
+            }
+
+            const { error: roleError } = await supabase
+                .from('users')
+                .update({ role: newRole })
+                .eq('clerk_id', ownerId);
+
+            if (roleError) {
+                console.error('Role update failed:', roleError);
+                // We don't throw here to avoid failing the whole approval if role update fails
+            } else {
+                console.log(`User ${ownerId} promoted to ${newRole}`);
+            }
+        }
     } catch (e) {
         console.error('approveFacility error:', e);
         throw e;
@@ -795,6 +825,34 @@ export const rejectFacility = async (facilityId: string) => {
     } catch (e) {
         console.error('rejectFacility error:', e);
         throw e;
+    }
+};
+
+export const searchKnownFacilities = async (term: string, type: string) => {
+    try {
+        let query = supabase
+            .from('memorial_spaces')
+            .select('id, name, address, phone, type')
+            .ilike('name', `%${term}%`)
+            .limit(10);
+
+        if (type === 'funeral_home') {
+            query = query.eq('type', 'funeral');
+        } else if (type === 'memorial_park') {
+            query = query.in('type', ['park', 'memorial_park', 'charnel', 'natural', 'complex']);
+        } else if (type === 'sea') {
+            query = query.eq('type', 'sea');
+        } else if (type === 'pet') {
+            query = query.eq('type', 'pet');
+        }
+
+        const { data, error } = await query;
+
+        if (error) throw error;
+        return data || [];
+    } catch (e) {
+        console.error('Search facilities error:', e);
+        return [];
     }
 };
 
@@ -911,26 +969,46 @@ export const submitPartnerApplication = async (data: {
     userId?: string;
 }) => {
     try {
-        // 1. Upload Image if exists (Skip for now or mock URL)
         let businessLicenseUrl = null;
+
+        // 1. Upload Image to 'partner-uploads' bucket
         if (data.businessLicenseImage) {
-            // Mock upload - in real app, use supabase.storage
-            businessLicenseUrl = `https://mock-storage.com/${Date.now()}_${data.businessLicenseImage.name}`;
+            const fileExt = data.businessLicenseImage.name.split('.').pop();
+            const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+            const filePath = `licenses/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('partner-uploads')
+                .upload(filePath, data.businessLicenseImage);
+
+            if (uploadError) {
+                console.error('Upload error:', uploadError);
+                // Continue without image or throw? Let's log and continue or throw.
+                // throw uploadError; 
+            } else {
+                const { data: { publicUrl } } = supabase.storage
+                    .from('partner-uploads')
+                    .getPublicUrl(filePath);
+                businessLicenseUrl = publicUrl;
+            }
         }
 
-        // 2. Insert into memorial_spaces (as unverified)
+        // 2. Insert into memorial_spaces
+        const dbType = data.type === 'funeral_home' ? 'funeral'
+            : data.type === 'memorial_park' ? 'park'
+                : data.type;
+
         const { error } = await supabase
             .from('memorial_spaces')
             .insert({
                 name: data.name,
-                type: data.type, // Ensure type matches DB enum or constraint
-                address: data.address, // Required
+                type: dbType,
+                address: data.address,
                 phone: data.phone,
-                is_verified: false, // Critical for Pending list
-                owner_user_id: data.userId || 'anon', // Use 'anon' if userId is undefined
-                // meta info stored in description or creating separate columns if needed
+                is_verified: false,
+                owner_user_id: data.userId || (await supabase.auth.getUser()).data.user?.id,
                 description: `담당자: ${data.managerName} (${data.email || 'No Email'})`,
-                // business_license_image: businessLicenseUrl // Column removed from schema
+                business_license_image: businessLicenseUrl
             });
 
         if (error) throw error;
@@ -940,3 +1018,4 @@ export const submitPartnerApplication = async (data: {
         throw e;
     }
 };
+
