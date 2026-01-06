@@ -12,7 +12,7 @@ export const NoticeManager: React.FC = () => {
     const [newTitle, setNewTitle] = useState('');
     const [newContent, setNewContent] = useState('');
     const [target, setTarget] = useState<'all' | 'facility_admin' | 'user'>('all');
-    const [isImportant, setIsImportant] = useState(false);
+    const [isPublished, setIsPublished] = useState(true);
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -21,18 +21,14 @@ export const NoticeManager: React.FC = () => {
                 title: newTitle,
                 content: newContent,
                 target_audience: target,
-                is_important: isImportant,
+                is_published: isPublished,
             });
             alert('공지사항이 등록되었습니다.');
             setIsCreating(false);
             setNewTitle('');
             setNewContent('');
             setTarget('all');
-            // Refresh logic handled by hook/React Query ideally, or window.location.reload() for simple approach
-            // Here assuming hook auto-refreshes or we depend on parent re-render.
-            // Since our hook is simple useEffect fetch, we might need manual refresh or depend on useEffect re-triggering if we added a refresh function to the hook expose.
-            // For now, let's just alert. The user's hook exposes 'refresh'. We should use it.
-            window.location.reload(); // Simple refresh for now as the hook provided didn't explicitly export refresh in the provided code snippet usage in prompt
+            window.location.reload();
         } catch (e) {
             console.error(e);
             alert('공지 등록 실패');
@@ -106,10 +102,10 @@ export const NoticeManager: React.FC = () => {
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input
                                     type="checkbox"
-                                    checked={isImportant} onChange={e => setIsImportant(e.target.checked)}
+                                    checked={isPublished} onChange={e => setIsPublished(e.target.checked)}
                                     className="w-4 h-4 text-blue-600"
                                 />
-                                <span className="text-sm font-medium text-red-600">중요 공지 (상단 고정)</span>
+                                <span className="text-sm font-medium text-green-600">즉시 게시 (Publish)</span>
                             </label>
                         </div>
                     </div>
@@ -135,9 +131,9 @@ export const NoticeManager: React.FC = () => {
                             <li key={notice.id} className="p-5 hover:bg-gray-50 flex items-start justify-between group">
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2">
-                                        {notice.is_important && <span className="bg-red-100 text-red-600 text-[10px] font-bold px-1.5 py-0.5 rounded">중요</span>}
+                                        {!notice.is_published && <span className="bg-gray-100 text-gray-500 text-[10px] font-bold px-1.5 py-0.5 rounded">비공개</span>}
                                         {getTargetBadge(notice.target_audience)}
-                                        <span className="text-xs text-gray-400">{notice.created_at}</span>
+                                        <span className="text-xs text-gray-400">{format(new Date(notice.created_at || new Date()), 'yyyy-MM-dd')}</span>
                                     </div>
                                     <h4 className="font-bold text-gray-900 text-lg">{notice.title}</h4>
                                     <p className="text-gray-600 text-sm line-clamp-1">{notice.content}</p>

@@ -67,13 +67,13 @@ export function useRevenue() {
 
     // 간단한 통계 계산
     const totalRevenue = payments
-        .filter(p => p.status === 'success')
+        .filter(p => p.status === 'succeeded')
         .reduce((acc, curr) => acc + curr.amount, 0);
 
     // 이번 달 매출
     const currentMonth = new Date().getMonth();
     const monthlyRevenue = payments
-        .filter(p => p.status === 'success' && new Date(p.payment_date).getMonth() === currentMonth)
+        .filter(p => p.status === 'succeeded' && new Date(p.paid_at).getMonth() === currentMonth)
         .reduce((acc, curr) => acc + curr.amount, 0);
 
     return { payments, totalRevenue, monthlyRevenue, loading, refresh };

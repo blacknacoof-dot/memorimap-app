@@ -84,12 +84,12 @@ export interface PartnerInquiry {
 export interface Subscription {
     id: string;
     facility_id: string;
-    facility_name?: string; // Join 된 이름 (UI용)
-    plan_type: SubscriptionPlan;
-    status: SubscriptionStatus;
+    facility?: { name: string }; // Joined property
+    plan_name: 'Basic' | 'Premium' | 'Enterprise';
+    status: 'active' | 'expired' | 'cancelled';
     start_date: string;
-    end_date: string;
-    monthly_price: number;
+    end_date: string | null;
+    auto_renew: boolean;
     created_at: string;
 }
 
@@ -98,12 +98,12 @@ export interface Subscription {
  */
 export interface Payment {
     id: string;
-    facility_id: string | null;
-    facility_name?: string; // UI용
+    subscription_id: string | null;
     amount: number;
-    status: 'success' | 'refunded' | 'failed';
-    payment_date: string;
-    description: string;
+    currency: string;
+    status: 'succeeded' | 'failed' | 'pending' | 'refunded';
+    payment_method: string | null;
+    paid_at: string;
 }
 
 /**
@@ -114,7 +114,7 @@ export interface Notice {
     title: string;
     content: string;
     target_audience: TargetAudience;
-    is_important: boolean;
+    is_published: boolean;
     author_id?: string;
     created_at: string;
 }

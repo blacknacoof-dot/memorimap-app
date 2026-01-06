@@ -40,10 +40,10 @@ export const rejectPartner = async (id: string) => {
 
 // --- 구독 관리 API ---
 export const fetchSubscriptions = async () => {
-    // memorial_spaces 정보를 Join해서 가져옴
+    // facilities 정보를 Join해서 가져옴
     const { data, error } = await supabase
         .from('subscriptions')
-        .select('*, memorial_spaces(name)')
+        .select('*, facilities(name)')
         .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -51,22 +51,23 @@ export const fetchSubscriptions = async () => {
     // 데이터 평탄화 (Flatten)
     return data.map((item: any) => ({
         ...item,
-        facility_name: item.memorial_spaces?.name || '(삭제된 시설)',
+        facility_name: item.facilities?.name || '(삭제된 시설)',
     })) as (Subscription & { facility_name: string })[];
 };
 
 // --- 매출/결제 API ---
 export const fetchPayments = async () => {
+    // payments -> subscriptions -> facilities 조인
     const { data, error } = await supabase
         .from('payments')
-        .select('*, memorial_spaces(name)')
-        .order('payment_date', { ascending: false });
+        .select('*, subscriptions(facilities(name))')
+        .order('paid_at', { ascending: false });
 
     if (error) throw error;
 
     return data.map((item: any) => ({
         ...item,
-        facility_name: item.memorial_spaces?.name || '(삭제된 시설)',
+        facility_name: item.subscriptions?.facilities?.name || '(알 수 없음)',
     })) as (Payment & { facility_name: string })[];
 };
 

@@ -154,16 +154,18 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
           maxClusterRadius={50}
           spiderfyOnMaxZoom={true}
         >
-          {facilities.map((facility) => (
-            <Marker
-              key={facility.id}
-              position={[facility.lat, facility.lng]}
-              icon={createCustomIcon(facility.type)}
-              eventHandlers={{
-                click: () => onFacilitySelect(facility),
-              }}
-            />
-          ))}
+          {facilities
+            .filter(f => f.lat && f.lng && f.lat !== 0 && f.lng !== 0)
+            .map((facility) => (
+              <Marker
+                key={facility.id}
+                position={[facility.lat, facility.lng]}
+                icon={createCustomIcon(facility.type)}
+                eventHandlers={{
+                  click: () => onFacilitySelect(facility),
+                }}
+              />
+            ))}
         </MarkerClusterGroup>
       </MapContainer>
     </div>

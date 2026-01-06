@@ -366,7 +366,10 @@ const App: React.FC = () => {
     if (selectedFilter !== '전체') {
       // 공원묘지/묘지 타입은 공원묘지 탭에서만 표시
       if (selectedFilter === '공원묘지') {
-        if (f.type !== 'park' && f.type !== 'complex') return false;
+        const isParkType = f.type === 'park' || f.type === 'complex';
+        const hasParkName = f.name.includes('추모공원') || f.name.includes('공원묘지') || f.name.includes('가족공원');
+
+        if (!isParkType && !hasParkName) return false;
       }
       // 다른 탭에서는 공원묘지/묘지 타입 제외
       else {
@@ -374,7 +377,11 @@ const App: React.FC = () => {
         if (selectedFilter === '장례식장' && f.type !== 'funeral') return false;
         if (selectedFilter === '봉안시설' && f.type !== 'charnel') return false;
         if (selectedFilter === '자연장' && f.type !== 'natural') return false;
-        if (selectedFilter === '해양장' && f.type !== 'sea') return false;
+        if (selectedFilter === '해양장') {
+          const isSeaType = f.type === 'sea';
+          const hasSeaName = f.name.includes('바다') || f.name.includes('해양');
+          if (!isSeaType && !hasSeaName) return false;
+        }
         if (selectedFilter === '동물장례' && f.type !== 'pet') return false;
       }
     }

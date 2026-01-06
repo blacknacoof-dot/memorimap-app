@@ -61,15 +61,17 @@ export const RevenueAnalytics: React.FC = () => {
                     {payments.map(pay => (
                         <div key={pay.id} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
                             <div className="flex items-center gap-4">
-                                <div className={`p-2 rounded-full ${pay.status === 'success' ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-600'}`}>
+                                <div className={`p-2 rounded-full ${pay.status === 'succeeded' ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-600'}`}>
                                     <DollarSign size={20} />
                                 </div>
                                 <div>
                                     <p className="font-medium text-gray-900">{pay.facility_name}</p>
-                                    <p className="text-xs text-gray-500">{pay.payment_date} • {pay.status === 'success' ? '결제 성공' : '환불됨'}</p>
+                                    <p className="text-xs text-gray-500">
+                                        {format(new Date(pay.paid_at || new Date()), 'yyyy-MM-dd HH:mm')} • {pay.status === 'succeeded' ? '결제 성공' : '환불/실패'}
+                                    </p>
                                 </div>
                             </div>
-                            <span className={`font-bold ${pay.status === 'success' ? 'text-gray-900' : 'text-red-500 line-through'}`}>
+                            <span className={`font-bold ${pay.status === 'succeeded' ? 'text-gray-900' : 'text-red-500 line-through'}`}>
                                 {pay.amount.toLocaleString()}원
                             </span>
                         </div>

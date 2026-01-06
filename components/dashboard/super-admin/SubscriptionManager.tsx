@@ -8,7 +8,7 @@ export const SubscriptionManager: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredSubs = subscriptions.filter(sub =>
-        sub.facility_name.includes(searchTerm) || sub.plan_type.includes(searchTerm)
+        sub.facility_name.includes(searchTerm) || sub.plan_name.includes(searchTerm)
     );
 
     const getStatusColor = (status: string) => {
@@ -22,9 +22,17 @@ export const SubscriptionManager: React.FC = () => {
 
     const getPlanColor = (plan: string) => {
         switch (plan) {
-            case 'enterprise': return 'text-purple-600 font-bold';
-            case 'pro': return 'text-blue-600 font-bold';
+            case 'Enterprise': return 'text-purple-600 font-bold';
+            case 'Premium': return 'text-blue-600 font-bold';
             default: return 'text-gray-600 font-bold';
+        }
+    };
+
+    const getPrice = (plan: string) => {
+        switch (plan) {
+            case 'Enterprise': return 200000;
+            case 'Premium': return 50000;
+            default: return 0;
         }
     };
 
@@ -63,12 +71,12 @@ export const SubscriptionManager: React.FC = () => {
                         {filteredSubs.map((sub) => (
                             <tr key={sub.id} className="hover:bg-gray-50 transition-colors">
                                 <td className="px-6 py-4 font-medium text-gray-900">{sub.facility_name}</td>
-                                <td className={`px-6 py-4 uppercase ${getPlanColor(sub.plan_type)}`}>{sub.plan_type}</td>
-                                <td className="px-6 py-4 text-gray-600">{sub.monthly_price.toLocaleString()}원</td>
+                                <td className={`px-6 py-4 uppercase ${getPlanColor(sub.plan_name)}`}>{sub.plan_name}</td>
+                                <td className="px-6 py-4 text-gray-600">{getPrice(sub.plan_name).toLocaleString()}원</td>
                                 <td className="px-6 py-4 text-gray-500">
                                     <div className="flex flex-col text-xs">
-                                        <span>시작: {sub.start_date}</span>
-                                        <span>만료: {sub.end_date}</span>
+                                        <span>시작: {format(new Date(sub.start_date || new Date()), 'yyyy-MM-dd')}</span>
+                                        <span>만료: {sub.end_date ? format(new Date(sub.end_date), 'yyyy-MM-dd') : '무제한'}</span>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 text-center">
