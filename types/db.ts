@@ -118,3 +118,5 @@ export interface Notice {
     author_id?: string;
     created_at: string;
 }
+
+export type Database = any;

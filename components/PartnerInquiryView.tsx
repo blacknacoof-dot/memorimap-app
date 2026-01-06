@@ -17,8 +17,10 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
         companyName: '',
         managerName: '',
         phone: '',
+        managerMobile: '', // [New] 담당자 휴대폰
         address: '',
         email: '',
+        companyEmail: '', // [New] 회사 이메일 (ID용)
         type: 'funeral_home', // funeral_home, memorial_park, sangjo, pet, sea
         message: ''
     });
@@ -121,6 +123,8 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
                 address: formData.address,
                 phone: formData.phone,
                 managerName: formData.managerName,
+                managerMobile: formData.managerMobile,
+                companyEmail: formData.companyEmail,
                 email: formData.email,
                 businessLicenseImage: selectedFile,
                 userId: user?.id
@@ -342,6 +346,11 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
                                 </div>
                             </div>
 
+                        </div>
+
+                        <div className="space-y-4 pt-2 border-t border-gray-100">
+                            <label className="text-lg font-bold">담당자 정보</label>
+
                             <div className="space-y-1">
                                 <label className="text-sm font-bold text-gray-700">담당자명 <span className="text-red-500">*</span></label>
                                 <div className="relative">
@@ -352,28 +361,53 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
                                         required
                                         value={formData.managerName}
                                         onChange={handleChange}
-                                        placeholder="담당자 성함"
+                                        placeholder="홍길동"
                                         className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-1">
-                                <label className="text-sm font-bold text-gray-700">연락처 <span className="text-red-500">*</span></label>
+                                <label className="text-sm font-bold text-gray-700">담당자 휴대폰 <span className="text-red-500">*</span></label>
                                 <div className="relative">
                                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                     <input
                                         type="tel"
-                                        name="phone"
+                                        name="managerMobile"
                                         required
-                                        value={formData.phone}
+                                        value={formData.managerMobile}
                                         onChange={handleChange}
-                                        placeholder="담당자 연락처"
+                                        placeholder="010-1234-5678"
                                         className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                     />
                                 </div>
+                                <p className="text-xs text-gray-500 mt-1 pl-1">긴급 연락 시 사용됩니다.</p>
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="text-sm font-bold text-gray-700">회사 이메일 (로그인 ID) <span className="text-red-500">*</span></label>
+                                <div className="relative">
+                                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                    <input
+                                        type="email"
+                                        name="companyEmail"
+                                        required
+                                        value={formData.companyEmail}
+                                        onChange={handleChange}
+                                        placeholder="ceo@memorimap.com"
+                                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                    />
+                                </div>
+                                <div className="bg-blue-50 p-3 rounded-lg mt-2 flex items-start gap-2">
+                                    <AlertCircle size={14} className="text-blue-600 mt-0.5 shrink-0" />
+                                    <p className="text-xs text-blue-700 font-medium leading-relaxed">
+                                        중요: 승인 완료 시, 이 이메일로 '가입 초대장'이 발송됩니다.<br />
+                                        추후 파트너 센터 로그인 아이디로 사용되니 정확히 입력해주세요.
+                                    </p>
+                                </div>
                             </div>
                         </div>
+
 
                         {/* Submit Button */}
                         <button
@@ -398,7 +432,7 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
                         </p>
                     </form>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
