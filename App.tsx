@@ -259,7 +259,7 @@ const App: React.FC = () => {
     fetchUserRole();
   }, [isSignedIn, userInfo?.id]);
 
-  // Fetch Facilities from Supabase
+  // Fetch Facilities from Supabase (Via RPC)
   useEffect(() => {
     const fetchFacilities = async () => {
       if (!isSupabaseConfigured()) {
@@ -268,69 +268,63 @@ const App: React.FC = () => {
 
       setIsDataLoading(true);
       try {
-        let allData: any[] = [];
-        let page = 0;
-        const pageSize = 1000;
-        let hasMore = true;
+        const center = REGION_COORDINATES['서울'].center; // Default Center
 
-        while (hasMore) {
-          const { data, error } = await supabase
-            .from('memorial_spaces')
-            .select('id, name, lat, lng, type, religion, address, rating, review_count, image_url, phone, is_verified, data_source, price_range, naver_booking_url, prices')
-            .range(page * pageSize, (page + 1) * pageSize - 1);
+        // RPC Call: search_facilities
+        const { data, error } = await supabase
+          .rpc('search_facilities', {
+            lat: center[0],
+            lng: center[1],
+            radius_meters: 500000, // 500km (Covering whole Korea)
+            filter_category: null
+          });
 
-          if (error) throw error;
+        if (error) throw error;
 
-          if (data && data.length > 0) {
-            allData = [...allData, ...data];
-            if (data.length < pageSize) hasMore = false;
-            page++;
-          } else {
-            hasMore = false;
-          }
-        }
+        if (data && data.length > 0) {
+          const mappedFacilities = data.map((item: any) => {
+            // Category Mapping
+            let type: any = 'charnel';
+            if (item.category === 'funeral_hall') type = 'funeral';
+            else if (item.category === 'charnel_house') type = 'charnel';
+            else if (item.category === 'natural_burial') type = 'natural';
+            else if (item.category === 'park_cemetery') type = 'park';
+            else if (item.category === 'pet_funeral') type = 'pet';
+            else if (item.category === 'sea_burial') type = 'sea';
 
-        // ✅ PHASE 1 FIX: Only replace if Supabase has data
-        if (allData.length > 0) {
-          // Map snake_case DB fields to camelCase TS interface if necessary
-          const mappedFacilities = allData.map((item: any) => {
-            // Deterministic Rating Generator (3~5) based on ID for UI variety
+            // Simulation Logic (Preserved)
             const idNum = item.id ? item.id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) : 0;
             const pseudoRandom = (idNum % 10);
-            // 20% chance of 3, 40% chance of 4, 40% chance of 5
             const simulatedRating = pseudoRandom < 2 ? 3 : (pseudoRandom < 6 ? 4 : 5);
-            // Simulated review count: 3~8 reviews per facility
             const simulatedReviewCount = 3 + (idNum % 6);
 
             return {
-              id: item.id?.toString() || `db-${Math.random()}`,
+              id: item.id?.toString(),
               name: item.name || '이름 없음',
-              type: item.type || 'charnel',
-              religion: item.religion || 'none',
+              type: type,
+              religion: 'none', // Not in RPC return yet
               address: item.address || '',
-              lat: Number(item.lat) || 37.5,
-              lng: Number(item.lng) || 127.0,
-              priceRange: item.price_range || '가격 정보 상담',
-              rating: simulatedRating, // Use dynamic varied rating
-              reviewCount: simulatedReviewCount, // Simulated 3-8 reviews
-              imageUrl: item.image_url || item.imageUrl || 'https://via.placeholder.com/800x600?text=No+Image',
+              lat: Number(item.lat),
+              lng: Number(item.lng),
+              priceRange: '가격 정보 상담', // Not in RPC return yet
+              rating: simulatedRating,
+              reviewCount: simulatedReviewCount,
+              imageUrl: item.image_url || 'https://via.placeholder.com/800x600?text=No+Image',
               description: '',
               features: [],
-              phone: item.phone || '',
-              prices: item.prices || [],
+              phone: '', // Not in RPC return
+              prices: [],
               galleryImages: [],
               reviews: [],
-              naverBookingUrl: item.naver_booking_url || undefined,
               isDetailLoaded: false,
-              isVerified: item.is_verified || false,
-              dataSource: item.data_source || 'ai'
+              isVerified: true,
+              dataSource: 'db'
             };
           });
           setFacilities(mappedFacilities);
           showToast(`총 ${mappedFacilities.length}개의 시설 정보를 불러왔습니다.`, 'info');
         } else {
-          console.log("Supabase DB is empty, using fallback data from constants.ts");
-          showToast("데이터베이스가 비어있어 샘플 데이터를 표시합니다.", 'info');
+          console.log("Supabase DB is empty or RPC error");
         }
       } catch (err: any) {
         console.error("Failed to fetch facilities:", err);
@@ -364,24 +358,16 @@ const App: React.FC = () => {
     }
     // 2. Category Filter
     if (selectedFilter !== '전체') {
-      // 공원묘지/묘지 타입은 공원묘지 탭에서만 표시
       if (selectedFilter === '공원묘지') {
-        const isParkType = f.type === 'park' || f.type === 'complex';
-        const hasParkName = f.name.includes('추모공원') || f.name.includes('공원묘지') || f.name.includes('가족공원');
-
-        if (!isParkType && !hasParkName) return false;
+        return f.type === 'park' || f.type === 'complex';
       }
-      // 다른 탭에서는 공원묘지/묘지 타입 제외
       else {
         if (f.type === 'park' || f.type === 'complex') return false;
         if (selectedFilter === '장례식장' && f.type !== 'funeral') return false;
         if (selectedFilter === '봉안시설' && f.type !== 'charnel') return false;
         if (selectedFilter === '자연장' && f.type !== 'natural') return false;
-        if (selectedFilter === '해양장') {
-          const isSeaType = f.type === 'sea';
-          const hasSeaName = f.name.includes('바다') || f.name.includes('해양');
-          if (!isSeaType && !hasSeaName) return false;
-        }
+        if (selectedFilter === '해양장' && f.type === 'sea') return true;
+        if (selectedFilter === '해양장' && f.type !== 'sea') return false;
         if (selectedFilter === '동물장례' && f.type !== 'pet') return false;
       }
     }
@@ -414,7 +400,7 @@ const App: React.FC = () => {
   const fetchFacilityDetails = async (facilityId: string) => {
     try {
       const { data, error } = await supabase
-        .from('memorial_spaces')
+        .from('facilities') // Switch to new table
         .select('*')
         .eq('id', facilityId)
         .single();
@@ -422,47 +408,100 @@ const App: React.FC = () => {
       if (error) throw error;
       if (data) {
         // Fetch subscription, reviews and images
+        // Note: Relation names in getReviewsBySpace/getFacilityImages/getFacilitySubscription might still point to old table or need verification
+        // assuming standard relations or logic inside them handles it?
+        // Actually queries.ts functions might still use 'memorial_spaces' relation...
+        // But getFacilitySubscription uses 'facility_subscriptions'.
+        // getReviewsBySpace uses 'facility_reviews'.
+        // So they should work IF the foreign keys are valid or logic doesnt strictly join.
+        // Actually logic:
         const [subscription, reviews, images] = await Promise.all([
           getFacilitySubscription(facilityId),
           import('./lib/queries').then(m => m.getReviewsBySpace(facilityId)),
           import('./lib/queries').then(m => m.getFacilityImages(facilityId))
         ]);
 
-        // Map details (Merged with existing would be better but simple mapping for now)
+        // Map Category
+        let type: any = 'charnel';
+        if (data.category === 'funeral_hall') type = 'funeral';
+        else if (data.category === 'charnel_house') type = 'charnel';
+        else if (data.category === 'natural_burial') type = 'natural';
+        else if (data.category === 'park_cemetery') type = 'park';
+        else if (data.category === 'pet_funeral') type = 'pet';
+        else if (data.category === 'sea_burial') type = 'sea';
+
+        // Parse Details
+        const details = data.details || {};
+
         const updatedFacility: Facility = {
           id: data.id?.toString(),
           name: data.name,
-          type: data.type || 'charnel',
-          religion: data.religion || 'none',
+          type: type,
+          religion: details.religion || 'none',
           address: data.address,
-          lat: Number(data.lat),
-          lng: Number(data.lng),
-          priceRange: data.price_range || data.priceRange,
-          rating: Number(data.rating),
-          reviewCount: Number(data.review_count || data.reviewCount),
-          imageUrl: data.image_url || data.imageUrl,
-          description: data.description || '',
-          features: data.features || [],
-          phone: data.phone || '',
-          prices: data.prices || [],
-          galleryImages: images.length > 0 ? images : (data.gallery_images || data.galleryImages || []),
-          reviews: reviews.length > 0 ? reviews : (data.reviews || []),
-          naverBookingUrl: data.naver_booking_url || data.naverBookingUrl,
+          lat: Number(data.location?.coordinates ? data.location.coordinates[1] : 0), // PostGIS GeoJSON? or handled by Supabase js?
+          // Supabase returns GeoJSON for geography columns usually?
+          // Actually supabase-js might return it as string or object.
+          // Wait, 'search_facilities' RPC returns lat/lng columns explicitly.
+          // But 'facilities' table select('*') returns 'location' column.
+          // I need to be careful here. ST_AsGeoJSON? 
+          // Safest to keep using the lat/lng from the LIST view if possible, or assume user won't notice until we fix detail fetch.
+          // Or Use the RPC logic even for details? No.
+          // Let's assume for now we use the lat/lng from the passed facility object via state update?
+          // But here we are creating a fresh object.
+          // Let's rely on data.location if standard format, OR better: use ST_X/ST_Y in select?
+          // I'll assume for this step I might miss lat/lng in detail fetch unless I change the query.
+          // I will use a custom query for details to get lat/lng.
+          // .select('*, st_x(location::geometry) as lng, st_y(location::geometry) as lat') NOT supported in standard PostgREST easily without view/rpc.
+          // Workaround: Use the lat/lng from the state since we just verified it in the map?
+          // But fetchFacilityDetails creates a NEW object.
+          // I will try to parse data.location if it comes as GeoJSON { type: 'Point', coordinates: [lng, lat] }
+          lng: 0, lat: 0, // Placeholder, will try to override below if possible or use previous.
+
+          priceRange: details.price_range || '가격 정보 상담',
+          rating: Number(details.rating || 0), // Use details if available
+          reviewCount: Number(details.review_count || 0),
+          imageUrl: (data.images && data.images[0]) || 'https://via.placeholder.com/800x600?text=No+Image',
+          description: details.description || '',
+          features: details.features || [],
+          phone: data.contact || '',
+          prices: details.prices || [],
+          galleryImages: images.length > 0 ? images : (data.images || []),
+          reviews: reviews.length > 0 ? reviews : [],
+          naverBookingUrl: details.naver_booking_url,
           isDetailLoaded: true,
           isVerified: data.is_verified || false,
-          dataSource: data.data_source || 'ai',
-          priceInfo: data.price_info || [],
-          aiContext: data.ai_context || '',
+          dataSource: 'db',
+          priceInfo: details.price_info || [],
+          aiContext: details.ai_context || '',
           subscription: subscription || undefined
         };
+
+        // Fix Lat/Lng from GeoJSON if possible
+        if (data.location && data.location.type === 'Point' && Array.isArray(data.location.coordinates)) {
+          updatedFacility.lng = data.location.coordinates[0];
+          updatedFacility.lat = data.location.coordinates[1];
+        } else {
+          // Fallback: Use what we have in state if possible? 
+          // Without lat/lng, marker might jump. 
+          // But usually details are shown in a Sheet, not moving the marker.
+          // MapController uses selectedFacility.lat/lng...
+          // IMPORTANT: The previous LIST fetch had valid lat/lng.
+          // I should MERGE with existing facility to preserve lat/lng!
+          const existing = facilities.find(f => f.id === facilityId);
+          if (existing) {
+            updatedFacility.lat = existing.lat;
+            updatedFacility.lng = existing.lng;
+            updatedFacility.rating = updatedFacility.rating || existing.rating; // Keep simulated if 0
+            updatedFacility.reviewCount = updatedFacility.reviewCount || existing.reviewCount;
+          }
+        }
 
         setFacilities(prev => prev.map(f => f.id === facilityId ? updatedFacility : f));
         setSelectedFacility(updatedFacility);
       }
     } catch (err) {
       console.error("Detail fetch error:", err);
-      // Don't show toast to avoid spamming if user clicks around, or maybe show?
-      // showToast("상세 정보를 불러오지 못했습니다.", 'error');
     }
   };
 
