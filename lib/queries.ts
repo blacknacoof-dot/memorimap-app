@@ -177,8 +177,31 @@ export const getFacilityFaqs = async (facilityId: string) => { console.log('STUB
 export const getReviewsBySpace = getReviews;
 
 export const getFacilitySubscription = async (facilityId: string) => {
-    console.log('STUB: getFacilitySubscription');
-    return null;
+    try {
+        const { data, error } = await supabase
+            .from('facility_subscriptions')
+            .select(`
+                *,
+                subscription_plans (
+                    name,
+                    price,
+                    features
+                )
+            `)
+            .eq('facility_id', facilityId)
+            .maybeSingle(); // Use maybeSingle to avoid error if no subscription exists
+
+        if (error) {
+            console.error('Error fetching facility subscription:', error);
+            // Don't throw, just return null as frontend expects optional
+            return null;
+        }
+
+        return data; // Returns the subscription object with nested plan details
+    } catch (e) {
+        console.error('Exception in getFacilitySubscription:', e);
+        return null;
+    }
 };
 
 /**
@@ -274,4 +297,23 @@ export const submitPartnerApplication = async (data: any) => {
         throw error;
     }
     return result;
+};
+
+/**
+ * [추가] 시설 이미지 조회
+ */
+export const getFacilityImages = async (facilityId: string) => {
+    // facilities 테이블의 images 컬럼(배열)을 사용하거나 별도 테이블 사용
+    // 여기서는 facilities 내 images 컬럼을 가정
+    const { data: facility, error } = await supabase
+        .from('facilities')
+        .select('images')
+        .eq('id', facilityId)
+        .single();
+
+    if (error) {
+        // 에러가 나거나 이미지가 없으면 빈 배열
+        return [];
+    }
+    return facility?.images || [];
 };

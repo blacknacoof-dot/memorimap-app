@@ -309,7 +309,7 @@ const App: React.FC = () => {
               priceRange: '가격 정보 상담', // Not in RPC return yet
               rating: simulatedRating,
               reviewCount: simulatedReviewCount,
-              imageUrl: item.image_url || 'https://via.placeholder.com/800x600?text=No+Image',
+              imageUrl: item.image_url || 'https://placehold.co/800x600?text=No+Image',
               description: '',
               features: [],
               phone: '', // Not in RPC return
@@ -461,7 +461,7 @@ const App: React.FC = () => {
           priceRange: details.price_range || '가격 정보 상담',
           rating: Number(details.rating || 0), // Use details if available
           reviewCount: Number(details.review_count || 0),
-          imageUrl: (data.images && data.images[0]) || 'https://via.placeholder.com/800x600?text=No+Image',
+          imageUrl: (data.images && data.images[0]) || 'https://placehold.co/800x600?text=No+Image',
           description: details.description || '',
           features: details.features || [],
           phone: data.contact || '',
