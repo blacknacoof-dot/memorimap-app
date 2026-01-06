@@ -10,6 +10,11 @@ export default defineConfig({
     // historyApiFallback: true, // SPA fallback is default in Vite
   },
   base: '/',
+  resolve: {
+    alias: {
+      '@': '/c:/Users/black/Desktop/memorimap', // Absolute path to be safe and avoid missing path module import issues if possible, or just use process.cwd()
+    }
+  },
   plugins: [
     react(),
     // {

@@ -1,71 +1,88 @@
 import React, { useState } from 'react';
-import { UserManagement } from './UserManagement';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs" // Assuming primitive UI exists, or build manual tabs if not
+import { LayoutDashboard, Users, CreditCard, Bell, BadgeCheck } from 'lucide-react';
 import { PartnerAdmissions } from './PartnerAdmissions';
-import { SubscriptionStatus } from './SubscriptionStatus';
-import { Users, Building2, CreditCard, LayoutDashboard } from 'lucide-react';
+import { SubscriptionManager } from '../dashboard/super-admin/SubscriptionManager';
+import { RevenueAnalytics } from '../dashboard/super-admin/RevenueAnalytics';
+import { NoticeManager } from '../dashboard/super-admin/NoticeManager';
 
-type Tab = 'users' | 'admissions' | 'subscriptions';
+// Manual Tab Implementation to avoid dependency on shadcn/ui if not present or complex
+const SuperAdminDashboard: React.FC = () => {
+    const [activeTab, setActiveTab] = useState<'admissions' | 'subscriptions' | 'revenue' | 'notices'>('admissions');
 
-export const SuperAdminDashboard: React.FC = () => {
-    const [activeTab, setActiveTab] = useState<Tab>('users');
+    const renderContent = () => {
+        switch (activeTab) {
+            case 'admissions': return <PartnerAdmissions />;
+            case 'subscriptions': return <SubscriptionManager />;
+            case 'revenue': return <RevenueAnalytics />;
+            case 'notices': return <NoticeManager />;
+            default: return <PartnerAdmissions />;
+        }
+    };
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-20">
+        <div className="min-h-screen bg-gray-50 flex flex-col">
             {/* Header */}
-            <div className="bg-white border-b sticky top-0 z-20">
-                <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <div className="bg-purple-600 p-2 rounded-lg text-white">
-                            <LayoutDashboard size={20} />
-                        </div>
-                        <h1 className="text-lg font-bold text-gray-900">슈퍼 관리자 센터</h1>
+            <div className="bg-white border-b sticky top-0 z-10 px-8 py-4 flex justify-between items-center shadow-sm">
+                <div className="flex items-center gap-3">
+                    <div className="bg-gray-900 p-2 rounded-lg text-white">
+                        <LayoutDashboard size={24} />
                     </div>
-                    <div className="text-xs text-gray-500 font-mono">v1.2.0</div>
+                    <div>
+                        <h1 className="text-xl font-bold text-gray-900">Super Admin Console</h1>
+                        <p className="text-xs text-gray-500">Memorimap Management System</p>
+                    </div>
                 </div>
-
-                {/* Tabs */}
-                <div className="max-w-5xl mx-auto px-4 mt-2">
-                    <div className="flex gap-6 overflow-x-auto no-scrollbar">
-                        <button
-                            onClick={() => setActiveTab('users')}
-                            className={`pb-3 flex items-center gap-2 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${activeTab === 'users'
-                                    ? 'text-purple-600 border-purple-600'
-                                    : 'text-gray-500 border-transparent hover:text-gray-800'
-                                }`}
-                        >
-                            <Users size={18} />
-                            유저 관리
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('admissions')}
-                            className={`pb-3 flex items-center gap-2 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${activeTab === 'admissions'
-                                    ? 'text-purple-600 border-purple-600'
-                                    : 'text-gray-500 border-transparent hover:text-gray-800'
-                                }`}
-                        >
-                            <Building2 size={18} />
-                            입점 관리
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('subscriptions')}
-                            className={`pb-3 flex items-center gap-2 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${activeTab === 'subscriptions'
-                                    ? 'text-purple-600 border-purple-600'
-                                    : 'text-gray-500 border-transparent hover:text-gray-800'
-                                }`}
-                        >
-                            <CreditCard size={18} />
-                            구독 현황
-                        </button>
-                    </div>
+                <div className="flex items-center gap-4 text-sm font-medium text-gray-600">
+                    <span>Admin: master@memorimap.com</span>
                 </div>
             </div>
 
-            {/* Content Area */}
-            <div className="max-w-5xl mx-auto p-4 sm:p-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                {activeTab === 'users' && <UserManagement />}
-                {activeTab === 'admissions' && <PartnerAdmissions />}
-                {activeTab === 'subscriptions' && <SubscriptionStatus />}
-            </div>
+            {/* Main Content */}
+            <main className="flex-1 p-8 max-w-7xl mx-auto w-full">
+                {/* Tab Navigation */}
+                <div className="flex space-x-1 mb-8 bg-white p-1 rounded-xl border shadow-sm w-fit">
+                    <button
+                        onClick={() => setActiveTab('admissions')}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'admissions' ? 'bg-gray-900 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'
+                            }`}
+                    >
+                        <Users size={18} />
+                        입점 승인
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('subscriptions')}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'subscriptions' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'
+                            }`}
+                    >
+                        <BadgeCheck size={18} />
+                        구독 관리
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('revenue')}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'revenue' ? 'bg-green-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'
+                            }`}
+                    >
+                        <CreditCard size={18} />
+                        매출 통계
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('notices')}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'notices' ? 'bg-orange-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'
+                            }`}
+                    >
+                        <Bell size={18} />
+                        공지사항
+                    </button>
+                </div>
+
+                {/* Dashboard Content */}
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+                    {renderContent()}
+                </div>
+            </main>
         </div>
     );
 };
+
+export default SuperAdminDashboard;

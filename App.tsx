@@ -25,7 +25,7 @@ const FuneralCompanyView = React.lazy(() => import('./components/FuneralCompanyV
 const FuneralCompanySheet = React.lazy(() => import('./components/FuneralCompanySheet').then(m => ({ default: m.FuneralCompanySheet })));
 const ConsultationView = React.lazy(() => import('./components/Consultation/ConsultationView').then(m => ({ default: m.ConsultationView })));
 const ConsultationHistoryView = React.lazy(() => import('./components/Consultation/ConsultationHistoryView').then(m => ({ default: m.ConsultationHistoryView })));
-const SuperAdminDashboard = React.lazy(() => import('./components/SuperAdmin/SuperAdminDashboard').then(m => ({ default: m.SuperAdminDashboard })));
+const SuperAdminDashboard = React.lazy(() => import('./components/SuperAdmin/SuperAdminDashboard'));
 const SubscriptionPlans = React.lazy(() => import('./components/SubscriptionPlans').then(m => ({ default: m.default })));
 const SangjoConsultationModal = React.lazy(() => import('./components/Consultation/SangjoConsultationModal').then(m => ({ default: m.SangjoConsultationModal })));
 const SangjoContractModal = React.lazy(() => import('./components/Consultation/SangjoContractModal').then(m => ({ default: m.SangjoContractModal })));
