@@ -15,9 +15,6 @@ export const FacilityList: React.FC<FacilityListProps> = ({ facilities, onSelect
     // Memoized renderer to prevent re-creation on every render
     const itemContent = useMemo(() => {
         return (index: number, facility: any) => {
-            // Diagnostic log: Only logged when Virtuoso actually renders a row
-            if (index % 10 === 0) console.log(`Virtuoso rendering row index: ${index}`);
-
             const isCompared = compareList.some((item: any) => item.id === facility.id);
             return (
                 <div className="pb-2 last:pb-0">
