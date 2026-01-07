@@ -6,6 +6,7 @@ import { incrementAiUsage } from '../lib/queries';
 import { ReviewForm } from './ReviewForm';
 import { ReviewList } from './ReviewList';
 import { ChatInterface } from './AI/ChatInterface';
+import { getSmartFeatures, getSmartDescription } from '../lib/facilityUtils';
 
 interface Props {
   facility: Facility;
@@ -357,13 +358,13 @@ export const FacilitySheet: React.FC<Props> = ({
 
               <div>
                 <h3 className="font-bold mb-2 text-gray-800">시설 소개</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">{facility.description}</p>
+                <p className="text-gray-600 text-sm leading-relaxed">{getSmartDescription(facility)}</p>
               </div>
 
               <div>
                 <h3 className="font-bold mb-2 text-gray-800">편의시설 및 특징</h3>
                 <div className="flex flex-wrap gap-2">
-                  {(facility.features || []).map((feature, idx) => (
+                  {getSmartFeatures(facility).map((feature, idx) => (
                     <span key={idx} className="bg-secondary text-primary px-3 py-1 rounded-full text-xs font-medium">
                       {feature}
                     </span>
