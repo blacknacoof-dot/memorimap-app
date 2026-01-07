@@ -7,18 +7,20 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL!;
 const supabaseKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function checkDefaults() {
+async function findGuitar() {
+    // Search in name, description, address, type
     const { data: facilities, error } = await supabase
         .from('memorial_spaces')
-        .select('image_url');
+        .select('*')
+        .or('name.ilike.%기타%,description.ilike.%기타%,address.ilike.%기타%,type.ilike.%기타%');
 
     if (error) {
         console.error(error);
         return;
     }
 
-    const defaultCount = facilities.filter(f => f.image_url && f.image_url.includes('defaults/')).length;
-    console.log(`Facilities using default images: ${defaultCount} / ${facilities.length}`);
+    console.log(`Found ${facilities?.length || 0} items with '기타' in metadata.`);
+    facilities?.slice(0, 10).forEach(f => console.log(`${f.name} | ${f.type} | Image: ${f.image_url}`));
 }
 
-checkDefaults();
+findGuitar();

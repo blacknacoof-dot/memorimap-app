@@ -291,6 +291,7 @@ const App: React.FC = () => {
             else if (item.category === 'park_cemetery') type = 'park';
             else if (item.category === 'pet_funeral') type = 'pet';
             else if (item.category === 'sea_burial') type = 'sea';
+            else if (item.category === 'sangjo' || item.category === 'sangjo_company') type = 'sangjo';
 
             // Simulation Logic (Preserved)
             const idNum = item.id ? item.id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) : 0;
@@ -298,23 +299,57 @@ const App: React.FC = () => {
             const simulatedRating = pseudoRandom < 2 ? 3 : (pseudoRandom < 6 ? 4 : 5);
             const simulatedReviewCount = 3 + (idNum % 6);
 
+            // 🖼️ Image Logic Refinement (User suggestion #1 & #3)
+            // Prioritize high-quality URLs and filter out known bad ones (guitar placeholders, etc.)
+            const rawImages = item.images || [];
+            const dbImageUrl = item.image_url || '';
+
+            const isBadUrl = (url: string) => {
+              if (!url) return true;
+              const badPatterns = [
+                'placeholder', 'placehold.it', 'placehold.co',
+                'unsplash', // Known guitar image source in this DB
+                'mediahub.seoul.go.kr', // Known broken/placeholder source
+                'noimage', 'no-image', 'guitar'
+              ];
+              return badPatterns.some(pattern => url.toLowerCase().includes(pattern));
+            };
+
+            // Selection Logic: Pick the first good one from images[] or use image_url
+            let selectedImage = rawImages.find((url: string) => !isBadUrl(url)) || (isBadUrl(dbImageUrl) ? null : dbImageUrl);
+
+            // Ultimate Fallback: Category-based placeholder if nothing found
+            if (!selectedImage) {
+              const defaultMap: Record<string, string> = {
+                'funeral': 'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/funeral.jpg',
+                'charnel': 'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/charnel.jpg',
+                'natural': 'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/natural.jpg',
+                'park': 'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/park.jpg',
+                'pet': 'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/pet.jpg',
+                'sea': 'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/sea.jpg',
+                'complex': 'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/park.jpg',
+                'sangjo': 'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/funeral.jpg'
+              };
+              selectedImage = defaultMap[type] || defaultMap['funeral'];
+            }
+
             return {
               id: item.id?.toString(),
               name: item.name || '이름 없음',
               type: type,
-              religion: 'none', // Not in RPC return yet
+              religion: 'none',
               address: item.address || '',
               lat: Number(item.lat),
               lng: Number(item.lng),
-              priceRange: '가격 정보 상담', // Not in RPC return yet
+              priceRange: '가격 정보 상담',
               rating: simulatedRating,
               reviewCount: simulatedReviewCount,
-              imageUrl: (item.images && item.images.length > 0 ? item.images[0] : item.image_url) || 'https://placehold.co/800x600?text=No+Image',
+              imageUrl: selectedImage,
               description: '',
               features: [],
-              phone: '', // Not in RPC return
+              phone: '',
               prices: [],
-              galleryImages: [],
+              galleryImages: rawImages,
               reviews: [],
               isDetailLoaded: false,
               isVerified: true,
@@ -368,6 +403,9 @@ const App: React.FC = () => {
         if (selectedFilter === '동물장례' && f.type !== 'pet') return false;
       }
     }
+    // 3. Exclude Sangjo from general views (They have their own dedicated tab)
+    if (f.type === 'sangjo') return false;
+
     return true;
   });
 

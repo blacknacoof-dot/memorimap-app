@@ -150,10 +150,41 @@ export const deleteReview = async (reviewId: string) => {
     return true;
 };
 
+/**
+ * [추가] 시설 정보 업데이트
+ */
+export const updateFacility = async (id: string, updates: any) => {
+    const { data, error } = await supabase
+        .from('memorial_spaces')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+};
+
 // --- Missing Exports Stubs (Restored mostly, keeping others as stubs if needed) ---
 export const updateConsultation = async (id: string, data: any) => { console.log('STUB: updateConsultation'); };
 export const updateUserProfile = async (id: string, data: any) => { console.log('STUB: updateUserProfile'); };
-export const getFacilityReservations = async (facilityId: string) => { console.log('STUB: getFacilityReservations'); return []; };
+export const getFacilityReservations = async (facilityId: string) => {
+    const { data, error } = await supabase
+        .from('reservations')
+        .select('*')
+        .eq('facility_id', facilityId)
+        .order('created_at', { ascending: false });
+    if (error) throw error;
+    // Map to expected UI types
+    return (data || []).map((item: any) => ({
+        ...item,
+        date: new Date(item.visit_date),
+        time: item.time_slot,
+        userName: item.user_name,
+        userPhone: item.user_phone,
+        status: item.status as any
+    }));
+};
 export const approveReservation = async (id: string) => { console.log('STUB: approveReservation'); };
 export const rejectReservation = async (id: string) => { console.log('STUB: rejectReservation'); };
 export const getMyReservations = async (userId: string) => { console.log('STUB: getMyReservations'); return []; };
@@ -195,8 +226,24 @@ export const getFacilitySubscription = async (facilityId: string) => {
 };
 
 /**
+ * [추가] 사용자 할당 시설 조회
+ */
+export const getUserFacility = async (userId: string) => {
+    const { data, error } = await supabase
+        .from('memorial_spaces')
+        .select('id')
+        .eq('owner_user_id', userId)
+        .maybeSingle();
+
+    if (error) {
+        console.error('Error in getUserFacility:', error);
+        return null;
+    }
+    return data?.id || null;
+};
+
+/**
  * [추가] 사용자 역할(Role) 조회 함수
- * App.tsx에서 이 함수를 찾고 있어서 에러가 발생했습니다.
  */
 export const getUserRole = async (userId: string) => {
     try {
@@ -287,6 +334,27 @@ export const submitPartnerApplication = async (data: any) => {
         throw error;
     }
     return result;
+};
+
+/**
+ * [추가] 시설 이미지 업로드
+ */
+export const uploadFacilityImage = async (facilityId: string, file: File) => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const filePath = `${facilityId}/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+        .from('facility-images')
+        .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data } = supabase.storage
+        .from('facility-images')
+        .getPublicUrl(filePath);
+
+    return data.publicUrl;
 };
 
 /**

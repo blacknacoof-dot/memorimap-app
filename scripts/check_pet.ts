@@ -7,18 +7,19 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL!;
 const supabaseKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function checkDefaults() {
+async function checkPet() {
     const { data: facilities, error } = await supabase
         .from('memorial_spaces')
-        .select('image_url');
+        .select('name, image_url')
+        .eq('type', 'pet')
+        .limit(10);
 
     if (error) {
         console.error(error);
         return;
     }
 
-    const defaultCount = facilities.filter(f => f.image_url && f.image_url.includes('defaults/')).length;
-    console.log(`Facilities using default images: ${defaultCount} / ${facilities.length}`);
+    facilities.forEach(f => console.log(`${f.name}: ${f.image_url}`));
 }
 
-checkDefaults();
+checkPet();

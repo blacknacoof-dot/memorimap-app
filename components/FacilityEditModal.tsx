@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Loader2, Building2, MapPin, Phone, FileText, DollarSign } from 'lucide-react';
-import { updateFacility } from '../lib/queries';
+import { X, Save, Loader2, Building2, MapPin, Phone, FileText, DollarSign, ImagePlus, Trash2, Plus } from 'lucide-react';
+import { updateFacility, uploadFacilityImage } from '../lib/queries';
 import { Facility } from '../types';
 
 interface Props {
@@ -13,16 +13,21 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
     const [name, setName] = useState(facility.name);
     const [address, setAddress] = useState(facility.address);
     const [phone, setPhone] = useState(facility.phone);
-    const [description, setDescription] = useState(facility.description);
-    const [priceRange, setPriceRange] = useState(facility.priceRange);
+    const [description, setDescription] = useState(facility.description || '');
+    const [priceRange, setPriceRange] = useState(facility.priceRange || '');
+    const [imageUrl, setImageUrl] = useState(facility.imageUrl || '');
+    const [galleryImages, setGalleryImages] = useState<string[]>(facility.galleryImages || []);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
 
     useEffect(() => {
         setName(facility.name);
         setAddress(facility.address);
         setPhone(facility.phone);
-        setDescription(facility.description);
-        setPriceRange(facility.priceRange);
+        setDescription(facility.description || '');
+        setPriceRange(facility.priceRange || '');
+        setImageUrl(facility.imageUrl || '');
+        setGalleryImages(facility.galleryImages || []);
     }, [facility]);
 
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,6 +43,42 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
         setPhone(value);
     };
 
+    const handleMainImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        try {
+            const url = await uploadFacilityImage(facility.id, file);
+            setImageUrl(url);
+        } catch (error) {
+            console.error('Main image upload failed:', error);
+            alert('이미지 업로드에 실패했습니다.');
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const handleAddGalleryImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        try {
+            const url = await uploadFacilityImage(facility.id, file);
+            setGalleryImages(prev => [...prev, url]);
+        } catch (error) {
+            console.error('Gallery image upload failed:', error);
+            alert('이미지 업로드에 실패했습니다.');
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const handleRemoveGalleryImage = (index: number) => {
+        setGalleryImages(prev => prev.filter((_, i) => i !== index));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -47,7 +88,9 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
                 address,
                 phone,
                 description,
-                price_range: priceRange
+                price_range: priceRange,
+                image_url: imageUrl,
+                gallery_images: galleryImages
             });
             onSave();
             onClose();
@@ -144,6 +187,79 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
                                 className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-gray-900 min-h-[100px] resize-none"
                                 placeholder="시설에 대한 설명을 입력하세요"
                             />
+                        </div>
+                    </div>
+
+                    <hr className="border-gray-100" />
+
+                    {/* Image Management */}
+                    <div className="space-y-4">
+                        <label className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                            📸 이미지 관리
+                            {isUploading && <Loader2 size={16} className="animate-spin text-primary" />}
+                        </label>
+
+                        {/* Main Image */}
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-gray-700">대표 이미지</label>
+                            <div className="flex gap-4 items-center">
+                                {imageUrl ? (
+                                    <div className="relative w-32 h-24 rounded-lg overflow-hidden border">
+                                        <img src={imageUrl} alt="Main" className="w-full h-full object-cover" />
+                                        <button
+                                            type="button"
+                                            onClick={() => setImageUrl('')}
+                                            className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                                        >
+                                            <Trash2 size={12} />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <label className="w-32 h-24 flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                        <ImagePlus size={24} className="text-gray-400 mb-1" />
+                                        <span className="text-[10px] text-gray-500">이미지 추가</span>
+                                        <input
+                                            type="file"
+                                            className="hidden"
+                                            accept="image/*"
+                                            onChange={handleMainImageChange}
+                                        />
+                                    </label>
+                                )}
+                                <div className="flex-1">
+                                    <p className="text-[10px] text-gray-500">목록에서 가장 먼저 보여지는 대표 사진입니다.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Gallery Images */}
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-gray-700">갤러리 사진 {galleryImages.length}/3</label>
+                            <div className="grid grid-cols-4 gap-2">
+                                {galleryImages.map((url, idx) => (
+                                    <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border group">
+                                        <img src={url} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveGalleryImage(idx)}
+                                            className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                ))}
+                                {galleryImages.length < 3 && (
+                                    <label className="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                        <Plus size={24} className="text-gray-400" />
+                                        <input
+                                            type="file"
+                                            className="hidden"
+                                            accept="image/*"
+                                            onChange={handleAddGalleryImage}
+                                        />
+                                    </label>
+                                )}
+                            </div>
                         </div>
                     </div>
 

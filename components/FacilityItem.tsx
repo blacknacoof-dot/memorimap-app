@@ -38,7 +38,8 @@ export const FacilityItem = React.memo(({ facility, onClick, isCompared, onToggl
                                     facility.type === 'funeral' ? '장례식장' :
                                         facility.type === 'sea' ? '해양장' :
                                             facility.type === 'pet' ? '동물장묘' :
-                                                facility.type === 'complex' ? '공원묘지' : '공원묘지'}
+                                                facility.type === 'complex' ? '공원묘지' :
+                                                    facility.type === 'sangjo' ? '상조업체' : '공원묘지'}
                         </div>
                         {facility.subscription?.plan?.name_en === 'premium' && (
                             <div className="bg-gradient-to-r from-gray-300 to-gray-400 text-white p-0.5 rounded-full shadow-sm" title="프리미엄 실버">
