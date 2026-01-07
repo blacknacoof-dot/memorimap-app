@@ -92,10 +92,21 @@ export const PartnerAdmissions: React.FC = () => {
                                 </div>
                                 <div className="text-sm text-gray-500 space-y-1">
                                     <div className="flex flex-wrap gap-x-4 gap-y-1">
-                                        <p className="flex items-center gap-1.5"><User size={14} className="text-gray-400 shrink-0" /> {f.contact_person}</p>
+                                        <p className="flex items-center gap-1.5"><User size={14} className="text-gray-400 shrink-0" /> {f.contact_person} ({f.manager_mobile})</p>
                                         <p className="flex items-center gap-1.5"><Phone size={14} className="text-gray-400 shrink-0" /> {f.contact_number}</p>
+                                        <p className="flex items-center gap-1.5"><Building2 size={12} className="text-gray-400 shrink-0" /> {f.address}</p>
                                     </div>
-                                    <p className="flex items-center gap-1.5 text-gray-400 text-xs"><Building2 size={12} className="shrink-0" /> 신청일: {new Date(f.created_at).toLocaleDateString()}</p>
+                                    <div className="flex flex-wrap gap-x-4 text-xs">
+                                        <p className="text-gray-400">Email: {f.company_email}</p>
+                                        <p className="text-gray-400">신청일: {new Date(f.created_at).toLocaleDateString()}</p>
+                                    </div>
+                                    {f.business_license_url && (
+                                        <div className="mt-2">
+                                            <a href={f.business_license_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 text-xs hover:underline flex items-center gap-1">
+                                                <FileText size={12} /> 사업자등록증 보기
+                                            </a>
+                                        </div>
+                                    )}
                                     {f.message && (
                                         <div className="mt-2 bg-gray-50 p-3 rounded-lg text-gray-600 text-xs flex gap-2">
                                             <MessageSquare size={14} className="shrink-0 mt-0.5 text-gray-400" />

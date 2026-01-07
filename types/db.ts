@@ -15,6 +15,13 @@ export type SubscriptionPlan = 'starter' | 'pro' | 'enterprise';
 export type SubscriptionStatus = 'active' | 'expired' | 'cancelled';
 export type TargetAudience = 'all' | 'facility_admin' | 'user';
 
+export interface Favorite {
+    id: string;
+    user_id: string;
+    facility_id: string;
+    created_at: string;
+}
+
 // ==========================================
 // 2. 테이블 인터페이스
 // ==========================================
@@ -67,11 +74,15 @@ export interface PartnerInquiry {
     id: string;
     user_id: string;
     company_name: string;
-    contact_person: string; // Changed from representative_name
+    contact_person: string;
     contact_number: string;
-    email?: string; // Kept as optional if not in strict schema, but form uses it
-    business_type?: 'funeral_home' | 'sangjo' | 'memorial_park' | 'pet_funeral'; // Kept for form logic
-    message: string; // New field
+    manager_mobile?: string; // New field
+    company_email?: string; // New field (Login ID)
+    email?: string;
+    address?: string; // New field
+    business_license_url?: string; // New field
+    business_type?: 'funeral_home' | 'sangjo' | 'memorial_park' | 'pet_funeral';
+    message: string;
     status: 'pending' | 'approved' | 'rejected';
     created_at: string;
 }

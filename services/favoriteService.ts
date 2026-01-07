@@ -31,7 +31,7 @@ export const favoriteService = {
             .select('id')
             .eq('user_id', userId)
             .eq('facility_id', facilityId)
-            .single();
+            .maybeSingle();
 
         if (error && error.code !== 'PGRST116') { // PGRST116: Returns 0 rows
             console.error('Error checking favorite:', error);

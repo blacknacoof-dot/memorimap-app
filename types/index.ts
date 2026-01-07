@@ -80,7 +80,7 @@ export interface Facility {
   naverBookingUrl?: string;
   isDetailLoaded?: boolean;
   isVerified?: boolean; // 업체 직접 관리 여부
-  dataSource?: 'ai' | 'admin' | 'partner'; // 데이터 출처
+  dataSource?: 'ai' | 'admin' | 'partner' | 'db'; // 데이터 출처
   priceInfo?: any; // 업체 직접 입력 가격 데이터 (JSONB)
   aiContext?: string; // AI 상담용 추가 지식
   ai_tone?: AiTone; // AI 말투 설정

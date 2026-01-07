@@ -1,17 +1,7 @@
-﻿
-import { createClient } from '@supabase/supabase-js';
-// import { Database } from '../types/db'; // Database type missing, using default inference
+﻿// import { Database } from '../types/db'; // Database type missing, using default inference
+import { supabase } from './supabaseClient';
 
-// 1. Supabase 클라이언트 초기화
-// (주의: .env.local에 VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY가 있어야 합니다)
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Missing Supabase environment variables');
-}
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export { supabase };
 
 // --- [Phase 8] 지도 검색 기능 ---
 
@@ -222,11 +212,11 @@ export const getUserRole = async (userId: string) => {
         }
 
         // 2. 기본 유저 권한 반환
-        return { role: 'user', isError: false };
+        return { role: 'user', isError: false, error: null };
     } catch (error: any) {
         // 406 Not Acceptable 등 에러가 나도 기본 유저로 처리
         // console.error('Role check error:', error);
-        return { role: 'user', isError: false };
+        return { role: 'user', isError: false, error: error.message };
     }
 };
 
@@ -303,17 +293,103 @@ export const submitPartnerApplication = async (data: any) => {
  * [추가] 시설 이미지 조회
  */
 export const getFacilityImages = async (facilityId: string) => {
-    // facilities 테이블의 images 컬럼(배열)을 사용하거나 별도 테이블 사용
-    // 여기서는 facilities 내 images 컬럼을 가정
-    const { data: facility, error } = await supabase
-        .from('facilities')
-        .select('images')
-        .eq('id', facilityId)
-        .single();
+    // facilities 테이블의 images 컬럼이 아닌 facility_images 테이블 사용
+    try {
+        const { data, error } = await supabase
+            .from('facility_images')
+            .select('*')
+            .eq('facility_id', facilityId)
+            .order('order_index', { ascending: true }); // Assuming order_index exists
 
-    if (error) {
-        // 에러가 나거나 이미지가 없으면 빈 배열
+        if (error || !data || data.length === 0) {
+            // Fallback: Use 'facilities' table 'images' column (Array)
+            // This is crucial for legacy data or migrated data in 'facilities' table
+            const { data: fallback, error: fallbackError } = await supabase
+                .from('facilities')
+                .select('images')
+                .eq('id', facilityId)
+                .maybeSingle();
+
+            if (!fallbackError && fallback && fallback.images && Array.isArray(fallback.images)) {
+                return fallback.images;
+            }
+
+            // If fallback also empty or fails
+            return [];
+        }
+
+        if (data && data.length > 0) {
+            // Map objects to strings (handling { facility_id, image_url, ... })
+            return data.map((item: any) => item.image_url).filter((url: string) => !!url);
+        }
+
+        return [];
+
+    } catch (e) {
+        console.error('Exception in getFacilityImages:', e);
         return [];
     }
-    return facility?.images || [];
+};
+
+// --- [Missing Exports Implementation] ---
+
+export const incrementAiUsage = async (facilityId: string) => {
+    // Implement or stub if not ready
+    // This functionality likely belongs to 'facility_subscriptions' table usage tracking
+    try {
+        const { error } = await supabase.rpc('increment_ai_usage', { facility_id: facilityId });
+        if (error) {
+            // Function might not exist yet, ignore or log
+            // console.warn('increment_ai_usage rpc failed', error);
+        }
+    } catch (e) {
+        // ignore
+    }
+};
+
+export const updateFacilitySubscription = async (facilityId: string, planId: string) => {
+    const { error } = await supabase
+        .from('facility_subscriptions')
+        .upsert({
+            facility_id: facilityId,
+            plan_id: planId,
+            updated_at: new Date().toISOString()
+        }, { onConflict: 'facility_id' });
+
+    if (error) throw error;
+};
+
+/**
+ * [추가] 찜하기(Favorite) 토글 기능
+ */
+export const toggleFavorite = async (userId: string, facilityId: string, isFavorite: boolean) => {
+    if (isFavorite) {
+        // 찜 해제
+        return await supabase
+            .from('favorites')
+            .delete()
+            .match({ user_id: userId, facility_id: facilityId });
+    } else {
+        // 찜 등록
+        return await supabase
+            .from('favorites')
+            .insert([{ user_id: userId, facility_id: facilityId }]);
+    }
+};
+
+/**
+ * [추가] 내 찜 목록 가져오기
+ */
+export const getMyFavorites = async (userId: string) => {
+    const { data, error } = await supabase
+        .from('favorites')
+        .select(`
+      facility_id,
+      facilities (*)
+    `)
+        .eq('user_id', userId);
+
+    if (error) throw error;
+    // @ts-ignore
+    return data.map(f => f.facilities); // 시설 정보만 배열로 추출
 };

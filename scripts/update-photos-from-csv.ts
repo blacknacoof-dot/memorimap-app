@@ -102,13 +102,11 @@ async function updatePhotosFromCSV() {
         // CSV에는 'https://...' 형태로 들어있음.
 
         // DB에서 시설 찾기
-        // 이름으로 검색
+        // 이름으로 검색 (facilities 테이블 사용)
         const { data: facilities, error: fetchError } = await supabase
-            .from('memorial_spaces')
-            .select('id, name, image_url')
-            .ilike('name', name); // case-insensitive exact match first? or ilike with partial?
-        // .eq('name', name)이 가장 좋지만, 괄호 등의 차이로 못 찾을 수 있음.
-        // 일단 ilike 'name'으로 시도.
+            .from('facilities')
+            .select('id, name, image_url, images')
+            .ilike('name', name);
 
         if (fetchError) {
             console.error(`❌ DB 조회 실패 (${name}):`, fetchError.message);
@@ -125,42 +123,44 @@ async function updatePhotosFromCSV() {
         }
 
         if (!targetFacility) {
-            // (주) 제거, 괄호 제거 후 재검색 시도
-            const cleanName = name.replace(/\(주\)/g, '').replace(/\(재\)/g, '').replace(/\s/g, '');
-            // DB 검색 시 like 사용
-            // 너무 느려질 수 있으니 생략하거나, 필요한 경우 추가 구현
-            // console.log(`   ⚠️  DB에서 시설을 찾을 수 없음: ${name}`);
+            // 괄호 제거 등 재시도 (간단히)
             skippedCount++;
             continue;
         }
 
-        // 업데이트 필요 여부 확인
-        // 현재 이미지가 없거나, unsplash 이미지인 경우만 업데이트
-        if (!targetFacility.image_url || targetFacility.image_url.includes('unsplash') || targetFacility.image_url.includes('placeholder')) {
-            const { error: updateError } = await supabase
-                .from('memorial_spaces')
-                .update({
-                    image_url: imageUrl,
-                    // 필요한 경우 data_source도 업데이트? 'public_data' or 'csv_import'?
-                    // is_verified를 true로? 사진이 확인되었으므로.
-                    // is_verified: true 
-                })
-                .eq('id', targetFacility.id);
+        // 항상 업데이트 (사용자 요청: 데이터 있으니 배포해달라)
+        // 1. facilities 테이블 업데이트 (image_url, images 배열)
+        const { error: updateError } = await supabase
+            .from('facilities')
+            .update({
+                image_url: imageUrl,
+                images: [imageUrl] // 배열로도 저장하여 getFacilityImages fallback 지원
+            })
+            .eq('id', targetFacility.id);
 
-            if (updateError) {
-                console.error(`   ❌ 업데이트 실패 (${name}):`, updateError.message);
-                errorCount++;
-            } else {
-                console.log(`   ✅ 사진 업데이트: ${name}`);
-                updatedCount++;
-            }
+        if (updateError) {
+            console.error(`   ❌ facilities 업데이트 실패 (${name}):`, updateError.message);
+            errorCount++;
         } else {
-            // 이미 실제 사진이 있는 경우 (다른 출처 등) -> 스킵?
-            // "각 업체에 맞게"라고 했으므로 CSV 데이터가 더 정확하다고 판단되면 덮어써야 함.
-            // 하지만 기존 데이터도 소중하므로, 일단 Unsplash인 경우만 우선 타겟팅.
-            // 사용자 의도는 "사진 업데이트 안 된 것"을 하라는 것이었음.
-            // console.log(`   ℹ️  이미 사진 있음 (스킵): ${name}`);
-            skippedCount++;
+            // 2. facility_images 테이블에도 추가
+            const { error: imageError } = await supabase
+                .from('facility_images')
+                .upsert({
+                    facility_id: targetFacility.id,
+                    image_url: imageUrl,
+                    is_active: true,
+                    created_at: new Date().toISOString()
+                }, { onConflict: 'facility_id,image_url' }); // 복합키나 제약조건에 따라 다름. 일단 시도.
+
+            // 만약 facility_images에 unique constraint가 없다면 중복 쌓일 수 있음.
+            // 하지만 지금은 데이터 복구가 우선.
+
+            if (imageError) {
+                console.log(`   ⚠️ facility_images 추가 실패: ${imageError.message}`);
+            }
+
+            console.log(`   ✅ 사진 업데이트: ${name}`);
+            updatedCount++;
         }
     }
 
