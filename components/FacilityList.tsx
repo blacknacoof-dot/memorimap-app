@@ -14,8 +14,11 @@ export const FacilityList: React.FC<FacilityListProps> = ({ facilities, onSelect
 
     // Memoized renderer to prevent re-creation on every render
     const itemContent = useMemo(() => {
-        return (index: number, facility: Facility) => {
-            const isCompared = compareList.some(c => c.id === facility.id);
+        return (index: number, facility: any) => {
+            // Diagnostic log: Only logged when Virtuoso actually renders a row
+            if (index % 10 === 0) console.log(`Virtuoso rendering row index: ${index}`);
+
+            const isCompared = compareList.some((item: any) => item.id === facility.id);
             return (
                 <div className="pb-2 last:pb-0">
                     <FacilityItem
@@ -34,7 +37,7 @@ export const FacilityList: React.FC<FacilityListProps> = ({ facilities, onSelect
 
     if (!facilities || facilities.length === 0) return <div className="p-4 text-center text-gray-500">시설 정보가 없습니다.</div>;
 
-    console.log('FacilityList (Virtuoso) rendering:', facilities.length);
+    console.log('FacilityList main component render - Total data count:', facilities.length);
 
     return (
         <div className="flex-1 w-full h-full min-h-[500px] bg-white">
