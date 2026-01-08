@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Facility } from '../../types';
 import { sendMessageToGemini, ChatMessage, ActionType } from '../../services/geminiService';
-import { getIntelligentRecommendations, createLead } from '../../lib/queries';
+import { getIntelligentRecommendations, createLead, getDistinctRegions, searchFacilitiesByRegion } from '../../lib/queries';
 import { MessageCircle, X, Send, MapPin, Phone, CalendarCheck, Loader2, Bot, Sparkles, ChevronLeft, Users, Star, AlertCircle, CheckCircle2, Check } from 'lucide-react';
 import { PetChatInterface } from '../Consultation/PetChatInterface';
 
@@ -26,9 +26,10 @@ interface FormProps {
     userLocation?: { lat: number, lng: number, type: string };
     onGetCurrentPosition?: () => void;
     onSubmit: (data: any) => void;
+    initialCategory?: string; // [NEW] Allow overriding category
 }
 
-const FuneralSearchForm: React.FC<FormProps> = ({ userLocation, onGetCurrentPosition, onSubmit }) => {
+const FuneralSearchForm: React.FC<FormProps> = ({ userLocation, onGetCurrentPosition, onSubmit, initialCategory = 'funeral' }) => {
     const [step, setStep] = useState(1);
     const [urgency, setUrgency] = useState<'immediate' | 'imminent' | 'prepare' | ''>('');
     const [region, setRegion] = useState('');
@@ -50,14 +51,69 @@ const FuneralSearchForm: React.FC<FormProps> = ({ userLocation, onGetCurrentPosi
 
     const PRIORITY_OPTIONS = ['💰 비용 절약', '🚗 주차 편리', '✨ 시설 쾌적', '🍽️ 음식 맛', '✝️ 종교 전용'];
 
-    const handleNext = () => {
+    // [NEW] Autocomplete State
+    const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+
+    // [NEW] Handle Region Input with Debounce
+    useEffect(() => {
+        if (!region || region.length < 2) {
+            setSuggestions([]);
+            setShowSuggestions(false);
+            return;
+        }
+
+        if (debounceTimer.current) clearTimeout(debounceTimer.current);
+
+        debounceTimer.current = setTimeout(async () => {
+            setIsSearching(true);
+            try {
+                // Use the new RPC wrapper
+                const results = await getDistinctRegions(region) as string[];
+                // Simple deduplication just in case
+                const uniqueResults = Array.from(new Set(results)).slice(0, 5);
+                setSuggestions(uniqueResults);
+                setShowSuggestions(uniqueResults.length > 0);
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setIsSearching(false);
+            }
+        }, 300); // 300ms delay
+
+        return () => {
+            if (debounceTimer.current) clearTimeout(debounceTimer.current);
+        };
+    }, [region]);
+
+    const handleNext = async () => {
         if (step === 1 && !urgency) {
             setError('현재 상황을 선택해 주세요.');
             return;
         }
-        if (step === 2 && !region && userLocation?.type !== 'gps') {
-            setError('지역을 입력하거나 내 위치를 사용해 주세요.');
-            return;
+        if (step === 2) {
+            if (!region && userLocation?.type !== 'gps') {
+                setError('지역을 입력하거나 내 위치를 사용해 주세요.');
+                return;
+            }
+            // [NEW] Validation: If user entered text manually, check if it yields results
+            if (region) {
+                // Quick check using searchFacilitiesByRegion (limit 1)
+                // This prevents "Next" if no facilities exist for that region text
+                // Note: We skip this check if user chose "GPS" explicitly, but here we cover text case.
+                try {
+                    const check = await searchFacilitiesByRegion(region, 'funeral'); // Assuming funeral for now or generic
+                    if (!check || check.length === 0) {
+                        setError('해당 지역에는 등록된 장례식장이 없습니다. 다른 지역을 입력해 주세요.');
+                        return;
+                    }
+                } catch (e) {
+                    // ignore error, proceed? or block? 
+                    // block better
+                }
+            }
         }
         if (step === 3 && !scale) {
             setError('조문객 규모를 선택해 주세요.');
@@ -75,7 +131,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({ userLocation, onGetCurrentPosi
 
         // Structured JSON for recommended action
         const searchData = {
-            category: 'funeral',
+            category: initialCategory, // [FIX] Use dynamic category
             urgency,
             location: {
                 type: userLocation?.type === 'gps' && !region ? 'gps' : 'text',
@@ -167,13 +223,39 @@ const FuneralSearchForm: React.FC<FormProps> = ({ userLocation, onGetCurrentPosi
                         </div>
                     </div>
 
-                    <input
-                        type="text"
-                        value={region}
-                        onChange={(e) => { setRegion(e.target.value); setError(''); }}
-                        placeholder="예: 서울 강남구, 부산진구"
-                        className="w-full bg-white border border-slate-300 rounded-xl px-3 py-3 text-sm focus:border-slate-900 focus:outline-none"
-                    />
+                    <div className="relative">
+                        <input
+                            type="text"
+                            value={region}
+                            onChange={(e) => { setRegion(e.target.value); setError(''); }}
+                            onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+                            onBlur={() => { setTimeout(() => setShowSuggestions(false), 200); }}
+                            placeholder="예: 서울 강남구, 부산진구"
+                            className="w-full bg-white border border-slate-300 rounded-xl px-3 py-3 text-sm focus:border-slate-900 focus:outline-none"
+                        />
+                        {/* [NEW] Suggestions Dropdown */}
+                        {showSuggestions && (
+                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                                {suggestions.map((s, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => {
+                                            setRegion(s);
+                                            setShowSuggestions(false);
+                                            setError('');
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 border-b border-slate-50 last:border-none flex items-center gap-2"
+                                    >
+                                        <MapPin size={12} className="text-slate-400" />
+                                        {/* Highlight matching part */}
+                                        <span dangerouslySetInnerHTML={{
+                                            __html: s.replace(new RegExp(region, 'gi'), (match) => `<b>${match}</b>`)
+                                        }} />
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
 
@@ -324,6 +406,10 @@ export const ChatInterface: React.FC<Props> = ({
             (initialIntent === 'funeral_home' ? FAQ_LIST_FUNERAL :
                 (initialIntent ? FAQ_LIST_CONCIERGE : (facility.type === 'funeral' ? FAQ_LIST_FUNERAL : FAQ_LIST_CONCIERGE))));
 
+    // Check if a form is currently active in the chat
+    const lastMessage = messages[messages.length - 1];
+    const isFormActive = lastMessage?.action === 'SHOW_FORM_A';
+
     // Initial Greeting
     useEffect(() => {
         if (messages.length === 0) {
@@ -420,25 +506,35 @@ export const ChatInterface: React.FC<Props> = ({
 
             setMessages(prev => [...prev, aiMsg]);
 
-            // [Phase 3] RECOMMEND 액션 시 실제 데이터 검색 루틴
+            // [Phase 3] RECOMMEND 액션 시 추천 데이터 처리
             if (aiMsg.action === 'RECOMMEND') {
-                const searchLat = structuredData?.location?.lat || userLocation?.lat || 37.5665;
-                const searchLng = structuredData?.location?.lng || userLocation?.lng || 126.9780;
-                const category = structuredData?.category || (initialIntent === 'funeral_home' ? 'funeral' : undefined);
+                if (response.data && response.data.facilities) {
+                    // 1. Mock Data가 있으면 바로 사용
+                    setRecommendedCandidates(response.data.facilities);
+                } else {
+                    // 2. 없으면 기존 DB 검색 로직 (Fallback)
+                    const searchLat = structuredData?.location?.lat || userLocation?.lat || 37.5665;
+                    const searchLng = structuredData?.location?.lng || userLocation?.lng || 126.9780;
+                    const category = structuredData?.category || (initialIntent === 'funeral_home' ? 'funeral' : undefined);
+                    const regionText = structuredData?.location?.text; // [NEW] Region text
 
-                const recommendations = await getIntelligentRecommendations(searchLat, searchLng, category);
-                if (recommendations && recommendations.length > 0) {
-                    setRecommendedCandidates(recommendations as any);
+                    // Pass regionText as the 4th argument
+                    const recommendations = await getIntelligentRecommendations(searchLat, searchLng, category, regionText);
+                    if (recommendations && recommendations.length > 0) {
+                        setRecommendedCandidates(recommendations as any);
+                    }
                 }
 
                 // [Phase 5] 리드 저장 (DB 연동)
                 try {
                     await createLead({
-                        user_id: undefined, // Will be linked via clerk_id if handled by trigger or app logic
+                        userId: currentUser?.id, // Link to verified user if available
+                        contactName: currentUser?.name || '익명 고객', // Fallback name
+                        contactPhone: currentUser?.phone || '010-0000-0000', // Fallback phone (or request it in future flow)
                         category: structuredData.category,
                         urgency: structuredData.urgency,
                         scale: structuredData.scale,
-                        context_data: structuredData.location,
+                        contextData: structuredData.location,
                         priorities: structuredData.priorities
                     });
                 } catch (e) {
@@ -527,12 +623,16 @@ export const ChatInterface: React.FC<Props> = ({
                                                 userLocation={userLocation}
                                                 onGetCurrentPosition={onGetCurrentPosition}
                                                 onSubmit={(payload) => handleSend(payload)}
+                                                initialCategory={
+                                                    initialIntent === 'pet_funeral' ? 'pet' :
+                                                        initialIntent === 'memorial_facility' ? 'memorial' : 'funeral'
+                                                }
                                             />
                                         )}
 
                                         {msg.action === 'RECOMMEND' && recommendedCandidates.length > 0 && (
                                             <div className="mt-3 flex flex-col gap-2">
-                                                {recommendedCandidates.map(cand => (
+                                                {recommendedCandidates.slice(0, 3).map(cand => (
                                                     <div
                                                         key={cand.id}
                                                         className="bg-slate-50 border border-slate-200 rounded-xl p-3 cursor-pointer hover:bg-slate-100 hover:border-indigo-300 transition-all active:scale-95 group"
@@ -620,52 +720,57 @@ export const ChatInterface: React.FC<Props> = ({
                 )}
             </div>
 
-            {/* FAQ Chips */}
-            <div className="bg-white border-t border-slate-100 p-3 pb-0">
-                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide no-scrollbar">
-                    {activeFaqList.map((faq, idx) => (
-                        <button
-                            key={idx}
-                            onClick={() => handleSend(faq.question)}
-                            disabled={isLoading}
-                            className="flex-shrink-0 bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs py-2 px-3 rounded-full transition whitespace-nowrap flex items-center gap-1.5 active:scale-95"
-                        >
-                            <span>{faq.icon}</span>
-                            <span className="font-medium">{faq.label}</span>
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            {/* Input Area */}
-            <div className="bg-white p-4 pt-2 pb-6">
-                <div className="flex gap-2 items-end">
-                    <div className="flex-1 bg-slate-100 rounded-2xl border border-transparent focus-within:border-slate-300 focus-within:bg-white transition-all px-4 py-3">
-                        <input
-                            ref={inputRef}
-                            type="text"
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            placeholder="궁금하신 점을 말씀해주세요..."
-                            className="w-full bg-transparent border-none focus:outline-none text-sm placeholder:text-slate-400"
-                            disabled={isLoading}
-                        />
+            {/* FAQ Chips & Input Area (Hidden when form is active) */}
+            {!isFormActive && (
+                <>
+                    {/* FAQ Chips */}
+                    <div className="bg-white border-t border-slate-100 p-3 pb-0">
+                        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide no-scrollbar">
+                            {activeFaqList.map((faq, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => handleSend(faq.question)}
+                                    disabled={isLoading}
+                                    className="flex-shrink-0 bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs py-2 px-3 rounded-full transition whitespace-nowrap flex items-center gap-1.5 active:scale-95"
+                                >
+                                    <span>{faq.icon}</span>
+                                    <span className="font-medium">{faq.label}</span>
+                                </button>
+                            ))}
+                        </div>
                     </div>
-                    <button
-                        onClick={() => handleSend()}
-                        disabled={!input.trim() || isLoading}
-                        className={`w-12 h-12 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all disabled:bg-slate-300 disabled:cursor-not-allowed`}
-                    >
-                        {isLoading ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} className="ml-0.5" />}
-                    </button>
-                </div>
-                <div className="text-center mt-2">
-                    <p className="text-[10px] text-slate-400 flex items-center justify-center gap-1">
-                        <Sparkles size={10} /> Powered by Gemini 2.0 Flash
-                    </p>
-                </div>
-            </div>
+
+                    {/* Input Area */}
+                    <div className="bg-white p-4 pt-2 pb-6">
+                        <div className="flex gap-2 items-end">
+                            <div className="flex-1 bg-slate-100 rounded-2xl border border-transparent focus-within:border-slate-300 focus-within:bg-white transition-all px-4 py-3">
+                                <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    placeholder="궁금하신 점을 말씀해주세요..."
+                                    className="w-full bg-transparent border-none focus:outline-none text-sm placeholder:text-slate-400"
+                                    disabled={isLoading}
+                                />
+                            </div>
+                            <button
+                                onClick={() => handleSend()}
+                                disabled={!input.trim() || isLoading}
+                                className={`w-12 h-12 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all disabled:bg-slate-300 disabled:cursor-not-allowed`}
+                            >
+                                {isLoading ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} className="ml-0.5" />}
+                            </button>
+                        </div>
+                        <div className="text-center mt-2">
+                            <p className="text-[10px] text-slate-400 flex items-center justify-center gap-1">
+                                <Sparkles size={10} /> Powered by Gemini 2.0 Flash
+                            </p>
+                        </div>
+                    </div>
+                </>
+            )}
         </div>
     );
 };

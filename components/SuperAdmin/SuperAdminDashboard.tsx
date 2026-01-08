@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 // import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs" // Assuming primitive UI exists, or build manual tabs if not
-import { LayoutDashboard, Users, CreditCard, Bell, BadgeCheck } from 'lucide-react';
+import { LayoutDashboard, Users, CreditCard, Bell, BadgeCheck, MessageSquare } from 'lucide-react';
 import { PartnerAdmissions } from './PartnerAdmissions';
 import { SubscriptionManager } from '../dashboard/super-admin/SubscriptionManager';
 import { RevenueAnalytics } from '../dashboard/super-admin/RevenueAnalytics';
 import { NoticeManager } from '../dashboard/super-admin/NoticeManager';
+import { AdminLeadsView } from './AdminLeadsView';
 
 // Manual Tab Implementation to avoid dependency on shadcn/ui if not present or complex
 const SuperAdminDashboard: React.FC = () => {
-    const [activeTab, setActiveTab] = useState<'admissions' | 'subscriptions' | 'revenue' | 'notices'>('admissions');
+    const [activeTab, setActiveTab] = useState<'admissions' | 'subscriptions' | 'revenue' | 'notices' | 'leads'>('admissions');
 
     const renderContent = () => {
         switch (activeTab) {
@@ -16,6 +17,7 @@ const SuperAdminDashboard: React.FC = () => {
             case 'subscriptions': return <SubscriptionManager />;
             case 'revenue': return <RevenueAnalytics />;
             case 'notices': return <NoticeManager />;
+            case 'leads': return <AdminLeadsView />;
             default: return <PartnerAdmissions />;
         }
     };
@@ -73,6 +75,14 @@ const SuperAdminDashboard: React.FC = () => {
                     >
                         <Bell size={18} />
                         공지사항
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('leads')}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'leads' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'
+                            }`}
+                    >
+                        <MessageSquare size={18} />
+                        상담 관리
                     </button>
                 </div>
 

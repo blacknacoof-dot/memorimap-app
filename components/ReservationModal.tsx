@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Facility, Reservation as LegacyReservation } from '../types';
 import { ReservationSchema, ReservationFormValues } from '../lib/schemas';
 import { format, addDays, startOfToday } from 'date-fns';
-import { ko } from 'date-fns/locale';
+
 import { Check, X, Clock, CreditCard, AlertCircle, Loader2, Landmark, Phone, PawPrint } from 'lucide-react';
 import { requestPayment, PORTONE_CONFIG } from '../lib/portone';
 import { FUNERAL_COMPANIES } from '../constants';
@@ -32,7 +32,7 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
 
   // [Step 1] Safe Refactoring: Use React Hook Form with Zod
   const form = useForm<ReservationFormValues>({
-    resolver: zodResolver(ReservationSchema),
+    resolver: zodResolver(ReservationSchema) as any,
     mode: 'onChange',
     defaultValues: {
       status: reservationMode === 'URGENT' ? 'urgent' : 'pending',
@@ -48,11 +48,18 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
   // Watch values for UI rendering
   const formValues = watch();
   const [reservationType, setReservationType] = useState<'BASIC' | 'VIP' | 'CONSULTATION'>('VIP');
+  // Urgent Form State
+  const [urgentData, setUrgentData] = useState({
+    relation: '',
+    transport: 'yes',
+    emergencyContact: ''
+  });
+
   const [paymentMethod, setPaymentMethod] = useState<'CARD' | 'TRANSFER'>('CARD');
 
   // Helper to handle date selection which needs to be string in Form but Date in UI logic
   const handleDateSelect = (date: Date) => {
-    setValue('visit_date', format(date, 'yyyy-MM-dd'), { shouldValidate: true });
+    setValue('visit_date', format(date, 'yyyy-MM-dd'));
   };
 
   const depositAmount = reservationType === 'CONSULTATION' ? 0 : (reservationType === 'BASIC' ? 10000 : 100000);
@@ -68,7 +75,7 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
     let fieldsToValidate: (keyof ReservationFormValues)[] = [];
 
     if (reservationMode === 'URGENT') {
-      if (step === 0) fieldsToValidate = ['visitor_name', 'contact_number', 'purpose', 'request_note']; // Simplified mapping
+      if (step === 0) fieldsToValidate = ['visitor_name', 'contact_number', 'purpose']; // purpose matches "Address" input
     } else {
       if (step === 0) fieldsToValidate = ['visit_date'];
       if (step === 1) fieldsToValidate = ['visit_time'];
@@ -78,7 +85,6 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
     const isValid = await trigger(fieldsToValidate);
     if (isValid) {
       if (reservationMode === 'URGENT' && step === 0) {
-        // Urgent Submit Logic
         handleSubmit(onUrgentSubmit as any)();
       } else {
         setStep(prev => prev + 1);
@@ -88,8 +94,31 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
 
   const onUrgentSubmit = (data: ReservationFormValues) => {
     setIsProcessingPayment(true);
+
+    // Construct special requests from Urgent Data
+    const fullRequest = `[긴급장례접수]
+관계: ${urgentData.relation}
+운구차: ${urgentData.transport === 'yes' ? '필요 (즉시 출동)' : '직접 이동'}
+비상연락처: ${urgentData.emergencyContact || '없음'}
+고인위치(주소): ${data.purpose}`;
+
     setTimeout(() => {
-      const legacyReservation: LegacyReservation = mapToLegacy(data, 'urgent', 0, `URGENT-${Date.now()}`);
+      const legacyReservation: LegacyReservation = {
+        id: `RES-${Date.now()}`,
+        facilityId: facility.id,
+        facilityName: facility.name,
+        date: new Date(),
+        timeSlot: '긴급(즉시)',
+        visitorName: data.visitor_name,
+        visitorCount: 1,
+        purpose: '긴급 장례 접수',
+        specialRequests: fullRequest,
+        status: 'urgent',
+        paymentAmount: 0,
+        paidAt: new Date(),
+        paymentId: `URGENT-${Date.now()}`
+      };
+
       onConfirm(legacyReservation);
       setStep(2);
       setIsProcessingPayment(false);
@@ -101,12 +130,12 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
       id: `RES-${Date.now()}`,
       facilityId: facility.id,
       facilityName: facility.name,
-      date: new Date(data.visit_date), // Convert back to Date
+      date: new Date(data.visit_date),
       timeSlot: data.visit_time,
       visitorName: data.visitor_name,
       visitorCount: data.visitor_count,
       purpose: data.purpose,
-      specialRequests: data.request_note || '', // Map request_note -> specialRequests
+      specialRequests: data.request_note || '',
       status: status,
       paymentAmount: paidAmount,
       paidAt: new Date(),
@@ -196,23 +225,76 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">신청자 성함 <span className="text-red-500">*</span></label>
-            <input {...register('visitor_name')} className="w-full p-3 border rounded-lg focus:ring-2 outline-none" placeholder="예: 홍길동" />
-            {errors.visitor_name && <p className="text-red-500 text-xs mt-1">{errors.visitor_name.message}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">연락처 <span className="text-red-500">*</span></label>
-            <input {...register('contact_number')} className="w-full p-3 border rounded-lg focus:ring-2 outline-none" placeholder="010-0000-0000" />
-            {errors.contact_number && <p className="text-red-500 text-xs mt-1">{errors.contact_number.message}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">현재 위치 (이송 위치) <span className="text-red-500">*</span></label>
-            {/* Using request_note to store location for now or purpose */}
-            <input {...register('purpose')} className="w-full p-3 border rounded-lg focus:ring-2 outline-none" placeholder="예: 서울대병원 장례식장" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">요청 사항</label>
-            <textarea {...register('request_note')} className="w-full p-3 border rounded-lg h-20 resize-none outline-none" placeholder="특이사항을 입력해주세요" />
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">신청자 성함 <span className="text-red-500">*</span></label>
+                <input {...register('visitor_name')} className="w-full p-3 border rounded-lg focus:ring-2 outline-none text-sm" placeholder="예: 홍길동" />
+                {errors.visitor_name && <p className="text-red-500 text-xs mt-1">{errors.visitor_name.message}</p>}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">고인과의 관계 <span className="text-red-500">*</span></label>
+                <select
+                  value={urgentData.relation}
+                  onChange={(e) => setUrgentData({ ...urgentData, relation: e.target.value })}
+                  className="w-full p-3 border rounded-lg focus:ring-2 outline-none text-sm bg-white"
+                >
+                  <option value="">선택</option>
+                  <option value="자녀">자녀</option>
+                  <option value="배우자">배우자</option>
+                  <option value="형제/자매">형제/자매</option>
+                  <option value="손자/손녀">손자/손녀</option>
+                  <option value="친척">친척</option>
+                  <option value="지인/기타">지인/기타</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="mb-3">
+              <label className="block text-sm font-medium text-gray-700 mb-1">연락처 (본인) <span className="text-red-500">*</span></label>
+              <input {...register('contact_number')} className="w-full p-3 border rounded-lg focus:ring-2 outline-none" placeholder="010-0000-0000" />
+              {errors.contact_number && <p className="text-red-500 text-xs mt-1">{errors.contact_number.message}</p>}
+            </div>
+
+            <div className="mb-3">
+              <label className="block text-sm font-medium text-gray-700 mb-1">비상 연락처 (다른 가족) <span className="text-gray-400 text-xs">(선택)</span></label>
+              <input
+                value={urgentData.emergencyContact}
+                onChange={(e) => setUrgentData({ ...urgentData, emergencyContact: e.target.value })}
+                className="w-full p-3 border rounded-lg focus:ring-2 outline-none"
+                placeholder="010-0000-0000"
+              />
+            </div>
+
+            <div className="mb-3">
+              <label className="block text-sm font-medium text-gray-700 mb-1">현재 고인 위치 (주소) <span className="text-red-500">*</span></label>
+              <input {...register('purpose')} className="w-full p-3 border rounded-lg focus:ring-2 outline-none" placeholder="예: 서울대병원 / 자택 (주소 입력)" />
+            </div>
+
+            <div className="border rounded-lg p-3 bg-slate-50">
+              <label className="block text-sm font-medium text-gray-700 mb-2">운구차 필요 여부</label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="transport"
+                    checked={urgentData.transport === 'yes'}
+                    onChange={() => setUrgentData({ ...urgentData, transport: 'yes' })}
+                    className="w-4 h-4 text-primary"
+                  />
+                  <span className="text-sm">필요합니다 (즉시 출동)</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="transport"
+                    checked={urgentData.transport === 'no'}
+                    onChange={() => setUrgentData({ ...urgentData, transport: 'no' })}
+                    className="w-4 h-4 text-primary"
+                  />
+                  <span className="text-sm">직접 이동합니다</span>
+                </label>
+              </div>
+            </div>
           </div>
         </div>
       );
@@ -237,7 +319,7 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
                     : 'bg-white hover:bg-gray-50'}`}
                 >
                   <div className="text-sm font-bold">{format(d, 'M.d')}</div>
-                  <div className="text-xs">{format(d, 'EEEE', { locale: ko })}</div>
+                  <div className="text-xs">{d.toLocaleDateString('ko-KR', { weekday: 'long' })}</div>
                 </button>
               );
             })}
@@ -250,7 +332,7 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
             {TIME_SLOTS.map((t) => (
               <button
                 key={t}
-                onClick={() => setValue('visit_time', t, { shouldValidate: true })}
+                onClick={() => setValue('visit_time', t)}
                 className={`p-4 rounded-xl border flex items-center justify-center gap-2 ${formValues.visit_time === t
                   ? (isPetFacility ? 'bg-purple-600 text-white' : 'bg-primary text-white')
                   : 'bg-white hover:bg-gray-50'}`}
@@ -286,7 +368,7 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
               <label className="block text-sm font-medium text-gray-700 mb-1">방문 목적</label>
               <div className="flex flex-wrap gap-2">
                 {(isPetFacility ? PURPOSES_PET : PURPOSES).map(p => (
-                  <button key={p} onClick={() => setValue('purpose', p, { shouldValidate: true })}
+                  <button key={p} onClick={() => setValue('purpose', p)}
                     className={`px-3 py-1.5 text-sm rounded-full border ${formValues.purpose === p ? 'bg-primary text-white' : 'bg-white'}`}>
                     {p}
                   </button>

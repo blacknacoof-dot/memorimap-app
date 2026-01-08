@@ -296,12 +296,12 @@ const App: React.FC = () => {
             const name = item.name || '';
             const category = item.category || '';
 
-            if (category === 'funeral_hall') type = 'funeral';
-            else if (category === 'charnel_house') type = 'charnel';
-            else if (category === 'natural_burial') type = 'natural';
-            else if (category === 'park_cemetery') type = 'park';
-            else if (category === 'pet_funeral') type = 'pet';
-            else if (category === 'sea_burial') type = 'sea';
+            if (category === 'funeral_hall' || category === 'funeral') type = 'funeral';
+            else if (category === 'charnel_house' || category === 'charnel') type = 'charnel';
+            else if (category === 'natural_burial' || category === 'natural') type = 'natural';
+            else if (category === 'park_cemetery' || category === 'park') type = 'park';
+            else if (category === 'pet_funeral' || category === 'pet') type = 'pet';
+            else if (category === 'sea_burial' || category === 'sea') type = 'sea';
             else if (category === 'sangjo' || category === 'sangjo_company' || name.includes('프리드라이프') || name.includes('대명스테이션') || name.includes('보람상조') || name.includes('교원라이프')) type = 'sangjo';
 
             // Simulation Logic (Preserved)
@@ -472,12 +472,12 @@ const App: React.FC = () => {
         const name = data.name || '';
         const category = data.category || '';
 
-        if (category === 'funeral_hall') type = 'funeral';
-        else if (category === 'charnel_house') type = 'charnel';
-        else if (category === 'natural_burial') type = 'natural';
-        else if (category === 'park_cemetery') type = 'park';
-        else if (category === 'pet_funeral') type = 'pet';
-        else if (category === 'sea_burial') type = 'sea';
+        if (category === 'funeral_hall' || category === 'funeral') type = 'funeral';
+        else if (category === 'charnel_house' || category === 'charnel') type = 'charnel';
+        else if (category === 'natural_burial' || category === 'natural') type = 'natural';
+        else if (category === 'park_cemetery' || category === 'park') type = 'park';
+        else if (category === 'pet_funeral' || category === 'pet') type = 'pet';
+        else if (category === 'sea_burial' || category === 'sea') type = 'sea';
         else if (category === 'sangjo' || category === 'sangjo_company' || name.includes('프리드라이프') || name.includes('대명스테이션') || name.includes('보람상조') || name.includes('교원라이프')) type = 'sangjo';
 
         // Parse Details

@@ -48,59 +48,157 @@ export const searchFacilitiesV2 = async (
 /**
  * [Phase 3] 지능형 추천 엔진 (반경 확장 로직)
  */
+/**
+ * [Phase 3] 지능형 추천 엔진 (반경 확장 + 지역명 검색)
+ */
+const mapCategoryToCode = (category?: string) => {
+    if (!category) return undefined;
+    if (category === '장례식장' || category === 'funeral') return 'funeral';
+    if (category === '봉안시설' || category === 'charnel') return 'charnel'; // Mapping '봉안시설' to 'charnel'
+    if (category === '해양장' || category === 'sea') return 'sea';
+    if (category === '동물장례' || category === 'pet') return 'pet';
+    return category; // Fallback
+};
+
 export const getIntelligentRecommendations = async (
     lat: number,
     lng: number,
-    category?: string
+    category?: string,
+    regionText?: string // [NEW] Optional region text for fallback
 ) => {
-    const radiuses = [5000, 15000, 30000]; // 5km, 15km, 30km
     let finalData: any[] = [];
+    const searchCategory = mapCategoryToCode(category); // Map to English code
 
-    for (const radius of radiuses) {
-        const { data, error } = await searchFacilitiesV2(lat, lng, radius, category, 5);
-        if (error) {
-            console.error(`Search error at ${radius}m:`, error);
-            break;
-        }
-        if (data && data.length >= 3) {
-            finalData = data;
-            break;
-        }
-        if (data && data.length > 0) {
-            finalData = data;
+    const isSpecificRegion = regionText && regionText !== '내 위치 주변';
+
+    // 1. If specific region is provided, search by Region FIRST
+    if (isSpecificRegion) {
+        const regionResults = await searchFacilitiesByRegion(regionText, category);
+        finalData = regionResults;
+    }
+
+    // 2. If NO results from region (or didn't search region), try GPS Search
+    // But only if we haven't found enough yet
+    if (finalData.length < 3 && lat && lng && (lat !== 37.5665 || lng !== 126.9780)) {
+        const radiuses = [5000, 15000, 30000]; // 5km, 15km, 30km
+
+        for (const radius of radiuses) {
+            const { data, error } = await searchFacilitiesV2(lat, lng, radius, searchCategory, 5);
+            if (!error && data && data.length > 0) {
+                // Merge strategy: Add only if not already present
+                const existingIds = new Set(finalData.map(f => f.id));
+                for (const facility of data) {
+                    if (!existingIds.has(facility.id)) {
+                        finalData.push(facility);
+                        existingIds.add(facility.id);
+                    }
+                }
+
+                if (finalData.length >= 3) break; // Found enough
+            }
         }
     }
 
-    return finalData;
+    // 3. Fallback: If still not enough and we haven't tried Region search yet (i.e. User said "My Location" but GPS failed)
+    if (finalData.length < 3 && regionText && !isSpecificRegion) {
+        // This block covers cases where 'regionText' exists but might be "내 위치 주변" or similar, 
+        // usually we don't do text search for "내 위치 주변", but if it was something else fallback-able.
+        // Currently, isSpecificRegion covers most non-default text.
+        // So this might be redundant unless we want to retry region search for some reason?
+        // Let's keep it simple: If we tried Region first, we are done with region.
+        // If we tried GPS first (because !isSpecificRegion), we might want to try region fallback IF it was actually valid text?
+        // logic: !isSpecificRegion means regionText IS '내 위치 주변' or undefined.
+        // So we don't search text for "내 위치 주변".
+    }
+
+    // 3. Final Fallback (if still nothing, maybe just return empty or let UI handle it)
+    return finalData.slice(0, 3);
+};
+
+/**
+ * [NEW] 지역명 텍스트 기반 검색
+ */
+export const searchFacilitiesByRegion = async (
+    region: string,
+    category?: string
+) => {
+    const searchCategory = mapCategoryToCode(category); // Map to English code
+
+    const { data, error } = await supabase.rpc('search_facilities_by_text', {
+        p_text: region,
+        p_category: searchCategory || null
+    });
+
+    if (error) {
+        console.error('Error searching by region:', error);
+        return [];
+    }
+    return data || [];
+};
+
+/**
+ * [NEW] Region Autocomplete RPC usage
+ */
+export const getDistinctRegions = async (searchText: string) => {
+    const { data, error } = await supabase.rpc('get_distinct_regions', {
+        search_text: searchText
+    });
+
+    if (error) {
+        console.error('Error fetching distinct regions:', error);
+        return [];
+    }
+    return data || [];
 };
 
 /**
  * [Phase 5] AI 상담 리드(Lead) 저장
  */
-export const createLead = async (leadData: {
-    user_id?: string;
-    facility_id?: string;
+export interface LeadInput {
+    userId?: string;
+    facilityId?: string; // string per previous usage, though SQL says BIGINT reference, handling as passed
+    contactName: string;
+    contactPhone: string;
     category: string;
     urgency: string;
-    scale: string;
-    context_data: any;
-    priorities: string[];
-}) => {
+    scale?: string;
+    priorities?: string[];
+    contextData?: any;
+}
+
+export const createLead = async (leadData: LeadInput) => {
     const { data, error } = await supabase
         .from('leads')
-        .insert([
-            {
-                ...leadData,
-                status: 'new'
-            }
-        ])
-        .select()
-        .single();
+        .insert([{
+            user_id: leadData.userId || null,
+            facility_id: leadData.facilityId || null,
+            contact_name: leadData.contactName,
+            contact_phone: leadData.contactPhone,
+            category: leadData.category,
+            urgency: leadData.urgency,
+            scale: leadData.scale,
+            priorities: leadData.priorities,
+            context_data: leadData.contextData || {},
+            status: 'new'
+        }]); // Removed .select().single() to avoid RLS Select Policy issues
 
     if (error) {
         console.error('Error creating lead:', error);
         throw error;
     }
+    return { success: true };
+};
+
+export const getAllLeads = async () => {
+    const { data, error } = await supabase
+        .from('leads')
+        .select(`
+            *,
+            facilities (name)
+        `)
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
     return data;
 };
 
@@ -196,6 +294,20 @@ export const getReviews = async (facilityId: string) => {
     // 리뷰 테이블이 아직 없다면 에러 방지를 위해 빈 배열 반환
     // const { data, error } = await supabase...
     return [];
+};
+
+export const getUserReviews = async (userId: string) => {
+    const { data, error } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching user reviews:', error);
+        return [];
+    }
+    return data || [];
 };
 
 export const createReview = async (
