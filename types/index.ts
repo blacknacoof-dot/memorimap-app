@@ -59,7 +59,7 @@ export type AiActionType = 'NONE' | 'RESERVE' | 'MAP' | 'CALL_MANAGER' | 'RECOMM
 export interface Facility {
   id: string;
   name: string;
-  type: 'charnel' | 'natural' | 'park' | 'complex' | 'sea' | 'pet' | 'funeral'; // 납골당, 자연장, 공원, 복합, 바다장, 동물장, 장례식장
+  type: 'charnel' | 'natural' | 'park' | 'complex' | 'sea' | 'pet' | 'funeral' | 'sangjo' | 'assistant'; // 납골당, 자연장, 공원, 복합, 바다장, 동물장, 장례식장, 상조, AI상담사
   religion: 'buddhism' | 'christian' | 'catholic' | 'none';
   address: string;
   lat: number;

@@ -58,6 +58,7 @@ export const getSmartDescription = (facility: Facility): string => {
         case 'natural': typeStr = "친환경 자연장지"; break;
         case 'pet': typeStr = "반려동물 전용 장례 시설"; break;
         case 'park': case 'complex': typeStr = "종합 추모 공원"; break;
+        case 'assistant': typeStr = "AI 통합 상담 시스템"; break;
     }
 
     return `${facility.name}은(는) ${location} 지역에서 유가족의 슬픔을 함께 나누는 ${typeStr}입니다. 경건한 분위기와 쾌적한 시설로 고인의 마지막 길을 예우하며, 최상의 정성으로 추모를 돕습니다.`;

@@ -25,6 +25,85 @@ export const searchFacilities = async (
     return data;
 };
 
+/**
+ * [Phase 3] PostGIS 기반 반경 검색 v2
+ */
+export const searchFacilitiesV2 = async (
+    lat: number,
+    lng: number,
+    radius: number = 5000,
+    category?: string,
+    limit: number = 10
+) => {
+    const { data, error } = await supabase.rpc('search_facilities_v2', {
+        p_lat: lat,
+        p_lng: lng,
+        p_radius_meters: radius,
+        p_category: category || null,
+        p_limit: limit
+    });
+    return { data, error };
+};
+
+/**
+ * [Phase 3] 지능형 추천 엔진 (반경 확장 로직)
+ */
+export const getIntelligentRecommendations = async (
+    lat: number,
+    lng: number,
+    category?: string
+) => {
+    const radiuses = [5000, 15000, 30000]; // 5km, 15km, 30km
+    let finalData: any[] = [];
+
+    for (const radius of radiuses) {
+        const { data, error } = await searchFacilitiesV2(lat, lng, radius, category, 5);
+        if (error) {
+            console.error(`Search error at ${radius}m:`, error);
+            break;
+        }
+        if (data && data.length >= 3) {
+            finalData = data;
+            break;
+        }
+        if (data && data.length > 0) {
+            finalData = data;
+        }
+    }
+
+    return finalData;
+};
+
+/**
+ * [Phase 5] AI 상담 리드(Lead) 저장
+ */
+export const createLead = async (leadData: {
+    user_id?: string;
+    facility_id?: string;
+    category: string;
+    urgency: string;
+    scale: string;
+    context_data: any;
+    priorities: string[];
+}) => {
+    const { data, error } = await supabase
+        .from('leads')
+        .insert([
+            {
+                ...leadData,
+                status: 'new'
+            }
+        ])
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error creating lead:', error);
+        throw error;
+    }
+    return data;
+};
+
 // --- [Phase 9] 시설 상세 조회 ---
 
 export const getFacility = async (id: string) => {
@@ -460,4 +539,32 @@ export const getMyFavorites = async (userId: string) => {
     if (error) throw error;
     // @ts-ignore
     return data.map(f => f.facilities); // 시설 정보만 배열로 추출
+};
+
+/**
+ * [추가] 전체 구독 현황 조회 (Super Admin)
+ */
+export const getAllSubscriptions = async () => {
+    try {
+        const { data, error } = await supabase
+            .from('facility_subscriptions')
+            .select(`
+                *,
+                facilities:memorial_spaces(name),
+                plan:subscription_plans(name, price)
+            `);
+
+        if (error) throw error;
+
+        return (data || []).map((item: any) => ({
+            id: item.id,
+            facilityName: item.facilities?.name || 'Unknown',
+            planName: item.plan?.name || 'Unknown',
+            expiresAt: item.end_date ? new Date(item.end_date).toLocaleDateString() : 'N/A', // Formatting
+            price: item.plan?.price || 0
+        }));
+    } catch (e) {
+        console.error('Error fetching all subscriptions:', e);
+        return [];
+    }
 };

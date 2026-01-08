@@ -212,7 +212,8 @@ export const FacilitySheet: React.FC<Props> = ({
                   facility.type === 'funeral' ? '장례식장' :
                     facility.type === 'sea' ? '해양장' :
                       facility.type === 'pet' ? '동물장' :
-                        facility.type === 'complex' ? '공원묘지' : '공원묘지'}
+                        facility.type === 'complex' ? '공원묘지' :
+                          facility.type === 'assistant' ? 'AI 상담사' : '정보'}
             </div>
             <div className="flex items-center gap-2">
               <h2 className="text-2xl font-bold shadow-sm">{facility.name}</h2>

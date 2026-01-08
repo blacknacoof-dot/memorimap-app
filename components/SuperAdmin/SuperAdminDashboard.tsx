@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs" // Assuming primitive UI exists, or build manual tabs if not
+// import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs" // Assuming primitive UI exists, or build manual tabs if not
 import { LayoutDashboard, Users, CreditCard, Bell, BadgeCheck } from 'lucide-react';
 import { PartnerAdmissions } from './PartnerAdmissions';
 import { SubscriptionManager } from '../dashboard/super-admin/SubscriptionManager';

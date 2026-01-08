@@ -70,9 +70,22 @@ const MapEvents = ({ onBoundsChange }: { onBoundsChange?: (bounds: L.LatLngBound
 
 const MapController = ({ center, zoom }: { center?: [number, number], zoom?: number }) => {
   const map = useMap();
+  const prevCenter = React.useRef<[number, number] | undefined>(undefined);
+  const prevZoom = React.useRef<number | undefined>(undefined);
+
   useEffect(() => {
     if (center) {
-      map.flyTo(center, zoom || 15, { animate: true, duration: 1.5 });
+      const isCenterChanged = !prevCenter.current ||
+        prevCenter.current[0] !== center[0] ||
+        prevCenter.current[1] !== center[1];
+
+      const isZoomChanged = zoom !== undefined && prevZoom.current !== zoom;
+
+      if (isCenterChanged || isZoomChanged) {
+        prevCenter.current = center;
+        prevZoom.current = zoom;
+        map.flyTo(center, zoom || 15, { animate: true, duration: 1.5 });
+      }
     }
   }, [center, zoom, map]);
   return null;
@@ -138,7 +151,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
       <MapContainer
         center={initialCenter || [37.35, 127.15]}
         zoom={initialZoom || 10}
-        style={{ height: '100%', width: '100%' }}
+        style={{ height: '100%', width: '100%', transform: 'translate3d(0,0,0)' }}
         zoomControl={false}
       >
         <MapController center={initialCenter} zoom={initialZoom} />

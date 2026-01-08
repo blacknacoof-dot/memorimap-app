@@ -17,6 +17,7 @@ import { supabase, isSupabaseConfigured } from './lib/supabaseClient';
 import { useAuthSync } from './lib/useAuthSync';
 import { getFacilitySubscription, incrementAiUsage } from './lib/queries';
 import { FacilityList } from './components/FacilityList';
+import { useLocation } from './hooks/useLocation';
 
 // Lazy Load Components
 const AdminView = React.lazy(() => import('./components/AdminView').then(m => ({ default: m.AdminView })));
@@ -77,6 +78,7 @@ const App: React.FC = () => {
   useAuthSync();
 
   const mapRef = React.useRef<MapRef>(null);
+  const { location: userLocation, getCurrentPosition } = useLocation();
   const [facilities, setFacilities] = useState<Facility[]>(FACILITIES);
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
   const [isBooking, setIsBooking] = useState(false);
@@ -136,6 +138,7 @@ const App: React.FC = () => {
   const { signOut } = useClerk();
 
   const [initialChatIntent, setInitialChatIntent] = useState<'funeral_home' | 'memorial_facility' | 'pet_funeral' | 'general' | null>(null);
+  const [handoverContext, setHandoverContext] = useState<any>(null);
 
   // Helper to get display user info (Memoize to prevent infinite re-fetches)
   const userInfo = React.useMemo(() => {
@@ -149,6 +152,11 @@ const App: React.FC = () => {
   }, [user]);
 
   // 🔍 임시: User ID 확인용 (나중에 삭제 가능)
+  useEffect(() => {
+    // Attempt to get user location on mount
+    getCurrentPosition();
+  }, [getCurrentPosition]);
+
   useEffect(() => {
     if (isSignedIn && userInfo) {
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -285,13 +293,16 @@ const App: React.FC = () => {
           const mappedFacilities = data.map((item: any) => {
             // Category Mapping
             let type: any = 'charnel';
-            if (item.category === 'funeral_hall') type = 'funeral';
-            else if (item.category === 'charnel_house') type = 'charnel';
-            else if (item.category === 'natural_burial') type = 'natural';
-            else if (item.category === 'park_cemetery') type = 'park';
-            else if (item.category === 'pet_funeral') type = 'pet';
-            else if (item.category === 'sea_burial') type = 'sea';
-            else if (item.category === 'sangjo' || item.category === 'sangjo_company') type = 'sangjo';
+            const name = item.name || '';
+            const category = item.category || '';
+
+            if (category === 'funeral_hall') type = 'funeral';
+            else if (category === 'charnel_house') type = 'charnel';
+            else if (category === 'natural_burial') type = 'natural';
+            else if (category === 'park_cemetery') type = 'park';
+            else if (category === 'pet_funeral') type = 'pet';
+            else if (category === 'sea_burial') type = 'sea';
+            else if (category === 'sangjo' || category === 'sangjo_company' || name.includes('프리드라이프') || name.includes('대명스테이션') || name.includes('보람상조') || name.includes('교원라이프')) type = 'sangjo';
 
             // Simulation Logic (Preserved)
             const idNum = item.id ? item.id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) : 0;
@@ -458,12 +469,16 @@ const App: React.FC = () => {
 
         // Map Category
         let type: any = 'charnel';
-        if (data.category === 'funeral_hall') type = 'funeral';
-        else if (data.category === 'charnel_house') type = 'charnel';
-        else if (data.category === 'natural_burial') type = 'natural';
-        else if (data.category === 'park_cemetery') type = 'park';
-        else if (data.category === 'pet_funeral') type = 'pet';
-        else if (data.category === 'sea_burial') type = 'sea';
+        const name = data.name || '';
+        const category = data.category || '';
+
+        if (category === 'funeral_hall') type = 'funeral';
+        else if (category === 'charnel_house') type = 'charnel';
+        else if (category === 'natural_burial') type = 'natural';
+        else if (category === 'park_cemetery') type = 'park';
+        else if (category === 'pet_funeral') type = 'pet';
+        else if (category === 'sea_burial') type = 'sea';
+        else if (category === 'sangjo' || category === 'sangjo_company' || name.includes('프리드라이프') || name.includes('대명스테이션') || name.includes('보람상조') || name.includes('교원라이프')) type = 'sangjo';
 
         // Parse Details
         const details = data.details || {};
@@ -740,8 +755,8 @@ const App: React.FC = () => {
               facilities={filteredFacilities}
               onFacilitySelect={handleFacilitySelect}
               onBoundsChange={handleBoundsChange}
-              initialCenter={targetMapCenter}
-              initialZoom={targetMapZoom}
+              initialCenter={targetMapCenter || [userLocation.lat, userLocation.lng]}
+              initialZoom={targetMapZoom || (userLocation.type === 'gps' ? 14 : undefined)}
             />
 
             <div className="absolute bottom-24 left-4 z-30 flex flex-col gap-3 pointer-events-none">
@@ -1517,11 +1532,14 @@ const App: React.FC = () => {
                   facility={aiChatFacility}
                   currentUser={userInfo}
                   initialIntent={initialChatIntent}
+                  userLocation={userLocation}
+                  onGetCurrentPosition={getCurrentPosition}
+                  handoverContext={handoverContext}
                   onClose={() => {
                     setAiChatFacility(null);
                     setInitialChatIntent(null);
                   }}
-                  onSearchFacilities={(region) => {
+                  onSearchFacilities={(region: string) => {
                     // Simple Search Logic
                     // 1. Filter by address containing region (e.g. "신촌동")
                     const exactMatches = facilities.filter(f => f.address.includes(region) && f.type === 'funeral'); // Recommend Funeral Homes primarily for Scenario A
@@ -1535,17 +1553,19 @@ const App: React.FC = () => {
 
                     return sorted.slice(0, 3);
                   }}
-                  onSwitchToFacility={(target) => {
-                    // Switch the Chat Context
+                  onSwitchToFacility={(target, context) => {
                     setAiChatFacility(target);
-                    // Optional: Add a system message to history? 
-                    // ChatInterface handles its own history, so switching facility resets it (key change or new component).
-                    // Since 'aiChatFacility' changes, ChatInterface re-mounts? 
-                    // Yes, if we don't key it, it might re-render. Ideally key it by ID.
+                    if (context) setHandoverContext(context);
                   }}
                   onAction={(action) => {
+                    const isGlobalAI = aiChatFacility?.id === 'maum-i';
+
                     if (action === 'RESERVE') {
                       setAiChatFacility(null);
+                      if (isGlobalAI) {
+                        setViewState(ViewState.LIST);
+                        return;
+                      }
                       setSelectedFacility(aiChatFacility);
                       if (aiChatFacility.type === 'funeral') {
                         setIsUrgentBooking(true);
@@ -1553,15 +1573,27 @@ const App: React.FC = () => {
                       setIsBooking(true);
                     } else if (action === 'MAP') {
                       setAiChatFacility(null);
+                      if (isGlobalAI) {
+                        handleViewOnMap();
+                        return;
+                      }
                       setSelectedFacility(aiChatFacility);
                       handleViewOnMap();
                     } else if (action === 'CALL_MANAGER') {
+                      if (isGlobalAI) {
+                        alert('고객센터(1588-0000)로 연결합니다.');
+                        window.location.href = 'tel:1588-0000';
+                        return;
+                      }
                       alert(`담당자(${aiChatFacility.phone})에게 연결합니다.`);
                       window.location.href = `tel:${aiChatFacility.phone}`;
                     } else if (action === 'RECOMMEND') {
-                      // Fallback generic recommend action (Show list view with filter?)
                       setAiChatFacility(null);
-                      setSearchQuery(aiChatFacility.address.split(' ')[0] || ''); // Hacky context
+                      if (isGlobalAI) {
+                        setViewState(ViewState.LIST);
+                        return;
+                      }
+                      setSearchQuery(aiChatFacility.address.split(' ')[0] || '');
                       setViewState(ViewState.LIST);
                     }
                   }}
