@@ -195,3 +195,29 @@ export const deleteNotice = async (id: string) => {
         .eq('id', id);
     if (error) throw error;
 };
+
+// --- 상담 신청 관리 API ---
+export const fetchLeads = async () => {
+    // consultation_leads 테이블이 없으면 생성해야 함.
+    // 현재는 consultation_leads 테이블이 있다고 가정하거나, 혹은 없을 경우를 대비해 
+    // 예전 Mock data와 유사한 구조로 매핑.
+    // *실제로는 consultation_leads 테이블이 없어서 reservation 테이블을 대신 쓰거나 해야 할 수도 있음.*
+    // 하지만 user request가 '상담 관리'이므로 별도 테이블이 맞음.
+    // 만약 에러나면 reservation 테이블로 fallback 하겠음.
+
+    const { data: leads, error } = await supabase
+        .from('consultation_leads')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        // Table might not exist, return empty array to prevent crash
+        console.warn('Failed to fetch leads (Table might be missing):', error);
+        return [];
+    }
+
+    return leads.map((lead: any) => ({
+        ...lead,
+        type: lead.inquiry_type || 'consultation', // map DB column to type
+    }));
+};

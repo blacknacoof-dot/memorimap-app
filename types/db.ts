@@ -131,4 +131,19 @@ export interface Notice {
     created_at: string;
 }
 
+/**
+ * [Consultation Leads] 상담 신청 내역
+ */
+export interface ConsultationLead {
+    id: string; // or number depending on DB
+    user_id: string | null;
+    user_name: string;
+    phone_number: string;
+    facility_id: number | null;
+    facility_name?: string; // Optional joined
+    type: 'visit' | 'counsel' | 'price' | 'other';
+    status: 'new' | 'read' | 'contacted' | 'completed';
+    created_at: string;
+}
+
 export type Database = any;

@@ -23,11 +23,11 @@ const TOPICS: string[] = [
 
 // 고객 니즈 파악을 위한 키워드 버튼 (Maum-i Mode)
 const PREFERENCE_CHIPS = [
-    "💰 가성비가 중요해요",
-    "🏆 서비스 품질 최우선",
-    "🛡️ 튼튼한 안전성",
-    "✝️ 기독교/천주교 전용",
-    "⚡ 급해요 (후불제)"
+    { id: 'urgent', label: "⚡ 급해요 (후불제)", value: "급해요 (후불제)", isEmergency: true },
+    { id: 'price', label: "💰 가성비가 중요해요", value: "가성비가 중요해요", isEmergency: false },
+    { id: 'quality', label: "🏆 서비스 품질 최우선", value: "서비스 품질 최우선", isEmergency: false },
+    { id: 'safety', label: "🛡️ 튼튼한 안전성", value: "튼튼한 안전성", isEmergency: false },
+    { id: 'religion', label: "✝️ 기독교/천주교 전용", value: "기독교/천주교 전용", isEmergency: false }
 ];
 
 type ConsultationStep = 'GUIDE' | 'INFO' | 'CONTRACT' | 'CONSULT' | 'COMPLETE';
@@ -242,16 +242,19 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
                     if (recommended.length === 0) recommended = FUNERAL_COMPANIES.slice(0, 3);
                     filterMessage = "종교 예식에 맞는 전문 지도사가 필요하시군요. ✝️\n**입관 예배와 전용 추모 절차**를 지원하는 특화 상품입니다.";
                 } else if (text.includes('급해요') || text.includes('후불') || text.includes('당장')) {
-                    recommended = FUNERAL_COMPANIES.slice(0, 5); // Just pick top 5
-                    filterMessage = "경황이 없으시겠지만 침착하게 도와드리겠습니다. ⚡\n가입 절차 없이 **즉시 출동 가능한 후불제 상조** 업체들입니다.";
+                    // [Fast-Track Logic]
+                    // Skip regular comparison, go straight to dispatch mode
+                    filterMessage = "🚨 **긴급 출동 상황**으로 접수되었습니다.\n\n경황이 없으시겠지만, 가장 빨리 도착할 수 있는 팀을 배정하기 위해 **현재 계신 위치(장례식장 또는 자택)**를 알려주세요.\n\n(예: 서울 강남세브란스 / 부산 자택)";
+
+                    // Set recommended to empty or specific urgent providers to prevent distraction?
+                    // Let's keep it empty for now to focus on location input, or show "Instant Dispatch Team" card later.
+                    recommended = [];
                 } else {
                     // General AI fallback for Maum-i if not a keyword match? 
                     // Or just generic recommendation
                     recommended = FUNERAL_COMPANIES.slice(0, 3);
                     filterMessage = "고객님의 요청 사항을 종합적으로 분석하여,\n현재 가장 만족도가 높은 **Top 3 업체**를 비교해 드립니다.";
                 }
-
-                const top3 = recommended.slice(0, 3);
 
                 // 1. Text Response
                 setMessages(prev => [...prev, {
@@ -260,15 +263,18 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
                     timestamp: new Date()
                 }]);
 
-                // 2. Card Recommendation (After short delay or same time)
-                setTimeout(() => {
-                    setMessages(prev => [...prev, {
-                        role: 'model',
-                        text: "아래 카드를 넘겨보시고, 마음에 드는 곳의 **[상담 연결]** 버튼을 눌러주세요.\n해당 업체의 AI 상담사가 구체적인 견적과 절차를 안내해 드립니다.",
-                        timestamp: new Date(),
-                        recommendation: top3
-                    }]);
-                }, 500);
+                // 2. Card Recommendation (Skipped if recommended is empty - Fast Track)
+                if (recommended.length > 0) {
+                    const top3 = recommended.slice(0, 3);
+                    setTimeout(() => {
+                        setMessages(prev => [...prev, {
+                            role: 'model',
+                            text: "아래 카드를 넘겨보시고, 마음에 드는 곳의 **[상담 연결]** 버튼을 눌러주세요.\n해당 업체의 AI 상담사가 구체적인 견적과 절차를 안내해 드립니다.",
+                            timestamp: new Date(),
+                            recommendation: top3
+                        }]);
+                    }, 500);
+                }
 
                 setIsLoading(false);
                 return; // Exit function, don't use Gemini for this flow
@@ -437,14 +443,18 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
                     {!activeCompany && (
                         <div className="px-4 pt-3 pb-2">
                             <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-                                {PREFERENCE_CHIPS.map((chip, idx) => (
+                                {PREFERENCE_CHIPS.map((chip) => (
                                     <button
-                                        key={idx}
-                                        onClick={() => handleSendMessage(chip)}
+                                        key={chip.id}
+                                        onClick={() => handleSendMessage(chip.value)}
                                         disabled={isLoading}
-                                        className="flex-shrink-0 bg-white border border-indigo-100 text-gray-700 hover:text-indigo-600 text-xs font-semibold px-3.5 py-2.5 rounded-full shadow-sm hover:shadow-md hover:border-indigo-300 transition-all whitespace-nowrap active:scale-95"
+                                        className={`flex-shrink-0 border text-xs font-semibold px-3.5 py-2.5 rounded-full shadow-sm transition-all whitespace-nowrap active:scale-95
+                                            ${chip.isEmergency
+                                                ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100 animate-pulse'
+                                                : 'bg-white border-indigo-100 text-gray-700 hover:text-indigo-600 hover:shadow-md hover:border-indigo-300'
+                                            }`}
                                     >
-                                        {chip}
+                                        {chip.label}
                                     </button>
                                 ))}
                             </div>
