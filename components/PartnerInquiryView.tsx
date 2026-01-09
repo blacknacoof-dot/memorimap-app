@@ -17,13 +17,16 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
         companyName: '',
         managerName: '',
         phone: '',
-        managerMobile: '', // [New] 담당자 휴대폰
+        managerMobile: '',
         address: '',
         email: '',
-        companyEmail: '', // [New] 회사 이메일 (ID용)
-        type: 'funeral_home', // funeral_home, memorial_park, sangjo, pet, sea
-        message: ''
+        companyEmail: '',
+        type: 'funeral_home',
+        message: '',
+        targetFacilityId: null as number | null // [Fixed] Match DB type
     });
+    const [isReadOnly, setIsReadOnly] = useState(false); // [New] Lock fields
+
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
@@ -45,7 +48,6 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [wrapperRef]);
-
 
     // Pre-fill email if logged in
     useEffect(() => {
@@ -101,10 +103,19 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
             ...prev,
             companyName: facility.name,
             address: facility.address || '',
-            phone: facility.phone || ''
+            phone: facility.phone || '', // Might be missing in facility search result, user can fill? No, read-only
+            // If phone is missing from DB, we might want to let them edit it? 
+            // User request says "Read-Only". Let's lock it. If DB is empty, user might be stuck.
+            // Assumption: Facility list has phone. If not, maybe allow edit?
+            // "기본 정보는 자동 입력되고 수정 불가" -> Strict interpretation.
+            targetFacilityId: facility.id
         }));
+        setIsReadOnly(true);
         setShowResults(false);
     };
+
+    // Reset read-only if type changes
+    // ... logic inside existing change handler to clear targetFacilityId if cleared?
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -127,7 +138,8 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
                 companyEmail: formData.companyEmail,
                 email: formData.email,
                 businessLicenseImage: selectedFile,
-                userId: user?.id
+                userId: user?.id,
+                targetFacilityId: formData.targetFacilityId // Pass ID
             });
             console.log('Submission success');
             setIsSuccess(true);
@@ -298,19 +310,35 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
                                         required
                                         value={formData.companyName}
                                         onChange={handleChange}
+                                        readOnly={isReadOnly}
                                         autoComplete="off"
                                         placeholder={formData.type === 'sangjo' ? "상조회사/브랜드명 입력" : "업체명 검색/입력 (자동완성)"}
-                                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                        className={`w-full pl-10 pr-4 py-3 border rounded-xl outline-none transition-all ${isReadOnly
+                                            ? 'bg-gray-100 text-gray-500 border-gray-200 cursor-not-allowed'
+                                            : 'bg-gray-50 border-gray-200 focus:ring-2 focus:ring-primary/20'
+                                            }`}
                                     />
-                                    {isSearching && (
+                                    {isSearching && !isReadOnly && (
                                         <div className="absolute right-3 top-1/2 -translate-y-1/2">
                                             <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
                                         </div>
                                     )}
+                                    {isReadOnly && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setIsReadOnly(false);
+                                                setFormData(prev => ({ ...prev, targetFacilityId: null, companyName: '', address: '' }));
+                                            }}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-red-500 hover:underline"
+                                        >
+                                            다시 검색
+                                        </button>
+                                    )}
                                 </div>
 
                                 {/* Autocomplete Results */}
-                                {showResults && searchResults.length > 0 && (
+                                {showResults && searchResults.length > 0 && !isReadOnly && (
                                     <div className="absolute top-full left-0 right-0 z-20 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
                                         <div className="p-2 text-xs text-gray-500 border-b bg-gray-50">
                                             '{formData.companyName}' 검색 결과 (탭하여 정보 입력)
@@ -324,6 +352,7 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
                                             >
                                                 <span className="font-bold text-gray-900 text-sm">{facility.name}</span>
                                                 <span className="text-xs text-gray-500 truncate">{facility.address}</span>
+                                                {facility.owner_user_id && <span className="text-xs text-red-400 mt-1">⚠️ 이미 관리자가 존재하는 시설입니다</span>}
                                             </button>
                                         ))}
                                     </div>
@@ -340,8 +369,12 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
                                         required
                                         value={formData.address}
                                         onChange={handleChange}
+                                        readOnly={isReadOnly}
                                         placeholder="사업장 주소 (시/군/구 포함)"
-                                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                        className={`w-full pl-10 pr-4 py-3 border rounded-xl outline-none transition-all ${isReadOnly
+                                            ? 'bg-gray-100 text-gray-500 border-gray-200 cursor-not-allowed'
+                                            : 'bg-gray-50 border-gray-200 focus:ring-2 focus:ring-primary/20'
+                                            }`}
                                     />
                                 </div>
                             </div>

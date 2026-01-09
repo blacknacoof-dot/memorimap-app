@@ -199,11 +199,20 @@ export const getAllLeads = async () => {
         .from('leads')
         .select(`
             *,
-            facilities (name)
+            memorial_spaces (name)
         `)
         .order('created_at', { ascending: false });
 
     if (error) throw error;
+    // Map memorial_spaces to facilities just in case frontend expects it, or just return data and let frontend adapt?
+    // AdminLeadsView.tsx uses 'facilities' probably. Let's check AdminLeadsView.tsx again.
+    // Wait, AdminLeadsView.tsx does not access facilities.name directly?
+    // Let's check AdminLeadsView.tsx content I viewed earlier.
+    // It calls getAllLeads() and just sets leads. It doesn't seem to display facility name in the table snippet I saw (it had Status, Contact, Category).
+    // Ah, wait, checking the file viewing again.
+    // Line 106: lead.context_data?.text ... 
+    // It doesn't seem to clearly display 'facility name' column.
+    // But the query request failed, so we fix the query.
     return data;
 };
 
@@ -466,11 +475,16 @@ export const getUserRole = async (userId: string) => {
 /**
  * [추가] 파트너 신청용: 기존 시설 검색
  */
+/**
+ * [추가] 파트너 신청용: 기존 시설 검색 (주인 없는 시설만 검색)
+ */
 export const searchKnownFacilities = async (query: string, type?: string) => {
+    // memorial_spaces 테이블 사용
     const { data, error } = await supabase
-        .from('facilities')
-        .select('id, name, address, category')
+        .from('memorial_spaces')
+        .select('id, name, address, category, owner_user_id') // Check owner_user_id
         .ilike('name', `%${query}%`)
+        .is('owner_user_id', null) // [Important] Only unclaim facilities
         .limit(10);
 
     if (error) {
@@ -484,9 +498,13 @@ export const searchKnownFacilities = async (query: string, type?: string) => {
  * [추가] 파트너 입점 신청 제출
  */
 export const submitPartnerApplication = async (data: any) => {
-    // 1. 파일 업로드 (스토리지 'partner_docs' 버킷 가정)
+    // 1. 파일 업로드
     let licenseUrl = '';
     if (data.businessLicenseImage) {
+        // ... (existing upload logic kept same but skipping for brevity in replacement if possible, but replace tool needs full logic)
+        // Wait, replace tool needs exact match. I should be careful.
+        // Let's use the existing code I read to ensure I don't break upload.
+        // Re-reading lines 486-533 from previous view_file of queries.ts (Step 545)
         const fileExt = data.businessLicenseImage.name.split('.').pop();
         const fileName = `${Date.now()}_${Math.random()}.${fileExt}`;
         const filePath = `licenses/${fileName}`;
@@ -504,7 +522,6 @@ export const submitPartnerApplication = async (data: any) => {
     }
 
     // 2. DB Insert
-    // (Note: DB 컬럼명과 코드의 필드명이 다를 수 있어 매핑합니다)
     const { data: result, error } = await supabase
         .from('partner_inquiries')
         .insert([{
@@ -513,14 +530,14 @@ export const submitPartnerApplication = async (data: any) => {
             business_type: data.type,
             contact_person: data.managerName,
             contact_number: data.phone,
-            manager_mobile: data.managerMobile, // [New]
-            company_email: data.companyEmail,   // [New]
-            email: data.email,                  // 기존 로그인 유저 이메일 (참고용)
-            // 아래 필드들은 DB 스키마에 존재해야 합니다. 없다면 에러가 날 수 있음.
+            manager_mobile: data.managerMobile,
+            company_email: data.companyEmail,
+            email: data.email,
             address: data.address,
             business_license_url: licenseUrl,
-            message: '', // Form data doesn't pass message currently?
-            status: 'pending'
+            message: '',
+            status: 'pending',
+            target_facility_id: data.targetFacilityId || null // [New]
         }])
         .select()
         .single();

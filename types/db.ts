@@ -56,7 +56,7 @@ export interface Reservation {
 }
 
 export interface MemorialSpace {
-    id: string;
+    id: number; // [Fixed] BigInt in DB -> number in TS
     owner_user_id: string | null; // DB Column (was manager_id)
     manager_id?: string | null; // Alias/Legacy
     name: string;
@@ -71,7 +71,7 @@ export interface MemorialSpace {
 }
 
 export interface PartnerInquiry {
-    id: string;
+    id: string; // If partner inquiry is UUID, keep string. Usually it is.
     user_id: string;
     company_name: string;
     contact_person: string;
@@ -85,6 +85,7 @@ export interface PartnerInquiry {
     message: string;
     status: 'pending' | 'approved' | 'rejected';
     created_at: string;
+    target_facility_id?: number | null; // [Fixed] BigInt in DB -> number in TS
 }
 
 // --- [Phase 4 New Interfaces] ---
