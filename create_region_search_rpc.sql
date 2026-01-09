@@ -10,12 +10,15 @@ BEGIN
         region
     FROM (
         SELECT 
-            -- 1. [데이터 정제] '경기 ' -> '경기도 ', '서울 ' -> '서울특별시 ' 등으로 표준화 후 앞 2단어 추출
+            -- 1. [데이터 정제] '경기 ' -> '경기도 ', '서울 ' -> '서울특별시 ', '부산 ' -> '부산광역시 ' 등으로 표준화 후 앞 2단어 추출
             array_to_string(
                 (string_to_array(
                     REPLACE(
-                        REPLACE(address, '경기 ', '경기도 '), 
-                        '서울 ', '서울특별시 '
+                        REPLACE(
+                            REPLACE(address, '경기 ', '경기도 '), 
+                            '서울 ', '서울특별시 '
+                        ),
+                        '부산 ', '부산광역시 '
                     ), 
                 ' '))[1:2], 
             ' ') AS region
@@ -30,7 +33,7 @@ $$;
 
 
 -- 2. 시설 텍스트 검색 (PostGIS 좌표 변환 + 이름/주소 동시 검색)
--- [Fix] SQL 수정 코드: rating, review_count 타입을 NUMERIC으로 강제 변환
+-- [Fix] SQL 수정 코드: 공백을 %로 변환하여 유연한 검색 (예: "부산 금정구" -> "부산%금정구" -> "부산광역시 금정구")
 DROP FUNCTION IF EXISTS public.search_facilities_by_text;
 
 CREATE OR REPLACE FUNCTION public.search_facilities_by_text(
@@ -44,29 +47,33 @@ RETURNS TABLE (
     address TEXT,
     lat DOUBLE PRECISION,
     lng DOUBLE PRECISION,
-    rating NUMERIC,        -- 7번째 컬럼 (문제의 원인)
-    review_count NUMERIC,  -- 8번째 컬럼
+    rating NUMERIC,        
+    review_count NUMERIC,  
     image_url TEXT
 )
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    v_search_pattern TEXT;
 BEGIN
+    -- 공백을 %로 치환하여 중간에 다른 단어(광역시, 도 등)가 있어도 매칭되도록 함
+    v_search_pattern := '%' || REPLACE(p_text, ' ', '%') || '%';
+
     RETURN QUERY
     SELECT 
         m.id,
         m.name,
         m.type as category,
         m.address,
-        -- [수정] location 컬럼이 없으므로 lat, lng 컬럼을 직접 반환
         m.lat::DOUBLE PRECISION, 
         m.lng::DOUBLE PRECISION,
-        m.rating::NUMERIC,       -- [수정 핵심] ::NUMERIC 을 붙여서 타입을 강제로 맞춤
-        m.review_count::NUMERIC, -- [수정 핵심] 여기도 안전하게 변환
+        m.rating::NUMERIC,       
+        m.review_count::NUMERIC, 
         m.image_url
     FROM 
         public.memorial_spaces m
     WHERE 
-        (m.address ILIKE '%' || p_text || '%' OR m.name ILIKE '%' || p_text || '%')
+        (m.address ILIKE v_search_pattern OR m.name ILIKE v_search_pattern)
         AND (p_category IS NULL OR m.type = p_category)
     LIMIT 20;
 END;

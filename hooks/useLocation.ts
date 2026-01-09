@@ -27,6 +27,8 @@ export const useLocation = () => {
         }
 
         setIsLocating(true);
+        // Desktop browsers often time out with high accuracy (GPS). 
+        // We prioritize speed and availability (Wi-Fi/IP) over precision for the initial check.
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 setLocation({
@@ -38,11 +40,15 @@ export const useLocation = () => {
                 setError(null);
             },
             (err) => {
-                console.warn('Geolocation error:', err);
+                console.warn('Geolocation failed:', err);
+
+                // If the error is not PERMISSION_DENIED, we could try high accuracy as a last resort? 
+                // But usually if low accuracy fails, high won't work either on desktop.
+                // Just handle error gracefully.
                 setError('위치 정보를 가져올 수 없습니다.');
                 setIsLocating(false);
             },
-            { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+            { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }
         );
     }, []);
 

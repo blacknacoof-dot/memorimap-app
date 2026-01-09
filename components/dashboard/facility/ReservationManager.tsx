@@ -10,9 +10,11 @@ interface ReservationManagerProps {
 export default function ReservationManager({ reservations, onUpdateStatus }: ReservationManagerProps) {
     const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed'>('all');
 
-    const filteredList = reservations.filter(r =>
-        filter === 'all' ? true : r.status === filter
-    );
+    const filteredList = reservations.filter(r => {
+        if (filter === 'all') return true;
+        if (filter === 'pending') return r.status === 'pending' || r.status === 'urgent';
+        return r.status === filter;
+    });
 
     const handleRejectClick = (id: string) => {
         const reason = prompt("거절 사유를 입력해주세요 (예: 예약 마감, 휴무일 등)");
@@ -24,13 +26,14 @@ export default function ReservationManager({ reservations, onUpdateStatus }: Res
     const getStatusBadge = (status: string) => {
         const styles: Record<string, string> = {
             pending: 'bg-yellow-100 text-yellow-800',
+            urgent: 'bg-red-100 text-red-800', // Added urgent style
             confirmed: 'bg-green-100 text-green-800',
             rejected: 'bg-red-100 text-red-800',
             cancelled: 'bg-gray-100 text-gray-800',
             completed: 'bg-blue-100 text-blue-800',
         };
         const labels: Record<string, string> = {
-            pending: '대기중', confirmed: '확정됨', rejected: '거절됨', cancelled: '취소됨', completed: '방문완료'
+            pending: '대기중', urgent: '긴급접수', confirmed: '확정됨', rejected: '거절됨', cancelled: '취소됨', completed: '방문완료'
         };
         return (
             <span className={`px-2 py-1 rounded-full text-xs font-bold ${styles[status] || 'bg-gray-100'}`}>
@@ -78,8 +81,8 @@ export default function ReservationManager({ reservations, onUpdateStatus }: Res
                                 )}
                             </div>
 
-                            {/* 액션 버튼 (대기중일 때만 표시) */}
-                            {res.status === 'pending' && (
+                            {/* 액션 버튼 (대기중/긴급 일 때만 표시) */}
+                            {(res.status === 'pending' || res.status === 'urgent') && (
                                 <div className="flex md:flex-col gap-2 justify-center border-t md:border-t-0 md:border-l pt-4 md:pt-0 md:pl-4">
                                     <button
                                         onClick={() => res.id && onUpdateStatus(res.id, 'confirmed')}

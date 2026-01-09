@@ -8,7 +8,7 @@ import { PetChatInterface } from '../Consultation/PetChatInterface';
 interface Props {
     facility: Facility;
     allFacilities?: Facility[];
-    onAction: (action: ActionType) => void;
+    onAction: (action: ActionType, data?: any) => void;
     onClose: () => void;
     currentUser: any;
     initialIntent?: 'funeral_home' | 'memorial_facility' | 'pet_funeral' | 'general' | null;
@@ -365,6 +365,7 @@ export const ChatInterface: React.FC<Props> = ({
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [recommendedCandidates, setRecommendedCandidates] = useState<Facility[]>([]);
+    const [searchContext, setSearchContext] = useState<string>('');
     const scrollRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -518,6 +519,10 @@ export const ChatInterface: React.FC<Props> = ({
                     const category = structuredData?.category || (initialIntent === 'funeral_home' ? 'funeral' : undefined);
                     const regionText = structuredData?.location?.text; // [NEW] Region text
 
+                    if (regionText) {
+                        setSearchContext(regionText);
+                    }
+
                     // Pass regionText as the 4th argument
                     const recommendations = await getIntelligentRecommendations(searchLat, searchLng, category, regionText);
                     if (recommendations && recommendations.length > 0) {
@@ -636,7 +641,7 @@ export const ChatInterface: React.FC<Props> = ({
                                                     <div
                                                         key={cand.id}
                                                         className="bg-slate-50 border border-slate-200 rounded-xl p-3 cursor-pointer hover:bg-slate-100 hover:border-indigo-300 transition-all active:scale-95 group"
-                                                        onClick={() => onSwitchToFacility && onSwitchToFacility(cand)}
+                                                        onClick={() => onAction('RESERVE', cand)}
                                                     >
                                                         <div className="flex gap-3">
                                                             {cand.imageUrl && !cand.imageUrl.includes('placeholder') ? (
@@ -649,8 +654,8 @@ export const ChatInterface: React.FC<Props> = ({
                                                             <div className="flex-1 min-w-0">
                                                                 <div className="flex items-center justify-between mb-0.5">
                                                                     <h4 className="font-bold text-slate-800 text-sm truncate">{cand.name}</h4>
-                                                                    <div className="flex items-center gap-1 text-[9px] bg-white border border-indigo-100 px-1.5 py-0.5 rounded-full text-indigo-600 font-bold">
-                                                                        AI 상담
+                                                                    <div className="flex items-center gap-1 text-[9px] bg-indigo-600 border border-indigo-600 px-1.5 py-0.5 rounded-full text-white font-bold group-hover:bg-indigo-700 transition-colors whitespace-nowrap shrink-0">
+                                                                        바로 예약
                                                                     </div>
                                                                 </div>
                                                                 <p className="text-xs text-slate-500 mb-1 truncate">{cand.address}</p>
@@ -664,28 +669,13 @@ export const ChatInterface: React.FC<Props> = ({
                                                 ))}
                                                 <button
                                                     className="w-full py-2 text-xs text-slate-400 hover:text-slate-600 underline transition mt-1"
-                                                    onClick={() => onAction('RECOMMEND')}
+                                                    onClick={() => onAction('RECOMMEND', searchContext)}
                                                 >
                                                     전체 목록 더 보기
                                                 </button>
 
                                                 {/* [Phase 5] Urgency Actions */}
-                                                <div className="mt-4 grid grid-cols-2 gap-2">
-                                                    <button
-                                                        onClick={() => onAction('CALL_MANAGER')}
-                                                        className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl text-sm font-bold shadow-lg transition-all active:scale-95"
-                                                    >
-                                                        <Phone size={16} />
-                                                        🚨 운구차 호출
-                                                    </button>
-                                                    <button
-                                                        onClick={() => onAction('RESERVE')}
-                                                        className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white py-3 rounded-xl text-sm font-bold shadow-lg transition-all active:scale-95"
-                                                    >
-                                                        <CalendarCheck size={16} />
-                                                        📅 상담/가예약
-                                                    </button>
-                                                </div>
+
                                             </div>
                                         )}
 
@@ -723,22 +713,7 @@ export const ChatInterface: React.FC<Props> = ({
             {/* FAQ Chips & Input Area (Hidden when form is active) */}
             {!isFormActive && (
                 <>
-                    {/* FAQ Chips */}
-                    <div className="bg-white border-t border-slate-100 p-3 pb-0">
-                        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide no-scrollbar">
-                            {activeFaqList.map((faq, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={() => handleSend(faq.question)}
-                                    disabled={isLoading}
-                                    className="flex-shrink-0 bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs py-2 px-3 rounded-full transition whitespace-nowrap flex items-center gap-1.5 active:scale-95"
-                                >
-                                    <span>{faq.icon}</span>
-                                    <span className="font-medium">{faq.label}</span>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+
 
                     {/* Input Area */}
                     <div className="bg-white p-4 pt-2 pb-6">

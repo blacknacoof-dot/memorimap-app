@@ -49,11 +49,8 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
   const formValues = watch();
   const [reservationType, setReservationType] = useState<'BASIC' | 'VIP' | 'CONSULTATION'>('VIP');
   // Urgent Form State
-  const [urgentData, setUrgentData] = useState({
-    relation: '',
-    transport: 'yes',
-    emergencyContact: ''
-  });
+  // Urgent Form State removed in favor of React Hook Form
+
 
   const [paymentMethod, setPaymentMethod] = useState<'CARD' | 'TRANSFER'>('CARD');
 
@@ -97,10 +94,17 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
 
     // Construct special requests from Urgent Data
     const fullRequest = `[긴급장례접수]
-관계: ${urgentData.relation}
-운구차: ${urgentData.transport === 'yes' ? '필요 (즉시 출동)' : '직접 이동'}
-비상연락처: ${urgentData.emergencyContact || '없음'}
-고인위치(주소): ${data.purpose}`;
+고인: ${data.deceased_name || '-'} (${data.deceased_gender === 'male' ? '남' : '여'} / ${data.deceased_age || '-'}세)
+사망원인: ${data.cause_of_death || '-'}
+고인위치: ${data.departure_location || '-'}
+----------------
+신청자: ${data.visitor_name} (관계: ${data.relation || '-'})
+연락처: ${data.contact_number}
+비상연락: ${data.emergency_contact || '없음'}
+----------------
+운구: ${data.transport_needs === 'yes' ? '필요 (즉시 출동)' : '직접 이동'}
+종교: ${data.religion || '-'}
+장례방법: ${data.burial_method === 'cremation' ? '화장' : (data.burial_method === 'burial' ? '매장' : '-')}`;
 
     setTimeout(() => {
       const legacyReservation: LegacyReservation = {
@@ -119,8 +123,12 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
         paymentId: `URGENT-${Date.now()}`
       };
 
+      setStep(2); // Move to completion step (handled by special render logic)
+
+      // onConfirm(legacyReservation); // [Wait] Confirm only after user acknowledges completion? Or immediate?
+      // Immediate confirm is safer for data loss prevention.
       onConfirm(legacyReservation);
-      setStep(2);
+
       setIsProcessingPayment(false);
     }, 1000);
   };
@@ -216,90 +224,169 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
     if (reservationMode === 'URGENT') {
       // Urgent Steps
       if (step === 0) return (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className={`border p-4 rounded-xl flex items-start gap-3 ${isPetFacility ? 'bg-purple-50 border-purple-100' : 'bg-red-50 border-red-100'}`}>
             <AlertCircle className={`${isPetFacility ? 'text-purple-600' : 'text-red-600'} shrink-0 mt-0.5`} />
             <div className={`text-sm ${isPetFacility ? 'text-purple-800' : 'text-red-800'}`}>
               <p className="font-bold mb-1">긴급 장례 접수</p>
-              <p>즉시 배차 및 운구 지원이 가능합니다.</p>
+              <p>24시간 즉시 운구 및 빈소 준비를 도와드립니다.</p>
             </div>
           </div>
-          <div>
-            <div className="grid grid-cols-2 gap-3 mb-3">
+
+          {/* 1. 고인 정보 */}
+          <section className="space-y-3">
+            <h3 className="font-bold text-slate-800 flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-slate-100 text-xs flex items-center justify-center text-slate-600">1</span>
+              고인 정보
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">신청자 성함 <span className="text-red-500">*</span></label>
-                <input {...register('visitor_name')} className="w-full p-3 border rounded-lg focus:ring-2 outline-none text-sm" placeholder="예: 홍길동" />
-                {errors.visitor_name && <p className="text-red-500 text-xs mt-1">{errors.visitor_name.message}</p>}
+                <label className="text-xs text-gray-500 mb-1 block">성함</label>
+                <input {...register('deceased_name')} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm" placeholder="고인 성함" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">고인과의 관계 <span className="text-red-500">*</span></label>
-                <select
-                  value={urgentData.relation}
-                  onChange={(e) => setUrgentData({ ...urgentData, relation: e.target.value })}
-                  className="w-full p-3 border rounded-lg focus:ring-2 outline-none text-sm bg-white"
-                >
+                <label className="text-xs text-gray-500 mb-1 block">성별</label>
+                <div className="flex gap-2">
+                  <label className="flex-1 cursor-pointer">
+                    <input type="radio" {...register('deceased_gender')} value="male" className="hidden peer" />
+                    <div className="w-full p-2.5 text-center text-sm border rounded-lg peer-checked:bg-slate-800 peer-checked:text-white peer-checked:border-slate-800 transition-colors">남성</div>
+                  </label>
+                  <label className="flex-1 cursor-pointer">
+                    <input type="radio" {...register('deceased_gender')} value="female" className="hidden peer" />
+                    <div className="w-full p-2.5 text-center text-sm border rounded-lg peer-checked:bg-slate-800 peer-checked:text-white peer-checked:border-slate-800 transition-colors">여성</div>
+                  </label>
+                </div>
+              </div>
+              <div className="col-span-2">
+                <label className="text-xs text-gray-500 mb-1 block">현재 계신 곳 (출발지)</label>
+                <input {...register('departure_location')} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm" placeholder="예: 서울대병원 요양병원 301호" />
+              </div>
+              <div className="col-span-2">
+                <label className="text-xs text-gray-500 mb-1 block">사망 원인 (선택)</label>
+                <input {...register('cause_of_death')} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm" placeholder="예: 숙환, 병사, 사고 등" />
+              </div>
+            </div>
+          </section>
+
+          <hr className="border-slate-100" />
+
+          {/* 2. 신청자 정보 */}
+          <section className="space-y-3">
+            <h3 className="font-bold text-slate-800 flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-slate-100 text-xs flex items-center justify-center text-slate-600">2</span>
+              신청자(상주) 정보
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">신청자 성함 <span className="text-red-500">*</span></label>
+                <input {...register('visitor_name')} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm" placeholder="홍길동" />
+                {errors.visitor_name && <p className="text-red-500 text-[10px] mt-1">{errors.visitor_name.message}</p>}
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">고인과의 관계</label>
+                <select {...register('relation')} className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm outline-none">
                   <option value="">선택</option>
                   <option value="자녀">자녀</option>
                   <option value="배우자">배우자</option>
                   <option value="형제/자매">형제/자매</option>
                   <option value="손자/손녀">손자/손녀</option>
                   <option value="친척">친척</option>
-                  <option value="지인/기타">지인/기타</option>
+                  <option value="지인">지인</option>
+                </select>
+              </div>
+              <div className="col-span-2">
+                <label className="text-xs text-gray-500 mb-1 block">연락처 <span className="text-red-500">*</span></label>
+                <div className="relative">
+                  <Phone size={14} className="absolute left-3 top-3 text-gray-400" />
+                  <input {...register('contact_number')} className="w-full p-2.5 pl-9 bg-slate-50 border border-slate-200 rounded-lg text-sm" placeholder="010-0000-0000" />
+                </div>
+                {errors.contact_number && <p className="text-red-500 text-[10px] mt-1">{errors.contact_number.message}</p>}
+              </div>
+            </div>
+          </section>
+
+          <hr className="border-slate-100" />
+
+          {/* 3. 운구 및 차량 */}
+          <section className="space-y-3">
+            <h3 className="font-bold text-slate-800 flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-slate-100 text-xs flex items-center justify-center text-slate-600">3</span>
+              운구 차량
+            </h3>
+            <div className="flex gap-3">
+              <label className="flex-1 cursor-pointer group">
+                <input type="radio" {...register('transport_needs')} value="yes" className="hidden peer" defaultChecked />
+                <div className="p-3 border rounded-xl peer-checked:bg-red-50 peer-checked:border-red-200 peer-checked:text-red-700 transition-all h-full">
+                  <div className="font-bold text-sm mb-0.5">운구차 필요</div>
+                  <div className="text-[10px] text-gray-500">현재 계신 곳으로 앰뷸런스를 보내드립니다.</div>
+                </div>
+              </label>
+              <label className="flex-1 cursor-pointer group">
+                <input type="radio" {...register('transport_needs')} value="no" className="hidden peer" />
+                <div className="p-3 border rounded-xl peer-checked:bg-slate-100 peer-checked:border-slate-300 transition-all h-full">
+                  <div className="font-bold text-sm mb-0.5">직접 이동</div>
+                  <div className="text-[10px] text-gray-500">자차 또는 사설 구급차로 이동합니다.</div>
+                </div>
+              </label>
+            </div>
+          </section>
+
+          <hr className="border-slate-100" />
+
+          {/* 4. 장례 희망 사항 */}
+          <section className="space-y-3">
+            <h3 className="font-bold text-slate-800 flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-slate-100 text-xs flex items-center justify-center text-slate-600">4</span>
+              희망 사항
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">종교</label>
+                <select {...register('religion')} className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm outline-none">
+                  <option value="">무교/선택 안 함</option>
+                  <option value="기독교">기독교</option>
+                  <option value="불교">불교</option>
+                  <option value="천주교">천주교</option>
+                  <option value="기타">기타</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">장례 방법</label>
+                <select {...register('burial_method')} className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm outline-none">
+                  <option value="cremation">화장 (납골/수목장)</option>
+                  <option value="burial">매장</option>
                 </select>
               </div>
             </div>
+          </section>
 
-            <div className="mb-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">연락처 (본인) <span className="text-red-500">*</span></label>
-              <input {...register('contact_number')} className="w-full p-3 border rounded-lg focus:ring-2 outline-none" placeholder="010-0000-0000" />
-              {errors.contact_number && <p className="text-red-500 text-xs mt-1">{errors.contact_number.message}</p>}
-            </div>
+          <hr className="border-slate-100" />
 
-            <div className="mb-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">비상 연락처 (다른 가족) <span className="text-gray-400 text-xs">(선택)</span></label>
-              <input
-                value={urgentData.emergencyContact}
-                onChange={(e) => setUrgentData({ ...urgentData, emergencyContact: e.target.value })}
-                className="w-full p-3 border rounded-lg focus:ring-2 outline-none"
-                placeholder="010-0000-0000"
-              />
-            </div>
+          {/* 5. 비상 연락처 */}
+          <section className="space-y-3">
+            <h3 className="font-bold text-slate-800 flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-slate-100 text-xs flex items-center justify-center text-slate-600">5</span>
+              비상 연락망 <span className="text-gray-400 font-normal text-xs ml-1">(선택)</span>
+            </h3>
+            <input {...register('emergency_contact')} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm" placeholder="가족/친지 연락처 (010-0000-0000)" />
+          </section>
 
-            <div className="mb-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">현재 고인 위치 (주소) <span className="text-red-500">*</span></label>
-              <input {...register('purpose')} className="w-full p-3 border rounded-lg focus:ring-2 outline-none" placeholder="예: 서울대병원 / 자택 (주소 입력)" />
-            </div>
-
-            <div className="border rounded-lg p-3 bg-slate-50">
-              <label className="block text-sm font-medium text-gray-700 mb-2">운구차 필요 여부</label>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="transport"
-                    checked={urgentData.transport === 'yes'}
-                    onChange={() => setUrgentData({ ...urgentData, transport: 'yes' })}
-                    className="w-4 h-4 text-primary"
-                  />
-                  <span className="text-sm">필요합니다 (즉시 출동)</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="transport"
-                    checked={urgentData.transport === 'no'}
-                    onChange={() => setUrgentData({ ...urgentData, transport: 'no' })}
-                    className="w-4 h-4 text-primary"
-                  />
-                  <span className="text-sm">직접 이동합니다</span>
-                </label>
-              </div>
-            </div>
-          </div>
         </div>
       );
       if (step === 1) return <div>{/* Confirm Step - Simplification */} <p>정보 확인</p> </div>;
-      if (step === 2) return <div className="text-center py-8"><h3 className="text-xl font-bold">접수 완료</h3><button onClick={onClose} className="w-full bg-red-600 text-white py-3 rounded-xl mt-4">확인</button></div>;
+      if (step === 2) return (
+        <div className="text-center py-6">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Check className="text-red-600 w-8 h-8" />
+          </div>
+          <h3 className="text-xl font-bold mb-2">접수 제출 완료</h3>
+          <p className="text-gray-600 mb-6 text-sm leading-relaxed whitespace-pre-line">
+            제출이 완료되었습니다.{'\n'}
+            담당자 확인 후 빠르게 연락드리겠습니다.
+          </p>
+          <button onClick={onClose} className="w-full bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition-colors">확인</button>
+        </div>
+      );
     }
 
     // Standard Steps
@@ -410,6 +497,16 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
     }
   };
 
+  if (step === 2 && reservationMode === 'URGENT') {
+    return (
+      <div className="fixed inset-0 z-[310] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+        <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl">
+          {renderContent()}
+        </div>
+      </div>
+    );
+  }
+
   if (step === 4) {
     return (
       <div className="fixed inset-0 z-[310] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
@@ -420,24 +517,36 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
     );
   }
 
+  const getTitle = () => {
+    if (reservationMode === 'URGENT') return '🚨 긴급 장례 접수';
+    if (isPetFacility) return '🐾 반려동물 장례 예약';
+    return '📅 방문 상담 예약';
+  };
+
   return (
     <div className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="bg-white w-full max-w-lg sm:rounded-2xl rounded-t-3xl max-h-[90dvh] h-auto flex flex-col shadow-2xl">
         <div className="p-4 border-b flex justify-between items-center sticky top-0 bg-white z-10">
-          <h2 className="text-lg font-bold">방문 예약</h2>
-          <button onClick={onClose}><X /></button>
+          <h2 className="text-lg font-bold flex items-center gap-2">
+            {getTitle()}
+          </h2>
+          <button onClick={onClose}><X className="text-gray-500" /></button>
         </div>
         <div className="p-6 overflow-y-auto flex-1">
           {renderStepIndicator()}
           {renderContent()}
         </div>
-        <div className="p-4 border-t bg-white sticky bottom-0 z-50 flex gap-3">
-          {step > 0 && <button onClick={() => setStep(step - 1)} className="px-6 py-3.5 border rounded-xl">이전</button>}
+        <div className="p-4 border-t bg-white z-50 flex gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+          {step > 0 && <button onClick={() => setStep(step - 1)} className="px-6 py-3.5 border rounded-xl text-sm font-bold text-gray-600">이전</button>}
           <button
             onClick={step === 3 ? handlePaymentProcess : handleNext}
-            className="flex-1 bg-primary text-white py-3.5 rounded-xl font-bold shadow-lg"
+            className={`flex-1 text-white py-3.5 rounded-xl font-bold shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2 ${reservationMode === 'URGENT' ? 'bg-red-600 hover:bg-red-700' : 'bg-slate-900 hover:bg-slate-800'}`}
           >
-            {step === 3 ? '결제하기' : '다음'}
+            {reservationMode === 'URGENT' ? (
+              step === 0 ? '긴급 접수 제출' : '확인'
+            ) : (
+              step === 3 ? '결제하기' : '다음 단계'
+            )}
           </button>
         </div>
       </div>

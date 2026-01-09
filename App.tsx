@@ -1394,25 +1394,7 @@ const App: React.FC = () => {
           )}
 
           {/* Global Chat Interface (Maum-i or Specific Facility) */}
-          {aiChatFacility && (
-            <ChatInterface
-              facility={aiChatFacility}
-              allFacilities={facilities} // Pass all facilities for recommendation search
-              onAction={(action) => {
-                console.log('AI Action:', action);
-              }}
-              onClose={() => {
-                setAiChatFacility(null);
-                setInitialChatIntent(null);
-              }}
-              currentUser={userInfo}
-              initialIntent={initialChatIntent}
-              onNavigateToFacility={(facility) => {
-                // Switch chat context to the specific facility
-                setAiChatFacility(facility);
-              }}
-            />
-          )}
+
 
           {
             isBooking && selectedFacility && (
@@ -1557,19 +1539,36 @@ const App: React.FC = () => {
                     setAiChatFacility(target);
                     if (context) setHandoverContext(context);
                   }}
-                  onAction={(action) => {
+                  onAction={(action, data) => {
                     const isGlobalAI = aiChatFacility?.id === 'maum-i';
 
                     if (action === 'RESERVE') {
+                      // [Feature] Direct booking from AI Recommendation
+                      if (data && typeof data === 'object' && 'id' in data) {
+                        if (!isSignedIn) {
+                          showToast('예약을 위해 로그인이 필요합니다.', 'error');
+                          setAiChatFacility(null);
+                          setShowLoginModal(true);
+                          return;
+                        }
+
+                        setAiChatFacility(null); // Close AI Chat
+                        setSelectedFacility(data); // Set target facility
+                        setIsUrgentBooking(true); // [Fix] Force Urgent Booking for "Book Now"
+                        setIsBooking(true); // Open Booking Modal
+                        return;
+                      }
+
                       setAiChatFacility(null);
                       if (isGlobalAI) {
                         setViewState(ViewState.LIST);
                         return;
                       }
                       setSelectedFacility(aiChatFacility);
-                      if (aiChatFacility.type === 'funeral') {
-                        setIsUrgentBooking(true);
-                      }
+                      // [Fix] Do not force Urgent for standard 'Book Now'. Urgent is separate action.
+                      // if (aiChatFacility.type === 'funeral') {
+                      //   setIsUrgentBooking(true);
+                      // }
                       setIsBooking(true);
                     } else if (action === 'MAP') {
                       setAiChatFacility(null);
@@ -1590,9 +1589,14 @@ const App: React.FC = () => {
                     } else if (action === 'RECOMMEND') {
                       setAiChatFacility(null);
                       if (isGlobalAI) {
+                        // If data (search context) is provided and it's not generic "My Location", use it
+                        if (data && typeof data === 'string' && !data.includes('내 위치') && !data.includes('GPS')) {
+                          setSearchQuery(data);
+                        }
                         setViewState(ViewState.LIST);
                         return;
                       }
+                      // For specific facility chat, use its address
                       setSearchQuery(aiChatFacility.address.split(' ')[0] || '');
                       setViewState(ViewState.LIST);
                     }

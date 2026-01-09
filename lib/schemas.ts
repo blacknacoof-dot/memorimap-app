@@ -21,6 +21,19 @@ export const ReservationSchema = z.object({
     // System
     status: z.enum(['pending', 'confirmed', 'cancelled', 'rejected', 'urgent']).default('pending'),
     payment_amount: z.number().default(0),
+    // Urgent / Funeral Specific (Optional)
+    deceased_name: z.string().optional(),
+    deceased_gender: z.enum(['male', 'female']).optional(),
+    deceased_age: z.string().optional(),
+    cause_of_death: z.string().optional(),
+
+    relation: z.string().optional(), // '자녀', '배우자' etc.
+    transport_needs: z.enum(['yes', 'no']).optional(),
+    departure_location: z.string().optional(), // 고인 계신 곳
+
+    religion: z.string().optional(),
+    burial_method: z.string().optional(), // 'cremation', 'burial'
+    emergency_contact: z.string().regex(/^010-\d{4}-\d{4}$/, "휴대폰 번호 형식이 올바르지 않습니다").optional().or(z.literal('')),
 });
 
 // [Step 2] Facility Edit Schema

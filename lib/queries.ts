@@ -124,8 +124,13 @@ export const searchFacilitiesByRegion = async (
 ) => {
     const searchCategory = mapCategoryToCode(category); // Map to English code
 
+    // [Fix] Replace spaces with % to match "Busan Metropolitan City" when user types "Busan"
+    // e.g., "부산 금정구" -> "부산%금정구" matches "부산광역시 금정구"
+    // Also trim whitespace to avoid leading/trailing % issues
+    const optimizedRegion = region.trim().replace(/\s+/g, '%');
+
     const { data, error } = await supabase.rpc('search_facilities_by_text', {
-        p_text: region,
+        p_text: optimizedRegion,
         p_category: searchCategory || null
     });
 
@@ -443,7 +448,7 @@ export const getUserRole = async (userId: string) => {
             .from('super_admins')
             .select('*')
             .eq('id', userId)
-            .single();
+            .maybeSingle();
 
         if (superAdmin) {
             return { role: 'super_admin', isError: false };
