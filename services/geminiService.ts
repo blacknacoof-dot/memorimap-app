@@ -4,6 +4,7 @@ import { Facility } from '../types';
 
 export type ActionType =
   | 'SHOW_FORM_A'
+  | 'SHOW_FORM_B'
   | 'RECOMMEND'
   | 'RESERVE'
   | 'MAP'
@@ -42,10 +43,10 @@ export const sendMessageToGemini = async (
   // 3. 키워드 매칭 로직
 
   // [NEW] 설문조사 제출 감지 및 추천 로직
-  if (userMsg.startsWith("[🏢 장례식장 상담 신청]")) {
+  if (userMsg.startsWith("[🏢 장례식장 상담 신청]") || userMsg.startsWith("[🌳 추모시설 상담 신청]")) {
     return {
       action: "RECOMMEND",
-      text: "작성해주신 내용을 바탕으로 고객님께 가장 적합한 장례식장 3곳을 찾았습니다. \n\n위치와 예산을 고려하여 선별했습니다.",
+      text: "작성해주신 내용을 바탕으로 고객님께 가장 적합한 시설 3곳을 찾았습니다. \n\n위치와 예산을 고려하여 선별했습니다.",
       // [MODIFIED] Remove mock 'facilities' data to trigger real DB search in frontend
       data: {}
     };

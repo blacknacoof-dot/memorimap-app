@@ -364,7 +364,9 @@ const App: React.FC = () => {
               reviews: [],
               isDetailLoaded: false,
               isVerified: true,
-              dataSource: 'db'
+              dataSource: 'db',
+              priceInfo: item.price_info || null,
+              products: item.price_info?.products || []
             };
           });
           setFacilities(mappedFacilities);
@@ -961,8 +963,60 @@ const App: React.FC = () => {
       case ViewState.FUNERAL_COMPANIES:
         return (
           <FuneralCompanyView
-            onCompanySelect={(company, startChat) => {
-              setSelectedFuneralCompany(company);
+            onCompanySelect={async (company, startChat) => {
+              // [Fix] Fetch fresh data from DB to ensure we have products
+              // The RPC used for list view lacks 'price_info', so we fetch explicitly.
+              let productData = company.products;
+              let fetched = false;
+
+              const relatedFacility = facilities.find(f => f.name === company.name && f.type === 'sangjo');
+
+              // Strategy 1: Fetch by ID (if strictly integer)
+              if (relatedFacility && relatedFacility.id) {
+                try {
+                  const searchId = (typeof relatedFacility.id === 'string' && !isNaN(parseInt(relatedFacility.id)))
+                    ? parseInt(relatedFacility.id, 10)
+                    : relatedFacility.id;
+
+                  // Only query if it became a number (skips UUIDs)
+                  if (typeof searchId === 'number') {
+                    const { data } = await supabase
+                      .from('memorial_spaces')
+                      .select('price_info')
+                      .eq('id', searchId)
+                      .maybeSingle();
+
+                    if (data && data.price_info && data.price_info.products) {
+                      productData = data.price_info.products;
+                      fetched = true;
+                    }
+                  }
+                } catch (e) {
+                  console.error('Failed to fetch detailed product info by ID', e);
+                }
+              }
+
+              // Strategy 2: Fetch by Name (Fallback if ID failed or generated no products)
+              if (!fetched) {
+                try {
+                  const { data } = await supabase
+                    .from('memorial_spaces')
+                    .select('price_info')
+                    .eq('name', company.name)
+                    .maybeSingle();
+
+                  if (data && data.price_info && data.price_info.products) {
+                    productData = data.price_info.products;
+                  }
+                } catch (e) { console.error('Name fallback failed', e); }
+              }
+
+              const mergedCompany = {
+                ...company,
+                products: productData
+              };
+
+              setSelectedFuneralCompany(mergedCompany);
               if (startChat) {
                 setShowSangjoAIConsult(true);
               }

@@ -53,8 +53,9 @@ export const searchFacilitiesV2 = async (
  */
 const mapCategoryToCode = (category?: string) => {
     if (!category) return undefined;
-    if (category === '장례식장' || category === 'funeral') return 'funeral';
-    if (category === '봉안시설' || category === 'charnel') return 'charnel'; // Mapping '봉안시설' to 'charnel'
+    if (category === '장례식장' || category === 'funeral' || category === 'funeral_home') return 'funeral';
+    // [FIX] Add 'memorial_facility' to mapping
+    if (category === '봉안시설' || category === 'charnel' || category === 'memorial' || category === 'memorial_facility') return 'memorial';
     if (category === '해양장' || category === 'sea') return 'sea';
     if (category === '동물장례' || category === 'pet') return 'pet';
     return category; // Fallback
@@ -64,74 +65,150 @@ export const getIntelligentRecommendations = async (
     lat: number,
     lng: number,
     category?: string,
-    regionText?: string // [NEW] Optional region text for fallback
+    regionText?: string
 ) => {
     let finalData: any[] = [];
-    const searchCategory = mapCategoryToCode(category); // Map to English code
+    const searchCategory = mapCategoryToCode(category);
+    const isMemorialGroup = searchCategory === 'memorial';
+
+    // Helper to filter results in JS if we fetch broader set
+    const filterByCategory = (items: any[]) => {
+        if (!searchCategory) return items;
+
+        if (searchCategory === 'funeral') {
+            return items.filter((i: any) => i.type === 'funeral_home' || i.type === 'funeral');
+        }
+
+        if (searchCategory === 'pet') {
+            return items.filter((i: any) => i.type === 'pet');
+        }
+
+        if (searchCategory === 'sangjo') {
+            return items.filter((i: any) => i.type === 'sangjo');
+        }
+
+        if (isMemorialGroup) {
+            // [FIX] Use Whitelist instead of Blacklist to prevent 'funeral' or 'sangjo' leaking in
+            const MEMORIAL_TYPES = ['charnel', 'natural', 'park', 'complex', 'sea', 'tree_burial'];
+            return items.filter((i: any) => MEMORIAL_TYPES.includes(i.type));
+        }
+
+        return items;
+    };
 
     const isSpecificRegion = regionText && regionText !== '내 위치 주변';
 
-    // 1. If specific region is provided, search by Region FIRST
+    // 1. Region Search (Text)
     if (isSpecificRegion) {
-        const regionResults = await searchFacilitiesByRegion(regionText, category);
+        // searchFacilitiesByRegion calls 'search_facilities_by_text' RPC. 
+        // If we pass 'memorial' to RPC, it likely returns nothing. So pass NULL to RPC and filter in JS.
+        const rpcCategory = isMemorialGroup ? null : searchCategory;
+
+        let regionResults = await searchFacilitiesByRegion(regionText, rpcCategory as string);
+        regionResults = filterByCategory(regionResults);
         finalData = regionResults;
+
+        // [Smart Expansion] "고양시 식사동" -> "고양시" (If < 3 results)
+        if (finalData.length < 3) {
+            let parentRegion = '';
+            // Try to extract from finding (pivot)
+            if (finalData.length > 0 && finalData[0].address) {
+                const addrParts = finalData[0].address.split(' ');
+                // Usually "Gyeonggi-do Goyang-si ..." -> Take first 2 parts if possible, or just the City part
+                // Logic: Find the part ending in 'si' or 'gun' or 'gu'
+                const cityPart = addrParts.find((p: string) => p.endsWith('시') || p.endsWith('군'));
+                if (cityPart) parentRegion = cityPart; // simple pivot
+                else if (addrParts.length > 1) parentRegion = addrParts.slice(0, 2).join(' ');
+            }
+
+            // Fallback to text parsing if pivot failed or 0 results
+            if (!parentRegion && regionText.includes(' ')) {
+                parentRegion = regionText.substring(0, regionText.lastIndexOf(' ')).trim();
+            }
+
+            if (parentRegion && parentRegion.length >= 2 && parentRegion !== regionText) {
+                const parentResults = await searchFacilitiesByRegion(parentRegion, rpcCategory as string);
+                const filteredParent = filterByCategory(parentResults);
+
+                // Merge
+                const existingIds = new Set(finalData.map(f => f.id));
+                for (const f of filteredParent) {
+                    if (!existingIds.has(f.id)) {
+                        finalData.push(f);
+                        existingIds.add(f.id);
+                    }
+                }
+            }
+        }
     }
 
-    // 2. If NO results from region (or didn't search region), try GPS Search
-    // But only if we haven't found enough yet
+    // 2. GPS Search (Radius Expansion + Smart City Expansion)
+    // Only if not enough results OR we didn't search by region
     if (finalData.length < 3 && lat && lng && (lat !== 37.5665 || lng !== 126.9780)) {
-        const radiuses = [5000, 15000, 30000]; // 5km, 15km, 30km
+        const radiuses = [5000, 10000, 25000]; // 5km, 10km, 25km
+
+        const rpcCategory = isMemorialGroup ? null : searchCategory;
 
         for (const radius of radiuses) {
-            const { data, error } = await searchFacilitiesV2(lat, lng, radius, searchCategory, 5);
+            // Fetch more results (limit 20 to allow filtering)
+            const { data, error } = await searchFacilitiesV2(lat, lng, radius, rpcCategory as string, 20);
+
             if (!error && data && data.length > 0) {
-                // Merge strategy: Add only if not already present
+                const filtered = filterByCategory(data);
+
                 const existingIds = new Set(finalData.map(f => f.id));
-                for (const facility of data) {
+                for (const facility of filtered) {
                     if (!existingIds.has(facility.id)) {
                         finalData.push(facility);
                         existingIds.add(facility.id);
                     }
                 }
 
-                if (finalData.length >= 3) break; // Found enough
+                // [City Expansion from GPS Result]
+                // If we found at least 1 item in 5km/10km but total < 3, 
+                // use that item's address to search the WHOLE 'City' (Goyang-si) to fill the list.
+                // This handles the "I am in Siksa-dong, found 1, show me more in Goyang-si" case better than just expanding radius blindly.
+                if (finalData.length > 0 && finalData.length < 3 && radius <= 10000) {
+                    const pivotFacility = finalData[0];
+                    if (pivotFacility.address) {
+                        const addrParts = pivotFacility.address.split(' ');
+                        const cityPart = addrParts.find((p: string) => p.endsWith('시') || p.endsWith('군'));
+
+                        if (cityPart) {
+                            // Search by Text "Goyang-si"
+                            const cityResults = await searchFacilitiesByRegion(cityPart, rpcCategory as string);
+                            const filteredCity = filterByCategory(cityResults);
+
+                            const existingIdsCity = new Set(finalData.map(f => f.id));
+                            for (const f of filteredCity) {
+                                if (!existingIdsCity.has(f.id)) {
+                                    finalData.push(f);
+                                    existingIdsCity.add(f.id);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (finalData.length >= 3) break;
             }
         }
     }
 
-    // 3. Fallback: If still not enough and we haven't tried Region search yet (i.e. User said "My Location" but GPS failed)
-    if (finalData.length < 3 && regionText && !isSpecificRegion) {
-        // This block covers cases where 'regionText' exists but might be "내 위치 주변" or similar, 
-        // usually we don't do text search for "내 위치 주변", but if it was something else fallback-able.
-        // Currently, isSpecificRegion covers most non-default text.
-        // So this might be redundant unless we want to retry region search for some reason?
-        // Let's keep it simple: If we tried Region first, we are done with region.
-        // If we tried GPS first (because !isSpecificRegion), we might want to try region fallback IF it was actually valid text?
-        // logic: !isSpecificRegion means regionText IS '내 위치 주변' or undefined.
-        // So we don't search text for "내 위치 주변".
-    }
-
-    // 3. Final Fallback (if still nothing, maybe just return empty or let UI handle it)
-    return finalData.slice(0, 3);
+    // 3. Final Slice
+    return finalData.slice(0, 5); // Increased to 5 to show more options
 };
 
-/**
- * [NEW] 지역명 텍스트 기반 검색
- */
 export const searchFacilitiesByRegion = async (
     region: string,
     category?: string
 ) => {
-    const searchCategory = mapCategoryToCode(category); // Map to English code
-
-    // [Fix] Replace spaces with % to match "Busan Metropolitan City" when user types "Busan"
-    // e.g., "부산 금정구" -> "부산%금정구" matches "부산광역시 금정구"
-    // Also trim whitespace to avoid leading/trailing % issues
+    // If category is null/undefined, it returns all types
     const optimizedRegion = region.trim().replace(/\s+/g, '%');
 
     const { data, error } = await supabase.rpc('search_facilities_by_text', {
         p_text: optimizedRegion,
-        p_category: searchCategory || null
+        p_category: category || null
     });
 
     if (error) {

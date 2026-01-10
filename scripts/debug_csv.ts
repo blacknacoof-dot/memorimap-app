@@ -21,7 +21,7 @@ try {
     });
 
     if (records.length > 0) {
-        console.log('First Record Keys:', Object.keys(records[0]));
+        console.log('First Record Keys:', Object.keys(records[0] as object));
         console.log('First Record Values:', records[0]);
     }
 } catch (err) {

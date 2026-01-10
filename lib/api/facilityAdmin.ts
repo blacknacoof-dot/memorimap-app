@@ -17,7 +17,7 @@ export const fetchMyFacility = async (userId: string) => {
 };
 
 // 2. 내 시설의 예약 목록 가져오기
-export const fetchFacilityReservations = async (facilityId: string) => {
+export const fetchFacilityReservations = async (facilityId: string | number) => {
     const { data, error } = await supabase
         .from('reservations')
         .select('*')
@@ -57,7 +57,7 @@ export const updateReservationStatus = async (
 };
 
 // 4. 시설 정보 수정
-export const updateFacilityInfo = async (facilityId: string, updates: Partial<MemorialSpace>) => {
+export const updateFacilityInfo = async (facilityId: string | number, updates: Partial<MemorialSpace>) => {
     const { data, error } = await supabase
         .from('memorial_spaces')
         .update(updates)

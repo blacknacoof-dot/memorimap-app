@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FuneralCompany } from '../types';
 import { FUNERAL_COMPANIES } from '../constants';
 import { Star, Phone, ChevronRight, Award, ShieldCheck, HeartHandshake, Search, Scale, Check, Bot } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
 
 import { SangjoConsultationModal } from './Consultation/SangjoConsultationModal';
 
@@ -26,6 +27,54 @@ export const FuneralCompanyView: React.FC<Props> = ({
 }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [showConsultation, setShowConsultation] = useState(false);
+    // [Change] Dynamic state for companies instead of static constant
+    const [companies, setCompanies] = useState<FuneralCompany[]>(FUNERAL_COMPANIES);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // [Change] Fetch companies from Supabase on mount
+    React.useEffect(() => {
+        const fetchCompanies = async () => {
+            try {
+                // Use singleton instance
+                const { data, error } = await supabase
+                    .from('memorial_spaces')
+                    .select('*')
+                    .eq('type', 'sangjo')
+                    .eq('is_verified', true);
+
+                if (data && data.length > 0) {
+                    // Map DB data to FuneralCompany interface
+                    const mappedCompanies: FuneralCompany[] = data.map(item => {
+                        // Attempt to find a matching static image or use default
+                        const staticMatch = FUNERAL_COMPANIES.find(c => c.name === item.name);
+
+                        return {
+                            id: item.id.toString(), // Convert int ID to string
+                            name: item.name,
+                            rating: item.rating || 4.8, // Default high rating for trusted partners
+                            reviewCount: item.review_count || 120,
+                            imageUrl: staticMatch?.imageUrl || item.image_url || '/images/default_sangjo.png',
+                            description: staticMatch?.description || `${item.name}의 프리미엄 상조 서비스입니다.`,
+                            features: item.features || staticMatch?.features || ["전국 의전망", "24시간 상담"],
+                            phone: item.contact || '1588-0000',
+                            priceRange: item.priceRange || '문의',
+                            benefits: item.benefits || ["회원 전용 혜택"],
+                            products: item.price_info?.products // Include fetched products
+                        };
+                    });
+
+                    // Merge: Use fetched list, but if filtered by search, just filter this list.
+                    // Prioritize fetched data.
+                    setCompanies(mappedCompanies);
+                }
+            } catch (err) {
+                console.error("Failed to fetch sangjo companies:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchCompanies();
+    }, []);
 
     const handleOpenConsultation = () => {
         if (!isLoggedIn) {
@@ -35,7 +84,7 @@ export const FuneralCompanyView: React.FC<Props> = ({
         setShowConsultation(true);
     };
 
-    const filteredCompanies = FUNERAL_COMPANIES.filter(c =>
+    const filteredCompanies = companies.filter(c =>
         c.name.includes(searchQuery) || c.description.includes(searchQuery)
     );
 

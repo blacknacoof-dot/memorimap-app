@@ -246,9 +246,8 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
                     // Skip regular comparison, go straight to dispatch mode
                     filterMessage = "🚨 **긴급 출동 상황**으로 접수되었습니다.\n\n경황이 없으시겠지만, 가장 빨리 도착할 수 있는 팀을 배정하기 위해 **현재 계신 위치(장례식장 또는 자택)**를 알려주세요.\n\n(예: 서울 강남세브란스 / 부산 자택)";
 
-                    // Set recommended to empty or specific urgent providers to prevent distraction?
-                    // Let's keep it empty for now to focus on location input, or show "Instant Dispatch Team" card later.
-                    recommended = [];
+                    // Recommend Post-Payment companies
+                    recommended = FUNERAL_COMPANIES.filter(c => c.features.includes("후불제"));
                 } else {
                     // General AI fallback for Maum-i if not a keyword match? 
                     // Or just generic recommendation

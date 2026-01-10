@@ -29,6 +29,204 @@ interface FormProps {
     initialCategory?: string; // [NEW] Allow overriding category
 }
 
+const MemorialSearchForm: React.FC<FormProps> = ({ userLocation, onGetCurrentPosition, onSubmit, initialCategory = 'memorial' }) => {
+    const [step, setStep] = useState(1);
+    const [timing, setTiming] = useState<'immediate' | 'prepare' | ''>('');
+    const [region, setRegion] = useState('');
+    const [religion, setReligion] = useState('');
+    const [budget, setBudget] = useState('');
+    const [services, setServices] = useState<string[]>([]);
+    const [error, setError] = useState('');
+
+    const TIMING_OPTIONS = [
+        { id: 'immediate', label: '🚨 지금 안치해야 해요 (긴급)', sub: '화장 후 바로 안치 필요' },
+        { id: 'prepare', label: '📅 미리 알아보고 있어요', sub: '사전 답사 및 가격 비교' }
+    ];
+
+    const RELIGION_OPTIONS = [
+        { id: 'none', label: '무교/일반', icon: '🏛️' },
+        { id: 'christian', label: '기독교 전용', icon: '✝️' },
+        { id: 'catholic', label: '천주교 전용', icon: '⛪' },
+        { id: 'buddhist', label: '불교 전용', icon: '☸️' }
+    ];
+
+    const BUDGET_OPTIONS = [
+        { id: 'low', label: '실속형 (500만 원 미만)', sub: '합리적인 가격의 안식처' },
+        { id: 'medium', label: '표준형 (500~1,000만 원)', sub: '가장 많이 찾는 가격대' },
+        { id: 'high', label: '고급형 (1,000만 원 이상)', sub: '품격 있는 프리미엄 시설' }
+    ];
+
+    const SERVICE_OPTIONS = ['🚗 주차 편리', '🚌 셔틀버스', '☕ 카페/편의시설', '🕰️ 365일 개방', '🏞️ 자연 경관'];
+
+    // Autocomplete State (Reused logic could be extracted but keeping local for speed)
+    const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        if (!region || region.length < 2) {
+            setSuggestions([]); setShowSuggestions(false); return;
+        }
+        if (debounceTimer.current) clearTimeout(debounceTimer.current);
+        debounceTimer.current = setTimeout(async () => {
+            try {
+                const results = await getDistinctRegions(region) as string[];
+                const uniqueResults = Array.from(new Set(results)).slice(0, 5);
+                setSuggestions(uniqueResults);
+                setShowSuggestions(uniqueResults.length > 0);
+            } catch (e) { console.error(e); }
+        }, 300);
+        return () => { if (debounceTimer.current) clearTimeout(debounceTimer.current); };
+    }, [region]);
+
+    const handleNext = async () => {
+        setError('');
+        if (step === 1 && !timing) return setError('시기를 선택해 주세요.');
+        if (step === 2) {
+            if (!region && userLocation?.type !== 'gps') return setError('지역을 입력하거나 내 위치를 사용해 주세요.');
+            if (region) {
+                try {
+                    const check = await searchFacilitiesByRegion(region); // Generic check
+                    if (!check || check.length === 0) return setError('해당 지역에는 등록된 추모시설이 없습니다.');
+                } catch (e) { }
+            }
+        }
+        if (step === 3 && !religion) return setError('종교 유형을 선택해 주세요.');
+        if (step === 4 && !budget) return setError('예산 범위를 선택해 주세요.');
+
+        setStep(prev => prev + 1);
+    };
+
+    const handleSubmit = () => {
+        // Structured JSON
+        const searchData = {
+            category: initialCategory,
+            urgency: timing,
+            location: {
+                type: userLocation?.type === 'gps' && !region ? 'gps' : 'text',
+                lat: userLocation?.lat,
+                lng: userLocation?.lng,
+                text: region || '내 위치 주변'
+            },
+            religion,
+            budget,
+            services
+        };
+
+        const finalText = `[🌳 추모시설 상담 신청]\n시기: ${TIMING_OPTIONS.find(o => o.id === timing)?.label}\n지역: ${region || '내 위치 주변'}\n종교: ${RELIGION_OPTIONS.find(o => o.id === religion)?.label}\n예산: ${BUDGET_OPTIONS.find(o => o.id === budget)?.label}\n서비스: ${services.join(', ') || '없음'}`;
+
+        onSubmit({ text: finalText, data: searchData });
+    };
+
+    const toggleService = (opt: string) => {
+        setServices(prev => prev.includes(opt) ? prev.filter(p => p !== opt) : [...prev, opt]);
+    };
+
+    return (
+        <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded-xl p-4 w-full animate-in fade-in zoom-in-95 duration-300">
+            {/* Progress Steps */}
+            <div className="flex items-center justify-between mb-5 px-1">
+                {[1, 2, 3, 4, 5].map(s => (
+                    <div key={s} className="flex-1 flex items-center">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${step >= s ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-500'}`}>{s}</div>
+                        {s < 5 && <div className={`flex-1 h-px mx-1 ${step > s ? 'bg-emerald-700' : 'bg-slate-200'}`} />}
+                    </div>
+                ))}
+            </div>
+
+            {/* Step 1: Timing/Urgency */}
+            {step === 1 && (
+                <div className="space-y-3">
+                    <label className="text-xs font-bold text-emerald-800 flex items-center gap-1.5"><AlertCircle size={14} /> 언제 안치가 필요하신가요?</label>
+                    <div className="flex flex-col gap-2">
+                        {TIMING_OPTIONS.map(opt => (
+                            <button key={opt.id} onClick={() => { setTiming(opt.id as any); setError(''); }} className={`text-left p-3 rounded-xl border transition-all ${timing === opt.id ? 'bg-emerald-700 border-emerald-700 text-white shadow-md' : 'bg-white border-emerald-100 text-slate-600 hover:bg-emerald-50'}`}>
+                                <div className="text-sm font-bold">{opt.label}</div>
+                                <div className={`text-[10px] mt-0.5 ${timing === opt.id ? 'text-emerald-200' : 'text-slate-400'}`}>{opt.sub}</div>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Step 2: Location */}
+            {step === 2 && (
+                <div className="space-y-3">
+                    <label className="text-xs font-bold text-emerald-800 flex items-center gap-1.5"><MapPin size={14} /> 원하시는 지역이 있나요?</label>
+                    <button onClick={() => { onGetCurrentPosition?.(); setRegion(''); setError(''); }} className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-sm font-medium transition-all ${userLocation?.type === 'gps' && !region ? 'bg-emerald-100 border-emerald-500 text-emerald-800' : 'bg-white border-emerald-100 text-slate-600 hover:bg-emerald-50'}`}>
+                        <MapPin size={16} /> 내 위치 주변 (GPS)
+                    </button>
+                    <div className="relative">
+                        <input type="text" value={region} onChange={(e) => { setRegion(e.target.value); setError(''); }} onFocus={() => suggestions.length > 0 && setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} placeholder="예: 경기 용인, 분당" className="w-full bg-white border border-emerald-200 rounded-xl px-3 py-3 text-sm focus:border-emerald-600 focus:outline-none" />
+                        {showSuggestions && (
+                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                                {suggestions.map((s, i) => (
+                                    <button key={i} onClick={() => { setRegion(s); setShowSuggestions(false); setError(''); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 border-b border-slate-50 last:border-none">
+                                        <span dangerouslySetInnerHTML={{ __html: s.replace(new RegExp(region, 'gi'), (match) => `<b>${match}</b>`) }} />
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Step 3: Religion */}
+            {step === 3 && (
+                <div className="space-y-3">
+                    <label className="text-xs font-bold text-emerald-800 flex items-center gap-1.5"><Star size={14} /> 종교가 있으신가요?</label>
+                    <div className="grid grid-cols-2 gap-2">
+                        {RELIGION_OPTIONS.map(opt => (
+                            <button key={opt.id} onClick={() => { setReligion(opt.id); setError(''); }} className={`p-3 rounded-xl border text-center transition-all ${religion === opt.id ? 'bg-emerald-700 border-emerald-700 text-white' : 'bg-white border-emerald-100 text-slate-600 hover:bg-emerald-50'}`}>
+                                <div className="text-xl mb-1">{opt.icon}</div>
+                                <div className="text-xs font-bold">{opt.label}</div>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Step 4: Budget */}
+            {step === 4 && (
+                <div className="space-y-3">
+                    <label className="text-xs font-bold text-emerald-800 flex items-center gap-1.5"><Users size={14} /> 생각하시는 예산 범위는?</label>
+                    <div className="flex flex-col gap-2">
+                        {BUDGET_OPTIONS.map(opt => (
+                            <button key={opt.id} onClick={() => { setBudget(opt.id); setError(''); }} className={`text-left p-3 rounded-xl border transition-all ${budget === opt.id ? 'bg-emerald-700 border-emerald-700 text-white shadow-md' : 'bg-white border-emerald-100 text-slate-600 hover:bg-emerald-50'}`}>
+                                <div className="text-sm font-bold">{opt.label}</div>
+                                <div className={`text-[10px] mt-0.5 ${budget === opt.id ? 'text-emerald-200' : 'text-slate-400'}`}>{opt.sub}</div>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Step 5: Services */}
+            {step === 5 && (
+                <div className="space-y-3">
+                    <label className="text-xs font-bold text-emerald-800 flex items-center gap-1.5"><Sparkles size={14} /> 원하시는 부대시설이 있나요?</label>
+                    <div className="flex flex-wrap gap-2">
+                        {SERVICE_OPTIONS.map(opt => (
+                            <button key={opt} onClick={() => toggleService(opt)} className={`py-2 px-3 text-xs rounded-full border transition-all ${services.includes(opt) ? 'bg-emerald-600 border-emerald-600 text-white font-bold' : 'bg-white border-emerald-100 text-slate-600 hover:bg-emerald-50'}`}>
+                                {opt}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {error && <div className="mt-3 flex items-center gap-1.5 text-red-500 text-[10px] animate-pulse"><AlertCircle size={10} /><span>{error}</span></div>}
+
+            <div className="mt-4 flex gap-2">
+                {step > 1 && <button onClick={() => setStep(prev => prev - 1)} className="px-4 py-2 text-slate-500 text-xs hover:bg-slate-100 rounded-xl transition">이전</button>}
+                <button onClick={step === 5 ? handleSubmit : handleNext} className="flex-1 bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold py-3 rounded-xl shadow-md active:scale-95 transition-all flex items-center justify-center gap-1">
+                    {step === 5 ? <><Check size={16} /> 맞춤 추모시설 찾기</> : '다음 단계'}
+                </button>
+            </div>
+        </div>
+    );
+};
+
 const FuneralSearchForm: React.FC<FormProps> = ({ userLocation, onGetCurrentPosition, onSubmit, initialCategory = 'funeral' }) => {
     const [step, setStep] = useState(1);
     const [urgency, setUrgency] = useState<'immediate' | 'imminent' | 'prepare' | ''>('');
@@ -435,7 +633,14 @@ export const ChatInterface: React.FC<Props> = ({
                     return; // Skip default setMessages below
                 } else if (initialIntent === 'memorial_facility') {
                     // Scenario B: Memorial Facility Form
-                    defaultWelcome = `고인을 영원히 기억할 수 있는 평온한 안식처를 찾고 계신가요?\n원하시는 장묘 형태나 지역이 있으시다면 말씀해 주세요. 마음(Maeum)이 투명한 가격 정보로 안내해 드립니다.\n\n1. **희망 지역** (예: 경기 용인)\n2. **장묘 형태** (예: 봉안당, 수목장)\n3. **예산 범위** (예: 1,000만 원 이하)`;
+                    setMessages([{
+                        role: 'model',
+                        text: `고인과 유족분들의 평온한 안식을 위해 최선을 다해 돕겠습니다. \n원하시는 조건(지역, 종교, 예산 등)을 선택해 주시면, 맞춤 추모시설을 추천해 드립니다.`,
+                        timestamp: new Date(),
+                        action: 'SHOW_FORM_B'
+                    }]);
+                    setTimeout(() => inputRef.current?.focus(), 100);
+                    return;
                 } else if (initialIntent === 'pet_funeral') {
                     // Scenario C: Pet Funeral Form
                     defaultWelcome = `사랑하는 아이와의 이별, 얼마나 가슴 아프실지 짐작이 갑니다. 아이가 무지개다리를 편안히 건널 수 있도록, 믿을 수 있는 장례식장을 안내해 드릴까요?\n\n1. **희망 지역** (예: 서울 마포구)\n2. **아이 정보** (예: 강아지/5kg)\n3. **필요 서비스** (예: 픽업, 스톤제작)`;
@@ -632,6 +837,15 @@ export const ChatInterface: React.FC<Props> = ({
                                                     initialIntent === 'pet_funeral' ? 'pet' :
                                                         initialIntent === 'memorial_facility' ? 'memorial' : 'funeral'
                                                 }
+                                            />
+                                        )}
+
+                                        {msg.action === 'SHOW_FORM_B' && (
+                                            <MemorialSearchForm
+                                                userLocation={userLocation}
+                                                onGetCurrentPosition={onGetCurrentPosition}
+                                                onSubmit={(payload) => handleSend(payload)}
+                                                initialCategory="memorial"
                                             />
                                         )}
 

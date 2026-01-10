@@ -2,6 +2,42 @@ import { Facility, FuneralCompany } from './types';
 
 export const FUNERAL_COMPANIES: FuneralCompany[] = [
   {
+    id: 'fc_post_1',
+    name: '바른후불상조',
+    rating: 4.9,
+    reviewCount: 150,
+    imageUrl: '/images/logos/fc_post_1.png',
+    description: '가입비 없는 정직한 후불제 상조',
+    features: ["후불제", "즉시 출동", "무가입"],
+    phone: '1666-0000',
+    priceRange: '130만원~',
+    benefits: ["사전가입 필요 없음"]
+  },
+  {
+    id: 'fc_post_2',
+    name: '3일의약속',
+    rating: 4.8,
+    reviewCount: 320,
+    imageUrl: '/images/logos/fc_post_2.png',
+    description: '조선미디어그룹이 보증하는 후불 상조',
+    features: ["후불제", "대기업 보증", "투명한 정산"],
+    phone: '1668-0000',
+    priceRange: '230만원~',
+    benefits: ["헬퍼 1명 추가 지원"]
+  },
+  {
+    id: 'fc_post_3',
+    name: '착한상조',
+    rating: 4.8,
+    reviewCount: 89,
+    imageUrl: '/images/logos/fc_post_3.png',
+    description: '거품 뺀 실속형 후불제 상조',
+    features: ["후불제", "최저가 보장", "24시간 대기"],
+    phone: '1566-0000',
+    priceRange: '89만원~',
+    benefits: ["장례지도사 지정 배정"]
+  },
+  {
     id: 'fc_new_1',
     name: '프리드라이프',
     rating: 5.0,

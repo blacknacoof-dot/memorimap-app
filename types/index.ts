@@ -87,6 +87,7 @@ export interface Facility {
   ai_welcome_message?: string; // AI 첫인사 메시지
   ai_price_summary?: Record<string, string | number>; // AI 학습용 가격 요약 (JSON)
   subscription?: any; // FacilitySubscription interface type
+  products?: SangjoProduct[]; // 상조 상품 데이터
 }
 
 export interface Reservation {

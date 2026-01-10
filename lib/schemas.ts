@@ -38,7 +38,7 @@ export const ReservationSchema = z.object({
 
 // [Step 2] Facility Edit Schema
 export const MemorialSpaceSchema = z.object({
-    id: z.string().uuid(),
+    id: z.union([z.string(), z.number()]),
     name: z.string().min(1, "시설명을 입력해주세요"),
     address: z.string().min(1, "주소를 입력해주세요"),
     type: z.enum(['charnel_house', 'natural_burial', 'funeral_home', 'complex', 'pet']),
