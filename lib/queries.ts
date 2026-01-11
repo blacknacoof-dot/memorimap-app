@@ -297,7 +297,7 @@ export const getAllLeads = async () => {
 
 export const getFacility = async (id: string) => {
     const { data, error } = await supabase
-        .from('facilities')
+        .from('memorial_spaces')
         .select(`
       *,
       lat: st_y(location::geometry),
@@ -310,7 +310,11 @@ export const getFacility = async (id: string) => {
         console.error('Error fetching facility:', error);
         throw error;
     }
-    return data;
+    // Map DB fields to Frontend types
+    return {
+        ...data,
+        galleryImages: data.gallery_images || data.galleryImages || []
+    };
 };
 
 // --- [상담 기능] (Consultations) ---
@@ -382,15 +386,39 @@ export const deleteConsultation = async (id: string) => {
 
 // --- [리뷰 기능] ---
 export const getReviews = async (facilityId: string) => {
-    // 리뷰 테이블이 아직 없다면 에러 방지를 위해 빈 배열 반환
-    // const { data, error } = await supabase...
-    return [];
+    try {
+        const { data, error } = await supabase
+            .from('reviews')
+            .select('*')
+            .eq('space_id', facilityId) // Script populated 'space_id'
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error fetching reviews:', error);
+            // Try fallback to memorial_space_id just in case schema is mixed
+            const { data: fallbackData, error: fallbackError } = await supabase
+                .from('reviews')
+                .select('*')
+                .eq('memorial_space_id', facilityId)
+                .order('created_at', { ascending: false });
+
+            if (!fallbackError && fallbackData) return fallbackData;
+            return [];
+        }
+        return data || [];
+    } catch (e) {
+        console.error('Exception in getReviews:', e);
+        return [];
+    }
 };
 
 export const getUserReviews = async (userId: string) => {
     const { data, error } = await supabase
         .from('reviews')
-        .select('*')
+        .select(`
+            *,
+            facilities:memorial_spaces(name)
+        `) // Join with facility name if possible
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
@@ -664,12 +692,17 @@ export const getFacilityImages = async (facilityId: string) => {
             // This is crucial for legacy data or migrated data in 'facilities' table
             const { data: fallback, error: fallbackError } = await supabase
                 .from('facilities')
-                .select('images')
+                .select('images, gallery_images')
                 .eq('id', facilityId)
                 .maybeSingle();
 
-            if (!fallbackError && fallback && fallback.images && Array.isArray(fallback.images)) {
-                return fallback.images;
+            if (!fallbackError && fallback) {
+                if (fallback.gallery_images && Array.isArray(fallback.gallery_images) && fallback.gallery_images.length > 0) {
+                    return fallback.gallery_images;
+                }
+                if (fallback.images && Array.isArray(fallback.images)) {
+                    return fallback.images;
+                }
             }
 
             // If fallback also empty or fails

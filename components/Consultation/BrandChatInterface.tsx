@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Bot, X, Phone, FileText, ChevronRight, Check, Star, Shield, Info, ArrowLeft, MessageSquare, BookOpen, Clock, Calendar, User, Smartphone, ChevronDown } from 'lucide-react';
+import { Send, Bot, X, Phone, FileText, ChevronRight, Check, Star, Shield, Info, ArrowLeft, MessageSquare, BookOpen, Clock, Calendar, User, Smartphone, ChevronDown, Siren } from 'lucide-react';
 import { FuneralCompany } from '../../types';
 import { ConsultationForm, QuickMenuBtn } from './BrandChatHelpers';
 import { PetChatInterface } from './PetChatInterface';
@@ -99,7 +99,7 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
 
     // Modal State
     const [isFormOpen, setIsFormOpen] = useState(false);
-    const [formMode, setFormMode] = useState<'phone' | 'chat'>('phone');
+    const [formMode, setFormMode] = useState<'phone' | 'chat' | 'urgent'>('phone');
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -150,6 +150,27 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
                     }]);
                     setIsFormOpen(true);
                     setFormMode('chat');
+                }, 500);
+            } else if (response.action === 'URGENT_DISPATCH') { // [NEW] Urgent Support
+                setTimeout(() => {
+                    setMessages(prev => [...prev, {
+                        id: Date.now() + 1,
+                        sender: 'ai',
+                        text: "가장 가까운 의전 팀을 즉시 배정하겠습니다. 현재 위치를 접수해주세요.",
+                        type: 'text' // Or a specific urgent action card type
+                    }]);
+                    setFormMode('urgent' as any); // Cast because 'urgent' might not be in the original type definition in this file, but ConsultationForm accepts it
+                    setIsFormOpen(true);
+                }, 500);
+            } else if (response.action === 'SHOW_PRODUCTS') { // [NEW] Product Display
+                setTimeout(() => {
+                    setMessages(prev => [...prev, {
+                        id: Date.now() + 1,
+                        sender: 'ai',
+                        text: "원하시는 상품이 없다면 상담을 통해 맞춤 설계를 도와드릴 수 있습니다.",
+                        type: 'product_carousel',
+                        data: BRAND_CONFIG.products // Use the company's products
+                    }]);
                 }, 500);
             } else if (response.action === 'MAP') {
                 // Simple Map Action Feedback
@@ -215,12 +236,28 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
                     id: Date.now(),
                     sender: 'ai',
                     text: isPetCompany
-                        ? `접수가 완료되었습니다. 전문 반려동물 장례지도사에게 내용을 전달했습니다.\n요청 시간(**${formData.time}**)에 **${formData.phone}** 번호로 연락드리겠습니다.`
+                        ? `접수가 완료되었습니다. 전문 반려동물 장례지도사가 내용을 전달했습니다.\n요청 시간(**${formData.time}**)에 **${formData.phone}** 번호로 연락드리겠습니다.`
                         : `접수가 완료되었습니다. 담당 팀장님께 내용을 전달했습니다.\n요청 시간(**${formData.time}**)에 **${formData.phone}** 번호로 연락드리겠습니다.`,
                     type: 'text'
                 }]);
             }, 1000);
 
+        } else if (formMode === ('urgent' as any)) { // Handle Urgent Submission
+            setMessages(prev => [...prev, {
+                id: Date.now(),
+                sender: 'system',
+                text: `🚨 [긴급 출동 접수] ${formData.name}님, ${formData.location}으로 즉시 출동합니다.`,
+                type: 'text'
+            }]);
+
+            setTimeout(() => {
+                setMessages(prev => [...prev, {
+                    id: Date.now(),
+                    sender: 'ai',
+                    text: `긴급 접수가 확정되었습니다. (상태: 출동 대기)\n담당 의전 팀장이 **3분 이내**에 ${formData.phone}으로 전화를 드려 정확한 도착 시간을 안내해 드립니다.`,
+                    type: 'text'
+                }]);
+            }, 1000);
         } else {
             setMessages(prev => [...prev, {
                 id: Date.now(),
@@ -454,7 +491,7 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
             <div className="bg-white border-t border-gray-100 p-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20 shrink-0 relative">
                 <div className="grid grid-cols-4 gap-2 mb-2">
                     <QuickMenuBtn icon={<FileText className="w-5 h-5" />} label="상품 안내" onClick={() => handleSend("상품 종류 보여줘")} />
-                    <QuickMenuBtn icon={<Star className="w-5 h-5" />} label="멤버십" onClick={() => handleSend("멤버십 혜택이 뭐야?")} />
+                    <QuickMenuBtn icon={<Siren className="w-5 h-5 text-red-500" />} label="긴급 접수" onClick={() => handleSend("긴급 장례 접수")} />
                     <QuickMenuBtn icon={<BookOpen className="w-5 h-5" />} label="장례 절차" onClick={() => handleSend("장례 절차는 어떻게 돼?")} />
                     <QuickMenuBtn icon={<Clock className="w-5 h-5" />} label="상담 예약" onClick={() => handleSend("상담원 연결해줘")} active />
                 </div>

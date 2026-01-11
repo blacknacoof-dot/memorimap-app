@@ -12,7 +12,7 @@ import { RecommendationStarter } from './components/RecommendationStarter';
 import { Consultation } from './types/consultation';
 import { Menu, Search, Filter, Crosshair, Map as MapIcon, User, List, Settings, Scale, Ticket, X, Check, AlertCircle, Database, Shield, Award, ArrowLeft, Bot, Loader2 } from 'lucide-react';
 import { FACILITIES } from './constants';
-import { useUser, useClerk } from './lib/auth';
+import { useUser, useClerk, useSession } from './lib/auth';
 import { supabase, isSupabaseConfigured } from './lib/supabaseClient';
 import { useAuthSync } from './lib/useAuthSync';
 import { getFacilitySubscription, incrementAiUsage } from './lib/queries';
@@ -139,6 +139,30 @@ const App: React.FC = () => {
 
   const [initialChatIntent, setInitialChatIntent] = useState<'funeral_home' | 'memorial_facility' | 'pet_funeral' | 'general' | null>(null);
   const [handoverContext, setHandoverContext] = useState<any>(null);
+
+  // --- Clerk -> Supabase Token Injection ---
+  const { session } = useSession();
+
+  useEffect(() => {
+    const setSupabaseSession = async () => {
+      if (!session) return;
+      try {
+        const token = await session.getToken({ template: 'supabase' });
+        if (token) {
+          // Set Clerk token as Supabase session (AccessToken)
+          await supabase.auth.setSession({
+            access_token: token,
+            refresh_token: 'dummy-refresh-token', // Clerk handles refresh, so this is dummy
+          });
+          console.log("✅ Supabase Session Set with Clerk Token");
+        }
+      } catch (err) {
+        console.error("Failed to set Supabase session:", err);
+      }
+    };
+    setSupabaseSession();
+  }, [session]);
+  // ------------------------------------------
 
   // Helper to get display user info (Memoize to prevent infinite re-fetches)
   const userInfo = React.useMemo(() => {
@@ -448,12 +472,16 @@ const App: React.FC = () => {
   const fetchFacilityDetails = async (facilityId: string) => {
     try {
       const { data, error } = await supabase
-        .from('facilities') // Switch to new table
+        .from('memorial_spaces') // Correct table for Sangjo & numeric IDs
         .select('*')
         .eq('id', facilityId)
         .single();
 
       if (error) throw error;
+
+      // ✅ [DEBUG] Check data structure from DB
+      console.log('✅ [DEBUG] Fetched Data from memorial_spaces:', data);
+
       if (data) {
         // Fetch subscription, reviews and images
         // Note: Relation names in getReviewsBySpace/getFacilityImages/getFacilitySubscription might still point to old table or need verification
@@ -513,12 +541,12 @@ const App: React.FC = () => {
           priceRange: details.price_range || '가격 정보 상담',
           rating: Number(details.rating || 0), // Use details if available
           reviewCount: Number(details.review_count || 0),
-          imageUrl: (data.images && data.images[0]) || 'https://placehold.co/800x600?text=No+Image',
+          imageUrl: (data.images && data.images[0]) || (data.gallery_images && data.gallery_images[0]) || 'https://placehold.co/800x600?text=No+Image',
           description: details.description || '',
           features: details.features || [],
           phone: data.contact || '',
           prices: details.prices || [],
-          galleryImages: images.length > 0 ? images : (data.images || []),
+          galleryImages: data.gallery_images || images || (data.images || []),
           reviews: reviews.length > 0 ? reviews : [],
           naverBookingUrl: details.naver_booking_url,
           isDetailLoaded: true,
@@ -558,6 +586,7 @@ const App: React.FC = () => {
   };
 
   const handleFacilitySelect = async (facility: Facility) => {
+    console.log('👆 [DEBUG] handleFacilitySelect CLICKED:', facility.name, facility.id, 'Loaded:', facility.isDetailLoaded);
     setSelectedFacility(facility);
 
     // Lazy Load Details
@@ -964,56 +993,88 @@ const App: React.FC = () => {
         return (
           <FuneralCompanyView
             onCompanySelect={async (company, startChat) => {
-              // [Fix] Fetch fresh data from DB to ensure we have products
-              // The RPC used for list view lacks 'price_info', so we fetch explicitly.
+              // [Fix] Fetch fresh data from DB to ensure we have products AND reviews
               let productData = company.products;
+              let reviewData: any[] = [];
               let fetched = false;
 
               const relatedFacility = facilities.find(f => f.name === company.name && f.type === 'sangjo');
+              let searchId: number | null = null;
 
               // Strategy 1: Fetch by ID (if strictly integer)
               if (relatedFacility && relatedFacility.id) {
                 try {
-                  const searchId = (typeof relatedFacility.id === 'string' && !isNaN(parseInt(relatedFacility.id)))
+                  const parsedId = (typeof relatedFacility.id === 'string' && !isNaN(parseInt(relatedFacility.id)))
                     ? parseInt(relatedFacility.id, 10)
                     : relatedFacility.id;
 
                   // Only query if it became a number (skips UUIDs)
-                  if (typeof searchId === 'number') {
-                    const { data } = await supabase
-                      .from('memorial_spaces')
-                      .select('price_info')
-                      .eq('id', searchId)
-                      .maybeSingle();
-
-                    if (data && data.price_info && data.price_info.products) {
-                      productData = data.price_info.products;
-                      fetched = true;
-                    }
+                  if (typeof parsedId === 'number') {
+                    searchId = parsedId;
                   }
                 } catch (e) {
-                  console.error('Failed to fetch detailed product info by ID', e);
+                  console.error('Failed to parse ID', e);
                 }
               }
 
-              // Strategy 2: Fetch by Name (Fallback if ID failed or generated no products)
-              if (!fetched) {
+              // Use searchId if found, otherwise we might fetch by name for products, 
+              // but for reviews we need an ID (unless we look up ID by name first).
+
+              if (searchId) {
+                // Fetch Products
+                const { data } = await supabase
+                  .from('memorial_spaces')
+                  .select('price_info')
+                  .eq('id', searchId)
+                  .maybeSingle();
+
+                if (data && data.price_info && data.price_info.products) {
+                  productData = data.price_info.products;
+                }
+
+                // Fetch Reviews
+                try {
+                  // Dynamically import to avoid circular dep if needed, or use direct if safe.
+                  // Using direct supabase query here is safer to avoid hook rules or import issues in callback.
+                  const { data: reviews } = await supabase
+                    .from('reviews')
+                    .select('*')
+                    .eq('space_id', searchId.toString()) // Ensure string for UUID/Text match
+                    .order('created_at', { ascending: false });
+
+                  if (reviews) {
+                    reviewData = reviews;
+                  }
+                } catch (e) { console.error('Failed to fetch reviews', e); }
+              } else {
+                // Fallback: Fetch ID by name to get reviews
                 try {
                   const { data } = await supabase
                     .from('memorial_spaces')
-                    .select('price_info')
+                    .select('id, price_info')
                     .eq('name', company.name)
                     .maybeSingle();
 
-                  if (data && data.price_info && data.price_info.products) {
-                    productData = data.price_info.products;
+                  if (data) {
+                    if (data.price_info && data.price_info.products) {
+                      productData = data.price_info.products;
+                    }
+                    // Now fetch reviews with this ID
+                    const { data: reviews } = await supabase
+                      .from('reviews')
+                      .select('*')
+                      .eq('space_id', data.id)
+                      .order('created_at', { ascending: false });
+
+                    if (reviews) reviewData = reviews;
                   }
                 } catch (e) { console.error('Name fallback failed', e); }
               }
 
               const mergedCompany = {
                 ...company,
-                products: productData
+                products: productData,
+                reviews: reviewData // Attach fetched reviews
               };
 
               setSelectedFuneralCompany(mergedCompany);
@@ -1490,6 +1551,12 @@ const App: React.FC = () => {
                   }}
                   onOpenContract={() => {
                     setShowSangjoContract(true);
+                  }}
+                  currentUser={userInfo}
+                  isLoggedIn={isSignedIn}
+                  onOpenLogin={() => {
+                    setShowLoginModal(true);
+                    setSelectedFuneralCompany(null); // Close sheet to reveal login modal
                   }}
                 />
               </Suspense>

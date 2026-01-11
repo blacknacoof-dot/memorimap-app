@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-import { ClerkProvider as RealClerkProvider, useUser as useRealUser, useClerk as useRealClerk, useSignIn as useRealSignIn, useSignUp as useRealSignUp } from '@clerk/clerk-react';
+import { ClerkProvider as RealClerkProvider, useUser as useRealUser, useClerk as useRealClerk, useSignIn as useRealSignIn, useSignUp as useRealSignUp, useSession as useRealSession } from '@clerk/clerk-react';
 import { koKR } from '@clerk/localizations';
 
 // --- Configuration ---
@@ -156,6 +156,22 @@ export const useSignUp = () => {
     return ctx ? ctx.mockSignUp : { isLoaded: true, signUp: {}, setActive: async () => { } };
   }
   return useRealSignUp();
+};
+
+export const useSession = () => {
+  if (IS_MOCK_MODE) {
+    const ctx = useContext(MockAuthContext);
+    // Mock session object structure matching Clerk
+    return {
+      isLoaded: true,
+      isSignedIn: ctx?.mockUseUser?.isSignedIn,
+      session: ctx?.mockUseUser?.isSignedIn ? {
+        getToken: async ({ template }: { template?: string }) => "mock-supabase-token",
+        user: ctx.mockUseUser.user
+      } : null
+    };
+  }
+  return useRealSession();
 };
 
 export const isClerkConfigured = () => !IS_MOCK_MODE;

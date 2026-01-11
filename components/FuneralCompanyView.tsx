@@ -40,7 +40,8 @@ export const FuneralCompanyView: React.FC<Props> = ({
                     .from('memorial_spaces')
                     .select('*')
                     .eq('type', 'sangjo')
-                    .eq('is_verified', true);
+                    .eq('is_verified', true)
+                    .order('id', { ascending: true });
 
                 if (data && data.length > 0) {
                     // Map DB data to FuneralCompany interface
@@ -54,11 +55,13 @@ export const FuneralCompanyView: React.FC<Props> = ({
                             rating: item.rating || 4.8, // Default high rating for trusted partners
                             reviewCount: item.review_count || 120,
                             imageUrl: staticMatch?.imageUrl || item.image_url || '/images/default_sangjo.png',
-                            description: staticMatch?.description || `${item.name}의 프리미엄 상조 서비스입니다.`,
-                            features: item.features || staticMatch?.features || ["전국 의전망", "24시간 상담"],
-                            phone: item.contact || '1588-0000',
+                            // [Fix] Prioritize DB description/features over static match
+                            description: item.description || staticMatch?.description || `${item.name}의 프리미엄 상조 서비스입니다.`,
+                            features: (item.features && item.features.length > 0) ? item.features : (staticMatch?.features || ["전국 의전망", "24시간 상담"]),
+                            phone: item.phone || item.contact || '1588-0000',
                             priceRange: item.priceRange || '문의',
                             benefits: item.benefits || ["회원 전용 혜택"],
+                            galleryImages: item.gallery_images || [], // ✅ Map newly added gallery images
                             products: item.price_info?.products // Include fetched products
                         };
                     });

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { addTimelineEvent, updateContractStatus, getTimelineEvents, SangjoTimelineEvent } from "../lib/sangjoQueries";
 import { RealtimePostgresUpdatePayload } from "@supabase/supabase-js";
+import { LikeStatCard } from "./dashboard/LikeStatCard";
 
 interface SangjoDashboardProps {
     sangjoId: string;
@@ -170,6 +171,7 @@ export const SangjoDashboard: React.FC<SangjoDashboardProps> = ({ sangjoId, onBa
                             <p className="text-[10px] text-gray-400 uppercase font-bold mb-1">긴급 상황</p>
                             <p className={`text-2xl font-black ${urgentCount > 0 ? 'text-red-400' : 'text-white'}`}>{urgentCount}</p>
                         </div>
+                        <LikeStatCard facilityId={sangjoId} />
                     </div>
                 </div>
 

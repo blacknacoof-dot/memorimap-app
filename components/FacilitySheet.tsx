@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { favoriteService } from '../services/favoriteService';
 import { Facility, Reservation } from '../types';
 import { X, Star, MapPin, Phone, Clock, Navigation, Heart, Check, Scale, Bot, Award, Crown, ShieldCheck, MessageSquare, ChevronLeft, ChevronRight, Image as ImageIcon, Gift } from 'lucide-react';

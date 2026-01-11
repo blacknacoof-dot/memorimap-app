@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FuneralCompany } from '../types';
-import { X, Star, Phone, MessageCircleQuestion, Heart, Share2, CheckCircle2, ShieldCheck, CreditCard, Gift, Bot, ChevronRight, Camera, User } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
+import { X, Star, Phone, MessageCircleQuestion, Heart, Share2, CheckCircle2, ShieldCheck, CreditCard, Gift, Bot, ChevronRight, Camera, User, ClipboardCheck } from 'lucide-react';
 import { ReviewCard } from './ReviewCard';
 
 interface Props {
@@ -8,10 +9,83 @@ interface Props {
     onClose: () => void;
     onOpenAIConsult: () => void;
     onOpenContract: () => void;
+    currentUser?: any; // Pass user object
+    isLoggedIn?: boolean;
+    onOpenLogin?: () => void; // New prop for login redirection
 }
 
-export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenAIConsult, onOpenContract }) => {
+export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenAIConsult, onOpenContract, currentUser, isLoggedIn = false, onOpenLogin }) => {
     const [activeTab, setActiveTab] = useState<'info' | 'benefits' | 'price' | 'gallery' | 'reviews'>('info');
+    const [isLiked, setIsLiked] = useState(false);
+
+    // 1. Check Like Status
+    useEffect(() => {
+        const checkLikeStatus = async () => {
+            if (isLoggedIn && currentUser && company) {
+                const { data } = await supabase
+                    .from('user_likes')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .eq('target_id', company.id)
+                    .maybeSingle(); // Changed from single() to avoid 406 error
+                setIsLiked(!!data);
+            }
+        };
+        checkLikeStatus();
+    }, [isLoggedIn, currentUser, company]);
+
+    // 2. Share Handler
+    const handleShare = async () => {
+        const shareData = {
+            title: 'Memorimap 추모맵',
+            text: `${company.name} - ${company.description}`,
+            url: window.location.href,
+        };
+
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData);
+            } else {
+                await navigator.clipboard.writeText(window.location.href);
+                alert('주소가 복사되었습니다!');
+            }
+        } catch (err) {
+            console.error('Share failed:', err);
+        }
+    };
+
+    // 3. Like Handler
+    const handleToggleLike = async () => {
+        if (!isLoggedIn || !currentUser) {
+            alert('로그인이 필요한 기능입니다.');
+            if (onOpenLogin) onOpenLogin(); // Redirect to login
+            return;
+        }
+
+        const previousState = isLiked;
+        setIsLiked(!isLiked); // Optimistic
+
+        try {
+            if (previousState) {
+                await supabase
+                    .from('user_likes')
+                    .delete()
+                    .eq('user_id', currentUser.id)
+                    .eq('target_id', company.id);
+            } else {
+                await supabase
+                    .from('user_likes')
+                    .insert({
+                        user_id: currentUser.id,
+                        target_id: company.id,
+                        category: 'sangjo'
+                    });
+            }
+        } catch (error) {
+            console.error('Like failed:', error);
+            setIsLiked(previousState);
+        }
+    };
 
     return (
         <div className="fixed inset-x-0 bottom-0 z-[250] bg-white rounded-t-3xl shadow-2xl transform transition-transform duration-300 max-h-[90vh] h-[80vh] flex flex-col md:max-w-md md:mx-auto">
@@ -78,8 +152,18 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                                 </div>
                             </div>
                             <div className="flex gap-2">
-                                <button className="p-2 bg-gray-100 rounded-full text-gray-500"><Share2 size={18} /></button>
-                                <button className="p-2 bg-gray-100 rounded-full text-gray-500"><Heart size={18} /></button>
+                                <button
+                                    onClick={handleShare}
+                                    className="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 transition-colors"
+                                >
+                                    <Share2 size={18} />
+                                </button>
+                                <button
+                                    onClick={handleToggleLike}
+                                    className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                                >
+                                    <Heart size={18} className={isLiked ? "fill-red-500 text-red-500" : "text-gray-500"} />
+                                </button>
                             </div>
                         </div>
 
@@ -201,15 +285,15 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                                         <div
                                             key={idx} // prod.id may be missing in fallback
                                             className={`rounded-2xl shadow-sm relative overflow-hidden border ${isPremium ? 'bg-slate-900 border-slate-800 text-white' :
-                                                    isStandard ? 'bg-blue-600 border-blue-500 text-white' :
-                                                        'bg-white border-gray-100'
+                                                isStandard ? 'bg-blue-600 border-blue-500 text-white' :
+                                                    'bg-white border-gray-100'
                                                 }`}
                                         >
                                             <div className="p-5 border-b border-white/10">
                                                 <div className="flex justify-between items-start mb-2">
                                                     <div className={`px-2 py-0.5 text-[10px] font-bold rounded mb-2 inline-block ${isPremium ? 'bg-amber-400 text-black' :
-                                                            isStandard ? 'bg-blue-400 text-white' :
-                                                                'bg-gray-100 text-gray-600'
+                                                        isStandard ? 'bg-blue-400 text-white' :
+                                                            'bg-gray-100 text-gray-600'
                                                         }`}>
                                                         {prod.badges?.[0] || '기본형'}
                                                     </div>

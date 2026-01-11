@@ -1,0 +1,28 @@
+
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Load env
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
+
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY; 
+// Prefer Service Role for Update if RLS blocks Anon, but Anon owner policy might work if we were logged in. 
+// Since we are script, best to use Service Role if available, else Anon might fail on UPDATE if RLS requires auth.uid().
+// Assuming user provided me environment with Anon Key. If it fails, I might need Service Role or disable RLS temporarily.
+// Wait, I used Anon Key before and it failed? No, I used SQL tool.
+// I'll try Anon key. If it fails, I'll ask user or use SQL workaround.
+// Actually, earlier check script used Anon and Worked for SELECT. UPDATE might be blocked.
+// BUT I see `fix_all_partner_issues.sql` sets "Owners can update own facility".
+// Script is not "Owner".
+// I'll check if VITE_SUPABASE_SERVICE_ROLE_KEY is in .env.local usually? 
+// User environment usually has it for admin scripts? 
+// If not, I am stuck unless I use SQL. 
+// BUT, I can generate a HUGE SQL file with individual UPDATE statements. That is safer than a script that might be blocked by RLS.
+//
+// Actually, I can use the SQL tool to run a BLOCK of PL/PGSQL that loops?
+// Yes, `DO $$ ... END $$` block in SQL.
+// That is much better than a Node script for permissions and performance.
+//
+// I will rewrite this step to write a SQL file with a LOOP.
