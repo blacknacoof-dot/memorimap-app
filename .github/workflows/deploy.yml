@@ -1,0 +1,173 @@
+name: 🚀 Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # =============================================
+  # Job 1: Lint & Build
+  # =============================================
+  build:
+    name: 🔨 Build & Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: 📥 Install dependencies
+        run: npm ci
+      
+      - name: 🔍 Run Linter
+        run: npm run lint --if-present
+        continue-on-error: true
+      
+      - name: 🔨 Build project
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+          VITE_GOOGLE_AI_KEY: ${{ secrets.VITE_GOOGLE_AI_KEY }}
+      
+      - name: 📤 Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 1
+
+  # =============================================
+  # Job 2: E2E Tests (Optional, can be disabled)
+  # =============================================
+  e2e-test:
+    name: 🧪 E2E Tests
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: 📥 Install dependencies
+        run: npm ci
+      
+      - name: 📥 Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      
+      - name: 🧪 Run Cypress E2E Tests
+        uses: cypress-io/github-action@v6
+        with:
+          start: npx vite preview --port 5173
+          wait-on: 'http://localhost:5173'
+          wait-on-timeout: 120
+          browser: chrome
+          headless: true
+        env:
+          CYPRESS_ADMIN_EMAIL: ${{ secrets.CYPRESS_ADMIN_EMAIL }}
+          CYPRESS_ADMIN_PASSWORD: ${{ secrets.CYPRESS_ADMIN_PASSWORD }}
+          CYPRESS_SUPER_ADMIN_EMAIL: ${{ secrets.CYPRESS_SUPER_ADMIN_EMAIL }}
+          CYPRESS_SUPER_ADMIN_PASSWORD: ${{ secrets.CYPRESS_SUPER_ADMIN_PASSWORD }}
+      
+      - name: 📤 Upload Cypress Screenshots
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots/
+          retention-days: 7
+
+  # =============================================
+  # Job 3: Deploy to Vercel
+  # =============================================
+  deploy:
+    name: 🌐 Deploy to Vercel
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: 📥 Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      
+      - name: 🚀 Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./
+          vercel-args: '--prod'
+
+  # =============================================
+  # Job 4: Supabase Migrations (Optional)
+  # =============================================
+  supabase-migrate:
+    name: 🗄️ Supabase Migrations
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: 📦 Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      
+      - name: 🔗 Link Supabase Project
+        run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      
+      - name: 🔄 Push Database Migrations
+        run: supabase db push
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        continue-on-error: true
+
+  # =============================================
+  # Job 5: Notify on Completion
+  # =============================================
+  notify:
+    name: 📢 Notify
+    runs-on: ubuntu-latest
+    needs: [build, deploy]
+    if: always() && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: 📢 Send Deployment Notification
+        run: |
+          echo "🎉 Deployment completed!"
+          echo "Build: ${{ needs.build.result }}"
+          echo "Deploy: ${{ needs.deploy.result }}"
