@@ -1,16 +1,17 @@
 import { useState } from 'react';
-import { LayoutDashboard, Calendar, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Calendar, Settings, LogOut, MessageSquare } from 'lucide-react';
 import { useClerk } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 import { useFacilityAdmin } from '@/hooks/useFacilityAdmin';
 
 // 하위 컴포넌트
 import ReservationManager from './facility/ReservationManager';
-import { FacilityEditForm } from '../forms/FacilityEditForm'; // 기존에 만든 폼 재사용
+import { FacilityEditForm } from '../forms/FacilityEditForm';
+import { ConsultationList } from './ConsultationList';
 
 export default function FacilityDashboard() {
     const { facility, reservations, isLoading, error, updateStatus, updateFacility } = useFacilityAdmin();
-    const [activeTab, setActiveTab] = useState<'reservations' | 'settings'>('reservations');
+    const [activeTab, setActiveTab] = useState<'reservations' | 'consultations' | 'settings'>('consultations');
     const { signOut } = useClerk();
     const navigate = useNavigate();
 
@@ -54,6 +55,15 @@ export default function FacilityDashboard() {
 
                 <nav className="flex-1 p-4 space-y-2">
                     <button
+                        onClick={() => setActiveTab('consultations')}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'consultations' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'hover:bg-gray-50 text-gray-600'
+                            }`}
+                    >
+                        <MessageSquare size={20} />
+                        상담 접수
+                    </button>
+
+                    <button
                         onClick={() => setActiveTab('reservations')}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'reservations' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'hover:bg-gray-50 text-gray-600'
                             }`}
@@ -89,11 +99,13 @@ export default function FacilityDashboard() {
                 <div className="max-w-5xl mx-auto">
                     <header className="mb-8">
                         <h2 className="text-2xl font-bold text-gray-900">
-                            {activeTab === 'reservations' ? '예약 관리' : '시설 정보 수정'}
+                            {activeTab === 'consultations' ? '상담 접수 현황' : activeTab === 'reservations' ? '예약 관리' : '시설 정보 수정'}
                         </h2>
                     </header>
 
-                    {activeTab === 'reservations' ? (
+                    {activeTab === 'consultations' ? (
+                        <ConsultationList facilityId={facility.id.toString()} />
+                    ) : activeTab === 'reservations' ? (
                         <ReservationManager
                             reservations={reservations}
                             onUpdateStatus={updateStatus}
@@ -102,18 +114,13 @@ export default function FacilityDashboard() {
                         <FacilityEditForm
                             initialData={facility}
                             onSubmit={async (data) => {
-                                // Map form values to Partial<MemorialSpace>
-                                // Note: FormValues might match exactly or need mapping.
-                                // Let's check schemas types. MemorialSpaceFormValues has same fields as MemorialSpace mostly.
-                                // We extract only fields we want to update.
                                 await updateFacility({
                                     name: data.name,
                                     address: data.address,
                                     type: data.type,
                                     ai_context: data.ai_context,
                                     ai_features: data.ai_features,
-                                    is_verified: true // Always verify on update? Maybe keep existing. But for now let's not change it implicitly unless intended.
-                                    // Actually the API updates only what is passed.
+                                    is_verified: true
                                 });
                             }}
                             onCancel={() => setActiveTab('reservations')}

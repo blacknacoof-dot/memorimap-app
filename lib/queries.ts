@@ -896,23 +896,48 @@ export const rejectFacility = async (facilityId: string, rejectionReason: string
 
 export const getFacilityLatestInfo = async (facilityId: string) => {
     try {
-        const { data, error } = await supabase
-            .from('memorial_spaces')
-            .select(`
-                id,
-                name,
-                address,
-                phone,
-                type,
-                prices,
-                operating_hours,
-                ai_context,
-                ai_features,
-                ai_welcome_message,
-                description
-            `)
-            .eq('id', facilityId)
-            .single();
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
+        let query;
+
+        if (isUuid) {
+            // New facilities or Sangjo companies in 'facilities' table
+            query = supabase
+                .from('facilities')
+                .select(`
+                    id,
+                    name,
+                    address,
+                    phone,
+                    type,
+                    ai_context,
+                    ai_welcome_message,
+                    description,
+                    features:ai_features
+                `)
+                .eq('id', facilityId)
+                .single();
+        } else {
+            // Legacy/Scraped facilities in 'memorial_spaces' table
+            query = supabase
+                .from('memorial_spaces')
+                .select(`
+                    id,
+                    name,
+                    address,
+                    phone,
+                    type,
+                    prices,
+                    operating_hours,
+                    ai_context,
+                    ai_features,
+                    ai_welcome_message,
+                    description
+                `)
+                .eq('id', facilityId)
+                .single();
+        }
+
+        const { data, error } = await query;
 
         if (error) {
             console.error('getFacilityLatestInfo error:', error);
@@ -922,6 +947,167 @@ export const getFacilityLatestInfo = async (facilityId: string) => {
         return data;
     } catch (e) {
         console.error('getFacilityLatestInfo exception:', e);
+        return null;
+    }
+};
+
+// =============================================
+// Consultation CRUD Functions
+// =============================================
+
+export interface ConsultationData {
+    facility_id: string;
+    facility_name?: string;
+    user_id?: string;
+    user_phone?: string;
+    user_name?: string;
+    urgency: string;
+    location?: string;
+    needs_ambulance?: boolean;
+    scale: string;
+    religion: string;
+    schedule: string;
+}
+
+export interface Consultation extends ConsultationData {
+    id: string;
+    created_at: string;
+    updated_at: string;
+    status: 'waiting' | 'accepted' | 'cancelled' | 'completed';
+    notes?: string;
+}
+
+/**
+ * Create a new funeral consultation (for AI chat form)
+ */
+export const createFuneralConsultation = async (data: ConsultationData): Promise<Consultation | null> => {
+    try {
+        const { data: result, error } = await supabase
+            .from('consultations')
+            .insert({
+                ...data,
+                status: 'waiting'
+            })
+            .select()
+            .single();
+
+        if (error) {
+            console.error('createConsultation error:', error);
+            return null;
+        }
+
+        return result as Consultation;
+    } catch (e) {
+        console.error('createConsultation exception:', e);
+        return null;
+    }
+};
+
+/**
+ * Get consultations by facility ID (for facility dashboard)
+ */
+export const getConsultationsByFacility = async (
+    facilityId: string,
+    status?: string
+): Promise<Consultation[]> => {
+    try {
+        let query = supabase
+            .from('consultations')
+            .select('*')
+            .eq('facility_id', facilityId)
+            .order('created_at', { ascending: false });
+
+        if (status) {
+            query = query.eq('status', status);
+        }
+
+        const { data, error } = await query;
+
+        if (error) {
+            console.error('getConsultationsByFacility error:', error);
+            return [];
+        }
+
+        return (data || []) as Consultation[];
+    } catch (e) {
+        console.error('getConsultationsByFacility exception:', e);
+        return [];
+    }
+};
+
+/**
+ * Get consultations by user ID (for My Page)
+ */
+export const getConsultationsByUser = async (userId: string): Promise<Consultation[]> => {
+    try {
+        const { data, error } = await supabase
+            .from('consultations')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('getConsultationsByUser error:', error);
+            return [];
+        }
+
+        return (data || []) as Consultation[];
+    } catch (e) {
+        console.error('getConsultationsByUser exception:', e);
+        return [];
+    }
+};
+
+/**
+ * Update consultation status
+ */
+export const updateConsultationStatus = async (
+    consultationId: string,
+    status: 'waiting' | 'accepted' | 'cancelled' | 'completed',
+    notes?: string
+): Promise<boolean> => {
+    try {
+        const updateData: any = { status };
+        if (notes !== undefined) {
+            updateData.notes = notes;
+        }
+
+        const { error } = await supabase
+            .from('consultations')
+            .update(updateData)
+            .eq('id', consultationId);
+
+        if (error) {
+            console.error('updateConsultationStatus error:', error);
+            return false;
+        }
+
+        return true;
+    } catch (e) {
+        console.error('updateConsultationStatus exception:', e);
+        return false;
+    }
+};
+
+/**
+ * Get single consultation by ID
+ */
+export const getConsultationById = async (consultationId: string): Promise<Consultation | null> => {
+    try {
+        const { data, error } = await supabase
+            .from('consultations')
+            .select('*')
+            .eq('id', consultationId)
+            .single();
+
+        if (error) {
+            console.error('getConsultationById error:', error);
+            return null;
+        }
+
+        return data as Consultation;
+    } catch (e) {
+        console.error('getConsultationById exception:', e);
         return null;
     }
 };

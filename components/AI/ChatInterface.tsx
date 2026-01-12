@@ -2,8 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Facility } from '../../types';
 import { sendMessageToGemini, ChatMessage, ActionType } from '../../services/geminiService';
 import { getIntelligentRecommendations, createLead, getDistinctRegions, searchFacilitiesByRegion, getFacilityLatestInfo } from '../../lib/queries';
-import { MessageCircle, X, Send, MapPin, Phone, CalendarCheck, Loader2, Bot, Sparkles, ChevronLeft, Users, Star, AlertCircle, CheckCircle2, Check } from 'lucide-react';
+import { MessageCircle, X, Send, MapPin, Phone, CalendarCheck, Loader2, Bot, Sparkles, ChevronLeft, Users, Star, AlertCircle, CheckCircle2, Check, Siren } from 'lucide-react';
 import { PetChatInterface } from '../Consultation/PetChatInterface';
+import { ConsultationForm } from '../Consultation/BrandChatHelpers';
+import FuneralSearchForm from './FuneralSearchForm'; // [NEW] Import separate component
 
 interface Props {
     facility: Facility;
@@ -227,313 +229,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({ userLocation, onGetCurrentPos
     );
 };
 
-const FuneralSearchForm: React.FC<FormProps> = ({ userLocation, onGetCurrentPosition, onSubmit, initialCategory = 'funeral' }) => {
-    const [step, setStep] = useState(1);
-    const [urgency, setUrgency] = useState<'immediate' | 'imminent' | 'prepare' | ''>('');
-    const [region, setRegion] = useState('');
-    const [scale, setScale] = useState('');
-    const [priorities, setPriorities] = useState<string[]>([]);
-    const [error, setError] = useState('');
 
-    const URGENCY_OPTIONS = [
-        { id: 'immediate', label: '🚨 지금 임종하셨어요 (긴급)', sub: '운구차 및 빈소 즉시 확보' },
-        { id: 'imminent', label: '🏥 임종이 임박했어요 (위독)', sub: '사전 상담 및 빈소 예약 준비' },
-        { id: 'prepare', label: '📅 미리 알아보고 있어요', sub: '비교 견적 및 시설 탐색' }
-    ];
-
-    const SCALE_OPTIONS = [
-        { id: 'small', label: '가족장 (소규모)', sub: '50명 미만 (20~30평형)' },
-        { id: 'medium', label: '일반 (중형)', sub: '100~200명 (40~60평형)' },
-        { id: 'large', label: '대규모 (단체장)', sub: '300명 이상 (VIP실)' }
-    ];
-
-    const PRIORITY_OPTIONS = ['💰 비용 절약', '🚗 주차 편리', '✨ 시설 쾌적', '🍽️ 음식 맛', '✝️ 종교 전용'];
-
-    // [NEW] Autocomplete State
-    const [suggestions, setSuggestions] = useState<string[]>([]);
-    const [isSearching, setIsSearching] = useState(false);
-    const [showSuggestions, setShowSuggestions] = useState(false);
-    const debounceTimer = useRef<NodeJS.Timeout | null>(null);
-
-    // [NEW] Handle Region Input with Debounce
-    useEffect(() => {
-        if (!region || region.length < 2) {
-            setSuggestions([]);
-            setShowSuggestions(false);
-            return;
-        }
-
-        if (debounceTimer.current) clearTimeout(debounceTimer.current);
-
-        debounceTimer.current = setTimeout(async () => {
-            setIsSearching(true);
-            try {
-                // Use the new RPC wrapper
-                const results = await getDistinctRegions(region) as string[];
-                // Simple deduplication just in case
-                const uniqueResults = Array.from(new Set(results)).slice(0, 5);
-                setSuggestions(uniqueResults);
-                setShowSuggestions(uniqueResults.length > 0);
-            } catch (e) {
-                console.error(e);
-            } finally {
-                setIsSearching(false);
-            }
-        }, 300); // 300ms delay
-
-        return () => {
-            if (debounceTimer.current) clearTimeout(debounceTimer.current);
-        };
-    }, [region]);
-
-    const handleNext = async () => {
-        if (step === 1 && !urgency) {
-            setError('현재 상황을 선택해 주세요.');
-            return;
-        }
-        if (step === 2) {
-            if (!region && userLocation?.type !== 'gps') {
-                setError('지역을 입력하거나 내 위치를 사용해 주세요.');
-                return;
-            }
-            // [NEW] Validation: If user entered text manually, check if it yields results
-            if (region) {
-                // Quick check using searchFacilitiesByRegion (limit 1)
-                // This prevents "Next" if no facilities exist for that region text
-                // Note: We skip this check if user chose "GPS" explicitly, but here we cover text case.
-                try {
-                    const check = await searchFacilitiesByRegion(region, 'funeral'); // Assuming funeral for now or generic
-                    if (!check || check.length === 0) {
-                        setError('해당 지역에는 등록된 장례식장이 없습니다. 다른 지역을 입력해 주세요.');
-                        return;
-                    }
-                } catch (e) {
-                    // ignore error, proceed? or block? 
-                    // block better
-                }
-            }
-        }
-        if (step === 3 && !scale) {
-            setError('조문객 규모를 선택해 주세요.');
-            return;
-        }
-        setError('');
-        setStep(prev => prev + 1);
-    };
-
-    const handleSubmit = () => {
-        if (priorities.length === 0) {
-            setError('하나 이상의 우선순위를 선택해 주세요.');
-            return;
-        }
-
-        // Structured JSON for recommended action
-        const searchData = {
-            category: initialCategory, // [FIX] Use dynamic category
-            urgency,
-            location: {
-                type: userLocation?.type === 'gps' && !region ? 'gps' : 'text',
-                lat: userLocation?.lat,
-                lng: userLocation?.lng,
-                text: region || '내 위치 주변'
-            },
-            scale,
-            priorities
-        };
-
-        const finalText = `[🏢 장례식장 상담 신청]\n상황: ${URGENCY_OPTIONS.find(o => o.id === urgency)?.label}\n지역: ${region || '내 위치 주변'}\n규모: ${SCALE_OPTIONS.find(o => o.id === scale)?.label}\n우선순위: ${priorities.join(', ')}`;
-
-        onSubmit({ text: finalText, data: searchData });
-    };
-
-    const togglePriority = (option: string) => {
-        setPriorities(prev =>
-            prev.includes(option) ? prev.filter(p => p !== option) : [...prev, option]
-        );
-        setError('');
-    };
-
-    return (
-        <div className="mt-3 bg-slate-50 border border-slate-200 rounded-xl p-4 w-full animate-in fade-in zoom-in-95 duration-300">
-            {/* Progress Steps */}
-            <div className="flex items-center justify-between mb-5 px-1">
-                {[1, 2, 3, 4].map(s => (
-                    <div key={s} className="flex-1 flex items-center">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${step >= s ? 'bg-slate-900 text-white' : 'bg-slate-200 text-slate-500'
-                            }`}>
-                            {s}
-                        </div>
-                        {s < 4 && <div className={`flex-1 h-px mx-1 ${step > s ? 'bg-slate-900' : 'bg-slate-200'}`} />}
-                    </div>
-                ))}
-            </div>
-
-            {/* Step 1: Urgency */}
-            {step === 1 && (
-                <div className="space-y-3">
-                    <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                        <AlertCircle size={14} className="text-red-500" />
-                        현재 상황이 어떠신가요?
-                    </label>
-                    <div className="flex flex-col gap-2">
-                        {URGENCY_OPTIONS.map(opt => (
-                            <button
-                                key={opt.id}
-                                onClick={() => { setUrgency(opt.id as any); setError(''); }}
-                                className={`text-left p-3 rounded-xl border transition-all ${urgency === opt.id
-                                    ? 'bg-slate-900 border-slate-900 text-white shadow-md'
-                                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                                    }`}
-                            >
-                                <div className="text-sm font-bold">{opt.label}</div>
-                                <div className={`text-[10px] mt-0.5 ${urgency === opt.id ? 'text-slate-400' : 'text-slate-400'}`}>{opt.sub}</div>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* Step 2: Location */}
-            {step === 2 && (
-                <div className="space-y-3">
-                    <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                        <MapPin size={14} className="text-indigo-600" />
-                        어느 지역의 장례식장을 찾으시나요?
-                    </label>
-
-                    <button
-                        onClick={() => { onGetCurrentPosition?.(); setRegion(''); setError(''); }}
-                        className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-sm font-medium transition-all ${userLocation?.type === 'gps' && !region
-                            ? 'bg-indigo-50 border-indigo-500 text-indigo-700'
-                            : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                            }`}
-                    >
-                        <MapPin size={16} />
-                        내 위치 주변 (GPS)
-                    </button>
-
-                    <div className="relative">
-                        <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t border-slate-200" />
-                        </div>
-                        <div className="relative flex justify-center text-[10px]">
-                            <span className="bg-slate-50 px-2 text-slate-400 uppercase">또는 직접 입력</span>
-                        </div>
-                    </div>
-
-                    <div className="relative">
-                        <input
-                            type="text"
-                            value={region}
-                            onChange={(e) => { setRegion(e.target.value); setError(''); }}
-                            onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
-                            onBlur={() => { setTimeout(() => setShowSuggestions(false), 200); }}
-                            placeholder="예: 서울 강남구, 부산진구"
-                            className="w-full bg-white border border-slate-300 rounded-xl px-3 py-3 text-sm focus:border-slate-900 focus:outline-none"
-                        />
-                        {/* [NEW] Suggestions Dropdown */}
-                        {showSuggestions && (
-                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
-                                {suggestions.map((s, i) => (
-                                    <button
-                                        key={i}
-                                        onClick={() => {
-                                            setRegion(s);
-                                            setShowSuggestions(false);
-                                            setError('');
-                                        }}
-                                        className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 border-b border-slate-50 last:border-none flex items-center gap-2"
-                                    >
-                                        <MapPin size={12} className="text-slate-400" />
-                                        {/* Highlight matching part */}
-                                        <span dangerouslySetInnerHTML={{
-                                            __html: s.replace(new RegExp(region, 'gi'), (match) => `<b>${match}</b>`)
-                                        }} />
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
-
-            {/* Step 3: Scale */}
-            {step === 3 && (
-                <div className="space-y-3">
-                    <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                        <Users size={14} className="text-indigo-600" />
-                        예상 조문객 수는 어느 정도인가요?
-                    </label>
-                    <div className="flex flex-col gap-2">
-                        {SCALE_OPTIONS.map(opt => (
-                            <button
-                                key={opt.id}
-                                onClick={() => { setScale(opt.id); setError(''); }}
-                                className={`text-left p-3 rounded-xl border transition-all ${scale === opt.id
-                                    ? 'bg-slate-900 border-slate-900 text-white shadow-md'
-                                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                                    }`}
-                            >
-                                <div className="text-sm font-bold">{opt.label}</div>
-                                <div className={`text-[10px] mt-0.5 ${scale === opt.id ? 'text-slate-400' : 'text-slate-400'}`}>{opt.sub}</div>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* Step 4: Priorities */}
-            {step === 4 && (
-                <div className="space-y-3">
-                    <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                        <Star size={14} className="text-indigo-600" />
-                        우선순위를 선택해 주세요 (중복 가능)
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                        {PRIORITY_OPTIONS.map(opt => (
-                            <button
-                                key={opt}
-                                onClick={() => togglePriority(opt)}
-                                className={`py-2 px-3 text-xs rounded-full border transition-all ${priorities.includes(opt)
-                                    ? 'bg-indigo-600 border-indigo-600 text-white font-bold shadow-sm'
-                                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                                    }`}
-                            >
-                                {opt}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* Error Message */}
-            {error && (
-                <div className="mt-3 flex items-center gap-1.5 text-red-500 text-[10px] animate-pulse">
-                    <AlertCircle size={10} />
-                    <span>{error}</span>
-                </div>
-            )}
-
-            {/* Navigation Buttons */}
-            <div className="mt-4 flex gap-2">
-                {step > 1 && (
-                    <button
-                        onClick={() => setStep(prev => prev - 1)}
-                        className="px-4 py-2 text-slate-500 text-xs hover:bg-slate-100 rounded-xl transition"
-                    >
-                        이전
-                    </button>
-                )}
-                <button
-                    onClick={step === 4 ? handleSubmit : handleNext}
-                    className="flex-1 bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold py-3 rounded-xl shadow-md active:scale-95 transition-all flex items-center justify-center gap-1"
-                >
-                    {step === 4 ? <><Check size={16} /> 최적의 장소 찾기</> : '다음 단계'}
-                </button>
-            </div>
-        </div>
-    );
-};
 
 export const ChatInterface: React.FC<Props> = ({
     facility,
@@ -568,6 +264,10 @@ export const ChatInterface: React.FC<Props> = ({
     const scrollRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
+    // [NEW] Modal State for ConsultationForm
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [formMode, setFormMode] = useState<'phone' | 'chat' | 'urgent'>('phone');
+
     // [Task 2] Dynamic Prompt Injection - Fetch latest facility data on chat open
     useEffect(() => {
         const fetchLatestFacilityData = async () => {
@@ -576,18 +276,19 @@ export const ChatInterface: React.FC<Props> = ({
             try {
                 const latestData = await getFacilityLatestInfo(facility.id.toString());
                 if (latestData) {
+                    const data = latestData as any; // Cast to any to handle Union type differences
                     // Merge latest DB data with existing facility object
                     setLiveFacility(prev => ({
                         ...prev,
-                        ...latestData,
+                        ...data,
                         // Ensure prices is properly formatted
-                        prices: latestData.prices || prev.prices || [],
+                        prices: data.prices || prev.prices || [],
                         // Map snake_case DB fields to camelCase Facility type
-                        aiContext: latestData.ai_context || (prev as any).aiContext,
-                        features: latestData.ai_features || prev.features,
-                        ai_welcome_message: latestData.ai_welcome_message || prev.ai_welcome_message,
+                        aiContext: data.ai_context || (prev as any).aiContext,
+                        features: data.ai_features || data.features || prev.features,
+                        ai_welcome_message: data.ai_welcome_message || prev.ai_welcome_message,
                     }));
-                    console.log('[Dynamic Prompt Injection] Loaded latest facility data:', latestData.name);
+                    console.log('[Dynamic Prompt Injection] Loaded latest facility data:', data.name);
                 }
             } catch (e) {
                 console.error('[Dynamic Prompt Injection] Failed to fetch latest data:', e);
@@ -635,9 +336,7 @@ export const ChatInterface: React.FC<Props> = ({
             (initialIntent === 'funeral_home' ? FAQ_LIST_FUNERAL :
                 (initialIntent ? FAQ_LIST_CONCIERGE : (facility.type === 'funeral' ? FAQ_LIST_FUNERAL : FAQ_LIST_CONCIERGE))));
 
-    // Check if a form is currently active in the chat
-    const lastMessage = messages[messages.length - 1];
-    const isFormActive = lastMessage?.action === 'SHOW_FORM_A';
+
 
     // Initial Greeting
     useEffect(() => {
@@ -681,8 +380,16 @@ export const ChatInterface: React.FC<Props> = ({
                 // Scenario C-like for specific facility
                 defaultWelcome = `안녕하세요. **${facility.name}** 반려동물 장례지도사입니다.\n소중한 아이와의 이별을 도와드리겠습니다. \n차분하고 아름다운 이별을 위해 무엇이든 물어보세요.`;
             } else if (isFuneralHome) {
-                // Scenario A-like for specific facility
-                defaultWelcome = `전화주셔서 감사합니다. **${facility.name}**입니다. \n빈소 현황이나 가격 등 궁금하신 점을 말씀해 주세요.`;
+                // [NEW] Auto-show consultation form for funeral facilities
+                defaultWelcome = `삼가 고인의 명복을 빕니다. **${facility.name}**에서 정성을 다해 모시겠습니다.\n\n아래 질문에 답변해 주시면 빠르게 도움드리겠습니다.`;
+                setMessages([{
+                    role: 'model',
+                    text: defaultWelcome,
+                    timestamp: new Date(),
+                    action: 'SHOW_FORM_A'
+                }]);
+                setTimeout(() => inputRef.current?.focus(), 100);
+                return; // Skip default setMessages below
             } else {
                 // Scenario B-like for specific facility
                 let contextText = "";
@@ -795,8 +502,33 @@ export const ChatInterface: React.FC<Props> = ({
         }
     };
 
+    // [Derived State] Check if an inline form is active in the chat
+    const isFormActive = messages.length > 0 && (
+        messages[messages.length - 1].action === 'SHOW_FORM_A' ||
+        messages[messages.length - 1].action === 'SHOW_FORM_B'
+    );
+
     return (
         <div className="flex flex-col h-full bg-slate-50 relative overflow-hidden shadow-inner">
+            {/* [NEW] Consultation Form Modal */}
+            {isFormOpen && (
+                <ConsultationForm
+                    company={facility as any} // Cast to match type
+                    mode={formMode}
+                    onClose={() => setIsFormOpen(false)}
+                    onSubmit={(data) => {
+                        console.log('Form Submitted:', data);
+                        setIsFormOpen(false);
+                        // Add system message confirming submission
+                        setMessages(prev => [...prev, {
+                            role: 'model',
+                            text: `✅ [${data.type}] ${data.name}님의 접수가 완료되었습니다.\n담당자가 확인 후 ${data.phone}으로 신속히 연락드리겠습니다.`,
+                            timestamp: new Date(),
+                            action: 'NONE'
+                        }]);
+                    }}
+                />
+            )}
 
             {/* Header Area */}
             <div className={`bg-slate-900 text-white p-5 pt-6 shadow-md z-10 shrink-0`}>
@@ -834,7 +566,10 @@ export const ChatInterface: React.FC<Props> = ({
                     </div>
                     {facility.id !== 'maum-i' && (
                         <button
-                            onClick={() => onAction('RESERVE')}
+                            onClick={() => {
+                                setFormMode('phone'); // [MODIFIED] Open detailed form ("General Reservation") by default
+                                setIsFormOpen(true);
+                            }}
                             className={`bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-full text-xs font-bold transition flex items-center gap-1 shadow-lg active:scale-95`}
                         >
                             <CalendarCheck size={14} />
@@ -862,11 +597,14 @@ export const ChatInterface: React.FC<Props> = ({
                                             <FuneralSearchForm
                                                 userLocation={userLocation}
                                                 onGetCurrentPosition={onGetCurrentPosition}
-                                                onSubmit={(payload) => handleSend(payload)}
+                                                onSubmit={(payload: { text: string; data: any }) => handleSend(payload)}
                                                 initialCategory={
                                                     initialIntent === 'pet_funeral' ? 'pet' :
                                                         initialIntent === 'memorial_facility' ? 'memorial' : 'funeral'
                                                 }
+                                                facilityId={facility.id.toString()}
+                                                facilityName={facility.name}
+                                                currentUser={currentUser}
                                             />
                                         )}
 
@@ -924,12 +662,23 @@ export const ChatInterface: React.FC<Props> = ({
                                         )}
 
                                         {/* Other Actions */}
-                                        {msg.action !== 'SHOW_FORM_A' && (msg.action !== 'RECOMMEND' || recommendedCandidates.length === 0) && (
+                                        {msg.action !== 'SHOW_FORM_A' && msg.action !== 'SHOW_FORM_B' && (msg.action !== 'RECOMMEND' || recommendedCandidates.length === 0) && (
                                             <button
-                                                onClick={() => onAction(msg.action!)}
-                                                className="mt-3 w-full bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition font-bold shadow-sm"
+                                                onClick={() => {
+                                                    if (msg.action === 'URGENT_DISPATCH') {
+                                                        setFormMode('urgent');
+                                                        setIsFormOpen(true);
+                                                    } else if (msg.action === 'RESERVE') {
+                                                        setFormMode('chat'); // Or 'phone' depending on preference
+                                                        setIsFormOpen(true);
+                                                    } else {
+                                                        onAction(msg.action!);
+                                                    }
+                                                }}
+                                                className={`mt-3 w-full bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition font-bold shadow-sm ${msg.action === 'URGENT_DISPATCH' ? 'border-red-200 bg-red-50 text-red-600 hover:bg-red-100' : ''}`}
                                             >
                                                 {msg.action === 'RESERVE' && <><CalendarCheck size={16} /> 예약 상담 접수</>}
+                                                {msg.action === 'URGENT_DISPATCH' && <><Siren size={16} /> 긴급 출동 접수</>}
                                                 {msg.action === 'MAP' && <><MapPin size={16} /> 오시는 길 보기</>}
                                                 {msg.action === 'CALL_MANAGER' && <><Phone size={16} /> 담당자 전화 연결</>}
                                                 {msg.action === 'RECOMMEND' && <><Sparkles size={16} /> 추천 결과 보기</>}

@@ -36,83 +36,95 @@ export const sendMessageToGemini = async (
   facility?: Facility | FuneralCompany
 ): Promise<AIResponse> => {
 
-  // 1. AI가 생각하는 척 연출 (1초 딜레이)
+  // 1. Mock Delay
   await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  // 2. 입력 메시지 정리 (공백 제거)
   const userMsg = message.trim();
 
-  // 3. 키워드 매칭 로직
+  // === [SCENARIO LOGIC] 5-Step Flow ===
+  // This logic attempts to follow the user's defined flow based on keywords.
 
-  // [NEW] 긴급/임종 상황 감지
-  if (userMsg.includes("긴급") || userMsg.includes("임종") || userMsg.includes("사망") || userMsg.includes("돌아가셨")) {
+  // [Step 1] Initial Status Check (Imminent/Death)
+  if (userMsg.includes("임종") || userMsg.includes("위독") || userMsg.includes("돌아가") || userMsg.includes("사망")) {
     return {
-      text: "🚨 **긴급 상황**으로 확인되었습니다.\n\n즉시 의전 팀을 출동시키기 위해 **[긴급 출동 접수]** 버튼을 눌러주세요.\n최우선으로 배정하여 빠르게 도착하겠습니다.",
+      text: `삼가 고인의 명복을 빕니다. 정성을 다해 모시겠습니다.\n\n현재 어떤 도움이 필요하신가요?\n\n1. **임종(운명)하셨습니다** (장례 접수)\n2. **임종이 임박**하여 미리 상담하고 싶습니다\n3. 단순 시설 이용 문의`,
+      action: 'NONE' // User selects option next
+    };
+  }
+
+  // [Step 1-Response] User selected "Imminent" or "Death" -> Ask Location
+  if (userMsg.includes("임종하") || userMsg.includes("운명") || userMsg.includes("접수")) {
+    return {
+      text: `현재 고인이 계신 곳은 어디인가요?\n(예: OO병원 응급실, 자택, 요양원 등)\n\n운구 차량(앰뷸런스)이 바로 필요하신가요?`,
+      action: 'NONE'
+    };
+  }
+
+  // [Step 2] Scale (Guest Count)
+  // If user mentions location or says "no ambulance", move to Scale
+  if (userMsg.includes("병원") || userMsg.includes("자택") || userMsg.includes("요양원") || userMsg.includes("없어") || userMsg.includes("필요")) {
+    return {
+      text: `확인했습니다. 곧 바로 조치해드리겠습니다.\n\n원활한 빈소 준비를 위해 **예상 조문객 수**를 알려주세요.\n\n- 50명 미만 (가족장/소규모)\n- 100~200명 (일반)\n- 300명 이상 (대규모)`,
+      action: 'NONE'
+    };
+  }
+
+  // [Step 3] Religion
+  // If user mentions number of people or scale
+  if (userMsg.includes("명") || userMsg.includes("가족장") || userMsg.includes("소규모")) {
+    return {
+      text: `빈소 규모를 확인했습니다.\n\n**장례를 진행할 종교**가 있으신가요?\n종교에 맞춰 제단과 의전을 준비해 드립니다.\n\n(불교, 기독교, 천주교, 무교 등)`,
+      action: 'NONE'
+    };
+  }
+
+  // [Step 4] Schedule (3-day vs 2-day)
+  // If user mentions religion
+  if (userMsg.includes("교") || userMsg.includes("불교") || userMsg.includes("무교")) {
+    return {
+      text: `알겠습니다.\n\n**장례 일정**은 어떻게 계획하고 계신가요?\n\n- **3일장** (일반적: 입실-입관-발인)\n- **2일장** (약식: 입실-내일 발인)`,
+      action: 'NONE'
+    };
+  }
+
+  // [Step 5] Summary & Reservation Trigger
+  // If user mentions days or schedule
+  if (userMsg.includes("일장") || userMsg.includes("일")) {
+    return {
+      text: `상담 내용을 요약해 드립니다.\n\n- **희망 빈소**: 고객님 요청 규모\n- **종교**: 입력하신 종교\n- **일정**: 입력하신 일정\n\n지금 바로 **상담 예약**을 남겨주시면, 담당자가 장례식장 예약을 확정해 드립니다.`,
+      action: 'RESERVE' // This triggers the form
+    };
+  }
+
+
+  // === [Existing/Utility Logic] ===
+
+  // Urgent Key override
+  if (userMsg === "긴급" || userMsg === "긴급 접수") {
+    return {
+      text: "🚨 **긴급 상황**입니다. 아래 버튼을 눌러 바로 접수해주세요.",
       action: 'URGENT_DISPATCH'
     };
   }
 
-  // [NEW] 상품 안내 요청 감지
-  if (userMsg.includes("상품") || userMsg.includes("종류") || userMsg.includes("패키지") || userMsg.includes("가입")) {
+  // Facility Search (Form A)
+  if (userMsg.includes("장례식장") && (userMsg.includes("찾아") || userMsg.includes("검색"))) {
     return {
-      text: `${facility?.name || '저희'}의 대표적인 **Best 3 상품**을 안내해 드립니다.\n\n3가지 핵심 구성을 살펴보시고, 더 맞춤형 설계가 필요하시다면 **상담 예약**을 남겨주세요.`,
-      action: 'SHOW_PRODUCTS'
+      text: "원하시는 장례식장을 찾기 위해 몇 가지 질문을 드릴게요.\n\n가장 중요하게 생각하시는 조건은 무엇인가요?",
+      action: 'SHOW_FORM_A'
     };
   }
 
-  // [NEW] 설문조사 제출 감지 및 추천 로직
-  if (userMsg.startsWith("[🏢 장례식장 상담 신청]") || userMsg.startsWith("[🌳 추모시설 상담 신청]")) {
+  // Memorial Search (Form B)
+  if ((userMsg.includes("납골당") || userMsg.includes("수목장")) && (userMsg.includes("찾아") || userMsg.includes("검색"))) {
     return {
-      action: "RECOMMEND",
-      text: "작성해주신 내용을 바탕으로 고객님께 가장 적합한 시설 3곳을 찾았습니다. \n\n위치와 예산을 고려하여 선별했습니다.",
-      // [MODIFIED] Remove mock 'facilities' data to trigger real DB search in frontend
-      data: {}
+      text: "고인을 편안히 모실 수 있는 추모시설을 찾아드릴게요.\n\n원하시는 지역이나 종교가 있으신가요?",
+      action: 'SHOW_FORM_B'
     };
   }
 
-  // [Case 1] 가격, 비용 관련 질문
-  if (userMsg.includes("가격") || userMsg.includes("비용") || userMsg.includes("얼마")) {
-    return {
-      text: "현재 저희 상품의 월 납입금은 **3만원대부터** 다양하게 준비되어 있습니다.\n구체적인 만기 환급금과 혜택은 **[상품 안내]**를 통해 확인하실 수 있습니다.",
-      action: 'SHOW_PRODUCTS' // Redirect to products
-    };
-  }
-
-  // [Case 2] 위치, 주소, 교통 관련 질문
-  if (userMsg.includes("위치") || userMsg.includes("어디") || userMsg.includes("가는 길") || userMsg.includes("주소")) {
-    return {
-      text: "저희는 **전국 직영망**을 운영하고 있어, 전국 어디서나 2시간 이내 출동이 가능합니다.\n가장 가까운 지점에서 즉시 찾아뵙겠습니다.",
-      action: 'NONE'
-    };
-  }
-
-  // [Case 3] 예약, 상담, 전화 관련 질문
-  if (userMsg.includes("예약") || userMsg.includes("전화") || userMsg.includes("상담") || userMsg.includes("번호")) {
-    return {
-      text: "상세 상담이 필요하신가요? \n**'전화 상담'** 버튼을 누르시면 전문 지도사와 바로 연결됩니다.",
-      action: 'RESERVE'
-    };
-  }
-
-  // [Case 4] 대학병원 장례식장
-  if (userMsg.includes("대학병원") || userMsg.includes("장례식장")) {
-    return {
-      text: "네, 저희는 전국의 모든 대학병원 장례식장과 제휴되어 있습니다.\n원하시는 장례식장이 있으시면 즉시 빈소 현황을 파악해 드립니다.",
-      action: 'RECOMMEND'
-    };
-  }
-
-  // [Case 5] 안사 인사/기본 대응
-  if (userMsg.includes("안녕") || userMsg.includes("반가")) {
-    return {
-      text: `반갑습니다! **${facility?.name || '상조 서비스'}** AI 상담사입니다.\n\n무엇을 도와드릴까요?\n\n- **상품 종류 보기**\n- **긴급 출동 요청**\n- **장례 절차 문의**`,
-      action: 'NONE'
-    };
-  }
-
-  // [Default] 키워드를 못 찾았을 때 나오는 기본 답변
+  // Default Fallback
   return {
-    text: "죄송합니다, 제가 아직 배우고 있는 단계라 정확히 이해하지 못했어요. 😅\n\n**'상품 보여줘'**, **'긴급 접수'**, **'상담 예약'** 처럼 핵심 단어로 질문해 주시면 빠르게 도와드릴게요!",
+    text: "죄송합니다, 잘 이해하지 못했습니다. **'장례식장 찾아줘'** 또는 **'긴급 접수'**라고 말씀해 주시면 도와드릴게요.",
     action: 'NONE'
   };
 };

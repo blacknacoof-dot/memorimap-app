@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { User, MessageSquare, Loader2, Settings2 } from 'lucide-react';
+import { User, MessageSquare, Loader2, Settings2, Calendar } from 'lucide-react';
 import { Reservation, Facility, Review, ViewState } from '../types';
 import { getUserReviews, deleteReview, getMyReservations, cancelReservation, getUserPhoneNumber } from '../lib/queries';
 import { ReviewCard } from './ReviewCard';
@@ -9,9 +9,9 @@ import { EditProfileModal } from './EditProfileModal';
 import { LegalModal } from './LegalModal';
 import { Info, Heart, Star } from 'lucide-react';
 import { favoriteService, Favorite } from '../services/favoriteService';
-import { useNavigate } from 'react-router-dom'; // If used, or rely on onNavigate
-// Actually onNavigate is passed as prop.
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { MyConsultations } from './dashboard/MyConsultations';
 
 interface Props {
     isLoggedIn: boolean;
@@ -38,7 +38,7 @@ export const MyPageView: React.FC<Props> = ({
     const [myReservations, setMyReservations] = useState<Reservation[]>(propReservations);
     const [isLoadingReviews, setIsLoadingReviews] = useState(false);
     const [isLoadingReservations, setIsLoadingReservations] = useState(false);
-    const [activeTab, setActiveTab] = useState<'pending' | 'confirmed' | 'cancelled' | 'favorites'>('pending');
+    const [activeTab, setActiveTab] = useState<'consultations' | 'pending' | 'confirmed' | 'cancelled' | 'favorites'>('consultations');
     const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
     const [showEditProfile, setShowEditProfile] = useState(false);
     const [showLegalModal, setShowLegalModal] = useState(false);
@@ -117,7 +117,7 @@ export const MyPageView: React.FC<Props> = ({
             const reviewToDelete = myReviews.find(r => r.id === id);
             if (!reviewToDelete) return;
 
-            await deleteReview(id, reviewToDelete.space_id);
+            await deleteReview(id);
             setMyReviews(prev => prev.filter(r => r.id !== id));
 
             if (onReviewDeleted) {
@@ -238,6 +238,16 @@ export const MyPageView: React.FC<Props> = ({
 
             <div className="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
                 <button
+                    onClick={() => setActiveTab('consultations')}
+                    className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors whitespace-nowrap flex items-center justify-center gap-1 ${activeTab === 'consultations'
+                        ? 'bg-primary text-white'
+                        : 'bg-white text-gray-600 hover:bg-gray-50'
+                        }`}
+                >
+                    <Calendar size={14} />
+                    상담
+                </button>
+                <button
                     onClick={() => setActiveTab('pending')}
                     className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'pending'
                         ? 'bg-primary text-white'
@@ -277,7 +287,9 @@ export const MyPageView: React.FC<Props> = ({
             </div>
 
             <div className="mb-8">
-                {activeTab === 'favorites' ? (
+                {activeTab === 'consultations' ? (
+                    <MyConsultations userId={user.id} />
+                ) : activeTab === 'favorites' ? (
                     isLoadingFavorites ? (
                         <div className="text-center py-10">
                             <Loader2 size={32} className="animate-spin text-primary mx-auto" />
