@@ -56,7 +56,7 @@ jobs:
     name: 🧪 E2E Tests
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
     
     steps:
       - name: 📥 Checkout repository
