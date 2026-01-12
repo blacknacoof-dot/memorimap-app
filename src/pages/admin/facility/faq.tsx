@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../../../lib/supabaseClient';
-import { useConfirmModal } from '../../../../components/common/ConfirmModal';
+import { useConfirmModal } from '../../../components/common/ConfirmModal';
+import { getUserFacility } from '../../../../lib/queries';
 
 interface FAQItem {
     id: number;
@@ -13,32 +14,69 @@ const FAQPage: React.FC = () => {
     const [editing, setEditing] = useState<FAQItem | null>(null);
     const [question, setQuestion] = useState('');
     const [answer, setAnswer] = useState('');
+    const [facilityId, setFacilityId] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
     const { open, close, isOpen, title, message, onConfirm } = useConfirmModal();
 
-    // Load FAQs on mount
+    // [FAQ DB Integration] Load facility ID and FAQs on mount
     useEffect(() => {
-        fetchFaqs();
+        const init = async () => {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    const fid = await getUserFacility(user.id);
+                    setFacilityId(fid);
+                }
+            } catch (e) {
+                console.error('Failed to get user facility:', e);
+            }
+            setLoading(false);
+        };
+        init();
     }, []);
 
+    useEffect(() => {
+        if (!loading) {
+            fetchFaqs();
+        }
+    }, [loading, facilityId]);
+
     const fetchFaqs = async () => {
-        const { data, error } = await supabase.from('bot_data').select('id, faq').maybeSingle();
+        // Query by facility_id (or null for global)
+        let query = supabase.from('bot_data').select('id, faq, facility_id');
+
+        if (facilityId) {
+            query = query.eq('facility_id', facilityId);
+        } else {
+            query = query.is('facility_id', null);
+        }
+
+        const { data, error } = await query.maybeSingle();
         if (error) {
             console.error('Failed to fetch FAQs', error);
             return;
         }
-        // Assume bot_data.faq is an array of {question, answer}
         const list = (data?.faq as any[]) || [];
         const mapped = list.map((item, idx) => ({ id: idx + 1, question: item.question, answer: item.answer }));
         setFaqs(mapped);
     };
 
     const handleSave = async () => {
-        // Prepare payload
         const newFaq = { question, answer };
-        const updated = editing ? faqs.map(f => (f.id === editing.id ? { ...f, ...newFaq } : f)) : [...faqs, { id: faqs.length + 1, ...newFaq }];
-        // Save to supabase (replace whole faq array)
-        const payload = { faq: updated.map(f => ({ question: f.question, answer: f.answer })) };
-        const { error } = await supabase.from('bot_data').upsert(payload, { onConflict: 'id' });
+        const updated = editing
+            ? faqs.map(f => (f.id === editing.id ? { ...f, ...newFaq } : f))
+            : [...faqs, { id: faqs.length + 1, ...newFaq }];
+
+        // [FAQ DB Integration] Save with facility_id
+        const payload: any = {
+            faq: updated.map(f => ({ question: f.question, answer: f.answer })),
+            facility_id: facilityId ? Number(facilityId) : null
+        };
+
+        const { error } = await supabase.from('bot_data').upsert(payload, {
+            onConflict: facilityId ? 'facility_id' : 'id'
+        });
+
         if (error) {
             console.error('Save failed', error);
         } else {
@@ -55,8 +93,14 @@ const FAQPage: React.FC = () => {
             message: '선택한 FAQ를 삭제하시겠습니까?',
             onConfirm: async () => {
                 const filtered = faqs.filter(f => f.id !== id);
-                const payload = { faq: filtered.map(f => ({ question: f.question, answer: f.answer })) };
-                const { error } = await supabase.from('bot_data').upsert(payload, { onConflict: 'id' });
+                // [FAQ DB Integration] Save with facility_id
+                const payload: any = {
+                    faq: filtered.map(f => ({ question: f.question, answer: f.answer })),
+                    facility_id: facilityId ? Number(facilityId) : null
+                };
+                const { error } = await supabase.from('bot_data').upsert(payload, {
+                    onConflict: facilityId ? 'facility_id' : 'id'
+                });
                 if (!error) setFaqs(filtered);
                 close();
             },

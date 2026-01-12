@@ -500,7 +500,37 @@ export const rejectReservation = async (id: string) => { console.log('STUB: reje
 export const getMyReservations = async (userId: string) => { console.log('STUB: getMyReservations'); return []; };
 export const cancelReservation = async (id: string) => { console.log('STUB: cancelReservation'); };
 export const getUserPhoneNumber = async (userId: string) => { console.log('STUB: getUserPhoneNumber'); return ''; };
-export const getFacilityFaqs = async (facilityId: string) => { console.log('STUB: getFacilityFaqs'); return []; };
+/**
+ * [FAQ DB Integration] 시설별 FAQ 조회 (없으면 글로벌 폴백)
+ */
+export const getFacilityFaqs = async (facilityId?: string): Promise<any[]> => {
+    try {
+        // 1. 시설별 FAQ 조회
+        if (facilityId) {
+            const { data, error } = await supabase
+                .from('bot_data')
+                .select('faq')
+                .eq('facility_id', facilityId)
+                .maybeSingle();
+
+            if (!error && data?.faq && Array.isArray(data.faq) && data.faq.length > 0) {
+                return data.faq;
+            }
+        }
+
+        // 2. 글로벌 FAQ 폴백 (facility_id = NULL)
+        const { data: globalData } = await supabase
+            .from('bot_data')
+            .select('faq')
+            .is('facility_id', null)
+            .maybeSingle();
+
+        return globalData?.faq || [];
+    } catch (e) {
+        console.error('Error fetching facility FAQs:', e);
+        return [];
+    }
+};
 
 /**
  * [호환성 패치] ReviewList.tsx가 옛날 함수명을 찾아도 작동하도록 연결

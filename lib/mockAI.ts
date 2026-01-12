@@ -1,7 +1,9 @@
 // Mock AI Responses for Memorial Consultation
 // This provides pre-written answers without requiring API keys
+// [FAQ DB Integration] Now supports facility-specific FAQ from database
 
 import { Facility } from "../types";
+import { getFacilityFaqs } from "./queries";
 
 interface MockResponse {
     keywords: string[];
@@ -155,16 +157,40 @@ export async function* getMockAIResponse(
     // Simulate typing delay
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    // Get dynamic responses based on facility type
-    const mockResponses = getMockResponses(facility);
-
-    // Find matching response
     const lowerMessage = userMessage.toLowerCase();
+    let response = "";
+
+    // [FAQ DB Integration] Step 1: Check DB FAQ first
+    try {
+        const dbFaqs = await getFacilityFaqs(facility.id?.toString());
+
+        if (dbFaqs && dbFaqs.length > 0) {
+            // Find matching FAQ by keyword in question
+            const dbMatch = dbFaqs.find((faq: any) => {
+                const questionKeywords = faq.question.toLowerCase().split(/\s+/);
+                return questionKeywords.some((word: string) =>
+                    word.length >= 2 && lowerMessage.includes(word)
+                );
+            });
+
+            if (dbMatch) {
+                // Stream DB FAQ answer
+                for (let i = 0; i < dbMatch.answer.length; i += 5) {
+                    yield dbMatch.answer.slice(i, i + 5);
+                    await new Promise(resolve => setTimeout(resolve, 10));
+                }
+                return;
+            }
+        }
+    } catch (e) {
+        console.error('[mockAI] DB FAQ fetch error:', e);
+    }
+
+    // Step 2: Fallback to hardcoded responses
+    const mockResponses = getMockResponses(facility);
     const matchedResponse = mockResponses.find(mock =>
         mock.keywords.some(keyword => lowerMessage.includes(keyword))
     );
-
-    let response = "";
 
     if (matchedResponse) {
         response = matchedResponse.response;
