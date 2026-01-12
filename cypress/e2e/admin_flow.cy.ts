@@ -1,3 +1,4 @@
+/// <reference types="cypress" />
 /**
  * Week 4: E2E Test - Admin Flow
  * 
