@@ -26,3 +26,4 @@ dist-ssr
 # Large data files
 fuzzy_matches.json
 full_price_update.json
+.vercel
