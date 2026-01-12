@@ -10,6 +10,33 @@ interface Props {
 }
 
 export const ReviewCard: React.FC<Props> = ({ review, isOwner, onDelete, facilityName }) => {
+    // 4. Name Masking Utility (Updated per User Request)
+    const getMaskedName = (originalName: string | null | undefined) => {
+        if (!originalName) return "익명";
+        if (originalName === '익명') return "익명";
+
+        // If already masked (contains '*'), return as is
+        if (originalName.includes('*')) return originalName;
+
+        const len = originalName.length;
+
+        // 1. 2 chars: 김철 -> 김*
+        if (len === 2) {
+            return originalName[0] + "*";
+        }
+
+        // 2. 3+ chars: 홍길동 -> 홍**, 남궁민수 -> 남** (성 + ** 형태)
+        if (len >= 3) {
+            return originalName[0] + "**";
+        }
+
+        return originalName;
+    };
+
+    const displayName = isOwner ? (review.userName || '익명') : getMaskedName(review.userName);
+
+    // console.log('Rendering Review:', { id: review.id, userName: review.userName, displayName }); 
+
     return (
         <div className="border-b last:border-0 pb-4 mb-2 animate-in fade-in slide-in-from-bottom-2">
             {facilityName && (
@@ -28,7 +55,7 @@ export const ReviewCard: React.FC<Props> = ({ review, isOwner, onDelete, facilit
                     </div>
                     <div>
                         <div className="font-bold text-sm text-gray-800 flex items-center gap-2">
-                            {review.userName}
+                            {displayName}
                             {isOwner && <span className="text-[10px] text-primary border border-primary px-1 rounded">내 리뷰</span>}
                         </div>
                         <div className="text-xs text-gray-400">{review.date}</div>

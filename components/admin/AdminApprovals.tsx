@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { getPendingFacilities, approveFacility, rejectFacility } from '../lib/queries';
+import { getPendingFacilities, approveFacility, rejectFacility } from '../../lib/queries';
 import { Loader2, Check, X, FileText, Building2 } from 'lucide-react';
+import { useConfirmModal } from '../../src/components/common/ConfirmModal';
 
 export const AdminApprovals: React.FC = () => {
     const [facilities, setFacilities] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+    const confirmModal = useConfirmModal();
 
     const loadData = async () => {
         setIsLoading(true);
@@ -18,20 +21,28 @@ export const AdminApprovals: React.FC = () => {
         loadData();
     }, []);
 
-    const handleApprove = async (id: string, name: string) => {
-        if (confirm(`${name} 업체의 입점을 승인하시겠습니까?`)) {
-            await approveFacility(id);
-            alert('승인되었습니다.');
-            loadData();
-        }
+    const handleApprove = (id: string, name: string) => {
+        confirmModal.open({
+            title: '입점 승인 확인',
+            message: `${name} 업체의 입점을 승인하시겠습니까?`,
+            onConfirm: async () => {
+                await approveFacility(id);
+                alert('승인되었습니다.');
+                loadData();
+            }
+        });
     };
 
-    const handleReject = async (id: string, name: string) => {
-        if (confirm(`${name} 업체의 입점을 거절(삭제)하시겠습니까?`)) {
-            await rejectFacility(id);
-            alert('거절되었습니다.');
-            loadData();
-        }
+    const handleReject = (id: string, name: string) => {
+        confirmModal.open({
+            title: '입점 반려 확인',
+            message: `${name} 업체의 입점을 거절(삭제)하시겠습니까?`,
+            onConfirm: async () => {
+                await rejectFacility(id);
+                alert('거절되었습니다.');
+                loadData();
+            }
+        });
     };
 
     if (isLoading) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-primary" /></div>;

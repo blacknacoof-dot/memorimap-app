@@ -509,6 +509,16 @@ export const getReviewsBySpace = getReviews;
 
 export const getFacilitySubscription = async (facilityId: string) => {
     try {
+        // [Fix] facility_subscriptions.facility_id is BIGINT, not UUID
+        // If facilityId looks like a UUID, skip the query to avoid type mismatch error
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
+        if (isUUID) {
+            // UUID means it's from 'facilities' table, not 'memorial_spaces' (BIGINT)
+            // Subscription feature only works with memorial_spaces for now
+            console.log('[getFacilitySubscription] Skipping for UUID facility:', facilityId);
+            return null;
+        }
+
         const { data, error } = await supabase
             .from('facility_subscriptions')
             .select(`
@@ -585,12 +595,17 @@ export const getUserRole = async (userId: string) => {
  */
 export const searchKnownFacilities = async (query: string, type?: string) => {
     // memorial_spaces 테이블 사용
-    const { data, error } = await supabase
+    let queryBuilder = supabase
         .from('memorial_spaces')
-        .select('id, name, address, category, owner_user_id') // Check owner_user_id
+        .select('id, name, address, type, owner_user_id') // Use correct column name
         .ilike('name', `%${query}%`)
-        .is('owner_user_id', null) // [Important] Only unclaim facilities
-        .limit(10);
+        .is('owner_user_id', null); // Only unclaimed facilities
+
+    if (type) {
+        queryBuilder = queryBuilder.eq('type', type);
+    }
+
+    const { data, error } = await queryBuilder.limit(10);
 
     if (error) {
         console.error('Error searching known facilities:', error);
@@ -642,7 +657,9 @@ export const submitPartnerApplication = async (data: any) => {
             business_license_url: licenseUrl,
             message: '',
             status: 'pending',
-            target_facility_id: data.targetFacilityId || null // [New]
+            target_facility_id: (data.targetFacilityId && !isNaN(Number(data.targetFacilityId)))
+                ? Number(data.targetFacilityId)
+                : null // [Fix] Only use numeric IDs, skip string IDs like "fc_new_1"
         }])
         .select()
         .single();
@@ -810,5 +827,101 @@ export const getAllSubscriptions = async () => {
     } catch (e) {
         console.error('Error fetching all subscriptions:', e);
         return [];
+    }
+};
+
+// --- 슈퍼 관리자 기능 (입점 관리) ---
+
+export const getPendingFacilities = async () => {
+    try {
+        const { data, error } = await supabase
+            .from('memorial_spaces')
+            .select('*')
+            .eq('is_verified', false)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        return (data || []).map((item: any) => ({
+            id: item.id?.toString(),
+            name: item.name,
+            type: item.type,
+            address: item.address,
+            phone: item.phone,
+            businessLicenseImage: item.business_license_image || null,
+            createdAt: item.created_at,
+            ownerUserId: item.owner_user_id
+        }));
+    } catch (e) {
+        console.error('getPendingFacilities error:', e);
+        return [];
+    }
+};
+
+export const approveFacility = async (facilityId: string) => {
+    try {
+        const { error } = await supabase
+            .from('memorial_spaces')
+            .update({
+                is_verified: true,
+                verified_at: new Date().toISOString()
+            })
+            .eq('id', facilityId);
+        if (error) throw error;
+    } catch (e) {
+        console.error('approveFacility error:', e);
+        throw e;
+    }
+};
+
+export const rejectFacility = async (facilityId: string, rejectionReason: string = "운영팀 문의 요망") => {
+    try {
+        // Update status to rejected with reason instead of deleting
+        const { error } = await supabase
+            .from('memorial_spaces')
+            .update({
+                status: 'rejected',
+                rejection_reason: rejectionReason
+            })
+            .eq('id', facilityId);
+        if (error) throw error;
+    } catch (e) {
+        console.error('rejectFacility error:', e);
+        throw e;
+    }
+};
+
+// --- [Task 2] Dynamic Prompt Injection ---
+// 채팅 시작 시 시설의 최신 정보를 실시간으로 가져옴
+
+export const getFacilityLatestInfo = async (facilityId: string) => {
+    try {
+        const { data, error } = await supabase
+            .from('memorial_spaces')
+            .select(`
+                id,
+                name,
+                address,
+                phone,
+                type,
+                prices,
+                operating_hours,
+                ai_context,
+                ai_features,
+                ai_welcome_message,
+                description
+            `)
+            .eq('id', facilityId)
+            .single();
+
+        if (error) {
+            console.error('getFacilityLatestInfo error:', error);
+            return null;
+        }
+
+        return data;
+    } catch (e) {
+        console.error('getFacilityLatestInfo exception:', e);
+        return null;
     }
 };

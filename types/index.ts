@@ -41,7 +41,8 @@ export interface FuneralCompany {
 
 export interface Review {
   id: string;
-  user_id: string;
+  userId: string; // [New] for identifying ownership
+  user_id: string; // Keeps compatibility with DB snake_case if used raw
   userName: string;
   userImage?: string;
   space_id: string;

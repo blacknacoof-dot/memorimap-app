@@ -2,33 +2,45 @@ import React, { useState } from 'react';
 import { usePartnerInquiries } from '../../hooks/useSuperAdmin';
 import { CheckCircle, XCircle, Search, FileText, Phone, MapPin, Building2, User, MessageSquare } from 'lucide-react';
 import { PartnerInquiry } from '../../types/db';
+import { useConfirmModal } from '../../src/components/common/ConfirmModal';
 
 export const PartnerAdmissions: React.FC = () => {
     const { data: facilities, loading: isLoading, refresh, approve, reject } = usePartnerInquiries();
     const [searchTerm, setSearchTerm] = useState('');
+    const confirmModal = useConfirmModal();
 
-    const handleApprove = async (inquiry: PartnerInquiry) => {
-        if (!confirm(`${inquiry.company_name} 업체의 입점을 승인하시겠습니까?`)) return;
-        try {
-            await approve(inquiry);
-            alert('승인되었습니다.');
-            refresh();
-        } catch (error) {
-            console.error('Approve failed:', error);
-            alert('승인 처리 중 오류가 발생했습니다.');
-        }
+    const handleApprove = (inquiry: PartnerInquiry) => {
+        confirmModal.open({
+            title: '입점 승인 확인',
+            message: `${inquiry.company_name} 업체의 입점을 승인하시겠습니까?`,
+            onConfirm: async () => {
+                try {
+                    await approve(inquiry);
+                    alert('승인되었습니다.');
+                    refresh();
+                } catch (error) {
+                    console.error('Approve failed:', error);
+                    alert('승인 처리 중 오류가 발생했습니다.');
+                }
+            }
+        });
     };
 
-    const handleReject = async (id: string, name: string) => {
-        if (!confirm(`${name} 업체의 입점을 거절하시겠습니까?`)) return;
-        try {
-            await reject(id);
-            alert('거절되었습니다.');
-            refresh();
-        } catch (error) {
-            console.error('Reject failed:', error);
-            alert('거절 처리 중 오류가 발생했습니다.');
-        }
+    const handleReject = (id: string, name: string) => {
+        confirmModal.open({
+            title: '입점 반려 확인',
+            message: `${name} 업체의 입점을 거절하시겠습니까? (반려 사유: "운영팀 문의 요망")`,
+            onConfirm: async () => {
+                try {
+                    await reject(id);
+                    alert('거절되었습니다.');
+                    refresh();
+                } catch (error) {
+                    console.error('Reject failed:', error);
+                    alert('거절 처리 중 오류가 발생했습니다.');
+                }
+            }
+        });
     };
 
     const [selectedTab, setSelectedTab] = useState('all');

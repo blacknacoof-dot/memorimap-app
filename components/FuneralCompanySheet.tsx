@@ -18,6 +18,48 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
     const [activeTab, setActiveTab] = useState<'info' | 'benefits' | 'price' | 'gallery' | 'reviews'>('info');
     const [isLiked, setIsLiked] = useState(false);
 
+    // Review Writing State
+    const [isWritingReview, setIsWritingReview] = useState(false);
+    const [reviewContent, setReviewContent] = useState('');
+    const [reviewRating, setReviewRating] = useState(5);
+    const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+
+    const handleSubmitReview = async () => {
+        if (!isLoggedIn || !currentUser) {
+            alert('로그인이 필요한 기능입니다.');
+            if (onOpenLogin) onOpenLogin();
+            return;
+        }
+
+        if (!reviewContent.trim()) {
+            alert('후기 내용을 입력해주세요.');
+            return;
+        }
+
+        setIsSubmittingReview(true);
+        try {
+            const { createReview } = await import('../lib/queries');
+            await createReview(
+                company.id,
+                currentUser.id,
+                reviewRating,
+                reviewContent,
+                [],
+                currentUser.name || currentUser.email?.split('@')[0] || '익명'
+            );
+
+            alert('소중한 후기가 등록되었습니다!');
+            setIsWritingReview(false);
+            setReviewContent('');
+            window.location.reload();
+        } catch (error) {
+            console.error('Review submission failed:', error);
+            alert('후기 등록 중 오류가 발생했습니다.');
+        } finally {
+            setIsSubmittingReview(false);
+        }
+    };
+
     // 1. Check Like Status
     useEffect(() => {
         const checkLikeStatus = async () => {
@@ -391,13 +433,70 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                             </div>
                         </div>
 
+                        {/* Write Review Section */}
+                        {!isWritingReview ? (
+                            <button
+                                onClick={async () => {
+                                    if (!isLoggedIn || !currentUser) {
+                                        alert('로그인이 필요한 기능입니다.');
+                                        if (onOpenLogin) onOpenLogin();
+                                        return;
+                                    }
+
+                                    // [New] Check Eligibility
+                                    const { checkReviewEligibility } = await import('../lib/queries');
+                                    const isEligible = await checkReviewEligibility(currentUser.id, company.id);
+
+                                    if (!isEligible) {
+                                        alert('후기 작성은 가입상담 신청 내역이 있는 고객님만 가능합니다.\n(상담 신청 후 승인이 완료되면 작성하실 수 있습니다.)');
+                                        return;
+                                    }
+
+                                    setIsWritingReview(true);
+                                }}
+                                className="w-full py-3 border border-dashed border-gray-300 rounded-xl text-gray-500 font-bold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 text-sm"
+                            >
+                                <MessageCircleQuestion size={18} />
+                                후기 작성하기
+                            </button>
+                        ) : (
+                            <div className="bg-gray-50 p-4 rounded-2xl border border-gray-200 animate-in fade-in zoom-in-95">
+                                <div className="flex justify-between items-center mb-3">
+                                    <h4 className="font-bold text-sm">후기 작성</h4>
+                                    <button onClick={() => setIsWritingReview(false)} className="text-gray-400 hover:text-gray-600">
+                                        <X size={16} />
+                                    </button>
+                                </div>
+                                <div className="flex mb-3 gap-1">
+                                    {[1, 2, 3, 4, 5].map((s) => (
+                                        <button key={s} onClick={() => setReviewRating(s)}>
+                                            <Star size={24} className={s <= reviewRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'} />
+                                        </button>
+                                    ))}
+                                </div>
+                                <textarea
+                                    className="w-full p-3 rounded-xl border border-gray-200 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-primary min-h-[100px]"
+                                    placeholder="솔직한 후기를 남겨주세요."
+                                    value={reviewContent}
+                                    onChange={(e) => setReviewContent(e.target.value)}
+                                />
+                                <button
+                                    onClick={handleSubmitReview}
+                                    disabled={isSubmittingReview}
+                                    className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                                >
+                                    {isSubmittingReview ? '등록 중...' : '후기 등록'}
+                                </button>
+                            </div>
+                        )}
+
                         <div className="space-y-4">
                             {company.reviews && company.reviews.length > 0 ? (
                                 company.reviews.map(review => (
                                     <ReviewCard
                                         key={review.id}
                                         review={review}
-                                        isOwner={false}
+                                        isOwner={currentUser && review.userId === currentUser.id}
                                         onDelete={() => { }}
                                     />
                                 ))

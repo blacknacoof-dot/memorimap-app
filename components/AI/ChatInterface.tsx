@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Facility } from '../../types';
 import { sendMessageToGemini, ChatMessage, ActionType } from '../../services/geminiService';
-import { getIntelligentRecommendations, createLead, getDistinctRegions, searchFacilitiesByRegion } from '../../lib/queries';
+import { getIntelligentRecommendations, createLead, getDistinctRegions, searchFacilitiesByRegion, getFacilityLatestInfo } from '../../lib/queries';
 import { MessageCircle, X, Send, MapPin, Phone, CalendarCheck, Loader2, Bot, Sparkles, ChevronLeft, Users, Star, AlertCircle, CheckCircle2, Check } from 'lucide-react';
 import { PetChatInterface } from '../Consultation/PetChatInterface';
 
@@ -564,8 +564,38 @@ export const ChatInterface: React.FC<Props> = ({
     const [isLoading, setIsLoading] = useState(false);
     const [recommendedCandidates, setRecommendedCandidates] = useState<Facility[]>([]);
     const [searchContext, setSearchContext] = useState<string>('');
+    const [liveFacility, setLiveFacility] = useState<Facility>(facility); // [Dynamic Prompt Injection] Live facility data
     const scrollRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+
+    // [Task 2] Dynamic Prompt Injection - Fetch latest facility data on chat open
+    useEffect(() => {
+        const fetchLatestFacilityData = async () => {
+            if (facility.id === 'maum-i') return; // Skip for Maum-i concierge
+
+            try {
+                const latestData = await getFacilityLatestInfo(facility.id.toString());
+                if (latestData) {
+                    // Merge latest DB data with existing facility object
+                    setLiveFacility(prev => ({
+                        ...prev,
+                        ...latestData,
+                        // Ensure prices is properly formatted
+                        prices: latestData.prices || prev.prices || [],
+                        // Map snake_case DB fields to camelCase Facility type
+                        aiContext: latestData.ai_context || (prev as any).aiContext,
+                        features: latestData.ai_features || prev.features,
+                        ai_welcome_message: latestData.ai_welcome_message || prev.ai_welcome_message,
+                    }));
+                    console.log('[Dynamic Prompt Injection] Loaded latest facility data:', latestData.name);
+                }
+            } catch (e) {
+                console.error('[Dynamic Prompt Injection] Failed to fetch latest data:', e);
+            }
+        };
+
+        fetchLatestFacilityData();
+    }, [facility.id]);
 
     // FAQ Chips (Dynamic based on facility type)
     const FAQ_LIST_FUNERAL = [
@@ -701,7 +731,7 @@ export const ChatInterface: React.FC<Props> = ({
         setIsLoading(true);
 
         try {
-            const response = await sendMessageToGemini(textToSend, messages, facility);
+            const response = await sendMessageToGemini(textToSend, messages, liveFacility); // [Dynamic Prompt Injection] Use live data
 
             const aiMsg: ChatMessage = {
                 role: 'model',

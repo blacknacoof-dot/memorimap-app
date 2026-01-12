@@ -13,7 +13,7 @@ import { Consultation } from './types/consultation';
 import { Menu, Search, Filter, Crosshair, Map as MapIcon, User, List, Settings, Scale, Ticket, X, Check, AlertCircle, Database, Shield, Award, ArrowLeft, Bot, Loader2 } from 'lucide-react';
 import { FACILITIES } from './constants';
 import { useUser, useClerk, useSession } from './lib/auth';
-import { supabase, isSupabaseConfigured } from './lib/supabaseClient';
+import { supabase, isSupabaseConfigured, setSupabaseAuth } from './lib/supabaseClient';
 import { useAuthSync } from './lib/useAuthSync';
 import { getFacilitySubscription, incrementAiUsage } from './lib/queries';
 import { FacilityList } from './components/FacilityList';
@@ -144,24 +144,26 @@ const App: React.FC = () => {
   const { session } = useSession();
 
   useEffect(() => {
-    const setSupabaseSession = async () => {
-      if (!session) return;
+    const syncSupabaseAuth = async () => {
+      if (!session) {
+        setSupabaseAuth(null);
+        return;
+      }
       try {
         const token = await session.getToken({ template: 'supabase' });
         if (token) {
-          // Set Clerk token as Supabase session (AccessToken)
-          await supabase.auth.setSession({
-            access_token: token,
-            refresh_token: 'dummy-refresh-token', // Clerk handles refresh, so this is dummy
-          });
-          console.log("✅ Supabase Session Set with Clerk Token");
+          console.log("🔄 Injecting Clerk Token into Supabase Client...");
+          setSupabaseAuth(token);
+        } else {
+          console.warn("⚠️ Clerk getToken returned null. Check 'supabase' template.");
         }
       } catch (err) {
-        console.error("Failed to set Supabase session:", err);
+        console.error("Failed to sync Supabase auth:", err);
       }
     };
-    setSupabaseSession();
+    syncSupabaseAuth();
   }, [session]);
+
   // ------------------------------------------
 
   // Helper to get display user info (Memoize to prevent infinite re-fetches)
@@ -471,8 +473,12 @@ const App: React.FC = () => {
   // Validate & Fetch Details Helper
   const fetchFacilityDetails = async (facilityId: string) => {
     try {
+      // Determine table based on ID format (UUID vs BigInt)
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
+      const tableName = isUUID ? 'facilities' : 'memorial_spaces';
+
       const { data, error } = await supabase
-        .from('memorial_spaces') // Correct table for Sangjo & numeric IDs
+        .from(tableName) // Dynamic table selection
         .select('*')
         .eq('id', facilityId)
         .single();
@@ -480,7 +486,10 @@ const App: React.FC = () => {
       if (error) throw error;
 
       // ✅ [DEBUG] Check data structure from DB
-      console.log('✅ [DEBUG] Fetched Data from memorial_spaces:', data);
+      console.log(`✅ [DEBUG] Fetched Data from ${tableName}:`, data);
+
+      // ✅ [DEBUG] Check fetched reviews
+      // console.log('✅ [DEBUG] Reviews:', reviews);
 
       if (data) {
         // Fetch subscription, reviews and images
@@ -491,11 +500,18 @@ const App: React.FC = () => {
         // getReviewsBySpace uses 'facility_reviews'.
         // So they should work IF the foreign keys are valid or logic doesnt strictly join.
         // Actually logic:
-        const [subscription, reviews, images] = await Promise.all([
+        const [subscription, rawReviews, images] = await Promise.all([
           getFacilitySubscription(facilityId),
           import('./lib/queries').then(m => m.getReviewsBySpace(facilityId)),
           import('./lib/queries').then(m => m.getFacilityImages(facilityId))
         ]);
+
+        // Force Map Reviews (Double safety against mapping failure in queries.ts)
+        const reviews = (rawReviews || []).map((r: any) => ({
+          ...r,
+          userName: r.userName || r.user_name || '익명',
+          date: r.date || (r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : '')
+        }));
 
         // Map Category
         let type: any = 'charnel';
@@ -632,6 +648,7 @@ const App: React.FC = () => {
   const handleAddReview = (facilityId: string, content: string, rating: number) => {
     const newReview: Review = {
       id: `r-new-${Date.now()}`,
+      userId: user?.id || 'anon',
       user_id: user?.id || 'anon',
       space_id: facilityId,
       userName: userInfo?.name || '익명',
@@ -1074,7 +1091,13 @@ const App: React.FC = () => {
               const mergedCompany = {
                 ...company,
                 products: productData,
-                reviews: reviewData // Attach fetched reviews
+                // [FIX] Map user_name to userName for ReviewCard compatibility
+                reviews: reviewData.map((r: any) => ({
+                  ...r,
+                  userName: r.user_name || '익명',
+                  userId: r.user_id,
+                  date: r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : ''
+                }))
               };
 
               setSelectedFuneralCompany(mergedCompany);
