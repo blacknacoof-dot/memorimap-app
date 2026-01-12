@@ -1,17 +1,14 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Configuration: Prioritize Vite env vars
-const getEnv = (key: string) => {
-  if (import.meta.env && import.meta.env[key]) return import.meta.env[key];
-  if (typeof process !== 'undefined' && process.env && process.env[key]) return process.env[key];
-  return undefined;
-};
-
-const supabaseUrl = getEnv('VITE_SUPABASE_URL') || getEnv('REACT_APP_SUPABASE_URL');
-const supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY') || getEnv('REACT_APP_SUPABASE_ANON_KEY');
+// Vite requires STATIC references to import.meta.env.VITE_* for build-time replacement
+// Dynamic access like import.meta.env[key] does NOT work!
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase URL or Key is missing. Check your .env file.');
+  console.warn('Supabase URL or Key is missing. Check your environment variables.');
+  console.warn('VITE_SUPABASE_URL:', supabaseUrl ? 'SET' : 'MISSING');
+  console.warn('VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'SET' : 'MISSING');
 }
 
 // 1. Create the default anonymous client
