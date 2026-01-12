@@ -584,7 +584,7 @@ export const ChatInterface: React.FC<Props> = ({
                         prices: latestData.prices || prev.prices || [],
                         // Map snake_case DB fields to camelCase Facility type
                         aiContext: latestData.ai_context || (prev as any).aiContext,
-                        features: latestData.ai_features || prev.features,
+                        features: latestData.features || prev.features,
                         ai_welcome_message: latestData.ai_welcome_message || prev.ai_welcome_message,
                     }));
                     console.log('[Dynamic Prompt Injection] Loaded latest facility data:', latestData.name);

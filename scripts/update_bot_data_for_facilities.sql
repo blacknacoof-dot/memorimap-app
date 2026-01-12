@@ -10,10 +10,11 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_bot_data_facility_id
 ON public.bot_data(facility_id) 
 WHERE facility_id IS NOT NULL;
 
--- 3. Drop old RLS policies to recreate them
+-- 3. Drop ALL old RLS policies to recreate them (idempotent)
 DROP POLICY IF EXISTS "Admins can do everything on bot_data" ON public.bot_data;
 DROP POLICY IF EXISTS "Public can read bot_data" ON public.bot_data;
 DROP POLICY IF EXISTS "Facility owners can manage their FAQ" ON public.bot_data;
+DROP POLICY IF EXISTS "Super admins can manage global FAQ" ON public.bot_data;
 
 -- 4. Create new RLS policies
 

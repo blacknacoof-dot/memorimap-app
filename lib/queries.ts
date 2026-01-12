@@ -937,7 +937,7 @@ export const getFacilityLatestInfo = async (facilityId: string) => {
                 prices,
                 operating_hours,
                 ai_context,
-                ai_features,
+                features,
                 ai_welcome_message,
                 description
             `)
