@@ -496,7 +496,7 @@ export const getFacilityReservations = async (facilityId: string) => {
     }));
 };
 export const approveReservation = async (id: string) => { console.log('STUB: approveReservation'); };
-export const rejectReservation = async (id: string) => { console.log('STUB: rejectReservation'); };
+export const rejectReservation = async (id: string, reason?: string) => { console.log('STUB: rejectReservation', id, reason); };
 export const getMyReservations = async (userId: string) => { console.log('STUB: getMyReservations'); return []; };
 export const cancelReservation = async (id: string) => { console.log('STUB: cancelReservation'); };
 export const getUserPhoneNumber = async (userId: string) => { console.log('STUB: getUserPhoneNumber'); return ''; };

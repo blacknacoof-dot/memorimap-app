@@ -10,6 +10,7 @@ import { PartnerAdmissions } from './PartnerAdmissions';
 import { UserManagement } from './UserManagement';
 import { FacilityManagement } from './FacilityManagement';
 import { NoticeManager } from '../dashboard/super-admin/NoticeManager';
+import { ConfirmModal } from '../../src/components/common/ConfirmModal';
 
 /** [MOCK DATA] */
 const MOCK_DATA = {
@@ -71,7 +72,7 @@ const SideMenuDrawer = ({ isOpen, onClose, onNavigate }: { isOpen: boolean; onCl
                     <div className="px-4 mb-2 text-xs font-semibold text-slate-400 uppercase">운영 관리</div>
                     <nav className="space-y-1 px-2">
                         {[
-                            { icon: ShieldCheck, label: '입점 승인 관리', id: 'admissions' },
+                            { icon: ShieldCheck, label: '입점 승인 관리', id: 'admissions', testId: 'admissions-tab' },
                             { icon: Building2, label: '시설 통합 관리', id: 'facilities' },
                             { icon: Users, label: '회원/권한 관리', id: 'users' },
                             { icon: FileText, label: '공지사항 관리', id: 'notices' },
@@ -79,6 +80,7 @@ const SideMenuDrawer = ({ isOpen, onClose, onNavigate }: { isOpen: boolean; onCl
                             <button
                                 key={item.id}
                                 onClick={() => handleNavigation(item.id)}
+                                data-testid={item.testId}
                                 className="w-full flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg transition-colors"
                             >
                                 <item.icon className="w-5 h-5" />
@@ -473,6 +475,7 @@ export default function SuperAdminDashboard() {
                 {activeTab === 'facilities' && <FacilityManagement />}
                 {activeTab === 'users' && <UserManagement />}
                 {activeTab === 'notices' && <NoticeManager />}
+                <ConfirmModal />
             </main>
         </div>
     );

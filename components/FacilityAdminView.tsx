@@ -4,7 +4,9 @@ import { getFacilityReservations, approveReservation, rejectReservation, getUser
 import { ReservationList } from './ReservationList';
 import { ReservationDetailModal } from './ReservationDetailModal';
 import { FacilityEditModal } from './FacilityEditModal';
-import { Loader2, CheckCircle, XCircle, Clock, ArrowLeft, Home, Edit, Building2, MapPin, Phone, ArrowRight, Siren } from 'lucide-react';
+import { FacilityFAQManager } from './FacilityFAQManager';
+import { ConfirmModal } from '../src/components/common/ConfirmModal';
+import { Loader2, CheckCircle, XCircle, Clock, ArrowLeft, Home, Edit, Building2, MapPin, Phone, ArrowRight, Siren, HelpCircle } from 'lucide-react';
 
 interface Props {
     user: any;
@@ -16,7 +18,7 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
     const [myFacilityId, setMyFacilityId] = useState<string | null>(null);
     const [reservations, setReservations] = useState<Reservation[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'pending' | 'confirmed' | 'cancelled'>('pending');
+    const [activeTab, setActiveTab] = useState<'pending' | 'confirmed' | 'cancelled' | 'faq'>('pending');
     const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
     const [editingFacility, setEditingFacility] = useState<Facility | null>(null);
     const [subscription, setSubscription] = useState<any>(null);
@@ -249,10 +251,24 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
                 >
                     취소 ({reservations.filter(r => r.status === 'cancelled').length})
                 </button>
+                <button
+                    onClick={() => setActiveTab('faq')}
+                    className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${activeTab === 'faq'
+                        ? 'bg-primary text-white'
+                        : 'bg-white text-gray-600 hover:bg-gray-50'
+                        }`}
+                    data-testid="faq-tab"
+                >
+                    <div className="flex items-center justify-center gap-1">
+                        <HelpCircle size={16} /> FAQ
+                    </div>
+                </button>
             </div>
 
-            {/* Reservation List */}
-            {isLoading ? (
+            {/* Content Area */}
+            {activeTab === 'faq' ? (
+                <FacilityFAQManager />
+            ) : isLoading ? (
                 <div className="text-center py-10">
                     <Loader2 size={32} className="animate-spin text-primary mx-auto" />
                 </div>
@@ -267,6 +283,8 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
                     }
                 />
             ) : null}
+
+            <ConfirmModal />
 
             {/* Reservation Detail Modal with Admin Actions */}
             {selectedReservation && (

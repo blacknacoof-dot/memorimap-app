@@ -79,14 +79,14 @@ export const PartnerAdmissions: React.FC = () => {
             </div>
 
             {/* List */}
-            <div className="space-y-3">
+            <div className="space-y-3" data-testid="pending-list">
                 {filtered.length === 0 ? (
                     <div className="text-center py-12 text-gray-500 bg-white rounded-xl border">
                         {isLoading ? '데이터를 불러오는 중...' : '승인 대기 중인 업체가 없습니다.'}
                     </div>
                 ) : (
                     filtered.map(f => (
-                        <div key={f.id} className="bg-white p-6 rounded-xl border shadow-sm flex flex-col md:flex-row gap-6 items-start md:items-center justify-between hover:border-blue-200 transition-all">
+                        <div key={f.id} data-testid="pending-item" className="bg-white p-6 rounded-xl border shadow-sm flex flex-col md:flex-row gap-6 items-start md:items-center justify-between hover:border-blue-200 transition-all">
                             <div className="flex-1 space-y-2 w-full">
                                 <div className="flex flex-wrap items-center gap-2">
                                     <h3 className="text-lg font-bold text-gray-900">{f.company_name}</h3>
@@ -131,12 +131,14 @@ export const PartnerAdmissions: React.FC = () => {
                             <div className="flex gap-2 w-full md:w-auto mt-4 md:mt-0">
                                 <button
                                     onClick={() => handleApprove(f)}
+                                    data-testid="approve-button"
                                     className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-bold text-sm transition-all shadow-md active:scale-95 whitespace-nowrap"
                                 >
                                     <CheckCircle size={18} /> 승인
                                 </button>
                                 <button
                                     onClick={() => handleReject(f.id, f.company_name)}
+                                    data-testid="reject-button"
                                     className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-6 py-2.5 bg-red-50 text-red-600 border border-red-100 rounded-xl hover:bg-red-100 font-bold text-sm transition-all active:scale-95 whitespace-nowrap"
                                 >
                                     <XCircle size={18} /> 거절
