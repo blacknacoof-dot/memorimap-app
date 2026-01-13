@@ -7,7 +7,8 @@ interface ConfirmModalState {
     message: string;
     requireCheckbox?: boolean;
     onConfirm: (() => void) | null;
-    open: (params: { title: string; message: string; onConfirm: () => void; requireCheckbox?: boolean }) => void;
+    onCancel: (() => void) | null;
+    open: (params: { title: string; message: string; onConfirm: () => void; onCancel?: () => void; requireCheckbox?: boolean }) => void;
     close: () => void;
 }
 
@@ -17,13 +18,14 @@ export const useConfirmModal = create<ConfirmModalState>((set: (partial: Partial
     message: '',
     requireCheckbox: false,
     onConfirm: null,
-    open: ({ title, message, onConfirm, requireCheckbox }) =>
-        set({ isOpen: true, title, message, onConfirm, requireCheckbox: requireCheckbox || false }),
-    close: () => set({ isOpen: false, title: '', message: '', onConfirm: null, requireCheckbox: false }),
+    onCancel: null,
+    open: ({ title, message, onConfirm, onCancel, requireCheckbox }) =>
+        set({ isOpen: true, title, message, onConfirm, onCancel: onCancel || null, requireCheckbox: requireCheckbox || false }),
+    close: () => set({ isOpen: false, title: '', message: '', onConfirm: null, onCancel: null, requireCheckbox: false }),
 }));
 
 export const ConfirmModal: React.FC = () => {
-    const { isOpen, title, message, requireCheckbox, onConfirm, close } = useConfirmModal();
+    const { isOpen, title, message, requireCheckbox, onConfirm, onCancel, close } = useConfirmModal();
     const [isConfirmed, setIsConfirmed] = useState(false);
 
     if (!isOpen) return null;
@@ -35,6 +37,7 @@ export const ConfirmModal: React.FC = () => {
     };
 
     const handleClose = () => {
+        if (onCancel) onCancel();
         close();
         setIsConfirmed(false); // Reset for next time
     };

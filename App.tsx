@@ -437,7 +437,6 @@ const App: React.FC = () => {
         if (selectedFilter === '장례식장' && f.type !== 'funeral') return false;
         if (selectedFilter === '봉안시설' && f.type !== 'charnel') return false;
         if (selectedFilter === '자연장' && f.type !== 'natural') return false;
-        if (selectedFilter === '해양장' && f.type === 'sea') return true;
         if (selectedFilter === '해양장' && f.type !== 'sea') return false;
         if (selectedFilter === '동물장례' && f.type !== 'pet') return false;
       }

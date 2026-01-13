@@ -5,7 +5,8 @@ import { getIntelligentRecommendations, createLead, getDistinctRegions, searchFa
 import { MessageCircle, X, Send, MapPin, Phone, CalendarCheck, Loader2, Bot, Sparkles, ChevronLeft, Users, Star, AlertCircle, CheckCircle2, Check, Siren } from 'lucide-react';
 import { PetChatInterface } from '../Consultation/PetChatInterface';
 import { ConsultationForm } from '../Consultation/BrandChatHelpers';
-import FuneralSearchForm from './FuneralSearchForm'; // [NEW] Import separate component
+import FuneralSearchForm from './FuneralSearchForm';
+import { useClerk } from '../../lib/auth'; // For login modal
 
 interface Props {
     facility: Facility;
@@ -245,6 +246,7 @@ export const ChatInterface: React.FC<Props> = ({
     handoverContext
 }) => {
 
+    const { openSignIn } = useClerk(); // For login modal
     const isPetFacility = facility.type === 'pet' || initialIntent === 'pet_funeral';
 
     if (isPetFacility && facility.id !== 'maum-i') {
@@ -598,6 +600,11 @@ export const ChatInterface: React.FC<Props> = ({
                                                 userLocation={userLocation}
                                                 onGetCurrentPosition={onGetCurrentPosition}
                                                 onSubmit={(payload: { text: string; data: any }) => handleSend(payload)}
+                                                onClose={onClose}
+                                                onLoginRequired={() => {
+                                                    onClose();
+                                                    openSignIn(); // Open Clerk login modal
+                                                }}
                                                 initialCategory={
                                                     initialIntent === 'pet_funeral' ? 'pet' :
                                                         initialIntent === 'memorial_facility' ? 'memorial' : 'funeral'
