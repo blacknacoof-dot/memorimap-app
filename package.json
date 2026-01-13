@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "cypress:run": "cypress run",
+    "cypress:open": "cypress open",
     "build": "vite build",
     "preview": "vite preview"
   },

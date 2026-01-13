@@ -40,7 +40,6 @@ export const FuneralCompanyView: React.FC<Props> = ({
                     .from('memorial_spaces')
                     .select('*')
                     .eq('type', 'sangjo')
-                    .eq('is_verified', true)
                     .order('id', { ascending: true });
 
                 if (data && data.length > 0) {
@@ -92,7 +91,7 @@ export const FuneralCompanyView: React.FC<Props> = ({
     );
 
     return (
-        <div className="h-full flex flex-col bg-gray-50 pt-24 relative">
+        <div className="h-full flex flex-col bg-gray-50 pt-4 relative">
             {/* Search Header */}
             <div className="px-4 mb-6 shrink-0">
                 <div className="flex items-center justify-between mb-4">

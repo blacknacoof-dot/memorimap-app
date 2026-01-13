@@ -80,7 +80,15 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
                         setShowResults(true);
                     } else {
                         // Search DB for facilities
-                        const results = await searchKnownFacilities(formData.companyName, formData.type);
+                        // Map UI type to DB type
+                        const typeMap: Record<string, string> = {
+                            'funeral_home': 'funeral',
+                            'memorial_park': 'charnel',
+                            'sea': 'sea',
+                            'pet': 'pet'
+                        };
+                        const dbType = typeMap[formData.type] || formData.type;
+                        const results = await searchKnownFacilities(formData.companyName, dbType);
                         setSearchResults(results);
                         setShowResults(true);
                     }

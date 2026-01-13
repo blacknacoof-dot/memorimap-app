@@ -591,15 +591,15 @@ export const getUserRole = async (userId: string) => {
  * [추가] 파트너 신청용: 기존 시설 검색
  */
 /**
- * [추가] 파트너 신청용: 기존 시설 검색 (주인 없는 시설만 검색)
+ * [추가] 파트너 신청용: 기존 시설 검색 (모든 시설 검색 - UI에서 owner 여부 표시)
  */
 export const searchKnownFacilities = async (query: string, type?: string) => {
     // memorial_spaces 테이블 사용
     let queryBuilder = supabase
         .from('memorial_spaces')
-        .select('id, name, address, type, owner_user_id') // Use correct column name
-        .ilike('name', `%${query}%`)
-        .is('owner_user_id', null); // Only unclaimed facilities
+        .select('id, name, address, type, owner_user_id')
+        .ilike('name', `%${query}%`);
+    // Note: Removed owner_user_id filter - show all facilities, UI will warn if already claimed
 
     if (type) {
         queryBuilder = queryBuilder.eq('type', type);
@@ -647,9 +647,12 @@ export const submitPartnerApplication = async (data: any) => {
         .insert([{
             user_id: data.userId,
             company_name: data.name,
+            type: data.type, // [Fix] Add required type field
             business_type: data.type,
             contact_person: data.managerName,
-            contact_number: data.phone,
+            manager_name: data.managerName,
+            contact_number: data.phone || data.managerMobile,
+            phone: data.phone || data.managerMobile,
             manager_mobile: data.managerMobile,
             company_email: data.companyEmail,
             email: data.email,
@@ -659,7 +662,7 @@ export const submitPartnerApplication = async (data: any) => {
             status: 'pending',
             target_facility_id: (data.targetFacilityId && !isNaN(Number(data.targetFacilityId)))
                 ? Number(data.targetFacilityId)
-                : null // [Fix] Only use numeric IDs, skip string IDs like "fc_new_1"
+                : null
         }])
         .select()
         .single();
@@ -1003,6 +1006,37 @@ export const createFuneralConsultation = async (data: ConsultationData): Promise
     }
 };
 
+export const createMemorialConsultation = async (data: {
+    facility_id: number;
+    user_id?: string;
+    user_name?: string;
+    user_phone?: string;
+    mode: string; // 'urgent' | 'prepare'
+    religion?: string;
+    budget?: string;
+    lighting?: string;
+    tier?: string;
+    preferences?: any;
+}): Promise<any | null> => {
+    try {
+        const { data: result, error } = await supabase
+            .from('memorial_consultations')
+            .insert({
+                ...data,
+                status: 'pending'
+            })
+            .select()
+            .single();
+        if (error) {
+            console.error('createMemorialConsultation error:', error);
+            return null;
+        }
+        return result;
+    } catch (e) {
+        console.error('createMemorialConsultation exception:', e);
+        return null;
+    }
+};
 /**
  * Get consultations by facility ID (for facility dashboard)
  */

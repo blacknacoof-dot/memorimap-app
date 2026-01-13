@@ -6,6 +6,8 @@ interface FormProps {
     userLocation?: { lat: number; lng: number; type: string };
     onGetCurrentPosition?: () => void;
     onSubmit: (data: { text: string; data: any }) => void;
+    onClose?: () => void;
+    onLoginRequired?: () => void;
     initialCategory?: string;
     facilityId?: string;
     facilityName?: string;
@@ -14,6 +16,8 @@ interface FormProps {
 
 const FuneralSearchForm: React.FC<FormProps> = ({
     onSubmit,
+    onClose,
+    onLoginRequired,
     initialCategory = 'funeral',
     facilityId,
     facilityName,
@@ -139,9 +143,14 @@ const FuneralSearchForm: React.FC<FormProps> = ({
 
         setIsSaving(false);
 
-        // Move to completion step
-        setIsSubmitted(true);
-        setStep(6);
+        // Close chat after successful submission (no completion message in chat)
+        if (onClose) {
+            onClose();
+        } else {
+            // Fallback: show completion step if onClose not provided
+            setIsSubmitted(true);
+            setStep(6);
+        }
     };
 
     const handleReset = () => {
@@ -192,11 +201,38 @@ const FuneralSearchForm: React.FC<FormProps> = ({
         </button>
     );
 
-    // Step 6: Completion Screen
+    // Login Required Screen
+    if (!currentUser) {
+        return (
+            <div className="space-y-4">
+                <div className="flex gap-2 mb-3">
+                    <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-white text-xs shrink-0">
+                        AI
+                    </div>
+                    <div className="bg-amber-50 border border-amber-200 rounded-2xl rounded-tl-sm p-4 max-w-[85%] shadow-sm">
+                        <p className="text-sm text-amber-800 font-bold mb-1">🔐 로그인이 필요합니다</p>
+                        <p className="text-xs text-amber-700 leading-relaxed">
+                            상담 접수 및 내역 조회를 위해 로그인이 필요합니다.<br />
+                            로그인 후 다시 시도해 주세요.
+                        </p>
+                    </div>
+                </div>
+                <div className="pl-10">
+                    <button
+                        onClick={() => onLoginRequired?.()}
+                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-3 rounded-xl shadow-md transition-all"
+                    >
+                        로그인하기
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    // Step 6: Completion Screen (fallback if onClose not provided)
     if (isSubmitted) {
         return (
             <div className="space-y-4">
-                {/* Completion Message */}
                 <div className="flex gap-2 mb-3">
                     <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xs shrink-0">
                         ✓
@@ -204,13 +240,10 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                     <div className="bg-emerald-50 border border-emerald-200 rounded-2xl rounded-tl-sm p-4 max-w-[85%] shadow-sm">
                         <p className="text-sm text-emerald-800 font-bold mb-1">✅ 상담 접수가 완료되었습니다.</p>
                         <p className="text-xs text-emerald-700 leading-relaxed">
-                            담당자가 확인 후 빠른 시간 내에 연락드리겠습니다.<br />
-                            긴급한 경우 상단의 <strong>바로 예약하기</strong> 버튼을 눌러주세요.
+                            담당자가 확인 후 빠른 시간 내에 연락드리겠습니다.
                         </p>
                     </div>
                 </div>
-
-                {/* Action Buttons */}
                 <div className="pl-10 space-y-2">
                     <button
                         onClick={handleReset}
