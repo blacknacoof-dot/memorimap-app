@@ -95,7 +95,10 @@ export const FuneralCompanyView: React.FC<Props> = ({
             {/* Search Header */}
             <div className="px-4 mb-2 shrink-0">
                 <div className="flex items-center justify-between mb-2">
-                    <h2 className="font-bold text-lg text-gray-800">상조 서비스 추천</h2>
+                    <div className="flex items-center gap-2">
+                        <h2 className="font-bold text-lg text-gray-800">상조 서비스 추천</h2>
+                        <span className="text-[9px] text-gray-300 font-mono">v1.2</span>
+                    </div>
                     <div className="bg-primary/10 text-primary px-2 py-0.5 rounded text-[10px] font-bold">
                         추모맵 단독 혜택
                     </div>
