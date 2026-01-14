@@ -93,8 +93,8 @@ export const FuneralCompanyView: React.FC<Props> = ({
     return (
         <div className="h-full flex flex-col bg-gray-50 pt-4 relative">
             {/* Search Header */}
-            <div className="px-4 mb-6 shrink-0">
-                <div className="flex items-center justify-between mb-4">
+            <div className="px-4 mb-4 shrink-0">
+                <div className="flex items-center justify-between mb-3">
                     <h2 className="font-bold text-xl text-gray-800">상조 서비스 추천</h2>
                     <div className="bg-primary/10 text-primary px-2 py-1 rounded text-[10px] font-bold">
                         추모맵 단독 혜택
@@ -114,7 +114,7 @@ export const FuneralCompanyView: React.FC<Props> = ({
             </div>
 
             {/* Benefits Banner */}
-            <div className="px-4 mb-6 shrink-0">
+            <div className="px-4 mb-4 shrink-0">
                 <div className="bg-gradient-to-br from-primary to-blue-700 p-4 rounded-2xl text-white shadow-lg shadow-primary/20">
                     <div className="flex items-center gap-3 mb-2">
                         <Award className="text-amber-300" size={20} />
@@ -128,12 +128,12 @@ export const FuneralCompanyView: React.FC<Props> = ({
             </div>
 
             {/* Company List */}
-            <div className="flex-1 overflow-y-auto px-4 space-y-4 pb-8 no-scrollbar">
+            <div className="flex-1 overflow-y-auto px-4 space-y-3 pb-8 no-scrollbar">
                 {filteredCompanies.map(company => (
                     <div
                         key={company.id}
                         onClick={() => onCompanySelect(company)}
-                        className={`bg-white rounded-2xl p-4 shadow-sm border transition-all active:scale-[0.98] group relative ${compareList.some(c => c.id === company.id) ? 'border-primary ring-1 ring-primary/20 shadow-md' : 'border-gray-100 hover:shadow-md'
+                        className={`bg-white rounded-2xl p-3 shadow-sm border transition-all active:scale-[0.98] group relative ${compareList.some(c => c.id === company.id) ? 'border-primary ring-1 ring-primary/20 shadow-md' : 'border-gray-100 hover:shadow-md'
                             }`}
                     >
                         {/* Compare Button - Icon Only Style */}
@@ -211,8 +211,8 @@ export const FuneralCompanyView: React.FC<Props> = ({
                     </div>
                 )}
 
-                {/* Spacer for sticky footer - increased for more breathing room */}
-                <div className="h-40" />
+                {/* Spacer for sticky footer - adjusted for mobile */}
+                <div className="h-32" />
             </div>
 
             {/* Premium Floating AI Counselor Guide - Higher visibility & better interaction */}
