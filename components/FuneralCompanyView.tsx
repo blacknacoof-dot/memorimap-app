@@ -91,38 +91,38 @@ export const FuneralCompanyView: React.FC<Props> = ({
     );
 
     return (
-        <div className="h-full flex flex-col bg-gray-50 pt-4 relative">
+        <div className="h-full flex flex-col bg-gray-50 pt-1 relative">
             {/* Search Header */}
-            <div className="px-4 mb-4 shrink-0">
-                <div className="flex items-center justify-between mb-3">
-                    <h2 className="font-bold text-xl text-gray-800">상조 서비스 추천</h2>
-                    <div className="bg-primary/10 text-primary px-2 py-1 rounded text-[10px] font-bold">
+            <div className="px-4 mb-2 shrink-0">
+                <div className="flex items-center justify-between mb-2">
+                    <h2 className="font-bold text-lg text-gray-800">상조 서비스 추천</h2>
+                    <div className="bg-primary/10 text-primary px-2 py-0.5 rounded text-[10px] font-bold">
                         추모맵 단독 혜택
                     </div>
                 </div>
 
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="상조회사 이름 검색..."
-                        className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all text-gray-900"
+                        className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all text-gray-900"
                     />
                 </div>
             </div>
 
             {/* Benefits Banner */}
-            <div className="px-4 mb-4 shrink-0">
-                <div className="bg-gradient-to-br from-primary to-blue-700 p-4 rounded-2xl text-white shadow-lg shadow-primary/20">
-                    <div className="flex items-center gap-3 mb-2">
-                        <Award className="text-amber-300" size={20} />
-                        <span className="font-bold text-sm">추모맵 X 상조회사 특별 제휴</span>
+            <div className="px-4 mb-3 shrink-0">
+                <div className="bg-gradient-to-br from-primary to-blue-700 p-3.5 rounded-2xl text-white shadow-lg shadow-primary/20">
+                    <div className="flex items-center gap-2 mb-1.5">
+                        <Award className="text-amber-300" size={18} />
+                        <span className="font-bold text-xs">추모맵 X 상조회사 특별 제휴</span>
                     </div>
-                    <p className="text-xs text-white/90 leading-relaxed">
+                    <p className="text-[11px] text-white/90 leading-relaxed">
                         상조 서비스 가입 후 추모맵을 통해 장지 예약 시,<br />
-                        <span className="font-bold text-amber-300 text-sm">최대 100만원 상당의 패키지 할인</span> 혜택을 드립니다.
+                        <span className="font-bold text-amber-300 text-xs">최대 100만원 상당의 패키지 할인</span> 혜택을 드립니다.
                     </p>
                 </div>
             </div>
