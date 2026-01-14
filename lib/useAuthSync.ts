@@ -1,16 +1,31 @@
 import { useEffect } from 'react';
-import { useUser } from './auth';
-import { supabase, isSupabaseConfigured } from './supabaseClient';
+import { useUser, useSession } from './auth';
+import { supabase, isSupabaseConfigured, setSupabaseAuth } from './supabaseClient';
 
 export const useAuthSync = () => {
     const { user, isSignedIn } = useUser();
+    const { session } = useSession();
 
     useEffect(() => {
         const syncUser = async () => {
             // Check if both services are ready
-            if (!isSignedIn || !user || !isSupabaseConfigured()) return;
+            if (!isSignedIn || !user || !isSupabaseConfigured()) {
+                // If signed out, clear Supabase auth
+                if (!isSignedIn && isSupabaseConfigured()) {
+                    setSupabaseAuth(null);
+                }
+                return;
+            }
 
             try {
+                // 0. Set Supabase Auth Token
+                if (session) {
+                    const token = await session.getToken({ template: 'supabase' }); // Make sure 'supabase' template exists in Clerk Dashboard!
+                    if (token) {
+                        setSupabaseAuth(token);
+                    }
+                }
+
                 // 1. Check if user already exists
                 const { data: existingUser, error: fetchError } = await supabase
                     .from('users')
@@ -47,5 +62,5 @@ export const useAuthSync = () => {
         };
 
         syncUser();
-    }, [isSignedIn, user]);
+    }, [isSignedIn, user, session]);
 };

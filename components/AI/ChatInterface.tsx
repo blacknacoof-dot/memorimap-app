@@ -269,6 +269,8 @@ export const ChatInterface: React.FC<Props> = ({
     // [NEW] Modal State for ConsultationForm
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [formMode, setFormMode] = useState<'phone' | 'chat' | 'urgent'>('phone');
+    // [NEW] Track Urgent Booking Context (Date, Type)
+    const [urgentBookingContext, setUrgentBookingContext] = useState<{ date?: string; type?: string }>({});
 
     // [Task 2] Dynamic Prompt Injection - Fetch latest facility data on chat open
     useEffect(() => {
@@ -392,6 +394,7 @@ export const ChatInterface: React.FC<Props> = ({
                 }]);
                 setTimeout(() => inputRef.current?.focus(), 100);
                 return; // Skip default setMessages below
+
             } else {
                 // Scenario B-like for specific facility
                 let contextText = "";
@@ -407,7 +410,10 @@ export const ChatInterface: React.FC<Props> = ({
                 role: 'model',
                 text: facility.ai_welcome_message || defaultWelcome,
                 timestamp: new Date(),
-                action: 'NONE'
+                options: [
+                    { label: '🚨 장례 발생/임종 임박', value: 'mode_urgent' },
+                    { label: '📋 사전 상담/내방', value: 'consult_chat' }
+                ]
             }]);
 
             // Auto-focus input on open
@@ -440,16 +446,100 @@ export const ChatInterface: React.FC<Props> = ({
         setIsLoading(true);
 
         try {
-            const response = await sendMessageToGemini(textToSend, messages, liveFacility); // [Dynamic Prompt Injection] Use live data
+            const response = await sendMessageToGemini(textToSend, messages, liveFacility);
+
+            // [NEW] Capture Context from User Input (to track state across turns)
+            if (textToSend.startsWith('date_')) {
+                setUrgentBookingContext(prev => ({ ...prev, date: textToSend }));
+            }
+            if (textToSend.startsWith('type_')) {
+                setUrgentBookingContext(prev => ({ ...prev, type: textToSend }));
+            }
+
+            // [NEW] Attempt JSON Parsing for Urgent Flow
+            let displayText = response.text;
+            let options = null;
+            let actionTrigger = response.action;
+
+            try {
+                // If response looks like JSON, parse it
+                if (displayText.trim().startsWith('{') || displayText.trim().startsWith('```json')) {
+                    const cleanJson = displayText.replace(/```json|```/g, '').trim();
+                    const parsed = JSON.parse(cleanJson);
+                    displayText = parsed.message || parsed.text;
+                    options = parsed.options;
+                    if (parsed.action_trigger) {
+                        actionTrigger = parsed.action_trigger as ActionType;
+                    }
+                }
+            } catch (e) {
+                // Fallback to plain text if parsing fails
+                console.log("Not a JSON response:", e);
+            }
 
             const aiMsg: ChatMessage = {
                 role: 'model',
-                text: response.text,
+                text: displayText,
                 timestamp: new Date(),
-                action: response.action
+                action: actionTrigger,
+                options: options // Add to ChatMessage type if needed (will do via any cast for now or extend type)
             };
 
             setMessages(prev => [...prev, aiMsg]);
+
+
+            // [Phase 5] Urgent Reservation Confirmation
+            if (aiMsg.action === 'URGENT_RESERVATION_CONFIRM') {
+                try {
+                    // Extract Time from User's last message (simple parsing for now)
+                    // Messages: [..., {role: 'user', text: 'time_1500'}, {role: 'model', ...}]
+                    // The user's last message triggered this.
+                    const lastUserMsg = messages[messages.length - 1]?.text || textToSend;
+                    let timeStr = "09:00"; // Fallback
+
+                    if (lastUserMsg.includes("time_")) {
+                        const rawTime = lastUserMsg.replace("time_", ""); // "1500"
+                        timeStr = rawTime.slice(0, 2) + ":" + rawTime.slice(2); // "15:00"
+                    }
+
+                    // Calculate Visit Date based on Context
+                    const visitDate = new Date();
+                    if (urgentBookingContext.date === 'date_tomorrow') {
+                        visitDate.setDate(visitDate.getDate() + 1);
+                    } else if (urgentBookingContext.date === 'date_dayafter') {
+                        visitDate.setDate(visitDate.getDate() + 2);
+                    }
+                    // If 'date_today', do nothing (matches new Date())
+
+                    const [hours, minutes] = timeStr.split(':').map(Number);
+                    visitDate.setHours(hours, minutes, 0, 0);
+
+                    // Call DB
+                    // @ts-ignore
+                    const { createUrgentReservation } = await import('../../lib/queries');
+                    await createUrgentReservation(
+                        facility.id.toString(),
+                        currentUser?.id,
+                        currentUser?.name,
+                        currentUser?.phone,
+                        visitDate,
+                        urgentBookingContext.type?.replace('type_', '') as 'single' | 'couple' || 'single',
+                        'AI 긴급 예약'
+                    );
+
+                    console.log("Urgent Reservation Confirmed in DB:", visitDate);
+
+                } catch (e) {
+                    console.error("Failed to save Urgent Reservation:", e);
+                    // Fallback UI
+                    setMessages(prev => [...prev, {
+                        role: 'model',
+                        text: "⚠️ 예약 확정 중 오류가 발생했습니다.\n담당자가 확인 후 5분 내로 직접 연락드리겠습니다.\n(비상 연락처: 010-0000-0000)",
+                        timestamp: new Date(),
+                        action: 'NONE'
+                    }]);
+                }
+            }
 
             // [Phase 3] RECOMMEND 액션 시 추천 데이터 처리
             if (aiMsg.action === 'RECOMMEND') {
@@ -461,13 +551,12 @@ export const ChatInterface: React.FC<Props> = ({
                     const searchLat = structuredData?.location?.lat || userLocation?.lat || 37.5665;
                     const searchLng = structuredData?.location?.lng || userLocation?.lng || 126.9780;
                     const category = structuredData?.category || (initialIntent === 'funeral_home' ? 'funeral' : undefined);
-                    const regionText = structuredData?.location?.text; // [NEW] Region text
+                    const regionText = structuredData?.location?.text;
 
                     if (regionText) {
                         setSearchContext(regionText);
                     }
 
-                    // Pass regionText as the 4th argument
                     const recommendations = await getIntelligentRecommendations(searchLat, searchLng, category, regionText);
                     if (recommendations && recommendations.length > 0) {
                         setRecommendedCandidates(recommendations as any);
@@ -477,9 +566,9 @@ export const ChatInterface: React.FC<Props> = ({
                 // [Phase 5] 리드 저장 (DB 연동)
                 try {
                     await createLead({
-                        userId: currentUser?.id, // Link to verified user if available
-                        contactName: currentUser?.name || '익명 고객', // Fallback name
-                        contactPhone: currentUser?.phone || '010-0000-0000', // Fallback phone (or request it in future flow)
+                        userId: currentUser?.id,
+                        contactName: currentUser?.name || '익명 고객',
+                        contactPhone: currentUser?.phone || '010-0000-0000',
                         category: structuredData.category,
                         urgency: structuredData.urgency,
                         scale: structuredData.scale,
@@ -595,6 +684,22 @@ export const ChatInterface: React.FC<Props> = ({
                                 {/* Action Buttons for AI messages */}
                                 {msg.role === 'model' && msg.action && msg.action !== 'NONE' && (
                                     <>
+                                        {
+                                            msg.options && msg.options.length > 0 && (
+                                                <div className="mt-3 flex flex-wrap gap-2 text-left">
+                                                    {msg.options.map((opt: any, i: number) => (
+                                                        <button
+                                                            key={i}
+                                                            onClick={() => handleSend(opt.value)}
+                                                            className="bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 px-3 py-2 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-95 flex items-center gap-1"
+                                                        >
+                                                            {opt.label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )
+                                        }
+
                                         {msg.action === 'SHOW_FORM_A' && (
                                             <FuneralSearchForm
                                                 userLocation={userLocation}
@@ -673,8 +778,9 @@ export const ChatInterface: React.FC<Props> = ({
                                             <button
                                                 onClick={() => {
                                                     if (msg.action === 'URGENT_DISPATCH') {
-                                                        setFormMode('urgent');
-                                                        setIsFormOpen(true);
+                                                        // [UX Fix] Reset Chat & Start Urgent Flow (AI Mode)
+                                                        setMessages([]);
+                                                        handleSend('mode_urgent'); // Trigger AI Scenario
                                                     } else if (msg.action === 'RESERVE') {
                                                         setFormMode('chat'); // Or 'phone' depending on preference
                                                         setIsFormOpen(true);
@@ -711,41 +817,43 @@ export const ChatInterface: React.FC<Props> = ({
             </div>
 
             {/* FAQ Chips & Input Area (Hidden when form is active) */}
-            {!isFormActive && (
-                <>
+            {
+                !isFormActive && (
+                    <>
 
 
-                    {/* Input Area */}
-                    <div className="bg-white p-4 pt-2 pb-6">
-                        <div className="flex gap-2 items-end">
-                            <div className="flex-1 bg-slate-100 rounded-2xl border border-transparent focus-within:border-slate-300 focus-within:bg-white transition-all px-4 py-3">
-                                <input
-                                    ref={inputRef}
-                                    type="text"
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
-                                    onKeyDown={handleKeyDown}
-                                    placeholder="궁금하신 점을 말씀해주세요..."
-                                    className="w-full bg-transparent border-none focus:outline-none text-sm placeholder:text-slate-400"
-                                    disabled={isLoading}
-                                />
+                        {/* Input Area */}
+                        <div className="bg-white p-4 pt-2 pb-6">
+                            <div className="flex gap-2 items-end">
+                                <div className="flex-1 bg-slate-100 rounded-2xl border border-transparent focus-within:border-slate-300 focus-within:bg-white transition-all px-4 py-3">
+                                    <input
+                                        ref={inputRef}
+                                        type="text"
+                                        value={input}
+                                        onChange={(e) => setInput(e.target.value)}
+                                        onKeyDown={handleKeyDown}
+                                        placeholder="궁금하신 점을 말씀해주세요..."
+                                        className="w-full bg-transparent border-none focus:outline-none text-sm placeholder:text-slate-400"
+                                        disabled={isLoading}
+                                    />
+                                </div>
+                                <button
+                                    onClick={() => handleSend()}
+                                    disabled={!input.trim() || isLoading}
+                                    className={`w-12 h-12 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all disabled:bg-slate-300 disabled:cursor-not-allowed`}
+                                >
+                                    {isLoading ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} className="ml-0.5" />}
+                                </button>
                             </div>
-                            <button
-                                onClick={() => handleSend()}
-                                disabled={!input.trim() || isLoading}
-                                className={`w-12 h-12 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all disabled:bg-slate-300 disabled:cursor-not-allowed`}
-                            >
-                                {isLoading ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} className="ml-0.5" />}
-                            </button>
+                            <div className="text-center mt-2">
+                                <p className="text-[10px] text-slate-400 flex items-center justify-center gap-1">
+                                    <Sparkles size={10} /> Powered by Gemini 2.0 Flash
+                                </p>
+                            </div>
                         </div>
-                        <div className="text-center mt-2">
-                            <p className="text-[10px] text-slate-400 flex items-center justify-center gap-1">
-                                <Sparkles size={10} /> Powered by Gemini 2.0 Flash
-                            </p>
-                        </div>
-                    </div>
-                </>
-            )}
-        </div>
+                    </>
+                )
+            }
+        </div >
     );
 };

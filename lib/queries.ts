@@ -348,6 +348,60 @@ export const createConsultation = async (
     return data;
 };
 
+// --- [Phase 5] Urgent Direct Booking (Reservation) ---
+
+export const createUrgentReservation = async (
+    facilityId: string,
+    userId: string,
+    userName: string,
+    userPhone: string,
+    visitDate: Date, // Timestamp
+    type: 'single' | 'couple',
+    notes: string = ''
+) => {
+    const leadResult = await createLead({
+        userId,
+        facilityId,
+        contactName: userName || '익명 (긴급)',
+        contactPhone: userPhone || '000-0000-0000',
+        category: 'memorial',
+        urgency: 'immediate',
+        scale: type,
+        contextData: {
+            reservation_time: visitDate.toISOString(),
+            is_urgent_booking: true
+        }
+    });
+
+    // if (leadError) throw leadError; // createLead throws internally if error
+
+    // Additionally create a reservation record if table exists
+    const { data, error } = await supabase
+        .from('reservations')
+        .insert([
+            {
+                facility_id: facilityId,
+                user_id: userId,
+                user_name: userName,
+                user_phone: userPhone,
+                visit_date: visitDate.toISOString(),
+                time_slot: visitDate.toTimeString().slice(0, 5), // '09:00'
+                status: 'confirmed', // Auto-confirm for urgent
+                notes: `[긴급 예약] ${type === 'single' ? '개인단' : '부부단'} / ${notes}`
+            }
+        ])
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error creating urgent reservation:', error);
+        // Only throw if critical, but lead creation succeeded so maybe just log?
+        // Let's propagate error to show fallback UI
+        throw error;
+    }
+    return data;
+};
+
 export const getConsultationHistory = async (userId: string) => {
     const { data, error } = await supabase
         .from('consultations')

@@ -85,25 +85,60 @@ const getMockResponses = (facility: Facility) => {
 <ACTION:MAP>`
         },
         {
-            // [Scenario 4] Reservation / Urgent Action
-            keywords: ["예약", "방문", "상담", "잡아줘", "접수"],
+            // [Scenario 4] Reservation / Urgent Action (Legacy - kept for non-urgent)
+            keywords: ["예약", "방문", "상담", "접수"],
+            // Exclude "긴급" from here to prevent overlap
             response: isPetFuneral
-                ? `장례 예약을 도와드리겠습니다.
-
-원하시는 방문 시간을 선택해주시면 즉시 예약을 확정해 드립니다.
-아래 버튼을 눌러 접수를 진행해주세요.
-<ACTION:RESERVE>`
-                : isFuneralHome
-                    ? `빈소 예약 및 상담 접수를 도와드리겠습니다.
-
-현재 빈소 현황 확인 후 즉시 배정해 드립니다.
-긴급 상황이시라면 바로 접수해주세요.
-<ACTION:RESERVE>`
-                    : `방문 답사 및 상담 예약을 도와드리겠습니다.
-
-편하신 일정으로 방문 예약을 잡아드립니다.
-아래 버튼을 눌러 날짜와 시간을 선택해주세요.
-<ACTION:RESERVE>`
+                ? `장례 예약을 도와드리겠습니다.\n\n원하시는 방문 시간을 선택해주시면 즉시 예약을 확정해 드립니다.\n아래 버튼을 눌러 접수를 진행해주세요.\n<ACTION:RESERVE>`
+                : `방문 답사 및 상담 예약을 도와드리겠습니다.\n\n편하신 일정으로 방문 예약을 잡아드립니다.\n아래 버튼을 눌러 날짜와 시간을 선택해주세요.\n<ACTION:RESERVE>`
+        },
+        // --- [NEW] Urgent Booking Flow (JSON Simulation) ---
+        {
+            keywords: ["긴급", "장례 발생", "mode_urgent"],
+            response: JSON.stringify({
+                message: "삼가 조의를 표합니다. 전화 대기 없이 **지금 바로 안치 예약**을 확정해 드리겠습니다.\\n시설에 도착하시는 날짜(발인일)를 선택해 주세요.",
+                options: [
+                    { label: "📅 오늘 (즉시 이동)", value: "date_today" },
+                    { label: "📅 내일", value: "date_tomorrow" },
+                    { label: "📅 모레", value: "date_dayafter" }
+                ],
+                action_trigger: "URGENT_CHECK"
+            })
+        },
+        {
+            keywords: ["date_today", "date_tomorrow", "date_dayafter"],
+            response: JSON.stringify({
+                message: "안치 가능한 자리를 확보하겠습니다.\\n어떤 유형으로 준비해 드릴까요?",
+                options: [
+                    { label: "👤 개인단 (1분)", value: "type_single" },
+                    { label: "👥 부부단 (2분)", value: "type_couple" }
+                ],
+                action_trigger: "URGENT_CHECK"
+            })
+        },
+        {
+            keywords: ["type_single", "type_couple", "개인단", "부부단"],
+            response: JSON.stringify({
+                message: "네, 여유분 확보되었습니다.\\n**도착하셔서 계약 및 안치를 진행할 시간**을 선택해 주세요.\\n(선택하신 시간에 맞춰 직원이 준비하고 대기합니다.)",
+                options: [
+                    { label: "09:00 도착", value: "time_0900" },
+                    { label: "11:00 도착", value: "time_1100" },
+                    { label: "13:00 도착", value: "time_1300" },
+                    { label: "15:00 도착", value: "time_1500" }
+                ],
+                action_trigger: "URGENT_CHECK"
+            })
+        },
+        {
+            keywords: ["time_0900", "time_1100", "time_1300", "time_1500"],
+            response: JSON.stringify({
+                message: "**[예약 확정] 선택하신 시간**으로 접수되었습니다.\\n도착 즉시 안치가 가능하도록 준비해 두겠습니다.\\n\\n⚠️ **필수 지참 서류:**\\n1. 화장 증명서\\n2. 계약자 신분증\\n\\n조심히 오십시오.",
+                options: [
+                    { label: "📍 내비게이션 실행", value: "open_navi" },
+                    { label: "📄 예약증 보기", value: "show_ticket" }
+                ],
+                action_trigger: "URGENT_RESERVATION_CONFIRM"
+            })
         },
         {
             // [Scenario 5] Funeral Home Specific - Ambulance/Hearse

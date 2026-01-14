@@ -30,5 +30,4 @@ DROP TRIGGER IF EXISTS trg_memorial_consultations_timestamp ON memorial_consulta
 CREATE TRIGGER trg_memorial_consultations_timestamp
 BEFORE UPDATE ON memorial_consultations
 FOR EACH ROW EXECUTE FUNCTION update_timestamp();
-BEFORE UPDATE ON memorial_consultations
-FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+
