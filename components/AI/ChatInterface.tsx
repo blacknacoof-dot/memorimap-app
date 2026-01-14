@@ -410,6 +410,7 @@ export const ChatInterface: React.FC<Props> = ({
                 role: 'model',
                 text: facility.ai_welcome_message || defaultWelcome,
                 timestamp: new Date(),
+                // Force Update: Ensure buttons are visible in Vercel build
                 options: [
                     { label: '🚨 장례 발생/임종 임박', value: 'mode_urgent' },
                     { label: '📋 사전 상담/내방', value: 'consult_chat' }
