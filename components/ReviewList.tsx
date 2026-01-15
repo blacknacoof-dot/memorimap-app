@@ -11,12 +11,12 @@ interface Props {
 }
 
 // 샘플 리뷰 데이터 (DB에 리뷰가 없을 때 표시)
-const SAMPLE_REVIEWS: Omit<Review, 'id' | 'space_id'>[] = [
-    { user_id: 'sample1', userName: '김**', rating: 5, content: '시설이 깔끔하고 직원분들이 친절하셨습니다. 주차도 편리했어요.', date: '2024-11-15' },
-    { user_id: 'sample2', userName: '이**', rating: 4, content: '위치가 좋고 안내가 잘 되어있어요. 재방문 의사 있습니다.', date: '2024-10-22' },
-    { user_id: 'sample3', userName: '박**', rating: 5, content: '조용하고 편안한 분위기였습니다. 추천드립니다.', date: '2024-09-30' },
-    { user_id: 'sample4', userName: '최**', rating: 4, content: '전체적으로 만족스러웠습니다. 가격 대비 좋은 편이에요.', date: '2024-08-18' },
-    { user_id: 'sample5', userName: '정**', rating: 5, content: '처음 방문했는데 상담도 친절하게 해주시고 좋았습니다.', date: '2024-07-05' },
+const SAMPLE_REVIEWS: Omit<Review, 'id' | 'facility_id'>[] = [
+    { user_id: 'sample1', userId: 'sample1', userName: '김**', rating: 5, content: '시설이 깔끔하고 직원분들이 친절하셨습니다. 주차도 편리했어요.', date: '2024-11-15' },
+    { user_id: 'sample2', userId: 'sample2', userName: '이**', rating: 4, content: '위치가 좋고 안내가 잘 되어있어요. 재방문 의사 있습니다.', date: '2024-10-22' },
+    { user_id: 'sample3', userId: 'sample3', userName: '박**', rating: 5, content: '조용하고 편안한 분위기였습니다. 추천드립니다.', date: '2024-09-30' },
+    { user_id: 'sample4', userId: 'sample4', userName: '최**', rating: 4, content: '전체적으로 만족스러웠습니다. 가격 대비 좋은 편이에요.', date: '2024-08-18' },
+    { user_id: 'sample5', userId: 'sample5', userName: '정**', rating: 5, content: '처음 방문했는데 상담도 친절하게 해주시고 좋았습니다.', date: '2024-07-05' },
 ];
 
 export const ReviewList: React.FC<Props> = ({ spaceId, refreshTrigger }) => {
@@ -42,7 +42,7 @@ export const ReviewList: React.FC<Props> = ({ spaceId, refreshTrigger }) => {
 
     const handleDelete = async (id: string) => {
         try {
-            await deleteReview(id, spaceId);
+            await deleteReview(id); // Fixed: deleteReview only takes id
             setReviews(prev => prev.filter(r => r.id !== id));
         } catch (err) {
             alert('리뷰 삭제 중 오류가 발생했습니다.');
@@ -63,7 +63,7 @@ export const ReviewList: React.FC<Props> = ({ spaceId, refreshTrigger }) => {
         : SAMPLE_REVIEWS.map((r, idx) => ({
             ...r,
             id: `sample-${idx}`,
-            space_id: spaceId,
+            facility_id: spaceId,
         }));
 
     return (
@@ -73,7 +73,7 @@ export const ReviewList: React.FC<Props> = ({ spaceId, refreshTrigger }) => {
                     key={review.id}
                     review={review}
                     isOwner={user?.id === review.user_id}
-                    onDelete={review.id.startsWith('sample-') ? undefined : handleDelete}
+                    onDelete={review.id.startsWith('sample-') ? () => { } : handleDelete}
                 />
             ))}
         </div>

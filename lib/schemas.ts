@@ -41,7 +41,7 @@ export const MemorialSpaceSchema = z.object({
     id: z.union([z.string(), z.number()]),
     name: z.string().min(1, "시설명을 입력해주세요"),
     address: z.string().min(1, "주소를 입력해주세요"),
-    type: z.enum(['charnel_house', 'natural_burial', 'funeral_home', 'complex', 'pet']),
+    category: z.enum(['장례식장', '봉안시설', '자연장', '공원묘지', '동물장례', '해양장', '상조']),
     ai_context: z.string().optional(),
     ai_features: z.array(z.string()).optional(),
     is_verified: z.boolean(),

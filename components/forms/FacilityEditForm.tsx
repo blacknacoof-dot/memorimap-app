@@ -17,7 +17,7 @@ export const FacilityEditForm: React.FC<Props> = ({ initialData, onSubmit, onCan
             id: initialData?.id,
             name: initialData?.name || '',
             address: initialData?.address || '',
-            type: initialData?.type || 'charnel_house',
+            category: initialData?.category || '봉안시설',
             is_verified: initialData?.is_verified ?? false,
             ai_context: initialData?.ai_context || undefined,
             ai_features: initialData?.ai_features || []
@@ -30,7 +30,7 @@ export const FacilityEditForm: React.FC<Props> = ({ initialData, onSubmit, onCan
                 id: initialData.id,
                 name: initialData.name,
                 address: initialData.address,
-                type: initialData.type,
+                category: initialData.category,
                 is_verified: initialData.is_verified,
                 ai_context: initialData.ai_context || undefined,
                 ai_features: initialData.ai_features || []
@@ -59,12 +59,13 @@ export const FacilityEditForm: React.FC<Props> = ({ initialData, onSubmit, onCan
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">시설 유형</label>
-                        <select {...register('type')} className="w-full p-3 border rounded-lg focus:ring-2 outline-none bg-white">
-                            <option value="funeral_home">장례식장</option>
-                            <option value="charnel_house">납골당</option>
-                            <option value="natural_burial">수목장/자연장</option>
-                            <option value="complex">복합 추모공원</option>
-                            <option value="pet">반려동물 장례식장</option>
+                        <select {...register('category')} className="w-full p-3 border rounded-lg focus:ring-2 outline-none bg-white">
+                            <option value="장례식장">장례식장</option>
+                            <option value="봉안시설">봉안시설</option>
+                            <option value="자연장">수목장/자연장</option>
+                            <option value="공원묘지">복합 추모공원</option>
+                            <option value="동물장례">반려동물 장례식장</option>
+                            <option value="상조">상조</option>
                         </select>
                     </div>
                 </div>

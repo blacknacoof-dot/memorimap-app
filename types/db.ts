@@ -8,7 +8,8 @@
 // ==========================================
 export type UserRole = 'user' | 'facility_admin' | 'sangjo_hq_admin' | 'super_admin';
 export type ReservationStatus = 'pending' | 'confirmed' | 'rejected' | 'cancelled' | 'completed' | 'no_show' | 'urgent'; // Added 'urgent' to support existing logic
-export type FacilityType = 'charnel_house' | 'natural_burial' | 'funeral_home' | 'complex' | 'pet'; // Added 'pet' to support Pet features
+// export type FacilityType = 'charnel_house' | 'natural_burial' | 'funeral_home' | 'complex' | 'pet'; // DEPRECATED
+export type FacilityCategoryType = '장례식장' | '봉안시설' | '자연장' | '공원묘지' | '동물장례' | '해양장' | '상조';
 
 // --- [Phase 4 New Types] ---
 export type SubscriptionPlan = 'starter' | 'pro' | 'enterprise';
@@ -61,7 +62,8 @@ export interface MemorialSpace {
     manager_id?: string | null; // Alias/Legacy
     name: string;
     address: string;
-    type: FacilityType;
+    category: FacilityCategoryType; // Changed from type to category for consistency
+    // type: FacilityType; // DEPRECATED
     description?: string | null;
     image_urls?: string[];
     ai_context?: string | null;

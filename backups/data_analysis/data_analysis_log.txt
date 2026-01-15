@@ -1,0 +1,58 @@
+[2026-01-15T01:27:35.950Z] === CSV 파일 검색 시작 ===
+[2026-01-15T01:27:35.958Z] 발견: ai_consultations.csv (14.90 KB)
+[2026-01-15T01:27:35.970Z] 발견: bot_data.csv (0.12 KB)
+[2026-01-15T01:27:35.975Z] 발견: consultations.csv (0.44 KB)
+[2026-01-15T01:27:35.977Z] 발견: facilities.csv (887.10 KB)
+[2026-01-15T01:27:35.978Z] 발견: facility_admins.csv (0.00 KB)
+[2026-01-15T01:27:35.982Z] 발견: facility_images.csv (179.82 KB)
+[2026-01-15T01:27:35.985Z] 발견: facility_reviews.csv (893.16 KB)
+[2026-01-15T01:27:35.987Z] 발견: facility_submissions.csv (0.00 KB)
+[2026-01-15T01:27:35.989Z] 발견: facility_subscriptions.csv (0.00 KB)
+[2026-01-15T01:27:36.004Z] 발견: faq_view_logs.csv (0.00 KB)
+[2026-01-15T01:27:36.033Z] 발견: favorites.csv (0.00 KB)
+[2026-01-15T01:27:36.040Z] 발견: funeral_companies.csv (5.77 KB)
+[2026-01-15T01:27:36.048Z] 발견: funeral_progress.csv (0.00 KB)
+[2026-01-15T01:27:36.085Z] 발견: leads.csv (4.72 KB)
+[2026-01-15T01:27:36.089Z] 발견: memorial_consultations.csv (0.00 KB)
+[2026-01-15T01:27:36.093Z] 발견: memorial_spaces.csv (14655.71 KB)
+[2026-01-15T01:27:36.099Z] 발견: notices.csv (0.00 KB)
+[2026-01-15T01:27:36.102Z] 발견: notification_logs.csv (0.00 KB)
+[2026-01-15T01:27:36.103Z] 발견: partner_inquiries.csv (1.46 KB)
+[2026-01-15T01:27:36.104Z] 발견: profiles.csv (0.00 KB)
+[2026-01-15T01:27:36.107Z] 발견: reservations.csv (4.13 KB)
+[2026-01-15T01:27:36.108Z] 발견: sangjo_contracts.csv (0.31 KB)
+[2026-01-15T01:27:36.110Z] 총 22개 CSV 파일 발견
+[2026-01-15T01:27:36.623Z] 
+=== facilities.csv 분석 시작 ===
+[2026-01-15T01:27:36.625Z] 사용 가능한 컬럼: id, name, category, address, location, contact, operating_hours, details, images, is_verified, created_at, owner_user_id, rating, image_url, price_per_pyeong, features, gallery_images, ai_context, ai_features, ai_welcome_message, phone, type, description
+[2026-01-15T01:27:36.627Z] 카테고리 컬럼: category
+[2026-01-15T01:27:36.628Z] 이름 컬럼: name
+[2026-01-15T01:27:36.712Z] 
+=== facility_images.csv 분석 시작 ===
+[2026-01-15T01:27:36.726Z] 사용 가능한 컬럼: id, image_url, thumbnail_url, alt_text, width, height, file_size, mime_type, category, order_index, is_active, source, created_at, facility_id
+[2026-01-15T01:27:36.741Z] 카테고리 컬럼: category
+[2026-01-15T01:27:36.769Z] 이름 컬럼: 없음
+[2026-01-15T01:27:37.060Z] 
+=== facility_reviews.csv 분석 시작 ===
+[2026-01-15T01:27:37.066Z] 사용 가능한 컬럼: id, facility_id, user_id, author_name, is_anonymous, rating, content, photos, photo_count, source, external_id, external_url, helpful_count, view_count, is_verified, verified_at, reply_content, replied_at, reply_user_id, is_active, deleted_at, created_at, updated_at
+[2026-01-15T01:27:37.070Z] 카테고리 컬럼: 없음
+[2026-01-15T01:27:37.077Z] 이름 컬럼: 없음
+[2026-01-15T01:27:40.945Z] 
+=== memorial_spaces.csv 분석 시작 ===
+[2026-01-15T01:27:40.947Z] 사용 가능한 컬럼: id, name, category, religion, address, lat, lng, price_range, rating, review_count, image_url, description, features, phone, prices, gallery_images, reviews, created_at, owner_user_id, is_verified, data_source, price_info, ai_context, naver_booking_url, parent_id, operating_hours, business_license_image, verified_at, ai_features, ai_welcome_message
+[2026-01-15T01:27:40.960Z] 카테고리 컬럼: category
+[2026-01-15T01:27:40.980Z] 이름 컬럼: name
+[2026-01-15T01:27:41.010Z] 
+=== 매핑 제안 생성 ===
+[2026-01-15T01:27:41.023Z] 발견된 카테고리: charnel_house, funeral, natural_burial, charnel, pet_funeral, funeral_hall, etc, park_cemetery, sea, pet
+[2026-01-15T01:27:41.039Z] 
+=== 마이그레이션 SQL 생성 ===
+[2026-01-15T01:27:41.061Z] ✓ migration.sql 생성
+[2026-01-15T01:27:41.064Z] 
+=== TypeScript 타입 정의 생성 ===
+[2026-01-15T01:27:41.073Z] ✓ types.ts 생성
+[2026-01-15T01:27:41.076Z] ✓ category-mapper.ts 생성
+[2026-01-15T01:27:41.086Z] ✓ data_analysis.json 생성
+[2026-01-15T01:27:41.089Z] 
+=== 상세 리포트 생성 ===
+[2026-01-15T01:27:41.097Z] ✓ MIGRATION_REPORT.txt 생성
