@@ -67,6 +67,12 @@ const AppRouter: React.FC = () => {
 
     // Sync URL hash with viewState
     useEffect(() => {
+        // Handle direct access to /admin or /admin/ which might be served by SPA fallback
+        if (window.location.pathname === '/admin' || window.location.pathname === '/admin/') {
+            window.location.replace('/#/facility-admin');
+            return;
+        }
+
         const syncRoute = () => {
             const hash = window.location.hash;
             switch (hash) {

@@ -3,6 +3,8 @@ import { ViewState, Facility } from '../../types';
 import { useFacilities } from '../../hooks/useFacilities';
 import { useUser, useClerk } from '../../lib/auth'; // For side menu props
 import { Menu, Search, X, Crosshair } from 'lucide-react';
+import { CategoryFilter } from '../map/CategoryFilter';
+import { FacilityCategoryType } from '../../types';
 
 // Components
 import MapComponent, { MapRef } from '../MapContainer';
@@ -22,7 +24,7 @@ const MapView: React.FC<MapViewProps> = ({ viewState, setViewState }) => {
     const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedFilter, setSelectedFilter] = useState('전체');
+    const [selectedFilter, setSelectedFilter] = useState<FacilityCategoryType | '전체'>('전체');
     const [currentBounds, setCurrentBounds] = useState<L.LatLngBounds | null>(null);
 
     // Chat State
@@ -40,22 +42,23 @@ const MapView: React.FC<MapViewProps> = ({ viewState, setViewState }) => {
     // 2. Filter Logic
     const filteredFacilities = facilities.filter(f => {
         if (f.name.includes('--------')) return false;
-        // Geo Filter: Only filter by bounds if no search query is active to allow global search
+
+        // Geo Filter
         if (currentBounds && !searchQuery) {
             if (!currentBounds.contains([f.lat, f.lng])) return false;
         }
+
         // Query
         if (searchQuery && !f.name.includes(searchQuery) && !f.address.includes(searchQuery)) return false;
-        // Category
+
+        // Category - EXACT MATCH (Strict)
         if (selectedFilter !== '전체') {
-            if (selectedFilter === '공원묘지') return f.type === 'park' || f.type === 'complex';
-            if (selectedFilter === '장례식장') return f.type === 'funeral';
-            if (selectedFilter === '봉안시설') return f.type === 'charnel';
-            if (selectedFilter === '자연장') return f.type === 'natural';
-            if (selectedFilter === '해양장') return f.type === 'sea';
-            if (selectedFilter === '동물장례') return f.type === 'pet';
+            return f.category === selectedFilter;
         }
-        if (f.type === 'sangjo') return false; // Sangjo separate tab
+
+        // Exclude Sangjo from general map view for now
+        if ((f.category as string) === '상조' || f.type === 'sangjo') return false;
+
         return true;
     });
 
@@ -118,20 +121,10 @@ const MapView: React.FC<MapViewProps> = ({ viewState, setViewState }) => {
                 </div>
 
                 {/* Filter Chips */}
-                <div className="flex gap-2 mt-3 overflow-x-auto pb-2 pointer-events-auto no-scrollbar">
-                    {['전체', '장례식장', '봉안시설', '자연장', '공원묘지', '해양장', '동물장례'].map(filter => (
-                        <button
-                            key={filter}
-                            onClick={() => setSelectedFilter(filter)}
-                            className={`px-4 py-2 rounded-full text-sm font-medium shadow-md whitespace-nowrap transition-colors ${selectedFilter === filter
-                                ? 'bg-primary text-white'
-                                : 'bg-white text-gray-600 hover:bg-gray-50'
-                                }`}
-                        >
-                            {filter}
-                        </button>
-                    ))}
-                </div>
+                <CategoryFilter
+                    selectedCategory={selectedFilter}
+                    onSelectCategory={setSelectedFilter}
+                />
             </div>
 
             {/* Map */}

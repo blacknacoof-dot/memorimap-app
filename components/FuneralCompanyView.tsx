@@ -34,19 +34,27 @@ export const FuneralCompanyView: React.FC<Props> = ({
     // [Change] Fetch companies from Supabase on mount
     React.useEffect(() => {
         const fetchCompanies = async () => {
+            console.log('🔍 [FuneralCompanyView] Fetching companies...');
             try {
                 // Use singleton instance
                 const { data, error } = await supabase
                     .from('memorial_spaces')
                     .select('*')
-                    .eq('type', 'sangjo')
+                    .in('category', ['상조', 'sangjo', 'Sangjo']) // Robust filtering
                     .order('id', { ascending: true });
+
+                if (error) {
+                    console.error('❌ [FuneralCompanyView] Fetch Error:', error);
+                    throw error;
+                }
+
+                console.log('✅ [FuneralCompanyView] Fetched data:', data?.length);
 
                 if (data && data.length > 0) {
                     // Map DB data to FuneralCompany interface
                     const mappedCompanies: FuneralCompany[] = data.map(item => {
                         // Attempt to find a matching static image or use default
-                        const staticMatch = FUNERAL_COMPANIES.find(c => c.name === item.name);
+                        const staticMatch = FUNERAL_COMPANIES.find(c => c.name.replace(/\s/g, '') === item.name.replace(/\s/g, ''));
 
                         return {
                             id: item.id.toString(), // Convert int ID to string
@@ -65,9 +73,19 @@ export const FuneralCompanyView: React.FC<Props> = ({
                         };
                     });
 
+                    // Sort by Sales Rank (Order in FUNERAL_COMPANIES constant)
+                    const sortedCompanies = mappedCompanies.sort((a, b) => {
+                        const indexA = FUNERAL_COMPANIES.findIndex(fc => fc.name.replace(/\s/g, '') === a.name.replace(/\s/g, ''));
+                        const indexB = FUNERAL_COMPANIES.findIndex(fc => fc.name.replace(/\s/g, '') === b.name.replace(/\s/g, ''));
+                        // If not found in constant, put at the end
+                        const rankA = indexA === -1 ? 999 : indexA;
+                        const rankB = indexB === -1 ? 999 : indexB;
+                        return rankA - rankB;
+                    });
+
                     // Merge: Use fetched list, but if filtered by search, just filter this list.
                     // Prioritize fetched data.
-                    setCompanies(mappedCompanies);
+                    setCompanies(sortedCompanies);
                 }
             } catch (err) {
                 console.error("Failed to fetch sangjo companies:", err);
@@ -91,7 +109,7 @@ export const FuneralCompanyView: React.FC<Props> = ({
     );
 
     return (
-        <div className="h-full flex flex-col bg-gray-50 pt-1 relative">
+        <div className="h-full flex flex-col bg-gray-50 relative">
             {/* Search Header Container - Condensed for Mobile */}
             <div className="px-4 mb-1.5 shrink-0">
                 <div className="flex items-center justify-between mb-1.5">

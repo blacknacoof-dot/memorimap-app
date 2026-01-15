@@ -26,34 +26,34 @@ export const useAuthSync = () => {
                     }
                 }
 
-                // 1. Check if user already exists
+                // 1. Check if profile already exists
                 const { data: existingUser, error: fetchError } = await supabase
-                    .from('users')
+                    .from('profiles')
                     .select('id')
                     .eq('clerk_id', user.id)
                     .single();
 
                 if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116: No rows found
-                    console.error("Error checking user:", fetchError);
+                    console.error("Error checking profile:", fetchError);
                     return;
                 }
 
-                // 2. If not exists, insert new user
+                // 2. If not exists, insert new profile
                 if (!existingUser) {
-                    console.log("Syncing new user to Supabase...");
-                    const { error: insertError } = await supabase.from('users').insert({
+                    console.log("Syncing new user to Supabase Profiles...");
+                    const { error: insertError } = await supabase.from('profiles').insert({
                         clerk_id: user.id,
                         email: user.primaryEmailAddress?.emailAddress,
-                        name: user.fullName || user.username || '사용자',
-                        image_url: user.imageUrl,
-                        role: 'user',
+                        full_name: user.fullName || user.username || '사용자',
+                        avatar_url: user.imageUrl,
+                        role: 'user', // Default role
                         phone_number: user.primaryPhoneNumber?.phoneNumber
                     });
 
                     if (insertError) {
-                        console.error("Failed to sync user:", insertError);
+                        console.error("Failed to sync profile:", insertError);
                     } else {
-                        console.log("User synced successfully!");
+                        console.log("Profile synced successfully!");
                     }
                 }
             } catch (err) {

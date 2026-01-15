@@ -117,7 +117,7 @@ export default function FacilityDashboard() {
                                 await updateFacility({
                                     name: data.name,
                                     address: data.address,
-                                    type: data.type,
+                                    category: data.category,
                                     ai_context: data.ai_context,
                                     ai_features: data.ai_features,
                                     is_verified: true

@@ -1,0 +1,2 @@
+contract_number,sangjo_id,customer_name,customer_phone,customer_address,service_type,religion,region,total_price,status,application_type,preferred_call_time,death_time,current_location,created_at
+"TEST-2026-0001","test-sangjo","홍길동","010-1234-5678",,,,,"0","상담신청",,,,,"2026-01-11T19:16:45.273338+00:00"

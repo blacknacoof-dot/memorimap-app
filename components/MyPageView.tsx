@@ -121,7 +121,7 @@ export const MyPageView: React.FC<Props> = ({
             setMyReviews(prev => prev.filter(r => r.id !== id));
 
             if (onReviewDeleted) {
-                onReviewDeleted(reviewToDelete.space_id, id, reviewToDelete.rating);
+                onReviewDeleted(reviewToDelete.facility_id, id, reviewToDelete.rating);
             }
         } catch (err) {
             alert('리뷰 삭제 중 오류가 발생했습니다.');
@@ -384,7 +384,7 @@ export const MyPageView: React.FC<Props> = ({
                 ) : (
                     <div className="space-y-2">
                         {myReviews.map(review => {
-                            const facility = facilities.find(f => f.id === review.space_id);
+                            const facility = facilities.find(f => f.id === review.facility_id);
                             return (
                                 <div key={review.id} className="bg-white p-4 rounded-xl shadow-sm border">
                                     <ReviewCard

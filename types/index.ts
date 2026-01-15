@@ -45,7 +45,7 @@ export interface Review {
   user_id: string; // Keeps compatibility with DB snake_case if used raw
   userName: string;
   userImage?: string;
-  space_id: string;
+  facility_id: string;
   rating: number;
   content: string;
   images?: string[];
@@ -57,10 +57,22 @@ export type AiTone = 'polite' | 'warm' | 'factual';
 export type FacilityType = 'FUNERAL_HOME' | 'MEMORIAL_PARK' | 'SANGJO';
 export type AiActionType = 'NONE' | 'RESERVE' | 'MAP' | 'CALL_MANAGER' | 'RECOMMEND' | 'SWITCH_TO_CONSULT' | 'SHOW_FORM_A';
 
+export type FacilityCategoryType =
+  | '장례식장' | '봉안시설' | '자연장' | '공원묘지' | '동물장례' | '해양장' | '상조'
+  | 'funeral_home' | 'funeral' // DB codes
+  | 'charnel_house' | 'charnel' | 'memorial' | 'memorial_facility'
+  | 'natural_burial' | 'tree_burial'
+  | 'park_cemetery' | 'complex'
+  | 'pet_memorial' | 'pet'
+  | 'sea_burial' | 'sea'
+  | 'sangjo';
+
 export interface Facility {
   id: string;
   name: string;
-  type: 'charnel' | 'natural' | 'park' | 'complex' | 'sea' | 'pet' | 'funeral' | 'sangjo' | 'assistant'; // 납골당, 자연장, 공원, 복합, 바다장, 동물장, 장례식장, 상조, AI상담사
+  // type: 'charnel' | 'natural' | 'park' | 'complex' | 'sea' | 'pet' | 'funeral' | 'sangjo' | 'assistant'; // DEPRECATED
+  category: FacilityCategoryType; // Strict Type
+  type?: string; // Optional fallback for backward compatibility if needed, but aim to remove
   religion: 'buddhism' | 'christian' | 'catholic' | 'none';
   address: string;
   lat: number;

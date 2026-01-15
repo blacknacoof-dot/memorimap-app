@@ -1,0 +1,2 @@
+id,created_at,updated_at,facility_id,facility_name,user_id,user_phone,user_name,urgency,location,needs_ambulance,scale,religion,schedule,status,notes
+"81fb25bd-171e-44c0-8791-c4facbf9e482","2026-01-13T02:23:22.768855+00:00","2026-01-13T02:23:22.768855+00:00","9b34e885-9bc8-426b-b3d8-751dcc101b7c","인제대학교일산백병원 장례식장","user_36vml1WCaPN5YGZFA84gzmgDHAW",,"태용","deceased","자택","true","medium","none","3day","waiting",

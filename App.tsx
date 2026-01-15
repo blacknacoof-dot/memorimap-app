@@ -7,7 +7,7 @@ import { SideMenu } from './components/SideMenu';
 import { ComparisonModal } from './components/ComparisonModal';
 import { LoginModal } from './components/LoginModal';
 import { SignUpModal } from './components/SignUpModal';
-import { Facility, Reservation, ViewState, Review, FuneralCompany } from './types';
+import { Facility, Reservation, ViewState, Review, FuneralCompany, FacilityCategoryType } from './types';
 import { RecommendationStarter } from './components/RecommendationStarter';
 import { Consultation } from './types/consultation';
 import { Menu, Search, Filter, Crosshair, Map as MapIcon, User, List, Settings, Scale, Ticket, X, Check, AlertCircle, Database, Shield, Award, ArrowLeft, Bot, Loader2 } from 'lucide-react';
@@ -322,13 +322,25 @@ const App: React.FC = () => {
             const name = item.name || '';
             const category = item.category || '';
 
-            if (category === 'funeral_hall' || category === 'funeral') type = 'funeral';
-            else if (category === 'charnel_house' || category === 'charnel') type = 'charnel';
-            else if (category === 'natural_burial' || category === 'natural') type = 'natural';
-            else if (category === 'park_cemetery' || category === 'park') type = 'park';
-            else if (category === 'pet_funeral' || category === 'pet') type = 'pet';
+            if (category === 'funeral_hall' || category === 'funeral' || category === 'funeral_home') type = 'funeral';
+            else if (category === 'charnel_house' || category === 'charnel' || category === 'memorial') type = 'charnel';
+            else if (category === 'natural_burial' || category === 'natural' || category === 'tree_burial') type = 'natural';
+            else if (category === 'park_cemetery' || category === 'park' || category === 'complex') type = 'park';
+            else if (category === 'pet_funeral' || category === 'pet' || category === 'pet_memorial') type = 'pet';
             else if (category === 'sea_burial' || category === 'sea') type = 'sea';
             else if (category === 'sangjo' || category === 'sangjo_company' || name.includes('프리드라이프') || name.includes('대명스테이션') || name.includes('보람상조') || name.includes('교원라이프')) type = 'sangjo';
+
+            // Map strict category
+            const categoryMap: Record<string, FacilityCategoryType> = {
+              'funeral': '장례식장',
+              'charnel': '봉안시설',
+              'natural': '자연장',
+              'park': '공원묘지',
+              'pet': '동물장례',
+              'sea': '해양장',
+              'sangjo': '상조'
+            };
+            const mappedCategory = categoryMap[type] || '봉안시설';
 
             // Simulation Logic (Preserved)
             const idNum = item.id ? item.id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) : 0;
@@ -373,6 +385,7 @@ const App: React.FC = () => {
             return {
               id: item.id?.toString(),
               name: item.name || '이름 없음',
+              category: mappedCategory,
               type: type,
               religion: 'none',
               address: item.address || '',
@@ -423,26 +436,29 @@ const App: React.FC = () => {
     if (currentBounds && !searchQuery) {
       if (!currentBounds.contains([f.lat, f.lng])) return false;
     }
+    // 3. Filter Logic (Refactored to check category instead of deprecated type)
     // 1. Search Query
-    if (searchQuery && !f.name.includes(searchQuery) && !f.address.includes(searchQuery)) {
-      return false;
+    if (searchQuery) {
+      if (!f.name.includes(searchQuery) && !f.address?.includes(searchQuery)) {
+        return false;
+      }
     }
+
     // 2. Category Filter
     if (selectedFilter !== '전체') {
-      if (selectedFilter === '공원묘지') {
-        return f.type === 'park' || f.type === 'complex';
-      }
-      else {
-        if (f.type === 'park' || f.type === 'complex') return false;
-        if (selectedFilter === '장례식장' && f.type !== 'funeral') return false;
-        if (selectedFilter === '봉안시설' && f.type !== 'charnel') return false;
-        if (selectedFilter === '자연장' && f.type !== 'natural') return false;
-        if (selectedFilter === '해양장' && f.type !== 'sea') return false;
-        if (selectedFilter === '동물장례' && f.type !== 'pet') return false;
-      }
+      const cat = f.category || '';
+      // Map UI Filter to DB Category Enum
+      if (selectedFilter === '장례식장' && (cat !== 'funeral_home' && cat !== 'funeral')) return false;
+      if (selectedFilter === '봉안시설' && (cat !== 'charnel_house' && cat !== 'charnel' && cat !== 'memorial' && cat !== 'memorial_facility')) return false;
+      if (selectedFilter === '자연장' && (cat !== 'natural_burial' && cat !== 'tree_burial')) return false;
+      if (selectedFilter === '공원묘지' && (cat !== 'park_cemetery' && cat !== 'complex')) return false;
+      if (selectedFilter === '해양장' && (cat !== 'sea_burial' && cat !== 'sea')) return false;
+      if (selectedFilter === '동물장례' && (cat !== 'pet_memorial' && cat !== 'pet')) return false;
     }
+
     // 3. Exclude Sangjo from general views (They have their own dedicated tab)
-    if (f.type === 'sangjo') return false;
+    // Strictly check category, guarding against null
+    if (f.category === 'sangjo' || f.category === '상조') return false;
 
     return true;
   });
@@ -474,125 +490,103 @@ const App: React.FC = () => {
     try {
       // Determine table based on ID format (UUID vs BigInt)
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
-      const tableName = isUUID ? 'facilities' : 'memorial_spaces';
 
-      const { data, error } = await supabase
-        .from(tableName) // Dynamic table selection
-        .select('*')
-        .eq('id', facilityId)
-        .single();
+      let query = supabase.from('facilities').select('*');
+
+      if (isUUID) {
+        query = query.eq('id', facilityId);
+      } else {
+        query = query.eq('legacy_id', facilityId);
+      }
+
+      const { data, error } = await query.single();
 
       if (error) throw error;
 
-      // ✅ [DEBUG] Check data structure from DB
-      console.log(`✅ [DEBUG] Fetched Data from ${tableName}:`, data);
-
-      // ✅ [DEBUG] Check fetched reviews
-      // console.log('✅ [DEBUG] Reviews:', reviews);
+      console.log(`✅ [DEBUG] Fetched Data from facilities:`, data);
 
       if (data) {
-        // Fetch subscription, reviews and images
-        // Note: Relation names in getReviewsBySpace/getFacilityImages/getFacilitySubscription might still point to old table or need verification
-        // assuming standard relations or logic inside them handles it?
-        // Actually queries.ts functions might still use 'memorial_spaces' relation...
-        // But getFacilitySubscription uses 'facility_subscriptions'.
-        // getReviewsBySpace uses 'facility_reviews'.
-        // So they should work IF the foreign keys are valid or logic doesnt strictly join.
-        // Actually logic:
+        const realUuid = data.id;
+
         const [subscription, rawReviews, images] = await Promise.all([
-          getFacilitySubscription(facilityId),
-          import('./lib/queries').then(m => m.getReviewsBySpace(facilityId)),
-          import('./lib/queries').then(m => m.getFacilityImages(facilityId))
+          getFacilitySubscription(realUuid),
+          import('./lib/queries').then(m => m.getReviewsBySpace(realUuid)),
+          import('./lib/queries').then(m => m.getFacilityImages(realUuid))
         ]);
 
-        // Force Map Reviews (Double safety against mapping failure in queries.ts)
         const reviews = (rawReviews || []).map((r: any) => ({
           ...r,
           userName: r.userName || r.user_name || '익명',
           date: r.date || (r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : '')
         }));
 
-        // Map Category
         let type: any = 'charnel';
         const name = data.name || '';
         const category = data.category || '';
 
-        if (category === 'funeral_hall' || category === 'funeral') type = 'funeral';
-        else if (category === 'charnel_house' || category === 'charnel') type = 'charnel';
-        else if (category === 'natural_burial' || category === 'natural') type = 'natural';
-        else if (category === 'park_cemetery' || category === 'park') type = 'park';
-        else if (category === 'pet_funeral' || category === 'pet') type = 'pet';
+        if (category === 'funeral_hall' || category === 'funeral' || category === 'funeral_home') type = 'funeral';
+        else if (category === 'charnel_house' || category === 'charnel' || category === 'memorial') type = 'charnel';
+        else if (category === 'natural_burial' || category === 'natural' || category === 'tree_burial') type = 'natural';
+        else if (category === 'park_cemetery' || category === 'park' || category === 'complex') type = 'park';
+        else if (category === 'pet_funeral' || category === 'pet' || category === 'pet_memorial') type = 'pet';
         else if (category === 'sea_burial' || category === 'sea') type = 'sea';
         else if (category === 'sangjo' || category === 'sangjo_company' || name.includes('프리드라이프') || name.includes('대명스테이션') || name.includes('보람상조') || name.includes('교원라이프')) type = 'sangjo';
 
-        // Parse Details
+        const categoryMap: Record<string, FacilityCategoryType> = {
+          'funeral': '장례식장',
+          'charnel': '봉안시설',
+          'natural': '자연장',
+          'park': '공원묘지',
+          'pet': '동물장례',
+          'sea': '해양장',
+          'sangjo': '상조'
+        };
+        const mappedCategory = categoryMap[type] || '봉안시설';
+
         const details = data.details || {};
 
         const updatedFacility: Facility = {
           id: data.id?.toString(),
           name: data.name,
+          category: mappedCategory,
           type: type,
-          religion: details.religion || 'none',
+          religion: data.religion || 'none',
           address: data.address,
-          lat: Number(data.location?.coordinates ? data.location.coordinates[1] : 0),
-          lng: Number(data.location?.coordinates ? data.location.coordinates[0] : 0),
-          // Supabase returns GeoJSON for geography columns usually?
-          // Actually supabase-js might return it as string or object.
-          // Wait, 'search_facilities' RPC returns lat/lng columns explicitly.
-          // But 'facilities' table select('*') returns 'location' column.
-          // I need to be careful here. ST_AsGeoJSON? 
-          // Safest to keep using the lat/lng from the LIST view if possible, or assume user won't notice until we fix detail fetch.
-          // Or Use the RPC logic even for details? No.
-          // Let's assume for now we use the lat/lng from the passed facility object via state update?
-          // But here we are creating a fresh object.
-          // Let's rely on data.location if standard format, OR better: use ST_X/ST_Y in select?
-          // I'll assume for this step I might miss lat/lng in detail fetch unless I change the query.
-          // .select('*, st_x(location::geometry) as lng, st_y(location::geometry) as lat') NOT supported in standard PostgREST easily without view/rpc.
-          // Workaround: Use the lat/lng from the state since we just verified it in the map?
-          // But fetchFacilityDetails creates a NEW object.
-          // I will try to parse data.location if it comes as GeoJSON { type: 'Point', coordinates: [lng, lat] }
-
-
-          priceRange: details.price_range || '가격 정보 상담',
-          rating: Number(details.rating || 0), // Use details if available
-          reviewCount: Number(details.review_count || 0),
-          imageUrl: (data.images && data.images[0]) || (data.gallery_images && data.gallery_images[0]) || 'https://placehold.co/800x600?text=No+Image',
-          description: details.description || '',
-          features: details.features || [],
-          phone: data.contact || '',
-          prices: details.prices || [],
-          galleryImages: data.gallery_images || images || (data.images || []),
+          lat: Number(data.lat || (data.location?.coordinates ? data.location.coordinates[1] : 0)),
+          lng: Number(data.lng || (data.location?.coordinates ? data.location.coordinates[0] : 0)),
+          priceRange: data.price_min ? `${(data.price_min / 10000).toLocaleString()}만원~` : '가격 정보 상담',
+          rating: Number(data.rating || 0),
+          reviewCount: Number(data.reviews_count || 0),
+          imageUrl: (data.images && data.images[0]) || 'https://placehold.co/800x600?text=No+Image',
+          description: data.description || '',
+          features: data.features || [],
+          phone: data.phone || data.contact || '',
+          prices: data.prices || [],
+          galleryImages: data.images || [],
           reviews: reviews.length > 0 ? reviews : [],
-          naverBookingUrl: details.naver_booking_url,
+          naverBookingUrl: data.naver_booking_url,
           isDetailLoaded: true,
           isVerified: data.is_verified || false,
           dataSource: 'db',
-          priceInfo: details.price_info || [],
-          aiContext: details.ai_context || '',
+          priceInfo: data.price_info || null,
+          products: data.price_info?.products || [],
+          aiContext: data.ai_context || '',
           subscription: subscription || undefined
         };
 
-        // Fix Lat/Lng from GeoJSON if possible
-        if (data.location && data.location.type === 'Point' && Array.isArray(data.location.coordinates)) {
+        if (!updatedFacility.lat && data.location && data.location.type === 'Point') {
           updatedFacility.lng = data.location.coordinates[0];
           updatedFacility.lat = data.location.coordinates[1];
-        } else {
-          // Fallback: Use what we have in state if possible? 
-          // Without lat/lng, marker might jump. 
-          // But usually details are shown in a Sheet, not moving the marker.
-          // MapController uses selectedFacility.lat/lng...
-          // IMPORTANT: The previous LIST fetch had valid lat/lng.
-          // I should MERGE with existing facility to preserve lat/lng!
-          const existing = facilities.find(f => f.id === facilityId);
-          if (existing) {
-            updatedFacility.lat = existing.lat;
-            updatedFacility.lng = existing.lng;
-            updatedFacility.rating = updatedFacility.rating || existing.rating; // Keep simulated if 0
-            updatedFacility.reviewCount = updatedFacility.reviewCount || existing.reviewCount;
-          }
         }
 
-        setFacilities(prev => prev.map(f => f.id === facilityId ? updatedFacility : f));
+        const existing = facilities.find(f => f.id === realUuid || f.id === facilityId);
+        if (existing) {
+          if (!updatedFacility.lat) { updatedFacility.lat = existing.lat; updatedFacility.lng = existing.lng; }
+          updatedFacility.rating = existing.rating;
+          updatedFacility.reviewCount = existing.reviewCount;
+        }
+
+        setFacilities(prev => prev.map(f => f.id === realUuid || f.id === facilityId ? updatedFacility : f));
         setSelectedFacility(updatedFacility);
       }
     } catch (err) {
@@ -649,7 +643,7 @@ const App: React.FC = () => {
       id: `r-new-${Date.now()}`,
       userId: user?.id || 'anon',
       user_id: user?.id || 'anon',
-      space_id: facilityId,
+      facility_id: facilityId,
       userName: userInfo?.name || '익명',
       rating,
       date: new Date().toLocaleDateString(),
@@ -1048,18 +1042,28 @@ const App: React.FC = () => {
                   productData = data.price_info.products;
                 }
 
-                // Fetch Reviews
+                // Fetch Reviews safely (resolve UUID first)
                 try {
-                  // Dynamically import to avoid circular dep if needed, or use direct if safe.
-                  // Using direct supabase query here is safer to avoid hook rules or import issues in callback.
-                  const { data: reviews } = await supabase
-                    .from('reviews')
-                    .select('*')
-                    .eq('space_id', searchId.toString()) // Ensure string for UUID/Text match
-                    .order('created_at', { ascending: false });
+                  // 1. Find UUID for this legacy ID
+                  const { data: facilityData } = await supabase
+                    .from('facilities')
+                    .select('id')
+                    .eq('legacy_id', searchId.toString())
+                    .maybeSingle();
 
-                  if (reviews) {
-                    reviewData = reviews;
+                  if (facilityData && facilityData.id) {
+                    // 2. Fetch reviews using the real UUID
+                    const { data: reviews } = await supabase
+                      .from('reviews')
+                      .select('*')
+                      .eq('facility_id', facilityData.id)
+                      .order('created_at', { ascending: false });
+
+                    if (reviews) {
+                      reviewData = reviews;
+                    }
+                  } else {
+                    console.warn('[App.tsx] Legacy ID mismatch or no UUID found for:', searchId);
                   }
                 } catch (e) { console.error('Failed to fetch reviews', e); }
               } else {
@@ -1079,7 +1083,7 @@ const App: React.FC = () => {
                     const { data: reviews } = await supabase
                       .from('reviews')
                       .select('*')
-                      .eq('space_id', data.id)
+                      .eq('facility_id', data.id)
                       .order('created_at', { ascending: false });
 
                     if (reviews) reviewData = reviews;
