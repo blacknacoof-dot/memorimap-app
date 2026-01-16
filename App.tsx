@@ -307,8 +307,8 @@ const App: React.FC = () => {
         // RPC Call: search_facilities
         const { data, error } = await supabase
           .rpc('search_facilities', {
-            lat: center[0],
-            lng: center[1],
+            user_lat: center[0], // [Fix] DB 함수 파라미터 매칭
+            user_lng: center[1],
             radius_meters: 500000, // 500km (Covering whole Korea)
             filter_category: null
           });
