@@ -12,8 +12,8 @@ export const searchFacilities = async (
     category?: string
 ) => {
     const { data, error } = await supabase.rpc('search_facilities', {
-        lat,
-        lng,
+        user_lat: lat, // [Fix] 매개변수 이름 변경
+        user_lng: lng, // [Fix] 매개변수 이름 변경
         radius_meters: radius,
         filter_category: category || null,
     });
