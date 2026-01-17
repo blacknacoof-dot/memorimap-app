@@ -1,26 +1,45 @@
 
 import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
 
-const supabaseUrl = 'https://xvmpvzldezpoxxsarizm.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2bXB2emxkZXpwb3h4c2FyaXptIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NTg1MTAxOSwiZXhwIjoyMDgxNDI3MDE5fQ.F98y7OtBTjRCNeDycy3YQrKJdjM6-Hs_-ZYZHluWHio'; // SERVICE ROLE KEY
+// ES Module dirname workaround
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Load .env.local
+const envPath = path.resolve(__dirname, '../.env.local');
+if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+}
 
-async function checkSchema() {
-    console.log('Checking reviews table columns...');
-    const { data, error } = await supabase.from('reviews').select('*').limit(1);
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+
+const supabase = createClient(supabaseUrl!, supabaseAnonKey!);
+
+async function checkColumns() {
+    console.log('--- 🔍 Column Check ---');
+
+    // We can't access information_schema easily via client usually, so we'll select * limit 1 and check keys
+    const { data, error } = await supabase
+        .from('facilities')
+        .select('*')
+        .limit(1);
+
     if (error) {
-        console.error('Error selecting from reviews:', error);
+        console.error('Error selecting facility:', error);
     } else if (data && data.length > 0) {
-        console.log('Columns found:', Object.keys(data[0]));
+        const sample = data[0];
+        console.log('Available keys:', Object.keys(sample));
+
+        if ('images' in sample) console.log('✅ Has "images" column');
+        if ('image_url' in sample) console.log('✅ Has "image_url" column');
     } else {
-        console.log('No data in reviews table. Trying to insert a dummy to check error...');
-        // Try to insert with space_id to see if it complains about column not found
-        const { error: insertError } = await supabase.from('reviews').insert([{ space_id: 0, content: 'test schema' }]);
-        if (insertError) {
-            console.log('Insert error:', insertError.message);
-        }
+        console.log('No facilities found to check columns.');
     }
 }
 
-checkSchema();
+checkColumns();

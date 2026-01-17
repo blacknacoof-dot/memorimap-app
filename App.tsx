@@ -146,14 +146,21 @@ const App: React.FC = () => {
   useEffect(() => {
     const syncSupabaseAuth = async () => {
       if (!session) {
-        setSupabaseAuth(null);
+        // [Fix] Clear Supabase session on logout
+        // setSupabaseAuth(null); // Deprecated local helper
+        await supabase.auth.signOut();
         return;
       }
       try {
         const token = await session.getToken({ template: 'supabase' });
         if (token) {
           console.log("🔄 Injecting Clerk Token into Supabase Client...");
-          setSupabaseAuth(token);
+          // [Fix] Explicitly set session on the global Supabase client
+          await supabase.auth.setSession({
+            access_token: token,
+            refresh_token: '', // Clerk manages refresh, so empty string is fine
+          });
+          console.log('✅ Supabase Session Synced!');
         } else {
           console.warn("⚠️ Clerk getToken returned null. Check 'supabase' template.");
         }
@@ -323,9 +330,9 @@ const App: React.FC = () => {
             const category = item.category || '';
 
             if (category === 'funeral_hall' || category === 'funeral' || category === 'funeral_home') type = 'funeral';
-            else if (category === 'charnel_house' || category === 'charnel' || category === 'memorial') type = 'charnel';
+            else if (category === 'charnel_house' || category === 'charnel' || category === 'memorial' || category === 'columbarium') type = 'charnel'; // Added columbarium
             else if (category === 'natural_burial' || category === 'natural' || category === 'tree_burial') type = 'natural';
-            else if (category === 'park_cemetery' || category === 'park' || category === 'complex') type = 'park';
+            else if (category === 'park_cemetery' || category === 'park' || category === 'complex' || category === 'cemetery') type = 'park'; // Added cemetery
             else if (category === 'pet_funeral' || category === 'pet' || category === 'pet_memorial') type = 'pet';
             else if (category === 'sea_burial' || category === 'sea') type = 'sea';
             else if (category === 'sangjo' || category === 'sangjo_company' || name.includes('프리드라이프') || name.includes('대명스테이션') || name.includes('보람상조') || name.includes('교원라이프')) type = 'sangjo';
@@ -446,14 +453,13 @@ const App: React.FC = () => {
 
     // 2. Category Filter
     if (selectedFilter !== '전체') {
-      const cat = f.category || '';
-      // Map UI Filter to DB Category Enum
-      if (selectedFilter === '장례식장' && (cat !== 'funeral_home' && cat !== 'funeral')) return false;
-      if (selectedFilter === '봉안시설' && (cat !== 'charnel_house' && cat !== 'charnel' && cat !== 'memorial' && cat !== 'memorial_facility')) return false;
-      if (selectedFilter === '자연장' && (cat !== 'natural_burial' && cat !== 'tree_burial')) return false;
-      if (selectedFilter === '공원묘지' && (cat !== 'park_cemetery' && cat !== 'complex')) return false;
-      if (selectedFilter === '해양장' && (cat !== 'sea_burial' && cat !== 'sea')) return false;
-      if (selectedFilter === '동물장례' && (cat !== 'pet_memorial' && cat !== 'pet')) return false;
+      const cat = f.category || ''; // This is Korean (e.g., '장례식장')
+
+      // Since 'cat' is already mapped to Korean in fetchFacilities, we can compare directly
+      if (selectedFilter !== cat) return false;
+
+      // Fallback for special cases if needed (e.g. mapping differences)
+      // But currently categoryMap ensures 1:1 mapping with buttons
     }
 
     // 3. Exclude Sangjo from general views (They have their own dedicated tab)
@@ -1009,63 +1015,84 @@ const App: React.FC = () => {
               let fetched = false;
 
               const relatedFacility = facilities.find(f => f.name === company.name && f.type === 'sangjo');
-              let searchId: number | null = null;
+              // [Fix] Support both UUID and Legacy ID
+              let searchId: string | number | null = null;
 
-              // Strategy 1: Fetch by ID (if strictly integer)
+              // 1. Try to find ID from related facility or company object
               if (relatedFacility && relatedFacility.id) {
-                try {
-                  const parsedId = (typeof relatedFacility.id === 'string' && !isNaN(parseInt(relatedFacility.id)))
-                    ? parseInt(relatedFacility.id, 10)
-                    : relatedFacility.id;
-
-                  // Only query if it became a number (skips UUIDs)
-                  if (typeof parsedId === 'number') {
-                    searchId = parsedId;
-                  }
-                } catch (e) {
-                  console.error('Failed to parse ID', e);
-                }
+                searchId = relatedFacility.id;
+              } else if (company.id && !company.id.startsWith('fc_')) {
+                // Use company.id if it's not a static ID (starts with fc_)
+                searchId = company.id;
               }
 
-              // Use searchId if found, otherwise we might fetch by name for products, 
-              // but for reviews we need an ID (unless we look up ID by name first).
+
+              // [Fix] Fully Robust Logic: UUID (Facilities) <-> Integer (Memorial_Spaces)
+
+              // 2026-01-17: 'facilities' table has UUID but NO price_info.
+              // 'memorial_spaces' table has Integer ID AND price_info.
+              // 'reviews' table uses facility_id (UUID).
 
               if (searchId) {
-                // Fetch Products
-                const { data } = await supabase
-                  .from('memorial_spaces')
-                  .select('price_info')
-                  .eq('id', searchId)
-                  .maybeSingle();
+                const searchIdStr = searchId.toString();
+                const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(searchIdStr);
 
-                if (data && data.price_info && data.price_info.products) {
-                  productData = data.price_info.products;
-                }
+                let uuid: string | null = null;
+                let legacyId: number | null = null;
 
-                // Fetch Reviews safely (resolve UUID first)
-                try {
-                  // 1. Find UUID for this legacy ID
-                  const { data: facilityData } = await supabase
+                if (isUuid) {
+                  uuid = searchIdStr;
+                  // Fetch Legacy ID from facilities to query memorial_spaces
+                  const { data: facData } = await supabase
                     .from('facilities')
-                    .select('id')
-                    .eq('legacy_id', searchId.toString())
+                    .select('legacy_id')
+                    .eq('id', uuid)
                     .maybeSingle();
 
-                  if (facilityData && facilityData.id) {
-                    // 2. Fetch reviews using the real UUID
-                    const { data: reviews } = await supabase
-                      .from('reviews')
-                      .select('*')
-                      .eq('facility_id', facilityData.id)
-                      .order('created_at', { ascending: false });
-
-                    if (reviews) {
-                      reviewData = reviews;
-                    }
-                  } else {
-                    console.warn('[App.tsx] Legacy ID mismatch or no UUID found for:', searchId);
+                  if (facData && facData.legacy_id) {
+                    const parsed = parseInt(facData.legacy_id, 10);
+                    if (!isNaN(parsed)) legacyId = parsed;
                   }
-                } catch (e) { console.error('Failed to fetch reviews', e); }
+                } else {
+                  // It is already a legacy numeric ID (from static data?)
+                  const parsed = parseInt(searchIdStr, 10);
+                  if (!isNaN(parsed)) {
+                    legacyId = parsed;
+                    // Fetch UUID from facilities to get reviews
+                    const { data: facData } = await supabase
+                      .from('facilities')
+                      .select('id')
+                      .eq('legacy_id', searchIdStr)
+                      .maybeSingle();
+                    if (facData) uuid = facData.id;
+                  }
+                }
+
+                // 1. Fetch Products from 'memorial_spaces' (Requires Integer ID)
+                if (legacyId) {
+                  const { data } = await supabase
+                    .from('memorial_spaces')
+                    .select('price_info')
+                    .eq('id', legacyId) // Integer column
+                    .maybeSingle();
+
+                  if (data && data.price_info && data.price_info.products) {
+                    productData = data.price_info.products;
+                  }
+                }
+
+                // 2. Fetch Reviews from 'reviews' (Requires UUID)
+                if (uuid) {
+                  const { data: reviews } = await supabase
+                    .from('reviews')
+                    .select('*')
+                    .eq('facility_id', uuid) // UUID column
+                    .order('created_at', { ascending: false });
+
+                  if (reviews) {
+                    reviewData = reviews;
+                  }
+                }
               } else {
                 // Fallback: Fetch ID by name to get reviews
                 try {
