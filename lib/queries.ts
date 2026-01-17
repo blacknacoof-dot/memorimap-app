@@ -5,23 +5,72 @@ export { supabase };
 
 // --- [Phase 8] 지도 검색 기능 ---
 
+// 1. 카테고리 매핑 함수 (DB 값과 100% 일치시킴)
+function mapCategoryToCode(category?: string) {
+    // 전체 선택 시 필터 없음
+    if (!category || category === '전체') return undefined;
+
+    // 장례식장 (DB값: funeral_home)
+    if (category === '장례식장' || category === 'funeral') {
+        return 'funeral_home';
+    }
+
+    // 봉안시설 (DB값: columbarium) <-- 여기가 틀렸었습니다! (memorial 아님)
+    if (category === '봉안시설' || category === '봉안당' || category === 'memorial') {
+        return 'columbarium';
+    }
+
+    // 자연장 (DB값: natural_burial)
+    if (category === '자연장' || category === '수목장') {
+        return 'natural_burial';
+    }
+
+    // 공원묘지 (DB값: cemetery) <-- 여기가 틀렸었습니다!
+    if (category === '공원묘지' || category === '묘지' || category === 'park') {
+        return 'cemetery';
+    }
+
+    // 동물장례 (DB값: pet_funeral)
+    if (category === '동물장례' || category === 'pet') {
+        return 'pet_funeral';
+    }
+
+    // 해양장 (DB값: sea_burial)
+    if (category === '해양장' || category === 'sea') {
+        return 'sea_burial';
+    }
+
+    // 그 외 예외 처리 (그대로 반환)
+    return category;
+}
+
 export const searchFacilities = async (
     lat: number,
     lng: number,
     radius: number = 5000,
     category?: string
 ) => {
+    // 1. 반드시 변환 함수를 거쳐야 합니다!
+    const mappedCategory = mapCategoryToCode(category);
+
     const { data, error } = await supabase.rpc('search_facilities', {
         user_lat: lat, // [Fix] 매개변수 이름 변경
         user_lng: lng, // [Fix] 매개변수 이름 변경
         radius_meters: radius,
-        filter_category: category || null,
+        filter_category: mappedCategory || null,
     });
 
     if (error) {
         console.error('Error searching facilities:', error);
         throw error;
     }
+
+    // 👇 데이터에 이미지가 들어오는지 콘솔로 확인해보세요
+    if (data && data.length > 0) {
+        // @ts-ignore
+        console.log('📸 첫 번째 시설 이미지:', data[0].image_url ? '있음' : '없음', data[0].image_url);
+    }
+
     return data;
 };
 
@@ -51,16 +100,6 @@ export const searchFacilitiesV2 = async (
 /**
  * [Phase 3] 지능형 추천 엔진 (반경 확장 + 지역명 검색)
  */
-const mapCategoryToCode = (category?: string) => {
-    if (!category) return undefined;
-    if (category === '장례식장' || category === 'funeral' || category === 'funeral_home') return 'funeral';
-    // [FIX] Add 'memorial_facility' to mapping
-    if (category === '봉안시설' || category === 'charnel' || category === 'memorial' || category === 'memorial_facility') return 'memorial';
-    if (category === '해양장' || category === 'sea') return 'sea';
-    if (category === '동물장례' || category === 'pet') return 'pet';
-    return category; // Fallback
-};
-
 export const getIntelligentRecommendations = async (
     lat: number,
     lng: number,
