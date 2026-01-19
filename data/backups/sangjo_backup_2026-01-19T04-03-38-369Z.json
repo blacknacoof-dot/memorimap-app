@@ -1,0 +1,1608 @@
+{
+  "metadata": {
+    "timestamp": "2026-01-19T04-03-38-369Z",
+    "total_facilities": 60,
+    "criteria": "category='sangjo' OR name ILIKE '%상조%' OR name ILIKE '%서비스%'"
+  },
+  "facilities": [
+    {
+      "id": "c92d9fa0-55f6-48ba-9f15-0ad9b10095d3",
+      "manager_id": null,
+      "name": "현대S라이프연세병원장례식장",
+      "category": "sangjo",
+      "address": "대구광역시 달성군 화원읍 비슬로 2525",
+      "lat": 35.8020043157143,
+      "lng": 128.493547641119,
+      "phone": "053-644-1919",
+      "description": "",
+      "images": [
+        "https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/charnel_final_1767789315138.jpg"
+      ],
+      "legacy_id": "1846",
+      "is_verified": true,
+      "ai_context": "",
+      "features": {},
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:04.084746+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "8d5eac95-01a2-4d37-8d10-7bbec024ad4e",
+      "manager_id": null,
+      "name": "교원예움 포항국화원 장례식장",
+      "category": "sangjo",
+      "address": "경상북도 포항시 남구 희망대로 644",
+      "lat": 36.0107872705417,
+      "lng": 129.34363855778,
+      "phone": "054-272-4444",
+      "description": "",
+      "images": [
+        "https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/charnel_final_1767789315138.jpg"
+      ],
+      "legacy_id": "2140",
+      "is_verified": true,
+      "ai_context": "",
+      "features": {},
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:04.783823+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "fbe46dc3-42a8-48b6-aa4e-2e8b04b48bb6",
+      "manager_id": null,
+      "name": "보람여주장례식장",
+      "category": "sangjo",
+      "address": "경기도 여주시 세종대왕면 중부대로 2710-48",
+      "lat": 37.2963763283839,
+      "lng": 127.608990313814,
+      "phone": "031-885-1919",
+      "description": "",
+      "images": [
+        "https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/charnel_final_1767789315138.jpg"
+      ],
+      "legacy_id": "1662",
+      "is_verified": true,
+      "ai_context": "",
+      "features": {},
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:04.783823+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "450c9322-cce6-453d-b541-7157c07d8541",
+      "manager_id": null,
+      "name": "파주보람장례식장",
+      "category": "sangjo",
+      "address": "경기도 파주시 월롱면 통일로 715-2 지하1층",
+      "lat": 37.7729307839512,
+      "lng": 126.7890572912,
+      "phone": "031-947-9444",
+      "description": "",
+      "images": [
+        "https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/charnel_final_1767789315138.jpg"
+      ],
+      "legacy_id": "1724",
+      "is_verified": true,
+      "ai_context": "",
+      "features": {},
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:04.783823+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "8f83f1b9-28ef-4646-9f4c-b85bf5caf24b",
+      "manager_id": null,
+      "name": "교원예움 김해장례식장",
+      "category": "sangjo",
+      "address": "경상남도 김해시 삼안로8번길 24",
+      "lat": 35.2296950634875,
+      "lng": 128.920470957138,
+      "phone": "055-331-4444",
+      "description": "자연과 하나 되는 공간, 교원예움 김해장례식장에서 고인의 평안을 기원합니다. 경남 김해시 삼안로8번길 24에 위치하여 접근성이 좋고 관리가 철저합니다.",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJVQ0EjqPAaDURrFImq1m4KsA/photos/AZLasHrgwDdpf5oJDlqj2Ow2PgeID_MdgRhCVxQBDafD3mThhsWKhH-RpDGdZircKJll2UX_1jNgnXScwIWgjqxAaX0Rlgko-e7ixi2Vp6GQuNfO0A429_VqoLR9rcOtonUCG3nEgw0iSK2pTjFRFiRPnSaqE9iDt7quj12PLYzy1f8TZDdl_y7mCpJx6Bn1M7mmWCfeRPLNyBF2Swj45ovogV4lB_tlQT1UZ7N1WNkQUstHP5ErjN4v_-kFiGj4Ox4QDfW9apYRGlOMrOrfDm_VlLpoD7AfOluR-d_kVZjmzAJWjLlQl826ih7Rcl6KQ1niDD1qJEtAO9GEzUm8R6LdGRY4sAiheafLDKxv_MfYVAKMRFk-kawJiuChBstl7qS1HUfA_0BmcsOUddpHXgX3GREU4InBB9voih75DKJuDvPvydA/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "legacy_id": "555282729",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "가정,생활 > 장례 > 장례식장"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:05.093106+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "a726f4f9-bc47-4034-a10a-4af653932098",
+      "manager_id": null,
+      "name": "교원예움 충주시민장례식장",
+      "category": "sangjo",
+      "address": "충청북도 충주시 두루봉길 8",
+      "lat": 37.0019766022864,
+      "lng": 127.931762408128,
+      "phone": "043-845-4444",
+      "description": "마음까지 치유되는 힐링의 공간, 충주시민장례식장 전기차충전소. 충북 충주시 두루봉길 8의 아름다운 사계절을 고스란히 느낄 수 있는 최고의 추모 공간입니다.",
+      "images": [
+        "https://15774129.go.kr/BCUser/facilitypic/7000000055/1554967134431.jpg"
+      ],
+      "legacy_id": "433621094",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "교통,수송 > 자동차 > 전기차 충전소"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:05.732678+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "b66afe92-1b8e-4192-b706-b6be1c42f2f7",
+      "manager_id": null,
+      "name": "교원예움 화성장례식장",
+      "category": "sangjo",
+      "address": "경기도 화성시 마도면 쌍송북로 111",
+      "lat": 37.2017308144428,
+      "lng": 126.78794871026,
+      "phone": "031-355-8000",
+      "description": "",
+      "images": [
+        "https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/charnel_final_1767789315138.jpg"
+      ],
+      "legacy_id": "1042",
+      "is_verified": true,
+      "ai_context": "",
+      "features": {},
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:07.116476+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "605767b3-8775-412d-a80a-544ea76aa8eb",
+      "manager_id": null,
+      "name": "교원예움 평택장례식장",
+      "category": "sangjo",
+      "address": "경기도 평택시 신평로 205",
+      "lat": 36.9818562627221,
+      "lng": 127.093206407145,
+      "phone": "031-652-0404",
+      "description": "",
+      "images": [
+        "https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/charnel_final_1767789315138.jpg"
+      ],
+      "legacy_id": "1566",
+      "is_verified": true,
+      "ai_context": "",
+      "features": {},
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:07.380291+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "85289823-454d-436b-bc09-4efa14f65929",
+      "manager_id": null,
+      "name": "보람의정부장례식장",
+      "category": "sangjo",
+      "address": "경기도 의정부시 추동로 253 의정부보람병원",
+      "lat": 37.7524228038786,
+      "lng": 127.0808384014,
+      "phone": "031-851-4444",
+      "description": "",
+      "images": [
+        "https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/charnel_final_1767789315138.jpg"
+      ],
+      "legacy_id": "1619",
+      "is_verified": true,
+      "ai_context": "",
+      "features": {},
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:07.604932+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "e388f909-baf8-48cc-a225-7a0220d03587",
+      "manager_id": null,
+      "name": "동래봉생병원SKY보람장례식장",
+      "category": "sangjo",
+      "address": "부산광역시 동래구 충렬대로348번길 23 동래봉생병원sky보람장례식장",
+      "lat": 35.1966755115841,
+      "lng": 129.095926577123,
+      "phone": "051-531-7100",
+      "description": "",
+      "images": [
+        "https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/charnel_final_1767789315138.jpg"
+      ],
+      "legacy_id": "1784",
+      "is_verified": true,
+      "ai_context": "",
+      "features": {},
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:07.834772+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "e5b8ee66-2a06-4504-81b3-51507f219014",
+      "manager_id": null,
+      "name": "교원예움 강원장례식장",
+      "category": "sangjo",
+      "address": "강원특별자치도 춘천시 동내면 순환대로 877",
+      "lat": 37.857795114004,
+      "lng": 127.774949882365,
+      "phone": "033-261-4441",
+      "description": "교원예움 강원장례식장은(는) 강원특별자치도 춘천시 동내면 순환대로 877의 맑은 공기와 따뜻한 햇살이 함께하는 프리미엄 복합추모시설입니다. 고인에게는 최고의 안식을, 유가족에게는 깊은 위로를 전합니다.",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJ0SiqQQXlYjUROW-a9IL2bOA/photos/AZLasHqDy9WaJmoIv4fgJovD9ZGEtdxfgaj8iE7vYraZt6NrjRYchaN6xry-et7FWrNofd4NWlseLRzcjMcohLOINYZ5NAL9OxHb8gPQK6wnVYg5y_JlB7ybHA0FN0rjdrBAJPsgD139adcc63IFAfw2oQKd_qOzkASH1xO0wN5pB5kqumABVRZYX9KWySuB0dNHRwIOoqdZ1p1TkZ0uHbAOmbFMoWRAPPBUT2H-ZznXi7uLccXsgwBgktbZLuONhn_xqEpQBHm9v-bjFDAML9OSkHqjXeYFn3FBLETQu42r-NNwb0KJSf7b_UGQFKCpacv8sIbzGW4PCERjfWI8XivQWgVW8ftU1IE3ftGsY9rvIdDRGP1Fu3J_T-3J5dTq6MdnzKCakv0D6i1qXukBSN28Y3kHR5tRhsZjEZSDHBvi2uU/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "legacy_id": "1263431471",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "가정,생활 > 장례 > 장례식장"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:08.969983+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "d9e78cfc-dc64-405e-bbc4-8b407082ad41",
+      "manager_id": null,
+      "name": "교원예움 아산장례식장",
+      "category": "sangjo",
+      "address": "충청남도 아산시 신정로 713",
+      "lat": 36.7812786270701,
+      "lng": 126.987016329999,
+      "phone": "041-549-4441",
+      "description": "품격 있는 시설과 정성 어린 서비스로 모시는 교원예움 아산장례식장입니다. 충남 아산시 신정로 713의 고즈넉한 풍경 속에서 소중한 추억을 영원히 간직하세요.",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJ0RSTdHreejURC1xyq-4TPoY/photos/AZLasHr6cT-JFBLJpnFW2nKTXgqosrCuS7cH2ymLbWVRz0nL_nlRHIizWIJVIUY6NNIzAXWhsW_Vvi4dZpD335XxNYdj2e27pklF0qRXYe-sVxk-4y7NRr6Fh8QsgJtL5w8z01diSHu17Y4qo8c3B-gxzK2p_8cD-5eu1T8yEqtBaEvD8JpCXly7DOUIynpgGKiqp4lfFuouwe9TQhJfvfU5Xxh_XZGTEKGNLTzxN-Dde-mDogbiiR3pxeuQgSGzEOla7tzb-2GSS1MBY68_U0aPRX3wwV9BPCA8FEAZeLAamibP8Ea45czvDcO4O61C01_-RkWMXNWEV0QIpJunmfPpo0ehvPqA9uvjWZbaTsmRlTOdXz6HJkYvWlEaZoyOC6PsWH5GW-WlUg3c48fOeGBDX4W6BlEbc0R2w--8MJKMd1k1SHk/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "legacy_id": "495651437",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "가정,생활 > 장례 > 장례식장"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:09.245373+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "4db19224-c086-4c91-afe7-b0a510624a8c",
+      "manager_id": null,
+      "name": "교원예움 서서울장례식장",
+      "category": "sangjo",
+      "address": "서울특별시 영등포구 선유로 101",
+      "lat": 37.5230854632627,
+      "lng": 126.890009107595,
+      "phone": "02-2676-4444",
+      "description": "마음까지 치유되는 힐링의 공간, 교원예움 서서울장례식장. 서울 영등포구 선유로 101의 아름다운 사계절을 고스란히 느낄 수 있는 최고의 추모 공간입니다.",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJ7XMYzPKefDURFpP8ERXq9O4/photos/AZLasHokKCF3Dhp8qziByhAIJ4ctloySF6ITAShlHXQYYp30hEyxK2oK4PxH0KykcG_jJHw74nLHxcG8v1cKjly2a3YlMMGHO2JzeM2khtwzfggAyPKKxoxyCLsSDOzGQ3BfFygkYKqUtcIZ_dhwRz4gzijHmx9gSpQojrAJlHevbe3QFqjleKuJgraeQuWK6Sq9yQKNzpGJHpm3nlGLaXpdWrFRuvNnu9gC7wDYpa_yE5Zd4aHGa45_Kwa5xmy-ARGi9oMysz0C2PNN4F4jLbuUzV6k_UZecvlbCd9EKIerXF4f3yV8ZIRcGij0woUS8xaLpsPrEfz_GffQkLheBmLC7oKzLhUk_fM0uT6SfwwOFnogH5TlWjZUKtTQEZ3m1HvXEQu8tsnv4mU8SnBrbbU7dVXDjm5SK3oMWYENLNViJNk/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "legacy_id": "348908274",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "가정,생활 > 장례 > 장례식장"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:09.245373+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "e9625e6c-0745-43ea-a232-c01540acca61",
+      "manager_id": null,
+      "name": "보람세민에스장례식장",
+      "category": "sangjo",
+      "address": "울산광역시 중구 내황4길 11 지하1층",
+      "lat": 35.5527759364668,
+      "lng": 129.341677269835,
+      "phone": "052-285-3905",
+      "description": "보람세민에스장례식장은(는) 울산 중구 내황4길 11의 맑은 공기와 따뜻한 햇살이 함께하는 프리미엄 복합추모시설입니다. 고인에게는 최고의 안식을, 유가족에게는 깊은 위로를 전합니다.",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJgxDMO7HNZzURclj1BEhjMqI/photos/AZLasHpVcU0zBXon5ByH3myH79dZ4pSOoa_4gUX6JveM_UwOHT0rev2AGObAet6YXo2OySYunU-Yip_sspSMPhnsnf6b1u4EZh5cHLCiZPl7NZ54_a9D6NROcfVAVapS8jemYNhYeFM_3FYVXZID66OQvpFwjafKrsL2wcnFUeNROgz3pEnCORL0S02MIMOuzgC89b-N1Sl1t4p-qNo70OnJcix6g3_dak5ZAKSDgRWdCmA8jU92DXuFqZFwNB2BtAcePQ1iGi-9LLwUCwiyWoR9X__Hxgpf6t-2u3AAabS52P_xhw/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "legacy_id": "26481179",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "가정,생활 > 장례 > 장례식장"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:09.245373+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "11e76099-2da2-42b9-8ded-04d353cb1ce7",
+      "manager_id": null,
+      "name": "디에스라이프",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5665,
+      "lng": 126.978,
+      "phone": "1577-7883",
+      "description": "장례 의전의 전문가, 디에스라이프입니다. 24시간 언제든 상담 가능한 전문 인력과 고품격 리무진 서비스로 차별화된 경험을 제공합니다. 고인에게는 최고의 예를, 가족에게는 깊은 위로를 드립니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/1a1a1a/png?text=DS+Life"
+      ],
+      "legacy_id": "2301",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "국가공인 지도사",
+        "24시간 상담",
+        "맞춤형 장례",
+        "원스톱 서비스",
+        "프리미엄 리무진"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:04.473278+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "265f33b5-30f6-4045-b0b0-ff0bd65fc7db",
+      "manager_id": null,
+      "name": "아주상조",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5667,
+      "lng": 126.9782,
+      "phone": "1899-2646",
+      "description": "장례 의전의 전문가, 아주상조입니다. 24시간 언제든 상담 가능한 전문 인력과 고품격 리무진 서비스로 차별화된 경험을 제공합니다. 고인에게는 최고의 예를, 가족에게는 깊은 위로를 드립니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/1a1a1a/png?text=Aju+Sangjo"
+      ],
+      "legacy_id": "2308",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "국가공인 지도사",
+        "24시간 상담",
+        "맞춤형 장례",
+        "원스톱 서비스",
+        "전국 의전망"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:03.214643+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "2ccd9d1a-7bc5-4f88-b169-dc8e33e53c6c",
+      "manager_id": null,
+      "name": "불국토",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5668,
+      "lng": 126.9783,
+      "phone": "02-3270-3377",
+      "description": "장례 의전의 전문가, 불국토입니다. 24시간 언제든 상담 가능한 전문 인력과 고품격 리무진 서비스로 차별화된 경험을 제공합니다. 고인에게는 최고의 예를, 가족에게는 깊은 위로를 드립니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/1a1a1a/png?text=Bulgukto"
+      ],
+      "legacy_id": "2306",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "국가공인 지도사",
+        "24시간 상담",
+        "맞춤형 장례",
+        "원스톱 서비스",
+        "100% 환불 보장"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:04.783823+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "2df02a83-297d-4141-baa1-eeae1e84e2f7",
+      "manager_id": null,
+      "name": "평화상조",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5669,
+      "lng": 126.9784,
+      "phone": "1588-1774",
+      "description": "오랜 전통의 평화상조이 함께합니다. 고유의 장례 예법과 정성을 담아 마지막 가시는 길을 아름답게 지켜드립니다. 숙련된 전문가의 노하우로 경황없는 유가족분들께 평안을 드립니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/1a1a1a/png?text=Pyeonghwa"
+      ],
+      "legacy_id": "2290",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "오랜 전통",
+        "전문 장례지도사",
+        "고품격 의전",
+        "종교별 장례",
+        "국가공인 지도사"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:03.214643+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "32db8a2a-62fa-4978-978a-ddbe5b40f4b5",
+      "manager_id": null,
+      "name": "JK상조",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.567,
+      "lng": 126.9785,
+      "phone": "1599-4484",
+      "description": "오랜 전통의 JK상조이 함께합니다. 고유의 장례 예법과 정성을 담아 마지막 가시는 길을 아름답게 지켜드립니다. 숙련된 전문가의 노하우로 경황없는 유가족분들께 평안을 드립니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/1a1a1a/png?text=JK+Life"
+      ],
+      "legacy_id": "2284",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "오랜 전통",
+        "전문 장례지도사",
+        "고품격 의전",
+        "종교별 장례",
+        "전국 의전망"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:08.969983+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "3c81249d-3554-4e34-b395-3a593a7c320f",
+      "manager_id": null,
+      "name": "유토피아퓨처",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5672,
+      "lng": 126.9787,
+      "phone": "1599-7904",
+      "description": "장례 의전의 전문가, 유토피아퓨처입니다. 24시간 언제든 상담 가능한 전문 인력과 고품격 리무진 서비스로 차별화된 경험을 제공합니다. 고인에게는 최고의 예를, 가족에게는 깊은 위로를 드립니다.",
+      "images": [],
+      "legacy_id": "2315",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "국가공인 지도사",
+        "24시간 상담",
+        "맞춤형 장례",
+        "원스톱 서비스",
+        "프리미엄 리무진"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:04.783823+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "41a333c3-067e-4d33-82c3-fa15d63a9575",
+      "manager_id": null,
+      "name": "전국공무원상조",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5673,
+      "lng": 126.9788,
+      "phone": "1577-1323",
+      "description": "장례 의전의 전문가, 전국공무원상조입니다. 24시간 언제든 상담 가능한 전문 인력과 고품격 리무진 서비스로 차별화된 경험을 제공합니다. 고인에게는 최고의 예를, 가족에게는 깊은 위로를 드립니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/1a1a1a/png?text=National+Official"
+      ],
+      "legacy_id": "2314",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "국가공인 지도사",
+        "24시간 상담",
+        "맞춤형 장례",
+        "원스톱 서비스",
+        "100% 환불 보장"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:03.214643+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "42a60b62-2a48-44c0-bf82-d18eeb724dac",
+      "manager_id": null,
+      "name": "금강문화허브",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5674,
+      "lng": 126.9789,
+      "phone": "1544-4945",
+      "description": "장례 의전의 전문가, 금강문화허브입니다. 24시간 언제든 상담 가능한 전문 인력과 고품격 리무진 서비스로 차별화된 경험을 제공합니다. 고인에게는 최고의 예를, 가족에게는 깊은 위로를 드립니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/1a1a1a/png?text=Geumgang"
+      ],
+      "legacy_id": "2297",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "국가공인 지도사",
+        "24시간 상담",
+        "맞춤형 장례",
+        "원스톱 서비스",
+        "직영 장례식장 혜택"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:08.969983+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "42bbb10b-30a0-4b48-8d7f-91c915b67ca7",
+      "manager_id": null,
+      "name": "한라상조",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5675,
+      "lng": 126.979,
+      "phone": "1588-7979",
+      "description": "장례 의전의 전문가, 한라상조입니다. 24시간 언제든 상담 가능한 전문 인력과 고품격 리무진 서비스로 차별화된 경험을 제공합니다. 고인에게는 최고의 예를, 가족에게는 깊은 위로를 드립니다.",
+      "images": [],
+      "legacy_id": "2300",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "국가공인 지도사",
+        "24시간 상담",
+        "맞춤형 장례",
+        "원스톱 서비스",
+        "직영 장례식장 혜택"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:03.214643+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "45aaddfd-4122-45c0-b218-37765fcc1965",
+      "manager_id": null,
+      "name": "위드라이프",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5676,
+      "lng": 126.9791,
+      "phone": "1688-2877",
+      "description": "장례 의전의 전문가, 위드라이프입니다. 24시간 언제든 상담 가능한 전문 인력과 고품격 리무진 서비스로 차별화된 경험을 제공합니다. 고인에게는 최고의 예를, 가족에게는 깊은 위로를 드립니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/1a1a1a/png?text=With+Life"
+      ],
+      "legacy_id": "2302",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "국가공인 지도사",
+        "24시간 상담",
+        "맞춤형 장례",
+        "원스톱 서비스",
+        "사전 장례 컨설팅"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:03.214643+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "4b81d1a6-0063-4040-907a-c7b32c058aac",
+      "manager_id": null,
+      "name": "부모사랑",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5677,
+      "lng": 126.9792,
+      "phone": "1566-0114",
+      "description": "부모사랑상조는 자본금 100억원의 튼튼한 회사입니다.",
+      "images": [
+        "https://www.bumo-sarang.com/images/common/logo.png"
+      ],
+      "legacy_id": "2289",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "자본금 100억",
+        "TV CF 방영",
+        "장례이행 보증"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:03.214643+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "602d9e58-79ee-4fc9-8212-140013198ce7",
+      "manager_id": null,
+      "name": "우리가족상조",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5678,
+      "lng": 126.9793,
+      "phone": "070-8144-5294",
+      "description": "장례 의전의 전문가, 우리가족상조입니다. 24시간 언제든 상담 가능한 전문 인력과 고품격 리무진 서비스로 차별화된 경험을 제공합니다. 고인에게는 최고의 예를, 가족에게는 깊은 위로를 드립니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/1a1a1a/png?text=Woori+Family"
+      ],
+      "legacy_id": "2295",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "국가공인 지도사",
+        "24시간 상담",
+        "맞춤형 장례",
+        "원스톱 서비스",
+        "100% 환불 보장"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:08.969983+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "60816610-3cee-4462-bd3b-1ff22c48f9e5",
+      "manager_id": null,
+      "name": "다온플랜",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5679,
+      "lng": 126.9794,
+      "phone": "1577-1555",
+      "description": "장례 의전의 전문가, 다온플랜입니다. 24시간 언제든 상담 가능한 전문 인력과 고품격 리무진 서비스로 차별화된 경험을 제공합니다. 고인에게는 최고의 예를, 가족에게는 깊은 위로를 드립니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/1a1a1a/png?text=Daon+Plan"
+      ],
+      "legacy_id": "2296",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "국가공인 지도사",
+        "24시간 상담",
+        "맞춤형 장례",
+        "원스톱 서비스",
+        "사전 장례 컨설팅"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:08.969983+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "d0256fbb-8dbe-4371-9825-64f9f9885f96",
+      "manager_id": null,
+      "name": "여수보람장례식장",
+      "category": "sangjo",
+      "address": "전라남도 여수시 소라면 무선로 339",
+      "lat": 34.7853370598485,
+      "lng": 127.638897978993,
+      "phone": "061-684-4444",
+      "description": "",
+      "images": [
+        "https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/charnel_final_1767789315138.jpg"
+      ],
+      "legacy_id": "1991",
+      "is_verified": true,
+      "ai_context": "",
+      "features": {},
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:08.26765+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "615eb822-1fd4-4e50-b007-49cc9787fb50",
+      "manager_id": null,
+      "name": "대전상조",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.568,
+      "lng": 126.9795,
+      "phone": "1588-7979",
+      "description": "장례 의전의 전문가, 대전상조입니다. 24시간 언제든 상담 가능한 전문 인력과 고품격 리무진 서비스로 차별화된 경험을 제공합니다. 고인에게는 최고의 예를, 가족에게는 깊은 위로를 드립니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/1a1a1a/png?text=Daejeon"
+      ],
+      "legacy_id": "2313",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "국가공인 지도사",
+        "24시간 상담",
+        "맞춤형 장례",
+        "원스톱 서비스",
+        "직영 장례식장 혜택"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:04.473278+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "2e024c3a-8580-45af-a8b0-2d98ea98ab58",
+      "manager_id": null,
+      "name": "보람인천장례식장",
+      "category": "sangjo",
+      "address": "인천광역시 서구 경명대로 468",
+      "lat": 37.5517463403571,
+      "lng": 126.660163385307,
+      "phone": "032-568-4000",
+      "description": "품격 있는 시설과 정성 어린 서비스로 모시는 보람인천장례식장입니다. 인천 서구 경명대로 468의 고즈넉한 풍경 속에서 소중한 추억을 영원히 간직하세요.",
+      "images": [
+        "https://15774129.go.kr/BCUser/facilitypic/1471321338282_1000000486_0.jpg"
+      ],
+      "legacy_id": "14500174",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "가정,생활 > 장례 > 장례식장"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:09.245373+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "763b55b7-879b-4bf7-9e21-c83628fb3f63",
+      "manager_id": null,
+      "name": "두레문화",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5681,
+      "lng": 126.9796,
+      "phone": "1588-9517",
+      "description": "장례 의전의 전문가, 두레문화입니다. 24시간 언제든 상담 가능한 전문 인력과 고품격 리무진 서비스로 차별화된 경험을 제공합니다. 고인에게는 최고의 예를, 가족에게는 깊은 위로를 드립니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/1a1a1a/png?text=Dure+Culture"
+      ],
+      "legacy_id": "2305",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "국가공인 지도사",
+        "24시간 상담",
+        "맞춤형 장례",
+        "원스톱 서비스",
+        "투명한 가격 정찰제"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:04.783823+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "7c955e23-22c2-43c5-992f-215b7f83197d",
+      "manager_id": null,
+      "name": "보람재향상조",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5682,
+      "lng": 126.9797,
+      "phone": "1588-7979",
+      "description": "대한민국 1등 상조, 보람재향상조입니다. 고객님의 마지막 순간까지 품격 있는 예우를 다합니다. 전국 직영망과 전문 장례지도사의 세심한 서비스로 가장 든든한 버팀목이 되겠습니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/1a1a1a/png?text=BORAM+Jaehyang"
+      ],
+      "legacy_id": "2283",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "업계 1위",
+        "전국 직영망",
+        "프리미엄 의전",
+        "무료 사전상담",
+        "투명한 가격 정찰제"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:03.214643+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "912a7921-6c69-43e5-a243-c744627b9eb8",
+      "manager_id": null,
+      "name": "늘곁애라이프",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5683,
+      "lng": 126.9798,
+      "phone": "1577-6250",
+      "description": "오랜 전통의 늘곁애라이프이 함께합니다. 고유의 장례 예법과 정성을 담아 마지막 가시는 길을 아름답게 지켜드립니다. 숙련된 전문가의 노하우로 경황없는 유가족분들께 평안을 드립니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/1a1a1a/png?text=Neulgyeotae"
+      ],
+      "legacy_id": "2285",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "오랜 전통",
+        "전문 장례지도사",
+        "고품격 의전",
+        "종교별 장례",
+        "프리미엄 리무진"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:08.969983+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "9137d56e-a999-4f14-8280-d04e894618ab",
+      "manager_id": null,
+      "name": "보람상조",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5684,
+      "lng": 126.9799,
+      "phone": "1588-7979",
+      "description": "대한민국 대표 상조, 보람상조입니다. 30년 전통의 고품격 장례 서비스를 약속드립니다.",
+      "images": [
+        "https://www.boram.com/images/common/logo.png"
+      ],
+      "legacy_id": "2282",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "업계 최초 가격정찰제",
+        "사이버추모관",
+        "고품격 리무진 서비스"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:03.214643+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "9a9954e9-90a1-4972-9251-bdaf40bccbae",
+      "manager_id": null,
+      "name": "더리본",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5685,
+      "lng": 126.98,
+      "phone": "1644-3651",
+      "description": "대한민국 1등 상조, 더리본입니다. 고객님의 마지막 순간까지 품격 있는 예우를 다합니다. 전국 직영망과 전문 장례지도사의 세심한 서비스로 가장 든든한 버팀목이 되겠습니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/1a1a1a/png?text=The+Reborn"
+      ],
+      "legacy_id": "2286",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "업계 1위",
+        "전국 직영망",
+        "프리미엄 의전",
+        "무료 사전상담",
+        "투명한 가격 정찰제"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:08.969983+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "a12822d4-9be3-460b-931e-2cc5fa37b634",
+      "manager_id": null,
+      "name": "한강라이프",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5686,
+      "lng": 126.9801,
+      "phone": "1688-0972",
+      "description": "오랜 전통의 한강라이프이 함께합니다. 고유의 장례 예법과 정성을 담아 마지막 가시는 길을 아름답게 지켜드립니다. 숙련된 전문가의 노하우로 경황없는 유가족분들께 평안을 드립니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/1a1a1a/png?text=Hangang+Life"
+      ],
+      "legacy_id": "2288",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "오랜 전통",
+        "전문 장례지도사",
+        "고품격 의전",
+        "종교별 장례",
+        "투명한 가격 정찰제"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:08.969983+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "aa428bcf-58ef-4203-b567-197f0ee4ac7c",
+      "manager_id": null,
+      "name": "좋은라이프",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5687,
+      "lng": 126.9802,
+      "phone": "1644-7934",
+      "description": "정직과 신뢰의 좋은라이프입니다. 투명한 가격 정찰제와 고객 중심 서비스로 거품 없는 합리적인 장례 문화를 만들어갑니다. 진심을 다하는 서비스로 고객님의 슬픔을 함께 나누겠습니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/1a1a1a/png?text=Good+Life"
+      ],
+      "legacy_id": "2294",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "투명한 가격",
+        "100% 환불 보장",
+        "부당요구 근절",
+        "안심 서비스",
+        "투명한 가격 정찰제"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:04.473278+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "ac665864-6cde-4d94-93ac-cb3f8bbe91be",
+      "manager_id": null,
+      "name": "바라밀",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5688,
+      "lng": 126.9803,
+      "phone": "1544-9083",
+      "description": "장례 의전의 전문가, 바라밀입니다. 24시간 언제든 상담 가능한 전문 인력과 고품격 리무진 서비스로 차별화된 경험을 제공합니다. 고인에게는 최고의 예를, 가족에게는 깊은 위로를 드립니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/1a1a1a/png?text=Baramil"
+      ],
+      "legacy_id": "2303",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "국가공인 지도사",
+        "24시간 상담",
+        "맞춤형 장례",
+        "원스톱 서비스",
+        "전국 의전망"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:08.969983+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "b20a16fc-275a-4b97-abac-8a1e56d7a5d0",
+      "manager_id": null,
+      "name": "현대에스라이프",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5689,
+      "lng": 126.9804,
+      "phone": "1544-9083",
+      "description": "장례 의전의 전문가, 현대에스라이프입니다. 24시간 언제든 상담 가능한 전문 인력과 고품격 리무진 서비스로 차별화된 경험을 제공합니다. 고인에게는 최고의 예를, 가족에게는 깊은 위로를 드립니다.",
+      "images": [],
+      "legacy_id": "2292",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "국가공인 지도사",
+        "24시간 상담",
+        "맞춤형 장례",
+        "원스톱 서비스",
+        "투명한 가격 정찰제"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:08.969983+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "b4b3f248-abdf-407c-acc7-f04abbba686a",
+      "manager_id": null,
+      "name": "크리스찬상조",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.569,
+      "lng": 126.9805,
+      "phone": "1644-4491",
+      "description": "장례 의전의 전문가, 크리스찬상조입니다. 24시간 언제든 상담 가능한 전문 인력과 고품격 리무진 서비스로 차별화된 경험을 제공합니다. 고인에게는 최고의 예를, 가족에게는 깊은 위로를 드립니다.",
+      "images": [],
+      "legacy_id": "2312",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "국가공인 지도사",
+        "24시간 상담",
+        "맞춤형 장례",
+        "원스톱 서비스",
+        "투명한 가격 정찰제"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:03.214643+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "b7faead4-f9d0-4a19-bb77-a29d4647c195",
+      "manager_id": null,
+      "name": "제주상조",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5691,
+      "lng": 126.9806,
+      "phone": "064-751-1024",
+      "description": "장례 의전의 전문가, 제주상조입니다. 24시간 언제든 상담 가능한 전문 인력과 고품격 리무진 서비스로 차별화된 경험을 제공합니다. 고인에게는 최고의 예를, 가족에게는 깊은 위로를 드립니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/1a1a1a/png?text=Jeju+Sangjo"
+      ],
+      "legacy_id": "2298",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "국가공인 지도사",
+        "24시간 상담",
+        "맞춤형 장례",
+        "원스톱 서비스",
+        "전국 의전망"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:08.969983+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "f47ef999-1010-4717-94cd-dd1a60c4aea5",
+      "manager_id": null,
+      "name": "대한공무원상조",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5697,
+      "lng": 126.9812,
+      "phone": "1577-1323",
+      "description": "장례 의전의 전문가, 대한공무원상조입니다. 24시간 언제든 상담 가능한 전문 인력과 고품격 리무진 서비스로 차별화된 경험을 제공합니다. 고인에게는 최고의 예를, 가족에게는 깊은 위로를 드립니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/1a1a1a/png?text=KCS"
+      ],
+      "legacy_id": "2309",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "국가공인 지도사",
+        "24시간 상담",
+        "맞춤형 장례",
+        "원스톱 서비스",
+        "직영 장례식장 혜택"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:04.783823+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "f5cb1783-7342-4fb4-a7bd-775e2eb51c24",
+      "manager_id": null,
+      "name": "태양상조",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5698,
+      "lng": 126.9813,
+      "phone": "1588-0393",
+      "description": "장례 의전의 전문가, 태양상조입니다. 24시간 언제든 상담 가능한 전문 인력과 고품격 리무진 서비스로 차별화된 경험을 제공합니다. 고인에게는 최고의 예를, 가족에게는 깊은 위로를 드립니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/1a1a1a/png?text=Sun+Sangjo"
+      ],
+      "legacy_id": "2307",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "국가공인 지도사",
+        "24시간 상담",
+        "맞춤형 장례",
+        "원스톱 서비스",
+        "투명한 가격 정찰제"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:03.214643+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "f5ecf230-4561-411b-addb-eb3ff13aab9d",
+      "manager_id": null,
+      "name": "교원라이프",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5699,
+      "lng": 126.9814,
+      "phone": "1899-0020",
+      "description": "교원라이프는 고객의 삶과 함께하는 토탈 라이프케어 서비스입니다.",
+      "images": [
+        "https://www.kyowonlife.co.kr/images/common/logo.png"
+      ],
+      "legacy_id": "2281",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "교육/생활 제휴 혜택",
+        "전국 물류망",
+        "투명한 회계"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:03.214643+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "fa31ebc0-cdd4-41c4-9115-6fcc311c1160",
+      "manager_id": null,
+      "name": "대노복지사업단",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.57,
+      "lng": 126.9815,
+      "phone": "1588-3543",
+      "description": "장례 의전의 전문가, 대노복지사업단입니다. 24시간 언제든 상담 가능한 전문 인력과 고품격 리무진 서비스로 차별화된 경험을 제공합니다. 고인에게는 최고의 예를, 가족에게는 깊은 위로를 드립니다.",
+      "images": [],
+      "legacy_id": "2299",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "국가공인 지도사",
+        "24시간 상담",
+        "맞춤형 장례",
+        "원스톱 서비스",
+        "24시간 긴급 출동"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:08.969983+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "c10390ce-33de-4ff4-9920-f90fce4f04b7",
+      "manager_id": null,
+      "name": "프리드라이프",
+      "category": "sangjo",
+      "address": "전국 서비스 (본사)",
+      "lat": 37.5578368202282,
+      "lng": 126.974412950223,
+      "phone": "1588-3740",
+      "description": "국내 1위 상조 서비스, 프리드라이프입니다. 200만 회원이 선택한 믿을 수 있는 서비스를 제공합니다.",
+      "images": [
+        "https://www.preedlife.com/images/common/logo_footer.png"
+      ],
+      "legacy_id": "1014",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "전국 직영망",
+        "24시간 상담",
+        "장례지도사 1:1 케어"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:03.214643+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "604d9ec4-5b82-462d-8a31-d9e027a8c2bf",
+      "manager_id": null,
+      "name": "더케이예다함",
+      "category": "sangjo",
+      "address": "서울 마포구",
+      "lat": 37.54,
+      "lng": 126.95,
+      "phone": "1566-6644",
+      "description": "한국교직원공제회가 만든 믿을 수 있는 상조, 예다함입니다.",
+      "images": [
+        "https://www.yedaham.co.kr/images/common/logo.gif"
+      ],
+      "legacy_id": "2279",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "자산지급여력비율 1위",
+        "부당행위 보호",
+        "페이백 시스템"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:03.214643+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "94314961-8168-490f-8f54-e31e215fa3c5",
+      "manager_id": null,
+      "name": "(재)미타불교원",
+      "category": "sangjo",
+      "address": "경기도 광주시 용샘길 101",
+      "lat": 37.4283288,
+      "lng": 127.2259194,
+      "phone": "031-763-0134",
+      "description": "",
+      "images": [
+        "https://15774129.go.kr/BCUser/facilitypic/7000000880/1466144830276.jpg"
+      ],
+      "legacy_id": "741",
+      "is_verified": true,
+      "ai_context": "",
+      "features": {},
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:03.214643+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "20dda25d-f948-4523-823a-e21c564e36cf",
+      "manager_id": null,
+      "name": "다나상조",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5666,
+      "lng": 126.9781,
+      "phone": "1588-3145",
+      "description": "장례 의전의 전문가, 다나상조입니다. 24시간 언제든 상담 가능한 전문 인력과 고품격 리무진 서비스로 차별화된 경험을 제공합니다. 고인에게는 최고의 예를, 가족에게는 깊은 위로를 드립니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/1a1a1a/png?text=Dana"
+      ],
+      "legacy_id": "2316",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "국가공인 지도사",
+        "24시간 상담",
+        "맞춤형 장례",
+        "원스톱 서비스",
+        "100% 환불 보장"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:03.214643+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "4a1b592f-d8f2-4704-b2c5-1dd5bfcfdce7",
+      "manager_id": null,
+      "name": "한국불교원각종 장수사",
+      "category": "sangjo",
+      "address": "대구광역시 달성군 옥포면 옥계길 16-1(본리리, 장수사)",
+      "lat": 35.7926788751809,
+      "lng": 128.462120105913,
+      "phone": "053-615-9004",
+      "description": "",
+      "images": [
+        "https://15774129.go.kr/BCUser/facilitypic/7000001448/1707980624712.PNG"
+      ],
+      "legacy_id": "840",
+      "is_verified": true,
+      "ai_context": "",
+      "features": {},
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:03.214643+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "3bb089dd-14f1-4720-9d35-9288bc1db277",
+      "manager_id": null,
+      "name": "삼목장례프리드",
+      "category": "sangjo",
+      "address": "전라남도 목포시 청호로220번길 33",
+      "lat": 34.8107449080605,
+      "lng": 126.371328509183,
+      "phone": "061-274-4441",
+      "description": "",
+      "images": [
+        "https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/charnel_final_1767789315138.jpg"
+      ],
+      "legacy_id": "1128",
+      "is_verified": true,
+      "ai_context": "",
+      "features": {},
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:03.631203+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "64de8529-2ae4-43d1-ad69-d4223fef79b9",
+      "manager_id": null,
+      "name": "에이치서비스 마린바다장",
+      "category": "sea_burial",
+      "address": "부산 해운대구 해운대해변로 84",
+      "lat": 35.1597985733539,
+      "lng": 129.141957071839,
+      "phone": "051-704-9280",
+      "description": "",
+      "images": [
+        "https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/charnel_final_1767789315138.jpg"
+      ],
+      "legacy_id": "2277",
+      "is_verified": true,
+      "ai_context": "",
+      "features": {},
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:08.717792+00:00",
+      "updated_at": "2026-01-17T07:07:22.078415+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "4537ed3c-9135-4a67-855d-6393cdf1ee7e",
+      "manager_id": null,
+      "name": "마인3디피",
+      "category": "sangjo",
+      "address": "서울특별시 노원구 공릉로 232 31동 4층 407호 제1창업보육센터",
+      "lat": 37.6264725711563,
+      "lng": 127.078658893441,
+      "phone": "",
+      "description": "마인3디피은(는) 소중한 반려동물을 위한 품격 있는 이별을 돕습니다. 전문 장례지도사가 24시간 상담을 도와드리며, 개별 화장과 추모 공간을 제공합니다.",
+      "images": [
+        "https://ldb-phinf.pstatic.net/20231018_124/1697610932439PNRqn_PNG/20231018_153518.png"
+      ],
+      "legacy_id": "989",
+      "is_verified": true,
+      "ai_context": "",
+      "features": {},
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:08.969983+00:00",
+      "updated_at": "2026-01-17T07:07:22.078415+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "28901f23-0618-4eef-a51e-76c55397d720",
+      "manager_id": null,
+      "name": "피플맥",
+      "category": "sangjo",
+      "address": "대전광역시 동구 산내로1287번길 81-43 2층 201호",
+      "lat": 36.2780104,
+      "lng": 127.464929,
+      "phone": "",
+      "description": "피플맥은(는) 소중한 반려동물을 위한 품격 있는 이별을 돕습니다. 전문 장례지도사가 24시간 상담을 도와드리며, 개별 화장과 추모 공간을 제공합니다.",
+      "images": [
+        "http://imgnews.naver.net/image/014/2016/06/28/201606281418405576_l_99_20160628141907.jpg"
+      ],
+      "legacy_id": "63",
+      "is_verified": true,
+      "ai_context": "",
+      "features": {},
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:08.969983+00:00",
+      "updated_at": "2026-01-17T07:07:22.078415+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "0dab177c-8ec6-46f1-bf0f-af82a632ecba",
+      "manager_id": null,
+      "name": "효원장례문화센타",
+      "category": "sangjo",
+      "address": "경기도 화성시 정조로 107",
+      "lat": 37.2209048978639,
+      "lng": 127.026214513338,
+      "phone": "031-222-0999",
+      "description": "효원상조는 고객의 신뢰를 최우선으로 생각합니다.",
+      "images": [
+        "http://www.hwand.co.kr/img/common/logo.gif"
+      ],
+      "legacy_id": "1052",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "재무안정성",
+        "전문가 그룹",
+        "고객중심"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:04.084746+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "3725775c-2337-42e4-adad-48abb49e619b",
+      "manager_id": null,
+      "name": "효원상조",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5671,
+      "lng": 126.9786,
+      "phone": "1588-8873",
+      "description": "효원상조는 고객의 신뢰를 최우선으로 생각합니다.",
+      "images": [
+        "http://www.hwand.co.kr/img/common/logo.gif"
+      ],
+      "legacy_id": "2287",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "재무안정성",
+        "전문가 그룹",
+        "고객중심"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:04.783823+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "ba455122-ed09-4c90-9f69-88f4b14bbe27",
+      "manager_id": null,
+      "name": "매일상조",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5692,
+      "lng": 126.9807,
+      "phone": "053-256-5891",
+      "description": "장례 의전의 전문가, 매일상조입니다. 24시간 언제든 상담 가능한 전문 인력과 고품격 리무진 서비스로 차별화된 경험을 제공합니다. 고인에게는 최고의 예를, 가족에게는 깊은 위로를 드립니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/1a1a1a/png?text=Maeil"
+      ],
+      "legacy_id": "2310",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "국가공인 지도사",
+        "24시간 상담",
+        "맞춤형 장례",
+        "원스톱 서비스",
+        "전국 의전망"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:03.214643+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "e8d2f85e-dbfb-4440-938b-6b1a337619bf",
+      "manager_id": null,
+      "name": "대명스테이션",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5693,
+      "lng": 126.9808,
+      "phone": "1588-2227",
+      "description": "대한민국 1등 상조, 대명스테이션입니다. 고객님의 마지막 순간까지 품격 있는 예우를 다합니다. 전국 직영망과 전문 장례지도사의 세심한 서비스로 가장 든든한 버팀목이 되겠습니다.",
+      "images": [],
+      "legacy_id": "2280",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "업계 1위",
+        "전국 직영망",
+        "프리미엄 의전",
+        "무료 사전상담",
+        "직영 장례식장 혜택"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:03.214643+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "eae05f2a-68dd-4a97-9371-86044f9b0afa",
+      "manager_id": null,
+      "name": "에스제이산림조합",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5694,
+      "lng": 126.9809,
+      "phone": "1800-3535",
+      "description": "정직과 신뢰의 에스제이산림조합입니다. 투명한 가격 정찰제와 고객 중심 서비스로 거품 없는 합리적인 장례 문화를 만들어갑니다. 진심을 다하는 서비스로 고객님의 슬픔을 함께 나누겠습니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/006400/png?text=SJ+Forest"
+      ],
+      "legacy_id": "2291",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "투명한 가격",
+        "100% 환불 보장",
+        "부당요구 근절",
+        "안심 서비스",
+        "프리미엄 리무진"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:08.969983+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    },
+    {
+      "id": "ee55af60-00a2-4d47-aabc-4d7b84c1343d",
+      "manager_id": null,
+      "name": "우상조",
+      "category": "sangjo",
+      "address": "전국 서비스",
+      "lat": 37.5696,
+      "lng": 126.9811,
+      "phone": "1588-0000",
+      "description": "장례 의전의 전문가, 우상조입니다. 24시간 언제든 상담 가능한 전문 인력과 고품격 리무진 서비스로 차별화된 경험을 제공합니다. 고인에게는 최고의 예를, 가족에게는 깊은 위로를 드립니다.",
+      "images": [
+        "https://placehold.co/600x400/ededed/1a1a1a/png?text=Woo+Sangjo"
+      ],
+      "legacy_id": "2304",
+      "is_verified": true,
+      "ai_context": "",
+      "features": [
+        "국가공인 지도사",
+        "24시간 상담",
+        "맞춤형 장례",
+        "원스톱 서비스",
+        "투명한 가격 정찰제"
+      ],
+      "price_min": 0,
+      "location": null,
+      "created_at": "2026-01-15T13:02:03.214643+00:00",
+      "updated_at": "2026-01-17T06:15:22.578807+00:00",
+      "target_audience": "HUMAN"
+    }
+  ],
+  "reviews": [],
+  "images": [],
+  "favorites": []
+}

@@ -1,0 +1,971 @@
+{
+  "timestamp": "2026-01-19T02:00:34.226Z",
+  "totalChecked": 2708,
+  "working": 2634,
+  "broken": 74,
+  "facilitiesWithIssues": 74,
+  "details": [
+    {
+      "id": "622f1469-bbda-4502-8201-50abb55fc7f9",
+      "name": "정수사납골당",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJ16nRUzuTaDURUJ1H1KN3RoU/photos/AZLasHpuantH33isZM_YL1oYaxYOxWIgj1p3PNJrMvYXt4E_if3BGH9-IBSWPo8AwsZMjcou1GCbP5ivpsoBD018OxGgU5b-AOSe9udgymXGZKg350i6QcN2doLb3K2TgVimYpsWkJdaJ04qlCqnbGknLmotwYiEaSN368JCAyGWwHmr66TMag9EOte3WyQlfxhDiBFhxAT4z54frShJIXXDC2182-PFoh-CxUCIig8L2VVxmC6naeA_-iqtmG2WVXquZoVQo7gxX_8u5z22QBd0o0yd2P3_zVd7q5XRg_0mD16ow4LEpo4Ds43Mmduxe2gydTCcofVbC4SbTCxyGy27jxjwQgT8Nr-Q8ob1NwPgRR6Le1KINqdTHMvz2SLZ2zXGhjJf_uryj3YP0yktIjOzIMm81EWvLOlJC5iPRZzPY7y6/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "부산광역시 연제구 톳고개로 60",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJ16nRUzuTaDURUJ1H1KN3RoU/photos/AZLasHpuantH33isZM_YL1oYaxYOxWIgj1p3PNJrMvYXt4E_if3BGH9-IBSWPo8AwsZMjcou1GCbP5ivpsoBD018OxGgU5b-AOSe9udgymXGZKg350i6QcN2doLb3K2TgVimYpsWkJdaJ04qlCqnbGknLmotwYiEaSN368JCAyGWwHmr66TMag9EOte3WyQlfxhDiBFhxAT4z54frShJIXXDC2182-PFoh-CxUCIig8L2VVxmC6naeA_-iqtmG2WVXquZoVQo7gxX_8u5z22QBd0o0yd2P3_zVd7q5XRg_0mD16ow4LEpo4Ds43Mmduxe2gydTCcofVbC4SbTCxyGy27jxjwQgT8Nr-Q8ob1NwPgRR6Le1KINqdTHMvz2SLZ2zXGhjJf_uryj3YP0yktIjOzIMm81EWvLOlJC5iPRZzPY7y6/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "61e239ee-7d08-4b98-946f-e4c913a04c74",
+      "name": "덕원사 추모관",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJdS8leREzZjURGfOb1xVN8aI/photos/AZLasHpDGCw-PKGaN-7f4kxWSyVohUxSzvTIrJnMHsi8ROZdp81oWMG0iI7nhjR1lU3nMFgD9NhqMxDhYlpIPMot2uXCZ4b6YLTmLUXIeR_CeKgaasUuXTm3eYDzYma52bgkEuweTkV2NUc4Ntr8046nDO7lQy-EvjZAzqAfdewDzouBV520uKJXxHwZBL_kAQFtyksVxYHwWV46OBLMN9juBkBWEZANzW4GOGJDJqVBrOnz6ZjZRBhpdcYLm9djIpp3qblU-QOxNUisM6Dj6VMKOFbzYIPPCQwlLGzUzVNVSuVajw/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "울산광역시 중구 성동길 129-10 함월산덕원사추모관",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJdS8leREzZjURGfOb1xVN8aI/photos/AZLasHpDGCw-PKGaN-7f4kxWSyVohUxSzvTIrJnMHsi8ROZdp81oWMG0iI7nhjR1lU3nMFgD9NhqMxDhYlpIPMot2uXCZ4b6YLTmLUXIeR_CeKgaasUuXTm3eYDzYma52bgkEuweTkV2NUc4Ntr8046nDO7lQy-EvjZAzqAfdewDzouBV520uKJXxHwZBL_kAQFtyksVxYHwWV46OBLMN9juBkBWEZANzW4GOGJDJqVBrOnz6ZjZRBhpdcYLm9djIpp3qblU-QOxNUisM6Dj6VMKOFbzYIPPCQwlLGzUzVNVSuVajw/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "cd2b4d26-9f54-447a-9ebe-b85d4f4e812e",
+      "name": "청솔공원 봉안묘",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJoySs-zT7YTURisLgMx_jetY/photos/AZLasHrJqHRDXqsBWfrvW_y7wMWCyORmMKQYnYtvUmN2n9DQckw8R5XimmZIP7Zut7p9afjobakm8zv1od_JskYG_n4IbM4rEHHNgLQBpYSxE7UOYoBJES0xtzmAo-eOEwMyOW6MY7svPsUcH6jnlVA0a6aGK1yz8BoJfNMeLawmgl7pXJ0_UO-u7vRSQpUG-7oMLSpFCQTH3NikGtE-fPpjznFFybgYTOUzWKtxOPUIuR2Ap2YUm6SAky4zeNGiTSKaS1qnokA7nw1gq5kyJMkWFWIdUiME9w6gD1d_JD7PM2T7jANiJFo_uqBYEsnaf3hPM_U3rEdOAVxtNtdn-evIjjRU65I-4qyzJVrWvrLR7ndCZSj77cBYZm39lijh2YFPykyW0I-auvotSA-ajhuZHEL0TBSuUOkdkSGQwgf2YUVmkhEkU19M1lQOHMp6/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "강원특별자치도 강릉시 사천면 석교리 산162",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJoySs-zT7YTURisLgMx_jetY/photos/AZLasHrJqHRDXqsBWfrvW_y7wMWCyORmMKQYnYtvUmN2n9DQckw8R5XimmZIP7Zut7p9afjobakm8zv1od_JskYG_n4IbM4rEHHNgLQBpYSxE7UOYoBJES0xtzmAo-eOEwMyOW6MY7svPsUcH6jnlVA0a6aGK1yz8BoJfNMeLawmgl7pXJ0_UO-u7vRSQpUG-7oMLSpFCQTH3NikGtE-fPpjznFFybgYTOUzWKtxOPUIuR2Ap2YUm6SAky4zeNGiTSKaS1qnokA7nw1gq5kyJMkWFWIdUiME9w6gD1d_JD7PM2T7jANiJFo_uqBYEsnaf3hPM_U3rEdOAVxtNtdn-evIjjRU65I-4qyzJVrWvrLR7ndCZSj77cBYZm39lijh2YFPykyW0I-auvotSA-ajhuZHEL0TBSuUOkdkSGQwgf2YUVmkhEkU19M1lQOHMp6/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "d59accd1-1047-4732-90b8-5a63fe54106a",
+      "name": "봉은사 봉안당",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJe-vgXoOCZDURIKDFyJETR6g/photos/AZLasHoR7MtSUYllfaaBLUw-klcf_OCw4eOTNFiUqrgHGpzk-hrAFx5vvV-n37wNBMYyEMVHxTNYBGzdUlqWovKoi1giLjUUpFckMEkyHWlMypgQSOe-B40ddVCQ4aO4ODAk2Fx-dT1cZ6AbzMWRyTchIV9BEMFDKYTH2HvKtIb4-O0glw_ehjB6likqWScaiA1V-HhTkEKRw1WhJUFaOAuMbWFc6Vez6HQnAu5-UoJQidxpjh_aC6y6lU4_v4lSKJuqLSAJgzQF7VNB8GQHly_95Kew60OkOFIjfcyM2F7x_jSR5V_b57GxMQoVkVXr-p9hQCoL0z2vV_ILOyjsh9l-UhtYxvv8Ctfi3hL_1HYil1UBXF9Xp8RuDKJFXsx4SUmk6gsaRhl46-ycGjHjxgZFV9cHG1V_Xwtbal6PYGDPcKUM/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "충청북도 충주시 소태면 주치길 135-45 봉은사",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJe-vgXoOCZDURIKDFyJETR6g/photos/AZLasHoR7MtSUYllfaaBLUw-klcf_OCw4eOTNFiUqrgHGpzk-hrAFx5vvV-n37wNBMYyEMVHxTNYBGzdUlqWovKoi1giLjUUpFckMEkyHWlMypgQSOe-B40ddVCQ4aO4ODAk2Fx-dT1cZ6AbzMWRyTchIV9BEMFDKYTH2HvKtIb4-O0glw_ehjB6likqWScaiA1V-HhTkEKRw1WhJUFaOAuMbWFc6Vez6HQnAu5-UoJQidxpjh_aC6y6lU4_v4lSKJuqLSAJgzQF7VNB8GQHly_95Kew60OkOFIjfcyM2F7x_jSR5V_b57GxMQoVkVXr-p9hQCoL0z2vV_ILOyjsh9l-UhtYxvv8Ctfi3hL_1HYil1UBXF9Xp8RuDKJFXsx4SUmk6gsaRhl46-ycGjHjxgZFV9cHG1V_Xwtbal6PYGDPcKUM/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "42cf5ea2-6a73-4d14-988e-d78fde53f51e",
+      "name": "광주영락공원 봉안담",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJNf5JNomScTURkBXbaax8cek/photos/AZLasHqqmgATrit4aF8n6kMNAJv93ueK0AISYjjowQ5Znjw8RIbMkeZGrertikPwuBQsz18h4RtlG2KDVvgMovkXfxGqEJYYOJRhBHJ4BhXgDU1BWgv6H2VOP2y8KBV05y_WdKdxfs9E_Ek6bfm_JKKpemxEsZwrp7A3ZkPsV-JR5Dx5dXlBbwpHMsTAHRKVNomjtjSD8YjS940iV4Gcz1AHny9wr2cVFEwrjYbamQtZpx1yhVNtrk56m8P3ULD2p8baT_8ngiq2O4YfgLM3dXctSg9QaQaMZuFuVWHoLDJqkpqYKT_3ZFiIxrGWpnGJiuzwBFG7J9jQvttbcldC-6x2I_CxMW78EAujGh2XOh9sEbgTgCsEbDUKWALlaBOg4Z-7VveEe91QaFtfjTHb0a06Hnq8cc9jm9EKDQUWS5K8nUJY_R0/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "광주광역시 북구 영락공원로 170",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJNf5JNomScTURkBXbaax8cek/photos/AZLasHqqmgATrit4aF8n6kMNAJv93ueK0AISYjjowQ5Znjw8RIbMkeZGrertikPwuBQsz18h4RtlG2KDVvgMovkXfxGqEJYYOJRhBHJ4BhXgDU1BWgv6H2VOP2y8KBV05y_WdKdxfs9E_Ek6bfm_JKKpemxEsZwrp7A3ZkPsV-JR5Dx5dXlBbwpHMsTAHRKVNomjtjSD8YjS940iV4Gcz1AHny9wr2cVFEwrjYbamQtZpx1yhVNtrk56m8P3ULD2p8baT_8ngiq2O4YfgLM3dXctSg9QaQaMZuFuVWHoLDJqkpqYKT_3ZFiIxrGWpnGJiuzwBFG7J9jQvttbcldC-6x2I_CxMW78EAujGh2XOh9sEbgTgCsEbDUKWALlaBOg4Z-7VveEe91QaFtfjTHb0a06Hnq8cc9jm9EKDQUWS5K8nUJY_R0/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "dc5b2cf3-38c8-4472-be82-e26dbb6f9f1d",
+      "name": "함양군구룡공설공원묘지봉안탑",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJ0SLPJgC3bzURpgNSJt6irr8/photos/AZLasHp3YqrioW6YRlZptnL8DFCLCH5UUhaSijN1ao8aELrCLypWaR5jYBW0-Zf25ugYJ7SD3lomZyMqUzXkTW5bH4Y9lv8UGe7vh-MCuawkmO7VlqabnvsRpsV2bB8iI6jOHV8jJOiy332P0BcwBUZVYol5Yg_avXpoPxjb-6oXwlmAohoqagbgcFjgSGOSA0fFWPLhFZIToMIGW03wGSF8lO5cxwOKGMd9dCTNPuC6EM4TaESlh91lAZjbx7dezlmsiXRD5QkY6xCSm8cxwMQ3jSYyoiBSPzoG-kCWfryF2WPXmRk_75-6sqDX6_CjrJRa7s0gpcFCRHn-f71KjOc-ECRxQzJmF7IrnDJE8uhApZ-PMAukm6LmtqTu_uCeNarc__s8jNOfVw0qm6xa3dkO0kcY3_lMYy2dTg21CXsSAhA/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경상남도 함양군 함양읍 구룡리 산11",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJ0SLPJgC3bzURpgNSJt6irr8/photos/AZLasHp3YqrioW6YRlZptnL8DFCLCH5UUhaSijN1ao8aELrCLypWaR5jYBW0-Zf25ugYJ7SD3lomZyMqUzXkTW5bH4Y9lv8UGe7vh-MCuawkmO7VlqabnvsRpsV2bB8iI6jOHV8jJOiy332P0BcwBUZVYol5Yg_avXpoPxjb-6oXwlmAohoqagbgcFjgSGOSA0fFWPLhFZIToMIGW03wGSF8lO5cxwOKGMd9dCTNPuC6EM4TaESlh91lAZjbx7dezlmsiXRD5QkY6xCSm8cxwMQ3jSYyoiBSPzoG-kCWfryF2WPXmRk_75-6sqDX6_CjrJRa7s0gpcFCRHn-f71KjOc-ECRxQzJmF7IrnDJE8uhApZ-PMAukm6LmtqTu_uCeNarc__s8jNOfVw0qm6xa3dkO0kcY3_lMYy2dTg21CXsSAhA/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "e2ba925e-eda3-4f07-b222-cacc3586e19e",
+      "name": "금산군공설봉안당",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJ0UxQ6m1TZTURhnRDN4lUpoE/photos/AZLasHqejKk67dW4XW9yuFLJ8xJuVY-E7WL-hmYRKsLfi8m7RmEdw35g3-i_jKHnt74tS6vqPywBcj2yUK48vZ5f3xlForh49RP3N6IJuLYGI43Brie7R6zMpqyGXXhpeo0q7RsE-fsfPWEfUMAuPyU7MVfX8u4EXsAKwUTIGhWzJ52aT4s0zOZtdld2a50Ms3HxQUXBrSbmEvKGLB89UY7v4ZdAATAJh6ihZhpx9uC2NFjJYhVuyBzAL25o4RQPKTaNKk75adMofNbcDkFUsXL2Jc64mIc0WIy5CzJluM2_sYWXQP9VC6W4KAAxUnEW_4xJR9QdPi8GCzv8WJkoCPte4BKkdGHmWBQhdNG6LgTNmalQmUr9b8AQNZTpjZaUC1phNbCK4Z-JVS5R4_k9OXCUJ-xt697IVjJi8kGSPrD_TXWE_l4/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "충청남도 금산군 복수면 복수로 1015-71",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJ0UxQ6m1TZTURhnRDN4lUpoE/photos/AZLasHqejKk67dW4XW9yuFLJ8xJuVY-E7WL-hmYRKsLfi8m7RmEdw35g3-i_jKHnt74tS6vqPywBcj2yUK48vZ5f3xlForh49RP3N6IJuLYGI43Brie7R6zMpqyGXXhpeo0q7RsE-fsfPWEfUMAuPyU7MVfX8u4EXsAKwUTIGhWzJ52aT4s0zOZtdld2a50Ms3HxQUXBrSbmEvKGLB89UY7v4ZdAATAJh6ihZhpx9uC2NFjJYhVuyBzAL25o4RQPKTaNKk75adMofNbcDkFUsXL2Jc64mIc0WIy5CzJluM2_sYWXQP9VC6W4KAAxUnEW_4xJR9QdPi8GCzv8WJkoCPte4BKkdGHmWBQhdNG6LgTNmalQmUr9b8AQNZTpjZaUC1phNbCK4Z-JVS5R4_k9OXCUJ-xt697IVjJi8kGSPrD_TXWE_l4/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "5df452ad-9d3b-49c9-a9ab-8419e5e739cb",
+      "name": "예진추모관",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJxc8wbwlLYzURODBjlbnwFA0/photos/AZLasHoFsVPhg9uFuCB-2OAFUwcnXbmqzMHG8PjGLGDH2wMwvT1niD7FJhSxkLNUR9-CoJIqKF9Im8jXhOVGKI6D4cNYuB5u6BfSsup1RE42FagTwR-IxkWJ0MGDe7R70gEmu_APsohelRaQeTUBR8o0p-ioD31NMtIeW1NJWabPKIyNFw3cOSg4B7PEo66g2KmtQGEciOZMJw2bO7zBNIUpfeR0hsXAjlqUCP-1nF3lIZUd_hbr4vwadt8IhX25m47oWE2SSAk2JurVTGj6l6RkjPkYNSUp7aQPVTrLZGbj0LFbnSzBIBFO57QlQ51tPVGD-8gEHzmYi6-jM6oc9-9yA7n27G9VcfsP3PFsfzGMbxwPdD9efJ42xNHXbHDRjEFyB7JssluwqEdIQTYGWQi1YiYt4GXm7jmtIphyelta2Lo/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경기도 양평군 양서면 건지미길 75",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJxc8wbwlLYzURODBjlbnwFA0/photos/AZLasHoFsVPhg9uFuCB-2OAFUwcnXbmqzMHG8PjGLGDH2wMwvT1niD7FJhSxkLNUR9-CoJIqKF9Im8jXhOVGKI6D4cNYuB5u6BfSsup1RE42FagTwR-IxkWJ0MGDe7R70gEmu_APsohelRaQeTUBR8o0p-ioD31NMtIeW1NJWabPKIyNFw3cOSg4B7PEo66g2KmtQGEciOZMJw2bO7zBNIUpfeR0hsXAjlqUCP-1nF3lIZUd_hbr4vwadt8IhX25m47oWE2SSAk2JurVTGj6l6RkjPkYNSUp7aQPVTrLZGbj0LFbnSzBIBFO57QlQ51tPVGD-8gEHzmYi6-jM6oc9-9yA7n27G9VcfsP3PFsfzGMbxwPdD9efJ42xNHXbHDRjEFyB7JssluwqEdIQTYGWQi1YiYt4GXm7jmtIphyelta2Lo/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "4ad50115-8822-432c-a28c-42ba989c1ef8",
+      "name": "하늘원추모관",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJffiMuvhzYzURaDRkG030Z6c/photos/AZLasHpu4qAU3neSR4-nsE3fNZlxkR6pvNHoM_8Cc93jKeqWzC5ebcQ8EYsiag9VO9EXPIPefdfxE5Kxr21wJOujMBxJ6h56dKT39DRlM_T6_tizs1ghpvJn8Q5HcmLFcdsx3ezn6kMUUizs02FeKnuQKeiIwztSJVphIYWta_BHGGf4tKg7B6jwjCyzv_vkkgRE1cG1fsagH-NrOROS1BvppngIx7Tn8IXAxyjPxQuWCcENU8vKVyXoFCRWQg29uGyEwEsLZvmWL0AQ6zucfVmGIPA725_GePvvFUkFUi2eoiZjR-51km-ESwbzOzYgIayVNFpkYVcNoJmJegTQ9nQQFEOV1Ai6ZXT7ZLir6CFXBstfalp67DvQDBH_h6q77_c4uKnqdGCx19P610SgofBcZtexrZMnwMMIsVgvb1PFxwc/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "강원특별자치도 원주시 흥업면 사제로 539 (사제리, 하늘원장례예식장)",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJffiMuvhzYzURaDRkG030Z6c/photos/AZLasHpu4qAU3neSR4-nsE3fNZlxkR6pvNHoM_8Cc93jKeqWzC5ebcQ8EYsiag9VO9EXPIPefdfxE5Kxr21wJOujMBxJ6h56dKT39DRlM_T6_tizs1ghpvJn8Q5HcmLFcdsx3ezn6kMUUizs02FeKnuQKeiIwztSJVphIYWta_BHGGf4tKg7B6jwjCyzv_vkkgRE1cG1fsagH-NrOROS1BvppngIx7Tn8IXAxyjPxQuWCcENU8vKVyXoFCRWQg29uGyEwEsLZvmWL0AQ6zucfVmGIPA725_GePvvFUkFUi2eoiZjR-51km-ESwbzOzYgIayVNFpkYVcNoJmJegTQ9nQQFEOV1Ai6ZXT7ZLir6CFXBstfalp67DvQDBH_h6q77_c4uKnqdGCx19P610SgofBcZtexrZMnwMMIsVgvb1PFxwc/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "d0ba7826-155e-421d-a819-11acf6f3fa9a",
+      "name": "부산영락공원봉안당",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJ8-DSbQORaDURG8TSL7X74yw/photos/AZLasHrosZAkeJGzcNOOqE-RNA2jnsjqM4N-QXVtVXe1rBU9FDP9ZpZNs0qCZxLwL6Cbqukb3_FI-GSREc-aY_KXiiyKTkjoqxgBtN6Vungc0zoct7fPwKVDpXd53QTFF_90m8b0K2Tva81OSFnBPoy30qCQN5xLOkbeO3X7nubTnD6bDOzKozG0cO_UmGJPodmQj_3XcLVGEOQhf06WP2Q0tNr2hQv2RBCAj7APCjAsOlj6gSIoK5DbpLEinkjwF2eQdBAOg4PwozqsHCOfU-gDLXZJ3I5J44iX__PoFtPyA26-5z4rDGcF8039C4gr2VOea7ivVU4uhZxmbdB0sqIKl4eB_Wu4fiORYmzqJ_q_wRHomFrGxxdcZn-t_aTYDKDNNlYNMFzQ471Hf9m0lst6ilRJRr-oDLoyvoeo0uiauSdI6zo/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "부산광역시 금정구 금정도서관로 108 영락공원",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJ8-DSbQORaDURG8TSL7X74yw/photos/AZLasHrosZAkeJGzcNOOqE-RNA2jnsjqM4N-QXVtVXe1rBU9FDP9ZpZNs0qCZxLwL6Cbqukb3_FI-GSREc-aY_KXiiyKTkjoqxgBtN6Vungc0zoct7fPwKVDpXd53QTFF_90m8b0K2Tva81OSFnBPoy30qCQN5xLOkbeO3X7nubTnD6bDOzKozG0cO_UmGJPodmQj_3XcLVGEOQhf06WP2Q0tNr2hQv2RBCAj7APCjAsOlj6gSIoK5DbpLEinkjwF2eQdBAOg4PwozqsHCOfU-gDLXZJ3I5J44iX__PoFtPyA26-5z4rDGcF8039C4gr2VOea7ivVU4uhZxmbdB0sqIKl4eB_Wu4fiORYmzqJ_q_wRHomFrGxxdcZn-t_aTYDKDNNlYNMFzQ471Hf9m0lst6ilRJRr-oDLoyvoeo0uiauSdI6zo/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "dbdbe6a0-a820-448b-8a48-5b202c3097e4",
+      "name": "제천시영원한쉼터봉안당",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJQyAXvVmRYzUR44AZMPlVSJ0/photos/AZLasHoO98BQOH7H2ZD3iSMuV-bLXaRNAz607T-vYmMXlSqj2NPBZlh_ymFOi2LHC4KUN-Xk4rDTQIWcdMlTgbZsIEik12nPZmK6AhqknzVWE97h0F-qrZR-VUD_fv0yVKHKdU7ntROBiScA6Fb2rQboG5jPvKSrre4k6mbvP6LkyJYAiD98gDjBTZea-mg5k6gTLiIEO2ErltQBvR3ft_J2uub8ff4gkZhPci3BYueSnrC32jBdO1HFpookhHsPCgKKZdHB4447JGODzBOKeH9lyQpc5dvKqwvnO9c4RQXapAYjOsxMhRDd3YMo6sQmjlvzUg0RxNzS-zW7o4CQ7Hp7UhSvQbCjO34J01GcTJV1A0XRo52I1S2BAlZpzjXs0BiT8CcgXEaDtzd2yqZPXkRBkTVjJbT22oT8o2h4kwThMw/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "충청북도 제천시 송학면 송학주천로9길 122",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJQyAXvVmRYzUR44AZMPlVSJ0/photos/AZLasHoO98BQOH7H2ZD3iSMuV-bLXaRNAz607T-vYmMXlSqj2NPBZlh_ymFOi2LHC4KUN-Xk4rDTQIWcdMlTgbZsIEik12nPZmK6AhqknzVWE97h0F-qrZR-VUD_fv0yVKHKdU7ntROBiScA6Fb2rQboG5jPvKSrre4k6mbvP6LkyJYAiD98gDjBTZea-mg5k6gTLiIEO2ErltQBvR3ft_J2uub8ff4gkZhPci3BYueSnrC32jBdO1HFpookhHsPCgKKZdHB4447JGODzBOKeH9lyQpc5dvKqwvnO9c4RQXapAYjOsxMhRDd3YMo6sQmjlvzUg0RxNzS-zW7o4CQ7Hp7UhSvQbCjO34J01GcTJV1A0XRo52I1S2BAlZpzjXs0BiT8CcgXEaDtzd2yqZPXkRBkTVjJbT22oT8o2h4kwThMw/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "e1a050b0-757d-4f06-95f8-8118bacad19a",
+      "name": "창원공원묘원 봉안당",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJm2-ybd4obzUReYWanmGR7e4/photos/AZLasHqDqWp8tZeb8rDSmqG-JtbqP1IOhyzBMM-_H-ypWJE3Rk8nHhqwEPtO_AVbIALmDO1T3s5tIFKZYehlJ1pvc6Xjeo59VVOxpaw7JzZz4jJLzkTdX4st9RCrBdXM4g3mjo688rEAe2tUZdhpkswGsx-h5DqD37Ai-EZu5r6hbppZZxKa98j155fNSfdfG1q_lstngRjoCJUlA5kh4eld3QDfAK75I1hlx5y6JKOV4U8M4o_qcgjJidI9pYeFlUZ5mOy8Rkoi3iPlUAdtW3GsPBj5p9ycQIGC7AB511JiS1IhSw/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경상남도 창원시 마산합포구 진동면 공원묘원로 134 창원공원묘원 봉안당 천",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJm2-ybd4obzUReYWanmGR7e4/photos/AZLasHqDqWp8tZeb8rDSmqG-JtbqP1IOhyzBMM-_H-ypWJE3Rk8nHhqwEPtO_AVbIALmDO1T3s5tIFKZYehlJ1pvc6Xjeo59VVOxpaw7JzZz4jJLzkTdX4st9RCrBdXM4g3mjo688rEAe2tUZdhpkswGsx-h5DqD37Ai-EZu5r6hbppZZxKa98j155fNSfdfG1q_lstngRjoCJUlA5kh4eld3QDfAK75I1hlx5y6JKOV4U8M4o_qcgjJidI9pYeFlUZ5mOy8Rkoi3iPlUAdtW3GsPBj5p9ycQIGC7AB511JiS1IhSw/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "bda6d8a1-0877-4412-ac64-5b0894b98208",
+      "name": "광주영락공원묘지제2추모관",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJzY4Gl8WTcTURB6avT-F1W5k/photos/AZLasHr3BuXpYsG77BChSEWtoakCwZa5gWTC4sySTmjmrcP4or3bPnuWKF4HVjSyJsKXbySOqqZEEEuEPsJYpe_c7utr0K0CrVJJlGheNTLa7UIL2lrB4tHYPzUY5CxVQ8UZUtv6autvCftiRyHf04n-ZoZE7sDt6kVQb3hqptVMktJtCCl-9PHrOvhJMEPVVxUqdiIfUpK6WMgLpBs7z4DFrrE4xUVSc7cx8LVlNBRoP8kXrWKVNwVVOrSmNGOtszUPK_6oN7RNQYdGDUnV7RniSZ-peZ_uQIiDZndgtSQu85MppvwtNSRFz34R4EgKyK1NoL-qSixGVptPmJVeyHDA0PVRyWIeSGOTdaMA2A02G7fjvIcrXtOpo7jsShuN9DFnB140FXnx4DJzz32gKKOIdzT3s2N_27huu13mBsCUZIE/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "광주광역시 북구 효령동 산47-4",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJzY4Gl8WTcTURB6avT-F1W5k/photos/AZLasHr3BuXpYsG77BChSEWtoakCwZa5gWTC4sySTmjmrcP4or3bPnuWKF4HVjSyJsKXbySOqqZEEEuEPsJYpe_c7utr0K0CrVJJlGheNTLa7UIL2lrB4tHYPzUY5CxVQ8UZUtv6autvCftiRyHf04n-ZoZE7sDt6kVQb3hqptVMktJtCCl-9PHrOvhJMEPVVxUqdiIfUpK6WMgLpBs7z4DFrrE4xUVSc7cx8LVlNBRoP8kXrWKVNwVVOrSmNGOtszUPK_6oN7RNQYdGDUnV7RniSZ-peZ_uQIiDZndgtSQu85MppvwtNSRFz34R4EgKyK1NoL-qSixGVptPmJVeyHDA0PVRyWIeSGOTdaMA2A02G7fjvIcrXtOpo7jsShuN9DFnB140FXnx4DJzz32gKKOIdzT3s2N_27huu13mBsCUZIE/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "17a7f8fb-ef06-4dc1-87be-681b61f238bb",
+      "name": "광천사봉안당",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJ6xyVQOydaDURmWDIazKKkeE/photos/AZLasHpEcZ8EN16MtIirKCf4cQd2Jxl12e-vvrPnlnkX_Q3IrglxHF7agZBfKK3sMaEmdFxQ0l5rj_KBfvOwW39GtFQLNGsqR3tr0CiMFynt0-v4ktkfCt68spmZuyyToVbE8HSrgJ_ejtORf1LRP9DrjU6za9bopxpEys0gG_NAVfIluisxjcXFSoUknlqITtcE6rI6y5O4mFow07UGDJ4EsQy7r9NhtVRSFp3OgyRDNa15N-UsScBBx43HQUHCQJ-Pn980HgjL59l5jn97Wi7olNr102bqZDgjzZItNmvpqi5ymPx5hIpqFrjqyGB9OJTcy644ywBMdlzrmjWk8dG71hbSrpHcAt-bLo3Wkc1DhIA8XAPYkdBj7kfr8AEGpvIy86zTeQvrCyGS492VorafJHaLlouIbowCW1ldK_6HGQ/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경상남도 양산시 하북면 백록리 1384",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJ6xyVQOydaDURmWDIazKKkeE/photos/AZLasHpEcZ8EN16MtIirKCf4cQd2Jxl12e-vvrPnlnkX_Q3IrglxHF7agZBfKK3sMaEmdFxQ0l5rj_KBfvOwW39GtFQLNGsqR3tr0CiMFynt0-v4ktkfCt68spmZuyyToVbE8HSrgJ_ejtORf1LRP9DrjU6za9bopxpEys0gG_NAVfIluisxjcXFSoUknlqITtcE6rI6y5O4mFow07UGDJ4EsQy7r9NhtVRSFp3OgyRDNa15N-UsScBBx43HQUHCQJ-Pn980HgjL59l5jn97Wi7olNr102bqZDgjzZItNmvpqi5ymPx5hIpqFrjqyGB9OJTcy644ywBMdlzrmjWk8dG71hbSrpHcAt-bLo3Wkc1DhIA8XAPYkdBj7kfr8AEGpvIy86zTeQvrCyGS492VorafJHaLlouIbowCW1ldK_6HGQ/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "4f08cca9-044e-4b13-8983-964ec81a8b78",
+      "name": "지장사추모관",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJJ5NCNYXDfDURP2aEiMvrHgE/photos/AZLasHroEMjDnQzu_aV8etYwzog0ImTnQ8FGVTb__PB5-5vBkcjAA6V9K3PbX7deMQbtw0l35Mx46Ki-9QjCzOY9chIEnG6wXMYLw3f2Zin--MRKj7devZ2DTNlBDsbtfW_k2TO_Ob-_RL2sARpM3BcuUGCZevgB4fV_iQV4-zfB0cRDsy-pPDEaorqYd1N8-adjQK2BuAuusAjBz3amBK8i5QnW4u9ZiKiAj46Te0kZk0mhC7P-erNZ4QZYZyWVWzAMCSM2M1MzsmFJ7KoGpaIH23lUkQiR6tYntnnN5c-lxaLx6aSFgtHukBdP0e17IJwYkJXMQP4d527bxltEzhS4He5G4RzZwv1KaQeIaRt5-fVZ-2VvOjCKvwSQkI6PJH_SW5jM7HmrQ75bF5kb-Eed1Rz04gU5lX3l4eElMoA91WU/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "전라남도 나주시 왕곡면 신포내동길 14-29 번지",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJJ5NCNYXDfDURP2aEiMvrHgE/photos/AZLasHroEMjDnQzu_aV8etYwzog0ImTnQ8FGVTb__PB5-5vBkcjAA6V9K3PbX7deMQbtw0l35Mx46Ki-9QjCzOY9chIEnG6wXMYLw3f2Zin--MRKj7devZ2DTNlBDsbtfW_k2TO_Ob-_RL2sARpM3BcuUGCZevgB4fV_iQV4-zfB0cRDsy-pPDEaorqYd1N8-adjQK2BuAuusAjBz3amBK8i5QnW4u9ZiKiAj46Te0kZk0mhC7P-erNZ4QZYZyWVWzAMCSM2M1MzsmFJ7KoGpaIH23lUkQiR6tYntnnN5c-lxaLx6aSFgtHukBdP0e17IJwYkJXMQP4d527bxltEzhS4He5G4RzZwv1KaQeIaRt5-fVZ-2VvOjCKvwSQkI6PJH_SW5jM7HmrQ75bF5kb-Eed1Rz04gU5lX3l4eElMoA91WU/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "08d2b726-4d79-4816-90b7-04dac9351f4d",
+      "name": "인천가족공원 봉안담",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJ9-stKfx9ezUReSzBhpv75Q0/photos/AZLasHr_cHG2PoRElB23vQzTOh54PMMqK3buPEhPVtVymh-pj7cEV1TTbm88rcoTfL-B9bsyM_ZnHiH7C9AT_zTC_4bCppf_-Gjof6c4O3IIaRddfxNOLLjGrE-MuFeo2-oFY0TTRUz8wfrR4D-tA7xk8ooBgq9rX59y9M9RvK3KPrKwc9yrc6TnP8jgTX8X4AZ8Eb8IiNfSNb3VEpfL2tLwUllEbbPqGtEAgauZV-YK1T7XH07Tw1wcrjZWf4WBKtxvo7Dflfpl1QNdbf9WjzDbH1fFxIQZkkk2jbeyz49e0wWAOCKELsKAOkCFsQ_RCJ6nNcoxGT4iA7IMVtIUpVX68C5hoMBYdWsUtYhstM3PPn_ZEpncZqN9TrbN1f_sNECwgXpt_UGKjy9uHkXc3sasfvipD6je3IDopRAOAi-ZE6pQ08d3Yv-b13uZPVwX/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "인천광역시 부평구 부평동 산57-7",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJ9-stKfx9ezUReSzBhpv75Q0/photos/AZLasHr_cHG2PoRElB23vQzTOh54PMMqK3buPEhPVtVymh-pj7cEV1TTbm88rcoTfL-B9bsyM_ZnHiH7C9AT_zTC_4bCppf_-Gjof6c4O3IIaRddfxNOLLjGrE-MuFeo2-oFY0TTRUz8wfrR4D-tA7xk8ooBgq9rX59y9M9RvK3KPrKwc9yrc6TnP8jgTX8X4AZ8Eb8IiNfSNb3VEpfL2tLwUllEbbPqGtEAgauZV-YK1T7XH07Tw1wcrjZWf4WBKtxvo7Dflfpl1QNdbf9WjzDbH1fFxIQZkkk2jbeyz49e0wWAOCKELsKAOkCFsQ_RCJ6nNcoxGT4iA7IMVtIUpVX68C5hoMBYdWsUtYhstM3PPn_ZEpncZqN9TrbN1f_sNECwgXpt_UGKjy9uHkXc3sasfvipD6je3IDopRAOAi-ZE6pQ08d3Yv-b13uZPVwX/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "c380089a-0028-4e3a-8f8d-463f2d2585b0",
+      "name": "용운사 납골당",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJy8pCgrHZZTURwfiEZd3g-OI/photos/AZLasHr8HZ6ggY76sKaUMCmX0LBzQwuXN2SKVTRMjjnuyv2GkivVRJFawoEzcR4pWBwzV4F_Gv4nsquIfM1cBLplswXvOrht67mncBAnLzFK8z_ykGI-H7tlXUcewcpSvay7ITqY5SZVerHjwrRVV3SQKnoyeLZ6mWp7ekDgYyaTGFugEbmDEjJdXjbbd5yjff_47aDy76hrK4omAvlsKWwDjkctxEtTDfHUndj4uSViZKJoQLUcWqhviBYkvwZ2IE3rPJEuxVp2kON1XUXQQXTM-tcp0I0xw3b-kszL7TDrponwatwGEKQhYYH1NmEV4OwKzUYT4XVHHijQtZEm-BDT5LC1qZBEenxJmHIKeMjjRtR09vRKEZi19Zzwk3bgOpNOb2-3B9TsxwKgaYI2BLMWnpouj_9kNHc_UuCct0NNK8I/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경상북도 칠곡군 동명면 득명2길 110 (득명리)",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJy8pCgrHZZTURwfiEZd3g-OI/photos/AZLasHr8HZ6ggY76sKaUMCmX0LBzQwuXN2SKVTRMjjnuyv2GkivVRJFawoEzcR4pWBwzV4F_Gv4nsquIfM1cBLplswXvOrht67mncBAnLzFK8z_ykGI-H7tlXUcewcpSvay7ITqY5SZVerHjwrRVV3SQKnoyeLZ6mWp7ekDgYyaTGFugEbmDEjJdXjbbd5yjff_47aDy76hrK4omAvlsKWwDjkctxEtTDfHUndj4uSViZKJoQLUcWqhviBYkvwZ2IE3rPJEuxVp2kON1XUXQQXTM-tcp0I0xw3b-kszL7TDrponwatwGEKQhYYH1NmEV4OwKzUYT4XVHHijQtZEm-BDT5LC1qZBEenxJmHIKeMjjRtR09vRKEZi19Zzwk3bgOpNOb2-3B9TsxwKgaYI2BLMWnpouj_9kNHc_UuCct0NNK8I/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "0c994835-a7fb-4a36-ae01-970fa8bc5489",
+      "name": "용봉사 납골당",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJHTD-ZYjHbjURfOZw7ybSK7A/photos/AZLasHpix-YE8Z2Qi9T5JqnNubdsd3VN6X0zaQdbqfDwyYHbV6GcemAyCKZXrfRhk0uY_VYPS0DtGJoLv4ZS5t7AQMoGVQfLcmOU-joR_j57Z3FV1NSwB3ur4yPS14T0MkJrElc2TYosUzYSwhO7jc2R56ke_WFFOQ8gXA2QQntpxZLrEPILHOkoAm92qj10nyyLsAY4mdzedEobWm2zXEOd6h9pbRa8_2NcwqyTH8Ih_yDu9hO4DEUcHa3MfyIJKWqIYMiRbxwBcWSJGtKUOzjBtX85br8QUGMuAHrieUUBdps7aW3ZeAoIWh-Hs84PeAqlbowHvt4PV1PYbDsi_aoIon_r0yaSV1T3xKxkMTVuyPS40SuqLZqcHOWwyioOvmxc3M_fzt5ClSMnMP8cSCmbeeopk94y3jiuGfeTelku5BPPqB0/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "서울특별시 동대문구 신설동",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJHTD-ZYjHbjURfOZw7ybSK7A/photos/AZLasHpix-YE8Z2Qi9T5JqnNubdsd3VN6X0zaQdbqfDwyYHbV6GcemAyCKZXrfRhk0uY_VYPS0DtGJoLv4ZS5t7AQMoGVQfLcmOU-joR_j57Z3FV1NSwB3ur4yPS14T0MkJrElc2TYosUzYSwhO7jc2R56ke_WFFOQ8gXA2QQntpxZLrEPILHOkoAm92qj10nyyLsAY4mdzedEobWm2zXEOd6h9pbRa8_2NcwqyTH8Ih_yDu9hO4DEUcHa3MfyIJKWqIYMiRbxwBcWSJGtKUOzjBtX85br8QUGMuAHrieUUBdps7aW3ZeAoIWh-Hs84PeAqlbowHvt4PV1PYbDsi_aoIon_r0yaSV1T3xKxkMTVuyPS40SuqLZqcHOWwyioOvmxc3M_fzt5ClSMnMP8cSCmbeeopk94y3jiuGfeTelku5BPPqB0/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "c2933f66-c6bb-4749-84ea-99419daef439",
+      "name": "묘통사납골공원",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJmbCmSadZbjURXMBfbs94xSk/photos/AZLasHrkaTMEXts80DZvU_QYbeOJPEhMLcPR6UO45DLXNg7XoVpv1pcmgN5pUbn34BJoFI3AwU_xsRSF3SeUD5LhKNA5RgH4cJxLI_z387yhmL0p5xTPDDNne5M0XoLcQ9NNE8bNgFhx58tNSzlWvmCDHQZYUNXxanbSReejx22zpxrGqCa4YDsUxQCVtaN8VX6wrOjeIse-2NftQI-Y5XYZR2SWIy1APNxU659VDLJ_0xK6TchUHJA418aHrIp2T6gI-3lNORzBP2ohHm2RAy35jGepHSyrU7H3PYeIrqcBN1Nopl8tn4o17vQXerE8dc36ZaD8DZfPX5ZUpEBpaCZtqIzhXiZ0_nKAwhgUXdFdBwA-IrYnlHerDraEkzofFLj9u0mJpVkEhXEm1BXCwXYSMHWzqRdEGX2sTvATO7lJR_Y2AJ-KLnvGdj1aCH3YcA/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경상남도 사천시 곤명면 세종태실로 106",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJmbCmSadZbjURXMBfbs94xSk/photos/AZLasHrkaTMEXts80DZvU_QYbeOJPEhMLcPR6UO45DLXNg7XoVpv1pcmgN5pUbn34BJoFI3AwU_xsRSF3SeUD5LhKNA5RgH4cJxLI_z387yhmL0p5xTPDDNne5M0XoLcQ9NNE8bNgFhx58tNSzlWvmCDHQZYUNXxanbSReejx22zpxrGqCa4YDsUxQCVtaN8VX6wrOjeIse-2NftQI-Y5XYZR2SWIy1APNxU659VDLJ_0xK6TchUHJA418aHrIp2T6gI-3lNORzBP2ohHm2RAy35jGepHSyrU7H3PYeIrqcBN1Nopl8tn4o17vQXerE8dc36ZaD8DZfPX5ZUpEBpaCZtqIzhXiZ0_nKAwhgUXdFdBwA-IrYnlHerDraEkzofFLj9u0mJpVkEhXEm1BXCwXYSMHWzqRdEGX2sTvATO7lJR_Y2AJ-KLnvGdj1aCH3YcA/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "7459b890-ca32-4bbd-a63e-eee84e640a48",
+      "name": "금강사추모관",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJWXraY64DZzURaQfP1k2IijU/photos/AZLasHpNzj2Lh9LHH0FLJqMaBKDDKOtREFHC5ljCJTaKaqFhQO3kUOFW0NFP0-NFuvsQzMmhZHqJkMaorpO8nuFtLK-i7fiwZ0AXItR8TdostO7i2LOzE3siMeNkeqXaElcHVsktME9_F99WB1LVafRTAraCyAd_Vl8uMDqvJzSn5xvhvpcy6kgnrJoNEWM06V9YMUwr8TdEEuCrWpMmakqhFpSF3EsTypkBEm_ZjUKpke84BY9mrxa3ch9gYIt9FZjyhCcIWINIn1-8RaBP5TrjpGT2kApNXlcf3rhKU9VINxvH1UAVvV0EEg7OQXI5NYqNam6hFFMggJXAnGxVZRqQC_Z720WkkhHaz7uPjuDjwllMMvFz0YVym3B-Jwy2bpKEcgBecTMGdvMHeJuywvu7d3RKnaK9fWiHxTtOzMFko_QcXYA/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경상북도 포항시 북구 침촌마을길 213-7",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJWXraY64DZzURaQfP1k2IijU/photos/AZLasHpNzj2Lh9LHH0FLJqMaBKDDKOtREFHC5ljCJTaKaqFhQO3kUOFW0NFP0-NFuvsQzMmhZHqJkMaorpO8nuFtLK-i7fiwZ0AXItR8TdostO7i2LOzE3siMeNkeqXaElcHVsktME9_F99WB1LVafRTAraCyAd_Vl8uMDqvJzSn5xvhvpcy6kgnrJoNEWM06V9YMUwr8TdEEuCrWpMmakqhFpSF3EsTypkBEm_ZjUKpke84BY9mrxa3ch9gYIt9FZjyhCcIWINIn1-8RaBP5TrjpGT2kApNXlcf3rhKU9VINxvH1UAVvV0EEg7OQXI5NYqNam6hFFMggJXAnGxVZRqQC_Z720WkkhHaz7uPjuDjwllMMvFz0YVym3B-Jwy2bpKEcgBecTMGdvMHeJuywvu7d3RKnaK9fWiHxTtOzMFko_QcXYA/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "e0bb7eb8-d11a-4077-aff7-5ef65c383c09",
+      "name": "천주교청계묘원봉안당",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJRRoOc2vHczURS4xgEz_eiMw/photos/AZLasHrcwk9r00q18Tbk3jOb7WTRCjwxUewsjNlnd_U96Z4QSB6MxbDUulazowiVNd73k1w1M5_BABC7RQy423NVgtVLbZNDs8S6IjHAMYcXCYbeyrNPMCqI_LTXo7ZSJ1x57NV450KWVpkVw3TUH6Govpi1YAbzijVuS-_5O5dWF1jPlHXVt_tJ4BO07iH42j5mPetHTrYnUXkYxjuR2ffU-32cmcSZO5VwT63i5Rhd80nHFQItU7npoQO5wpHJFcCfCcd2GnV7S-nSYO6S-PdAsB9-qRP23dgq7c-ywonp4cHDVZNEFNI-884P506JiQQnkgptUax1hQAgGiwgo4g_mrvUiCVN_-h75jX0I64c-40o2qEtkN9yS5xIiZPANaoGFaude8SpBp9RYv_TEBa9k8HOCp9XyRvmMIslMg-T_SKN/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "전라남도 무안군 청계면 해안로 752",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJRRoOc2vHczURS4xgEz_eiMw/photos/AZLasHrcwk9r00q18Tbk3jOb7WTRCjwxUewsjNlnd_U96Z4QSB6MxbDUulazowiVNd73k1w1M5_BABC7RQy423NVgtVLbZNDs8S6IjHAMYcXCYbeyrNPMCqI_LTXo7ZSJ1x57NV450KWVpkVw3TUH6Govpi1YAbzijVuS-_5O5dWF1jPlHXVt_tJ4BO07iH42j5mPetHTrYnUXkYxjuR2ffU-32cmcSZO5VwT63i5Rhd80nHFQItU7npoQO5wpHJFcCfCcd2GnV7S-nSYO6S-PdAsB9-qRP23dgq7c-ywonp4cHDVZNEFNI-884P506JiQQnkgptUax1hQAgGiwgo4g_mrvUiCVN_-h75jX0I64c-40o2qEtkN9yS5xIiZPANaoGFaude8SpBp9RYv_TEBa9k8HOCp9XyRvmMIslMg-T_SKN/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "8c343422-ee50-44c8-ba93-711530e8d885",
+      "name": "천안추모공원 제1봉안시설",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJ11sE07raejUREBepmKETi5s/photos/AZLasHpJTtT1XZTF3poKLaXjFd5EUMD0ygIVAzr-Axfx0-N07NzJM5ob6otlvJcRtf4V7pzEWBR6uvz-vDqwZXfn66lseQtRgBPFOhd8k4ZQpOth17iX1Neea6RvXYVVDgA4n5ty43ZzEPbIETFrdAobxBL_eFASBQvzUQHi-KfnqxjdB7avlsQ665DYEY9if0QLovrJWbNHsP0pfnFNlrPwDeeS2sVjR38M7p1kKFaW0hCPFPU8EJo6R6LepaFGQ9oiA733zEqlQXibetB4-dr4-1l3PaksWGG_YoHZm_x-VpCqQ6ByBPXncprtncNv_fSW_hrQbHfjI3XJA3681zSz2HWlAbTEBaOanW5eVyf-4BKUF02ygKJdJXjPtSvE0Gg1TnWW_qjimvev36Su09Ey999kudOKk5_2-OYY19mvqg/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "충청남도 천안시 동남구 광덕면 밤나무골길 38",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJ11sE07raejUREBepmKETi5s/photos/AZLasHpJTtT1XZTF3poKLaXjFd5EUMD0ygIVAzr-Axfx0-N07NzJM5ob6otlvJcRtf4V7pzEWBR6uvz-vDqwZXfn66lseQtRgBPFOhd8k4ZQpOth17iX1Neea6RvXYVVDgA4n5ty43ZzEPbIETFrdAobxBL_eFASBQvzUQHi-KfnqxjdB7avlsQ665DYEY9if0QLovrJWbNHsP0pfnFNlrPwDeeS2sVjR38M7p1kKFaW0hCPFPU8EJo6R6LepaFGQ9oiA733zEqlQXibetB4-dr4-1l3PaksWGG_YoHZm_x-VpCqQ6ByBPXncprtncNv_fSW_hrQbHfjI3XJA3681zSz2HWlAbTEBaOanW5eVyf-4BKUF02ygKJdJXjPtSvE0Gg1TnWW_qjimvev36Su09Ey999kudOKk5_2-OYY19mvqg/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "fc758cf6-61ba-45d5-a37c-bc3c6f41873a",
+      "name": "유토피아추모관",
+      "category": "columbarium",
+      "images": [
+        "/images/facilities/utopia/utopia_1.png"
+      ],
+      "address": "경기도 안성시 일죽면 화곡길 130",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "/images/facilities/utopia/utopia_1.png"
+      ]
+    },
+    {
+      "id": "609bd724-9d86-45d2-b373-a8301c80bf7c",
+      "name": "예원추모관",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJMXUWicGWfDURo468Gb73BD8/photos/AZLasHpZcQlwWv4aRs6J7jaPtHZXfGQV2NTqUlbTpG3ewkhVhHMEgjnalnmFMxXtoXgUKMWv-H7th2RG3XhsaMJRykiFqJtToNgn9EEv25Bi5IWspwFk7GggFHwgL6i4S_ORiUxmra9QMHIfZhC07mPBcfSI2ZeEIvalKE6tj0AqSvp7Q_jp1gIH7qiXjpGV1SuuthqRvI2OCoNw622wxJO_f_JWqfdldtUMagYcv7osSxXbn3gxxEGfCuxeTm9Ji1rx01VZBzv4VVuUr8D_elutUkHiPY8gILdvgBirfIDYuxqhuXDk9f34-DH9b1OGjVF_MslGQqtdnrrhxPP9cMCGEoez_im2LBiyWTtUdOddZRGGoSyozWVSv3vCFvMQSTQaA21RO2AQ1ydURQvEY2Ys33Fh-9A4zN19WqRyhPy9lbQ/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경기도 고양시 덕양구 통일로 502-1",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJMXUWicGWfDURo468Gb73BD8/photos/AZLasHpZcQlwWv4aRs6J7jaPtHZXfGQV2NTqUlbTpG3ewkhVhHMEgjnalnmFMxXtoXgUKMWv-H7th2RG3XhsaMJRykiFqJtToNgn9EEv25Bi5IWspwFk7GggFHwgL6i4S_ORiUxmra9QMHIfZhC07mPBcfSI2ZeEIvalKE6tj0AqSvp7Q_jp1gIH7qiXjpGV1SuuthqRvI2OCoNw622wxJO_f_JWqfdldtUMagYcv7osSxXbn3gxxEGfCuxeTm9Ji1rx01VZBzv4VVuUr8D_elutUkHiPY8gILdvgBirfIDYuxqhuXDk9f34-DH9b1OGjVF_MslGQqtdnrrhxPP9cMCGEoez_im2LBiyWTtUdOddZRGGoSyozWVSv3vCFvMQSTQaA21RO2AQ1ydURQvEY2Ys33Fh-9A4zN19WqRyhPy9lbQ/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "1690c010-50d0-42fb-8078-460099e695dd",
+      "name": "이담추모관",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJCboN2c3RfDURTy2oK0BaWSU/photos/AZLasHrMrfhbwfCGR6lQCuS5hfElNn-MgxwMGshOnnFVOawstRuXTohVoGpb5qib7ipfmIVacd9XEcAaijR-03NZ2H6T-OlrP__d2FenSNiLzy0db7Hvpr7VXcMF5SkOCNKHNVu6UwHjuYee9NRelt_XnAH9qdSS16XraZwN-AoqpytwkWVCErjs253vpk33JvWwbZAwZW6I4QgPYqQ-4wLuCWw-EJFZr0_DrqnFN5fBj8npsu4Jjri8cFSoq94kvEto_2Nn7nL8cfvnrZEx1UQ4nw5ONo0-bh-gTlEvWvkS1BGngPzwoAWecwA25rIZezm-tDvugGIBZAWmgsfepryF8ZfPfTSyGerhN5EOpyz4a2dwjIplzKJsSq6DjztmORFibDbO89tT-Cc97hsV72cMLeOskM1VWtKjNpJxpsZAo1Oe2_oax_qgUpWGmVW5KQ/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경기도 동두천시 탑신로 562",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJCboN2c3RfDURTy2oK0BaWSU/photos/AZLasHrMrfhbwfCGR6lQCuS5hfElNn-MgxwMGshOnnFVOawstRuXTohVoGpb5qib7ipfmIVacd9XEcAaijR-03NZ2H6T-OlrP__d2FenSNiLzy0db7Hvpr7VXcMF5SkOCNKHNVu6UwHjuYee9NRelt_XnAH9qdSS16XraZwN-AoqpytwkWVCErjs253vpk33JvWwbZAwZW6I4QgPYqQ-4wLuCWw-EJFZr0_DrqnFN5fBj8npsu4Jjri8cFSoq94kvEto_2Nn7nL8cfvnrZEx1UQ4nw5ONo0-bh-gTlEvWvkS1BGngPzwoAWecwA25rIZezm-tDvugGIBZAWmgsfepryF8ZfPfTSyGerhN5EOpyz4a2dwjIplzKJsSq6DjztmORFibDbO89tT-Cc97hsV72cMLeOskM1VWtKjNpJxpsZAo1Oe2_oax_qgUpWGmVW5KQ/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "98778ae1-e40a-4205-ad00-b1f8982c3166",
+      "name": "순천시립추모공원봉안당",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJt34RFI8IbjURLMOB4rxn90c/photos/AZLasHoEzu5DrnPrNR2RL8YB8po8McMSEVGLU-ehdSC9Unx1663IkccnxgBGPHQaezyVx_a8SiejLTk9vxRCaLWfy2GPmntZF8x7hsRq_nnIEx4-0hJatrqxiaaxlMd999B-gWVJ4WP5kWeoUEYH7oejMOoVGH0Uv5fShpcyWIppmyX-n_Hp5RooZaaRsOiS7GvZCYU2RSPnhgIx-OTb78mTGCfgExtGZEAyk71jk15CpaWALgWHhCq_kjv3F6CNz06i6wupiMvqn1OOH8Oygh5lhHq5wWR1v-5CrkolPB899L-1kioJNLM1OVsWNRS3ZiURf2eIuyoQp1Lyy4NqN7b_CRkcfIKs0N5zl5iP3JgTgvfjkkbJzroe3cbExoBg8pxGqdu8ZVd4uUij9AS6BuhiUWa47j7k0zb_tbPfzjza2AI/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "전라남도 순천시 양율길 132",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJt34RFI8IbjURLMOB4rxn90c/photos/AZLasHoEzu5DrnPrNR2RL8YB8po8McMSEVGLU-ehdSC9Unx1663IkccnxgBGPHQaezyVx_a8SiejLTk9vxRCaLWfy2GPmntZF8x7hsRq_nnIEx4-0hJatrqxiaaxlMd999B-gWVJ4WP5kWeoUEYH7oejMOoVGH0Uv5fShpcyWIppmyX-n_Hp5RooZaaRsOiS7GvZCYU2RSPnhgIx-OTb78mTGCfgExtGZEAyk71jk15CpaWALgWHhCq_kjv3F6CNz06i6wupiMvqn1OOH8Oygh5lhHq5wWR1v-5CrkolPB899L-1kioJNLM1OVsWNRS3ZiURf2eIuyoQp1Lyy4NqN7b_CRkcfIKs0N5zl5iP3JgTgvfjkkbJzroe3cbExoBg8pxGqdu8ZVd4uUij9AS6BuhiUWa47j7k0zb_tbPfzjza2AI/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "3534f9d8-67da-4b5a-b0e3-4d1a1cba94f5",
+      "name": "진주내동공원묘원추모관",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJ9awCicX5bjURRZGkI-D9opI/photos/AZLasHro4gEGCBtSlAzyRmtcy0X3ycr1fkydazZCuQI7CiPE0tlLWHnxc7T2F0DW_pqxoaRbKdTUFNthpGZHVEWxLWWUS7xQXWwAsyzi9otcdpMxz29KStDDGgP670iNT_CxzNz3uBEdkUFqoX3JsCnLBDx0zSFTrfPPLSGFShzr30bNQH5Hys2cdq_11ReKjdxjv-jhrBNuByjT2fOnSFd6P12sV55p8ciJ8YD-3ggYAKDbw1zjyImQCvyABjpnyqXMrapm5U07HnZvgsuOuVKW3XFr89OK3UfJXlD0e3uMJ7BooLtPf52JCIKMlpaVAkegXQUR80lp5b-ags2EO6KB3CkbhfiMk2RambSfL_qIfd7Umr2fapgCiPkD3h8DIAV_lkA-wMZGKXXQlYwoErg4uA8j4ZWmAjXIgCbgng3PvyS6fpg/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경상남도 진주시 내동면 유수길75번길 8-214",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJ9awCicX5bjURRZGkI-D9opI/photos/AZLasHro4gEGCBtSlAzyRmtcy0X3ycr1fkydazZCuQI7CiPE0tlLWHnxc7T2F0DW_pqxoaRbKdTUFNthpGZHVEWxLWWUS7xQXWwAsyzi9otcdpMxz29KStDDGgP670iNT_CxzNz3uBEdkUFqoX3JsCnLBDx0zSFTrfPPLSGFShzr30bNQH5Hys2cdq_11ReKjdxjv-jhrBNuByjT2fOnSFd6P12sV55p8ciJ8YD-3ggYAKDbw1zjyImQCvyABjpnyqXMrapm5U07HnZvgsuOuVKW3XFr89OK3UfJXlD0e3uMJ7BooLtPf52JCIKMlpaVAkegXQUR80lp5b-ags2EO6KB3CkbhfiMk2RambSfL_qIfd7Umr2fapgCiPkD3h8DIAV_lkA-wMZGKXXQlYwoErg4uA8j4ZWmAjXIgCbgng3PvyS6fpg/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "38fdd3f0-b264-4a06-af0a-548cf950e377",
+      "name": "광주영락공원 봉안묘",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJNf5JNomScTURkBXbaax8cek/photos/AZLasHqvv99fNgCXuiGyI2bGc0JPu2amIP2sgM3Oiw6lQ78uNWMF3BvnvGNL9AnlxE7KivAOTxk_nTDbvA9LTrh_NdRzOxis0KD9TVPQwnAACAxYsuZ2pAaujeDY6FToj77-hAsxI9yl5Y_HcZ1ige8z4qVBg7cQ8tC_Wcg5EGQdYp7HLh9NiwBohBtLyi6qqWKDKo3jwJQh7GGVPj9gLMs72HLkSf_ke4ksCPHZ5YFEMAfzpOIMYNNNSUloETPJw3OBP2oJIGRe4rY3EFx5vEpngTPPgDIqN5NCaZWvUZTkAuEvZm3rArhssMPWU0DGgpHCP2Vzbhh-KOJVIQjyLgMqR9X7JEhjFWIVQBezUThnYH3pRV6kbhJoRVSPa4iAg7BcdYcHR8jZ1Mnuw6m9yOuBgsA_Pu0XFW7XNcNm3IgWtbpB2lE/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "광주광역시 북구 영락공원로 170",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJNf5JNomScTURkBXbaax8cek/photos/AZLasHqvv99fNgCXuiGyI2bGc0JPu2amIP2sgM3Oiw6lQ78uNWMF3BvnvGNL9AnlxE7KivAOTxk_nTDbvA9LTrh_NdRzOxis0KD9TVPQwnAACAxYsuZ2pAaujeDY6FToj77-hAsxI9yl5Y_HcZ1ige8z4qVBg7cQ8tC_Wcg5EGQdYp7HLh9NiwBohBtLyi6qqWKDKo3jwJQh7GGVPj9gLMs72HLkSf_ke4ksCPHZ5YFEMAfzpOIMYNNNSUloETPJw3OBP2oJIGRe4rY3EFx5vEpngTPPgDIqN5NCaZWvUZTkAuEvZm3rArhssMPWU0DGgpHCP2Vzbhh-KOJVIQjyLgMqR9X7JEhjFWIVQBezUThnYH3pRV6kbhJoRVSPa4iAg7BcdYcHR8jZ1Mnuw6m9yOuBgsA_Pu0XFW7XNcNm3IgWtbpB2lE/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "b666c539-4b28-4876-ac8a-639f34205449",
+      "name": "광주영락공원 제1추모관",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJNf5JNomScTURkBXbaax8cek/photos/AZLasHrKK0B0QYXx-mBAkADoSUYlRHn9wmzoQNal3sOeb6Gld2Hooy37nlXxVHOJG44XPyYpUs4CMq-LXyYi58l7MAlZEPyu7eP4zp3hcL7JNOc1UqhreUSrTrxyr1oj0uEDxLq-jyAPq9MgKQtxSaU_S_1GGW0IWl2Gu6GGGvaq0t031NEjDll9Nc8Ux7RZEhEHbK72Yd-cuFrZTc3eiTl_idXBzw9oxfXO6Gux3hTclDUq8XgKbCBfY5ibrrxem8s1lgflPEC930nsGDdEsFsDdCWBrqAOvL8kyT-CUw9me4dHrwYG3GPKU-Z5vOkvF9wKeVT6opnpX2S-9O4Ypwa3OoSK1PlZXbTKDCzoLaGgw_Yo-9g2-4c015QmXtcxoPhwZ2jHNYeA0BO_fY89mXtGL9ZLF3FAsMQDhmTeVAHUADVqqII/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "광주광역시 북구 영락공원로 170",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJNf5JNomScTURkBXbaax8cek/photos/AZLasHrKK0B0QYXx-mBAkADoSUYlRHn9wmzoQNal3sOeb6Gld2Hooy37nlXxVHOJG44XPyYpUs4CMq-LXyYi58l7MAlZEPyu7eP4zp3hcL7JNOc1UqhreUSrTrxyr1oj0uEDxLq-jyAPq9MgKQtxSaU_S_1GGW0IWl2Gu6GGGvaq0t031NEjDll9Nc8Ux7RZEhEHbK72Yd-cuFrZTc3eiTl_idXBzw9oxfXO6Gux3hTclDUq8XgKbCBfY5ibrrxem8s1lgflPEC930nsGDdEsFsDdCWBrqAOvL8kyT-CUw9me4dHrwYG3GPKU-Z5vOkvF9wKeVT6opnpX2S-9O4Ypwa3OoSK1PlZXbTKDCzoLaGgw_Yo-9g2-4c015QmXtcxoPhwZ2jHNYeA0BO_fY89mXtGL9ZLF3FAsMQDhmTeVAHUADVqqII/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "2059cced-1bf8-4381-bcad-a78f3b19b6c7",
+      "name": "거제시추모의집",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJ-1bbBQDPbjUR_ltTqbFeiMc/photos/AZLasHqTvdzYfZ3HPLDu3zpY7C1I4U7HvhhFXooxGuVK470ybPTMpPorGejKHx2bfmaprl6Tj6ZvnGdprNNgwbcG4uF_a-exMjikiaciFgCvvxbr00_JPfaum83LIHf51ByrPeuKUJjoizwhTizLoOXUjT4Yczs_iHBLxLrhkBy-YV9vN-N31bLjkTMgKbgHl8_fXE8x1Z7hp0HqJmynAuZd4LVPDpKwIcDrKk9rU5tbCfp7yjOPYJ2c8VhaBbriTkbgj6jYWG69aJrouNBI9gSxelfeP6hNuM7F_vLX4jmxoegAAO6lxC0I0NvhvPFFIGNz19_ffLwCV4Kis357vnjiVfeLY06u6lxITSmIwG68uckzkBqnmZ5arkJ6W9w15Jy21jPEA_j9cgIUnsPcvTJeYS912Nl242sULvPnLO1GYw/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경상남도 거제시 사등면 지석로 219-38",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJ-1bbBQDPbjUR_ltTqbFeiMc/photos/AZLasHqTvdzYfZ3HPLDu3zpY7C1I4U7HvhhFXooxGuVK470ybPTMpPorGejKHx2bfmaprl6Tj6ZvnGdprNNgwbcG4uF_a-exMjikiaciFgCvvxbr00_JPfaum83LIHf51ByrPeuKUJjoizwhTizLoOXUjT4Yczs_iHBLxLrhkBy-YV9vN-N31bLjkTMgKbgHl8_fXE8x1Z7hp0HqJmynAuZd4LVPDpKwIcDrKk9rU5tbCfp7yjOPYJ2c8VhaBbriTkbgj6jYWG69aJrouNBI9gSxelfeP6hNuM7F_vLX4jmxoegAAO6lxC0I0NvhvPFFIGNz19_ffLwCV4Kis357vnjiVfeLY06u6lxITSmIwG68uckzkBqnmZ5arkJ6W9w15Jy21jPEA_j9cgIUnsPcvTJeYS912Nl242sULvPnLO1GYw/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "ccd9141d-65b8-4089-8cbb-a712c8e09ec0",
+      "name": "혜명사",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJgTxylrvfejURO10y0PLuFto/photos/AZLasHrOq0zVbscHi_UqHd_r_pO453JS5BgKbps9TcjVhFl7HOYXgxQhJQ3kS7tAS_UzrRZYLchd7wsG8YsnkCA6tkK0TFf4t9XTkwmddbYquPJeAKRK8Menq_lWIaMPvfnWoQCR0ea_5oDyUOY-B7gh9H4yc8HAssYM1y7dTat2xLDygXNRbqqJzjjhGU0_53gzd4rvy0fTtHvM3FwPF99cIX3kaV9CgwfmMskSg2REN3soCRHV1xkEnv1iX48aA0xJyTVQybAFcr4sQkpj9n8vSKMMF_Fe2en2un9vkp8xdchLSw7MAvvN6hmzhyqnk_vtk3gsPqzPy2UpZ9iTvd5yZ8V2Du7tt4PM382knqqGfA4LccE87G0rThs-iz0ae58ixzz0AEfjD1d0yYanKiqj6WOIGjWZxFiCC9N7PovMH9o/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "충청남도 아산시 염치읍 쌍죽길 133-7",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJgTxylrvfejURO10y0PLuFto/photos/AZLasHrOq0zVbscHi_UqHd_r_pO453JS5BgKbps9TcjVhFl7HOYXgxQhJQ3kS7tAS_UzrRZYLchd7wsG8YsnkCA6tkK0TFf4t9XTkwmddbYquPJeAKRK8Menq_lWIaMPvfnWoQCR0ea_5oDyUOY-B7gh9H4yc8HAssYM1y7dTat2xLDygXNRbqqJzjjhGU0_53gzd4rvy0fTtHvM3FwPF99cIX3kaV9CgwfmMskSg2REN3soCRHV1xkEnv1iX48aA0xJyTVQybAFcr4sQkpj9n8vSKMMF_Fe2en2un9vkp8xdchLSw7MAvvN6hmzhyqnk_vtk3gsPqzPy2UpZ9iTvd5yZ8V2Du7tt4PM382knqqGfA4LccE87G0rThs-iz0ae58ixzz0AEfjD1d0yYanKiqj6WOIGjWZxFiCC9N7PovMH9o/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "3d7be8a3-ac99-4ef1-b376-4f2a76fa3dcd",
+      "name": "보현정사",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJx3Cp8sG6czURa4GUie7w8jc/photos/AZLasHrCY_d-YqdBs5inM_JfJMu2pjhFGfo9noFPJ9w7Aolybuu8eQXVBzorRt0hepUfaNYEwUPoT0Smwep4SKVkzAAzGn0feWvii16FqLIg5B6Ul8zCxI8wF3-N4by0oTx4Q6AVJUNa416hc3_97RdgiVuPeQZyNxxdw_J9CXLd6eRAGijN3JVFzqErnw88KHCar1UZ0rqDxQkErzQE7_p7VJRyeZK6eEjPFd_YFDkP9nON88tv6LtH1pQ1V2ldbtBiKPbP66NfzxMkjWYhfOjrFo2Yw1IexJNpNhGEoIGLtCo7ZG1QPMVS-o-kovakwfaX8EBqrYJysA_fLp8XOg0luHcwLzaoNlzcukSsHyXsillQ1UJx_JUaIE9aDcdZqz2BLVLgsc9Tx_q8p6uddw1Ml-WO-Ye2EWIe_8NWA0LdJXvmTqs/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "전라남도 목포시 삼학로 346-1",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJx3Cp8sG6czURa4GUie7w8jc/photos/AZLasHrCY_d-YqdBs5inM_JfJMu2pjhFGfo9noFPJ9w7Aolybuu8eQXVBzorRt0hepUfaNYEwUPoT0Smwep4SKVkzAAzGn0feWvii16FqLIg5B6Ul8zCxI8wF3-N4by0oTx4Q6AVJUNa416hc3_97RdgiVuPeQZyNxxdw_J9CXLd6eRAGijN3JVFzqErnw88KHCar1UZ0rqDxQkErzQE7_p7VJRyeZK6eEjPFd_YFDkP9nON88tv6LtH1pQ1V2ldbtBiKPbP66NfzxMkjWYhfOjrFo2Yw1IexJNpNhGEoIGLtCo7ZG1QPMVS-o-kovakwfaX8EBqrYJysA_fLp8XOg0luHcwLzaoNlzcukSsHyXsillQ1UJx_JUaIE9aDcdZqz2BLVLgsc9Tx_q8p6uddw1Ml-WO-Ye2EWIe_8NWA0LdJXvmTqs/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "ae4b23b6-9caa-493b-8389-9ebdbaf7e32c",
+      "name": "정토사극락원",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJSzOrSIItZjURUux2tO_pqR4/photos/AZLasHqVH8l3OXy5l2-jaiX7R00NHrsMZ0TcbUVy4ej0xKRcoLkj8F_6J_UJNOKelWrTMGhLhrtaD0KLdB_0a7IXotOHqRHzeAgcSCHEfwaV3SoSsV3xviXletNKP20l_aCbQTX3J7_fZnrzsZznznv0HnQ3qsfvTCNjMqm8Aa1gi2gIFKv4fUc2r1QOFWkHSkGQlOUfICKejRPM7AFmen38qEY93h8s1hFbXvJlOvF4InZFza3vkUloUc4L7v5ixKf9W3Y23lJTwRRh4ee0-hfzLiHCGoxdyeKZNYZ1kTfaNf57Gi3rAbWtV79IHdVQYqVlwC-v7sJdidNFPbTmNXuGx--kKYGrj155xNfkPgoVckMJpyD5SI4AKxKBqxsA7UzPBl6rPXzczyPGEDP1-foB4Mh_63oLV0H2i_Qim5mYofE/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "울산광역시 남구 문수로217번길 27",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJSzOrSIItZjURUux2tO_pqR4/photos/AZLasHqVH8l3OXy5l2-jaiX7R00NHrsMZ0TcbUVy4ej0xKRcoLkj8F_6J_UJNOKelWrTMGhLhrtaD0KLdB_0a7IXotOHqRHzeAgcSCHEfwaV3SoSsV3xviXletNKP20l_aCbQTX3J7_fZnrzsZznznv0HnQ3qsfvTCNjMqm8Aa1gi2gIFKv4fUc2r1QOFWkHSkGQlOUfICKejRPM7AFmen38qEY93h8s1hFbXvJlOvF4InZFza3vkUloUc4L7v5ixKf9W3Y23lJTwRRh4ee0-hfzLiHCGoxdyeKZNYZ1kTfaNf57Gi3rAbWtV79IHdVQYqVlwC-v7sJdidNFPbTmNXuGx--kKYGrj155xNfkPgoVckMJpyD5SI4AKxKBqxsA7UzPBl6rPXzczyPGEDP1-foB4Mh_63oLV0H2i_Qim5mYofE/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "165ae1df-20d4-42b3-8e42-2c7499b3226e",
+      "name": "해인사 고불암무량수전",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJqTXRvbx-bzURN1Tchj9OzzA/photos/AZLasHqUBDvZpXv6MK7bt1Lg0MPNCSk9vm9qv999ueC4QRpqFje74mAooZo4HnNtEWTK3JPCVqq5RfHtU8rgmKWDeR6wEF_EYhSbEdkAYKkBcA5Au9U7T3q1GzR_ckQzBoRQBrBxSOIaajwa89b4z9JpzL3WTNVy32jmnfReYK_4nfjdoDw_L2VZmqo-qkf2HvnFERsqcdfSZ0NKCitOENwy-gdND5q0J1psWOOWaTUYVlxYXtZQt4eJVwsMnm3vNc2vbtk0uFUGNZfUFTPXkCwjfkwpA-cizTlWCI8U9PKN64fJxf6dRlVh94SGpSp2Q844UOHtyeDjjG19sx0gUsPOMaxfUUdHKqGN1y2BTy4NWn81EcCNEm3-1ehcZkUo0bDLgDgA1RNZGuNinQni77JDmsvrIZCGlbMp7JbAfFEHjaq9/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경상남도 거창군 가북면",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJqTXRvbx-bzURN1Tchj9OzzA/photos/AZLasHqUBDvZpXv6MK7bt1Lg0MPNCSk9vm9qv999ueC4QRpqFje74mAooZo4HnNtEWTK3JPCVqq5RfHtU8rgmKWDeR6wEF_EYhSbEdkAYKkBcA5Au9U7T3q1GzR_ckQzBoRQBrBxSOIaajwa89b4z9JpzL3WTNVy32jmnfReYK_4nfjdoDw_L2VZmqo-qkf2HvnFERsqcdfSZ0NKCitOENwy-gdND5q0J1psWOOWaTUYVlxYXtZQt4eJVwsMnm3vNc2vbtk0uFUGNZfUFTPXkCwjfkwpA-cizTlWCI8U9PKN64fJxf6dRlVh94SGpSp2Q844UOHtyeDjjG19sx0gUsPOMaxfUUdHKqGN1y2BTy4NWn81EcCNEm3-1ehcZkUo0bDLgDgA1RNZGuNinQni77JDmsvrIZCGlbMp7JbAfFEHjaq9/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "63c1becb-8eb6-49e9-a4f3-912ac074ad79",
+      "name": "금오영당",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJBdJlVrRgbjURdF7ksjZV_zI/photos/AZLasHpL4nd0LJamDABTKzFeHnCld-F8l7PNeRhKgWd1sD4pj4t77jHi1uZVKlz7VULlkZMJDbPLfVgdXW7NArNPQyfUKuezgTAykkRixv9UBcs0eQKzxTE0sW2Iwif86EecYyC5GogX_nkh2G66Ms0UPLfYDglXaeq9IY9yaJhM2yVzH5YNqWl27P3Ry7geUyI7m_Q6igaymbvT2canuWejIUp9ZZw25o1ZCu1orSkH-QW7xn3kvhvBzQI3cypZ0kAC8xAy_x00LFdmChPhWNbbKzDEdRUEuJ_EB1oEiinsfAUC7AFnUCv9zGDAuuYbolYSwSBCoM2mM-ozyYaZ-vIeDwj3mygpNqTfGxlCn6Nd4q4YAQ9Q8OGGkxYZVRJFPKSUBv8kffNvD1W3OvDOOP5o9EbvJfYrgAE4Y3nUkMTKGU12RsM/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경상남도 하동군 진교면 달구지길 95-5",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJBdJlVrRgbjURdF7ksjZV_zI/photos/AZLasHpL4nd0LJamDABTKzFeHnCld-F8l7PNeRhKgWd1sD4pj4t77jHi1uZVKlz7VULlkZMJDbPLfVgdXW7NArNPQyfUKuezgTAykkRixv9UBcs0eQKzxTE0sW2Iwif86EecYyC5GogX_nkh2G66Ms0UPLfYDglXaeq9IY9yaJhM2yVzH5YNqWl27P3Ry7geUyI7m_Q6igaymbvT2canuWejIUp9ZZw25o1ZCu1orSkH-QW7xn3kvhvBzQI3cypZ0kAC8xAy_x00LFdmChPhWNbbKzDEdRUEuJ_EB1oEiinsfAUC7AFnUCv9zGDAuuYbolYSwSBCoM2mM-ozyYaZ-vIeDwj3mygpNqTfGxlCn6Nd4q4YAQ9Q8OGGkxYZVRJFPKSUBv8kffNvD1W3OvDOOP5o9EbvJfYrgAE4Y3nUkMTKGU12RsM/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "afd2c775-50a9-4fc9-a5aa-b4cfbdc61402",
+      "name": "흥창사",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJsZSbtaaXfDURIatbLCG2d3o/photos/AZLasHrpnaYDoDBPQL_Aylh680g11h3me8KLFZWdflCaJ5bnHNtpQ2kMg43AEwY_jmbGXb2VbkqgA9I6IqoMbFkro8hhvDnRha9xzLdCb7BVN5WmOUZSHBNCF077f5jc72fklCL6tMBTP2W2DdeYjLETaofIeadLYXoNlzaxNb1nOXizQQBTtes2Pg74LBXtSs_muymnC4HyYCn8t2VRltQ7RskYjRmLV3NjziJRYTsdtCzYOYHglHkl-jG1YEWD_sCwlm1zHBmRocs734OGKxPruW_uSYzncQvjT0OmJgiWBOiB2MG4O2E2UB1NFmn_37hjMtsQpE501zXWKWyeT7jL-cjIJQPIaXZ-0lULdlVNb2JcvwK9j4A4VHk470irl6qD_6lqe4P_oV4qzHZFGpCPkcoaBOJ22YH8T9DPa_OhGlE/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "서울특별시 은평구 진관동 71-9",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJsZSbtaaXfDURIatbLCG2d3o/photos/AZLasHrpnaYDoDBPQL_Aylh680g11h3me8KLFZWdflCaJ5bnHNtpQ2kMg43AEwY_jmbGXb2VbkqgA9I6IqoMbFkro8hhvDnRha9xzLdCb7BVN5WmOUZSHBNCF077f5jc72fklCL6tMBTP2W2DdeYjLETaofIeadLYXoNlzaxNb1nOXizQQBTtes2Pg74LBXtSs_muymnC4HyYCn8t2VRltQ7RskYjRmLV3NjziJRYTsdtCzYOYHglHkl-jG1YEWD_sCwlm1zHBmRocs734OGKxPruW_uSYzncQvjT0OmJgiWBOiB2MG4O2E2UB1NFmn_37hjMtsQpE501zXWKWyeT7jL-cjIJQPIaXZ-0lULdlVNb2JcvwK9j4A4VHk470irl6qD_6lqe4P_oV4qzHZFGpCPkcoaBOJ22YH8T9DPa_OhGlE/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "df45a50f-2eed-479c-b4bd-28c536c548cd",
+      "name": "해인사미타원",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJE2FOO7uWfDURoQ9infLBFgQ/photos/AZLasHpKKvehg-m1Tp0jsolW__ZfFAIaR6s3yqcijE44dObCw3lcuq0SGV8f1ENA5gZwmaIZ2fUibSBX2d3PiylgGlhhD3oybKcr0wLgmYgZ9m3DcopJ9YQVjkxZ9T3YfReCBK6ZaVXTn6yryV_1dv7bXzXAFMfWKafDqnUkXlL1EwLLrN9KSNqRJsGT0BjIW92FClIOqCogoWk-74fwD58Ir6xKGVKDj1jaAEZ7_01qh-9sf0umZIk2oTX6MrSDz0-fRYtKOHw_aURWP551IwWAcKME1zlbO39yInaIPDGlBuHtIULyoAJB-BEkEPlAbZqZWI4k9NQaoUuSIkISI3_wLkZFziC_Vt21CYSM6M_nrnBBNU90OjJiYc4DsAfstyOCP52aFQohJTxmKpYqBwsl6mw0drsC4yt2K-bLvdiG8ttvGt0/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경기도 고양시 덕양구 대양로 84-80",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJE2FOO7uWfDURoQ9infLBFgQ/photos/AZLasHpKKvehg-m1Tp0jsolW__ZfFAIaR6s3yqcijE44dObCw3lcuq0SGV8f1ENA5gZwmaIZ2fUibSBX2d3PiylgGlhhD3oybKcr0wLgmYgZ9m3DcopJ9YQVjkxZ9T3YfReCBK6ZaVXTn6yryV_1dv7bXzXAFMfWKafDqnUkXlL1EwLLrN9KSNqRJsGT0BjIW92FClIOqCogoWk-74fwD58Ir6xKGVKDj1jaAEZ7_01qh-9sf0umZIk2oTX6MrSDz0-fRYtKOHw_aURWP551IwWAcKME1zlbO39yInaIPDGlBuHtIULyoAJB-BEkEPlAbZqZWI4k9NQaoUuSIkISI3_wLkZFziC_Vt21CYSM6M_nrnBBNU90OjJiYc4DsAfstyOCP52aFQohJTxmKpYqBwsl6mw0drsC4yt2K-bLvdiG8ttvGt0/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "1a4557ed-6cc2-4160-aebe-6e1cfe3daade",
+      "name": "남원시승화당",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJBxGIYAkrbjURiRLC8jTQYCQ/photos/AZLasHq15ZD9EE-WEicPJK_zqegrKeE4O0js-ryIeawvnxzj1A9fJhgOZ0nsHflS6lFFA6G9MfnVkAL0pV1s6wVu_0ARFqPAQZS-55zkqUZDqCeiJIMScaqKElGqVmlAUeIDosLPTksz67O6zifjUAVw1VTsP3JevW1v_FdcsMaijGAyItgPJWf-_PfH1S3EfkdoC5_mxg-0Dr9dbPnB5c-cf7vOm7U6cB4xEaJYenLv7JCueId-nRWRwddo3wSHkR7aEUukn7R06lqctcOyTUNTjEneb0Jh5UE2EDSsx-j_L00zl9bCia_uH47-u_IvbFqXqfgZW4hM0eKV2Hc-RFpwZMfdCgQPyEBa_t7mSfIQx6zmvCAeWcRciaz3FWXykUpOgvxHKhEqGYSPjrgGaRdfBzEbIdXLloBfAWkZKqKMoFU8K8yLw8iLLlU8Bi__/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "전라북도 남원시 솔터길 40-36 (광치동, 승화원)",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJBxGIYAkrbjURiRLC8jTQYCQ/photos/AZLasHq15ZD9EE-WEicPJK_zqegrKeE4O0js-ryIeawvnxzj1A9fJhgOZ0nsHflS6lFFA6G9MfnVkAL0pV1s6wVu_0ARFqPAQZS-55zkqUZDqCeiJIMScaqKElGqVmlAUeIDosLPTksz67O6zifjUAVw1VTsP3JevW1v_FdcsMaijGAyItgPJWf-_PfH1S3EfkdoC5_mxg-0Dr9dbPnB5c-cf7vOm7U6cB4xEaJYenLv7JCueId-nRWRwddo3wSHkR7aEUukn7R06lqctcOyTUNTjEneb0Jh5UE2EDSsx-j_L00zl9bCia_uH47-u_IvbFqXqfgZW4hM0eKV2Hc-RFpwZMfdCgQPyEBa_t7mSfIQx6zmvCAeWcRciaz3FWXykUpOgvxHKhEqGYSPjrgGaRdfBzEbIdXLloBfAWkZKqKMoFU8K8yLw8iLLlU8Bi__/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "c8f45bb1-059e-4fde-b50f-bc3f63234098",
+      "name": "한국불교태고종 해원정사",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJJa4dEbjeZTUR3f1IkY_izKo/photos/AZLasHoJb8xc84V0H0kunDnX-QjKZaujsrBke4LaQ4IC7gRTmeudufHtzEFzJWKaVAxE8ybZSicmVJrNwUaWHjUJ4Dk4WifDReAz4gt-YluUJnbWmwwqfso4p0HHasBkPqOUg5Y7GjtzuNC_rlGjq-rXTUmTeBJjxFGz77OjOmWpUEhu8L4_tY4yan75o7s98DJ1uaOuUPuu5v7qqMV5dt_9F5mOhhQHPVV3xjJVdAXTzjfWnrBB2MiOpt_5qEQuv4E-zoGaZ7bICZ73WS_43R9K8EyJC4t0Ky-GCUxki9nv0x-L5BaT-xbK4nHRJQbD6NdhA6aK3rjW2nRKbRvQgUgKvUku-8P-dQgd7gNJ3IsU3mcOixqYEOLlmP7nf-jkAKul9NhOXliMUv2DJobQsrnmngboJoWiyDi0ew2oDYmADvEIwRc/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "광주광역시 동구 분산길 100",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJJa4dEbjeZTUR3f1IkY_izKo/photos/AZLasHoJb8xc84V0H0kunDnX-QjKZaujsrBke4LaQ4IC7gRTmeudufHtzEFzJWKaVAxE8ybZSicmVJrNwUaWHjUJ4Dk4WifDReAz4gt-YluUJnbWmwwqfso4p0HHasBkPqOUg5Y7GjtzuNC_rlGjq-rXTUmTeBJjxFGz77OjOmWpUEhu8L4_tY4yan75o7s98DJ1uaOuUPuu5v7qqMV5dt_9F5mOhhQHPVV3xjJVdAXTzjfWnrBB2MiOpt_5qEQuv4E-zoGaZ7bICZ73WS_43R9K8EyJC4t0Ky-GCUxki9nv0x-L5BaT-xbK4nHRJQbD6NdhA6aK3rjW2nRKbRvQgUgKvUku-8P-dQgd7gNJ3IsU3mcOixqYEOLlmP7nf-jkAKul9NhOXliMUv2DJobQsrnmngboJoWiyDi0ew2oDYmADvEIwRc/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "2a082dfc-8d61-4c9b-b17a-684bcaa2470f",
+      "name": "석종사",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJCXoN7PKHZDURRKaXXxS8Jm8/photos/AZLasHoaA-K5Sjmn89pQTWgap7PH9RcBbdAM8PXaURfSRumoS7QoAsy0o_4FFyUUFwdwo7dcKrbvcHQXPMeBoYJsBa3jKsgDNDg2nf0H6rcMbrtC_J7Mc9EqM5GmzDP_YzuuMm8AwhcEPBtrHJjWfqBXDhUofylVZvsLcnhwzG_pglCzsvBQ-H2h58bzisdhYcoMF4TAqAOV0T6CnBJl6SP4r_0P_BoE3Pmsr3QPUYklUonvcY37AhYl1iT7K-PqiSJ7-pBS61zld-QcFYi_fNZP6Lz1WjCPIoyiGizMyKHhCigirabIJK8QiwqrJtelhLEiAmAqF2iwXIsD1wQRfS5iHB6Vsm3T_EihtrbxcHz53HczmMNgW8-dYilnNXPVedOa9w8Z_kD0C3bS3c1n9KoSXS__Tu29fFBBLIshbh2dPGi_MPohVWfSKij34AgT/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "충청북도 충주시 직동길 271-56 석종사",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJCXoN7PKHZDURRKaXXxS8Jm8/photos/AZLasHoaA-K5Sjmn89pQTWgap7PH9RcBbdAM8PXaURfSRumoS7QoAsy0o_4FFyUUFwdwo7dcKrbvcHQXPMeBoYJsBa3jKsgDNDg2nf0H6rcMbrtC_J7Mc9EqM5GmzDP_YzuuMm8AwhcEPBtrHJjWfqBXDhUofylVZvsLcnhwzG_pglCzsvBQ-H2h58bzisdhYcoMF4TAqAOV0T6CnBJl6SP4r_0P_BoE3Pmsr3QPUYklUonvcY37AhYl1iT7K-PqiSJ7-pBS61zld-QcFYi_fNZP6Lz1WjCPIoyiGizMyKHhCigirabIJK8QiwqrJtelhLEiAmAqF2iwXIsD1wQRfS5iHB6Vsm3T_EihtrbxcHz53HczmMNgW8-dYilnNXPVedOa9w8Z_kD0C3bS3c1n9KoSXS__Tu29fFBBLIshbh2dPGi_MPohVWfSKij34AgT/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "77233b89-e5ac-4ccf-97f7-904d6344c1aa",
+      "name": "백향목교회",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJ22vX4TRFezURvlhVI3rmEqk/photos/AZLasHoL-VzzWVEszP1U5SAdvD6iskod9Lu-5jeal1HlBodVMjTlLcQurwPwTO2OPzpLgro4qmGzFbPnnQhjsDoMy8aeXCYd9kL9ENG3aFos3FRhiGrSzwwuC6LgOSnCXKQMEGbHHBqaGTYiYIQe05xLDmHud-n4cja29CamMFlRnLGiTcMYEAdM_VcXGmZgWJ16queqkcKJkKw8bL1hut9wNAeZ7HwFTZ6YXBgYP_W5QHGQZET9YabxbvuGR2I61KtUAl21wiETzGnItyPzXpNKEsxnkFTQb74fLp4ZQ74Wsik1CF5Cz8G7iM32-3lr4yO3pYCAtcMMvjYVuK99wTBmVTICIRPmu12QiXmTyU1eGtqCCtlzLTyw56yWs3tguSQd-RT-yp_skx8lf3PkgyNupRAvgJ4DIZnV2_ZNpPaKeriRkss/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경기도 용인시 기흥구 보라하갈로 67",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJ22vX4TRFezURvlhVI3rmEqk/photos/AZLasHoL-VzzWVEszP1U5SAdvD6iskod9Lu-5jeal1HlBodVMjTlLcQurwPwTO2OPzpLgro4qmGzFbPnnQhjsDoMy8aeXCYd9kL9ENG3aFos3FRhiGrSzwwuC6LgOSnCXKQMEGbHHBqaGTYiYIQe05xLDmHud-n4cja29CamMFlRnLGiTcMYEAdM_VcXGmZgWJ16queqkcKJkKw8bL1hut9wNAeZ7HwFTZ6YXBgYP_W5QHGQZET9YabxbvuGR2I61KtUAl21wiETzGnItyPzXpNKEsxnkFTQb74fLp4ZQ74Wsik1CF5Cz8G7iM32-3lr4yO3pYCAtcMMvjYVuK99wTBmVTICIRPmu12QiXmTyU1eGtqCCtlzLTyw56yWs3tguSQd-RT-yp_skx8lf3PkgyNupRAvgJ4DIZnV2_ZNpPaKeriRkss/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "fbc0e7a9-2bec-4c5e-93d4-c4aa8ec471b9",
+      "name": "구미시공설숭조당제2관",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJM1SKBQnKZTURUmRv-KJEwRY/photos/AZLasHrAyLlwd3RSmFOucuwT0pAVwi_zqAs0OS-K3pgEMSRcietPNFXFXXbXGLwanLp9rkBl4l2X3r5Xhcf4XPrdepFpU2iCT47HucJdQJC3D1UaawjQ5AKrqw4n8jYdNChQkq9mxKPVdCpAsVRbA4AeB1SZS6Z6KLDSi75I8JHvLTjtok0JpCpcbc0bmi-i-3y6LB1oFcPiouBBQ563tKrTqH24p2YGCQroAmYdeUX0SwaT2rhyM4WXxqQaH0_9BtAVJMS_3ijJ3oCH37eO-O9VwMJ7TgCJA-03rb9l4PjKG5msIWTPZisLA7IX-pPFPYNvTJBOE7Fubi7x9i5e-fG5bYsW5dDyCW5zXl5-eZyN_hYoFRgptjm4I6T9qVFq0e508euRGBby4vDDJArBMHqrstiBckeWyIqrtiA9ww-ORgsCToo/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경상북도 구미시 옥성면 선상동로 419",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJM1SKBQnKZTURUmRv-KJEwRY/photos/AZLasHrAyLlwd3RSmFOucuwT0pAVwi_zqAs0OS-K3pgEMSRcietPNFXFXXbXGLwanLp9rkBl4l2X3r5Xhcf4XPrdepFpU2iCT47HucJdQJC3D1UaawjQ5AKrqw4n8jYdNChQkq9mxKPVdCpAsVRbA4AeB1SZS6Z6KLDSi75I8JHvLTjtok0JpCpcbc0bmi-i-3y6LB1oFcPiouBBQ563tKrTqH24p2YGCQroAmYdeUX0SwaT2rhyM4WXxqQaH0_9BtAVJMS_3ijJ3oCH37eO-O9VwMJ7TgCJA-03rb9l4PjKG5msIWTPZisLA7IX-pPFPYNvTJBOE7Fubi7x9i5e-fG5bYsW5dDyCW5zXl5-eZyN_hYoFRgptjm4I6T9qVFq0e508euRGBby4vDDJArBMHqrstiBckeWyIqrtiA9ww-ORgsCToo/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "d37c89c9-ca9d-44aa-9f2d-4ce1c2d499eb",
+      "name": "서동사",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJo_i-YPSgczURkxj34N56jsA/photos/AZLasHqk1F8fjMHHtskadyDVyBqG5MoVR4nREPqm5-iulCeWC0pS3rSrA5hm5L2meYySwNxQUbYIUAym5zc-HIWksQkj4cZ16p8WOdrx-1WTDxM8rngmBn-MJY1c97RfefJo1MBcNWCDjh4pYAG0IR3E9uJ9Nv-08Zo80ogWOfZfDMF1Zf34DLWqR1TWApgZEMEviFhRv3d3fMpNShNqAeAbFjJVxqHqAx4fhX9nnweetqK8qLy9C1En_Xv-szKXMkyksc_i2qR7mn0aUalohC3SaXGwU6f_R_0YXtf05UlWWKLfJPe_KGtd6xLBvRqITIVxMXT_bMn6wFjAr6nsDeQvtgYEReapMGggxnViIn13v4j5Mx5mj36557fU0IiSTc2r7TtCQVefINnOyQCw0eN17rwB6GLtHgKCdZtpJtDV7I8QMgI/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "전라남도 해남군 화원면 절골길 244",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJo_i-YPSgczURkxj34N56jsA/photos/AZLasHqk1F8fjMHHtskadyDVyBqG5MoVR4nREPqm5-iulCeWC0pS3rSrA5hm5L2meYySwNxQUbYIUAym5zc-HIWksQkj4cZ16p8WOdrx-1WTDxM8rngmBn-MJY1c97RfefJo1MBcNWCDjh4pYAG0IR3E9uJ9Nv-08Zo80ogWOfZfDMF1Zf34DLWqR1TWApgZEMEviFhRv3d3fMpNShNqAeAbFjJVxqHqAx4fhX9nnweetqK8qLy9C1En_Xv-szKXMkyksc_i2qR7mn0aUalohC3SaXGwU6f_R_0YXtf05UlWWKLfJPe_KGtd6xLBvRqITIVxMXT_bMn6wFjAr6nsDeQvtgYEReapMGggxnViIn13v4j5Mx5mj36557fU0IiSTc2r7TtCQVefINnOyQCw0eN17rwB6GLtHgKCdZtpJtDV7I8QMgI/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "e88d196d-9e90-4a28-bec5-7aa29df4b77d",
+      "name": "천비룡사",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJI1fHotPnbjURL4zH3LYCwBE/photos/AZLasHrEex7FY9bpaKdlPZhunvyoF1lCnjqT49xCizj8a1jaty_NGdMVmvgH5XbHtxF6eI6D5Vw9l3vqm0-JCzJVjBP5aCFmdmt2FKal_gFkkisSd1t6sgfd1LeHkdzGC7hEyon4ZBSSRRHB5c9-92VBczlHVxQtvp5OXD6M-q9DMxfO8aWu5UECtR8ew2mfBn6WpXuIJwU1hanfD9WOAAOXh7CUwhumuOdKvNEP0YDNSj0IGrBN9P8GMOP8GckRWa8MZ1h1ll-AmnTeDV3O5x9mKhQcM7bFkJgdtB_CeEJ4XtxAaw0WfAsfKJo5bR429K0S-DqT8SEkR_p84dWbNqXafDJHLruUKjbvHR6acWPWsu-C0MHEcwQwf9lVbcZuykiGT3ofTiRroGajVGSFLAEG0-knksa7RlZWOER6F1GqsyXU/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경상남도 고성군 대가면 유흥갈천길 540-52",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJI1fHotPnbjURL4zH3LYCwBE/photos/AZLasHrEex7FY9bpaKdlPZhunvyoF1lCnjqT49xCizj8a1jaty_NGdMVmvgH5XbHtxF6eI6D5Vw9l3vqm0-JCzJVjBP5aCFmdmt2FKal_gFkkisSd1t6sgfd1LeHkdzGC7hEyon4ZBSSRRHB5c9-92VBczlHVxQtvp5OXD6M-q9DMxfO8aWu5UECtR8ew2mfBn6WpXuIJwU1hanfD9WOAAOXh7CUwhumuOdKvNEP0YDNSj0IGrBN9P8GMOP8GckRWa8MZ1h1ll-AmnTeDV3O5x9mKhQcM7bFkJgdtB_CeEJ4XtxAaw0WfAsfKJo5bR429K0S-DqT8SEkR_p84dWbNqXafDJHLruUKjbvHR6acWPWsu-C0MHEcwQwf9lVbcZuykiGT3ofTiRroGajVGSFLAEG0-knksa7RlZWOER6F1GqsyXU/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "1db42165-6a3e-46d2-8070-b0c9ff6a5bbc",
+      "name": "화엄사",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJzzFk2xLCaDURe3hhcU5u31o/photos/AZLasHqq_awz2ProVoPUVXug91JrTGKL1T23ScQdCMzxxRx-xCZ1AmBVuGMlTIcUZRwxVEBhDf7ny2M-u-qdN8xoO58xsm8CeR80FypRARmm5_QCDhsWI23LekOTqoZk_XtkVJ__DMst2VSnGrH9iNdjYaOh89uhMbm_137X6hVYUTK7pKr-asKjGZP3sPXAJgLj8d5OT6LirT7fZapFZpTmyl6Z7FcOUblmUUdwp7tzBxCq2tXITojnx6c6UfYbrVECEKKAvfMBDJ8uywY49QwVwSAGif7GLEoZz3M1hje9u3YirhTdxJYmhB_eURCF0ZIyfUXgiADXQEUfxdnhBhwQY40zjKAmAnro2ivHdhXIRnRBfCKQ9qpm-ltQdlGBAqhjrUQgLpyaBnhtO-R-iO7IS2hjCq0Em1m4aQCab3gFhPF1/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "전라남도 구례군 마산면 황전리",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJzzFk2xLCaDURe3hhcU5u31o/photos/AZLasHqq_awz2ProVoPUVXug91JrTGKL1T23ScQdCMzxxRx-xCZ1AmBVuGMlTIcUZRwxVEBhDf7ny2M-u-qdN8xoO58xsm8CeR80FypRARmm5_QCDhsWI23LekOTqoZk_XtkVJ__DMst2VSnGrH9iNdjYaOh89uhMbm_137X6hVYUTK7pKr-asKjGZP3sPXAJgLj8d5OT6LirT7fZapFZpTmyl6Z7FcOUblmUUdwp7tzBxCq2tXITojnx6c6UfYbrVECEKKAvfMBDJ8uywY49QwVwSAGif7GLEoZz3M1hje9u3YirhTdxJYmhB_eURCF0ZIyfUXgiADXQEUfxdnhBhwQY40zjKAmAnro2ivHdhXIRnRBfCKQ9qpm-ltQdlGBAqhjrUQgLpyaBnhtO-R-iO7IS2hjCq0Em1m4aQCab3gFhPF1/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "1cde9a7b-4175-4151-9eaf-b869290698fc",
+      "name": "전주 승화원",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJf2vV7KI7cDUR4RDEhwYYHsk/photos/AZLasHoNVVr6_QydKpN1fHuoVN9rbETKq_PtJ_F7glIhTHXxtPuamQs1SJ4sOKz9s88OzBKwAYtoQmMTz14s_-NlNFgNtAJQX4DDyRgt19zdoCNXD3DxWussGbN7uW6bnXxsCJ997YBdBrQsfQ-U82gFzRK77BL3PhoSZpQygF7Ec6e5BsGI7IOQVXXmj5JSU1iZOTRfBvYYBM5ypOkJ56xme4fFZPwhqedMMK-cJcvoaXNvAIZNfeYLQaY6RJziBOqngthjjHWCeOzgf69v8rsSsFJYM4rIp9kNa545qYt62rc4V-NAgiLZmJfiOEOoXCSsplpZSNZDE8xIo6Owlgtqx8NJkgp0krGgP8IahqfzJTtKUBEz1Aj7OKAqxPKPl4yjdASShJ8TnZssA5ym2IVvUGyRWbsYiMb_kVXoyUUBEw/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "전북특별자치도 전주시 완산구 콩쥐팥쥐로 1705-138 전주승화원",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJf2vV7KI7cDUR4RDEhwYYHsk/photos/AZLasHoNVVr6_QydKpN1fHuoVN9rbETKq_PtJ_F7glIhTHXxtPuamQs1SJ4sOKz9s88OzBKwAYtoQmMTz14s_-NlNFgNtAJQX4DDyRgt19zdoCNXD3DxWussGbN7uW6bnXxsCJ997YBdBrQsfQ-U82gFzRK77BL3PhoSZpQygF7Ec6e5BsGI7IOQVXXmj5JSU1iZOTRfBvYYBM5ypOkJ56xme4fFZPwhqedMMK-cJcvoaXNvAIZNfeYLQaY6RJziBOqngthjjHWCeOzgf69v8rsSsFJYM4rIp9kNa545qYt62rc4V-NAgiLZmJfiOEOoXCSsplpZSNZDE8xIo6Owlgtqx8NJkgp0krGgP8IahqfzJTtKUBEz1Aj7OKAqxPKPl4yjdASShJ8TnZssA5ym2IVvUGyRWbsYiMb_kVXoyUUBEw/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "00770fa9-8211-44fe-b1ee-7cd0b8084399",
+      "name": "구미시공설숭조당 제1관",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJM1SKBQnKZTURUmRv-KJEwRY/photos/AZLasHrE9NcqCiIP8d90gN0xZxT7D_I5F5UyyHW_ejU9rQqasJBt0W9vHxkP1rbAyMX38qL0ewWLlh7eyeUKrDwUosilX9p5Wiqb-Ctf1IxNozvjaQ9ziYMZsFojrF19EfAUoE4UnbdH6_dpk9dOjfO_nMQ_yZGvldSQ26nTMlLQvQkTLApxPwQ2naLHxtxlIkocDhdBpiuIRqCuWsUOb6Qxuu0I3SMVFfrtp_LNmlQirrlOZMHaigvFEI1XXF-yH-dVV9A4ruOpccv6SKWnQkvk0XXsGaI1pEFTMDzNmbLema5tc1e_Am6iAAyRWIQgKPalfLktVNm_gsVd7JzOXQwV-bGdmge08C4ljccgN3rEHXTZdWiCNMaYgEt1HOlVcbpmLZFgbMv6V1_TKzQUqZco-DuAUoqPH1Rq37DoLW7ruugj8NY/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경상북도 구미시 옥성면 선상동로 419 (초곡리)",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJM1SKBQnKZTURUmRv-KJEwRY/photos/AZLasHrE9NcqCiIP8d90gN0xZxT7D_I5F5UyyHW_ejU9rQqasJBt0W9vHxkP1rbAyMX38qL0ewWLlh7eyeUKrDwUosilX9p5Wiqb-Ctf1IxNozvjaQ9ziYMZsFojrF19EfAUoE4UnbdH6_dpk9dOjfO_nMQ_yZGvldSQ26nTMlLQvQkTLApxPwQ2naLHxtxlIkocDhdBpiuIRqCuWsUOb6Qxuu0I3SMVFfrtp_LNmlQirrlOZMHaigvFEI1XXF-yH-dVV9A4ruOpccv6SKWnQkvk0XXsGaI1pEFTMDzNmbLema5tc1e_Am6iAAyRWIQgKPalfLktVNm_gsVd7JzOXQwV-bGdmge08C4ljccgN3rEHXTZdWiCNMaYgEt1HOlVcbpmLZFgbMv6V1_TKzQUqZco-DuAUoqPH1Rq37DoLW7ruugj8NY/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "ed3a66a0-182a-4e34-93dc-405fe9db2920",
+      "name": "정선하늘터",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJhZ6QeI6PYTURxEZYlIF3sLE/photos/AZLasHoTAU1Ucn-Pot8VwcQqdI5QQjsu-ryS4jOU0GBE8CYoIh8VlD_3-V8d0BFW5rO162ZYp04htzIXJe3HuXtW1O4X5ZSHDcoO53631Y1r_cT0Ea3lWvVrbPrUvbbhGyHOq1GPC3lJ8729RRWKElo8InU4IBxSDZOzD06Z6OpbENJlkKtbREp85DP6Ca-dCGcvk_LddgVSTQDbtz2b-RDwbW72KzGI_pwpjSjwW_Cj-F_w47FjhHM7Ekrl-_fWKhVvfmu3uDfCaIuLb-EGzx9GEQXKZkxlA4qUKFMqMoaCkvGDtpZrwa4qVUpVkiqCMNrGTtpkJTzUubPiQzaabNCj6dLEMgIwzzF7g8b1q7NRRYehPvbUmfNjWnIHPbpF9NubJ2QfN6tYFmv5eeK5iqSu1wb9dPLTUQJlNYLze7NjHtcmMG5Rzdd0VNfyl3ZZ/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "강원특별자치도 정선군 사북읍 소금강로 3500-34",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJhZ6QeI6PYTURxEZYlIF3sLE/photos/AZLasHoTAU1Ucn-Pot8VwcQqdI5QQjsu-ryS4jOU0GBE8CYoIh8VlD_3-V8d0BFW5rO162ZYp04htzIXJe3HuXtW1O4X5ZSHDcoO53631Y1r_cT0Ea3lWvVrbPrUvbbhGyHOq1GPC3lJ8729RRWKElo8InU4IBxSDZOzD06Z6OpbENJlkKtbREp85DP6Ca-dCGcvk_LddgVSTQDbtz2b-RDwbW72KzGI_pwpjSjwW_Cj-F_w47FjhHM7Ekrl-_fWKhVvfmu3uDfCaIuLb-EGzx9GEQXKZkxlA4qUKFMqMoaCkvGDtpZrwa4qVUpVkiqCMNrGTtpkJTzUubPiQzaabNCj6dLEMgIwzzF7g8b1q7NRRYehPvbUmfNjWnIHPbpF9NubJ2QfN6tYFmv5eeK5iqSu1wb9dPLTUQJlNYLze7NjHtcmMG5Rzdd0VNfyl3ZZ/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "d9e12569-cc31-4031-ad79-d1222bd3bd1b",
+      "name": "소원사",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJTw3VPu6EaDUReF-MeXCkSIA/photos/AZLasHq6ra8EE9odgogls_TAjRF4ZV0HsSa_a4u6OhDNQMYrkbuGIi7T4shcYZhhNoukQkWjYoqGc56dL_Xgn2yErMdRJ0OzTr9TjuWeoLTnwfHOOT4Yg6U_GiWmbJhtO2Ms7ODe8WG3ee2Hwk_OrI6aLEyax1gUBxUPV7bAbyg9p9P5GM1BV-3tTQWjiXKI9sW77Zk97Axy2FpqI82-oyraaV21tlRqoVOnyJxN0PoSrs6DCbNebkr0gkW3V5yinI2V4zogxArEsHA6Mx1nzqdaQkIeikLF1ZkxXmRlZDwW42a3BdEzVCzvRWSPxswfEhkcpOwGHk4SUXFaF4cqOOyBc_EKIBhr3-5BQ8Hu1I5UrsrFOe-pPTqlXY_ZSSoWind7MuQoYkUs5FXHxBGW_GK_1acS9u2E6wbH26zqq2vGU5E-E50/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "부산광역시 기장군 정관읍 정관중앙로 198",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJTw3VPu6EaDUReF-MeXCkSIA/photos/AZLasHq6ra8EE9odgogls_TAjRF4ZV0HsSa_a4u6OhDNQMYrkbuGIi7T4shcYZhhNoukQkWjYoqGc56dL_Xgn2yErMdRJ0OzTr9TjuWeoLTnwfHOOT4Yg6U_GiWmbJhtO2Ms7ODe8WG3ee2Hwk_OrI6aLEyax1gUBxUPV7bAbyg9p9P5GM1BV-3tTQWjiXKI9sW77Zk97Axy2FpqI82-oyraaV21tlRqoVOnyJxN0PoSrs6DCbNebkr0gkW3V5yinI2V4zogxArEsHA6Mx1nzqdaQkIeikLF1ZkxXmRlZDwW42a3BdEzVCzvRWSPxswfEhkcpOwGHk4SUXFaF4cqOOyBc_EKIBhr3-5BQ8Hu1I5UrsrFOe-pPTqlXY_ZSSoWind7MuQoYkUs5FXHxBGW_GK_1acS9u2E6wbH26zqq2vGU5E-E50/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "11857af3-c9b8-4e08-ad3a-e0b5d11ebf76",
+      "name": "성모암영락원",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJV0Fs6hVFcDURaR7V6he7YNM/photos/AZLasHoarwxUFFs6JhbQlsmhUKFdNxtNNH9H4cAj3ydwenflyso8oNyAKQqk9lxTSOqzYPjDzqTt2YKMCoCHZJHLLRc0ISeWVHTJv5XqE7EgCnPkCa2mtAaTN1UVWrvgFcPUP3_5b7IBXNzD80RjrAN7S1wDXITmzVBKPAGuVbKYbjudZW9MlGDvzz7TyOsyi2aCdLWFOnz32hkCAWNKRknVXoLXwufyKiBUVwXImbojVihORtrXy3NfVp7Qy6JYyPQC8Wr758e-hzdDiiCFxc1tp7iWWe5WoUYsBy1VitrpYuCOnnnrhLNgPlIBrVOF3wm-YL5WWfZmrlZz3zFjOEdxa9aRpcievEyn9jJsqckbWXguVPLP6GEalq1wr8hHuBeKHZwWqFhhcCh2uiR1SQis1J8nsmmE2vidd3PZBrfE2Yk/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "전라북도 김제시 만경읍 화포3길 54-9 (화포리)",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJV0Fs6hVFcDURaR7V6he7YNM/photos/AZLasHoarwxUFFs6JhbQlsmhUKFdNxtNNH9H4cAj3ydwenflyso8oNyAKQqk9lxTSOqzYPjDzqTt2YKMCoCHZJHLLRc0ISeWVHTJv5XqE7EgCnPkCa2mtAaTN1UVWrvgFcPUP3_5b7IBXNzD80RjrAN7S1wDXITmzVBKPAGuVbKYbjudZW9MlGDvzz7TyOsyi2aCdLWFOnz32hkCAWNKRknVXoLXwufyKiBUVwXImbojVihORtrXy3NfVp7Qy6JYyPQC8Wr758e-hzdDiiCFxc1tp7iWWe5WoUYsBy1VitrpYuCOnnnrhLNgPlIBrVOF3wm-YL5WWfZmrlZz3zFjOEdxa9aRpcievEyn9jJsqckbWXguVPLP6GEalq1wr8hHuBeKHZwWqFhhcCh2uiR1SQis1J8nsmmE2vidd3PZBrfE2Yk/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "fcbda64f-0e8d-41a8-bc75-fa1dcd65abf8",
+      "name": "강화파라다이스 강화지점",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJWyBJAZh6fDUR7qnsM2JsdWo/photos/AZLasHqpWAQzZyC1xOvZYjYXSoLO9zCFOrnBRkkn-20nD8yDclUHuZZZKkjvgkDQfqpcj_JT8HG1Ha1oiHAJSXHeE01XFoQFrYmBBxEVQ9iFOSiLR8PEWaB6KhpzPEEOyCxr2yR7ZwbQ5xiqOGsfAbxVdAUovaLoN1Nw4ap1HBHOh6uRR-yag-rpv7JLDtD3EV407YPyZh7rKCCTuWBAE1BtrL_7_ZyMJ9DVwWmsHGmcM23jLDqkfMAJxi69B4UEs4o6IuIxaWcFup310dEDqYoNWr0mnTzCG8NdMOt7NK8In26fl23Lbz1O_M7srMK8Hoi8mOGfi1-abYhKVGEcx5PZk_hq9qc_LfbqoSN_y6MlUeZNMUsguuaJppi48R0jDYXh4mUaPx4nZxYWwbxdFztcr_cqC8mnrbbJrVpdMJwrJ3CZm8Q/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "인천광역시 강화군 송해면 강화대로 879-21",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJWyBJAZh6fDUR7qnsM2JsdWo/photos/AZLasHqpWAQzZyC1xOvZYjYXSoLO9zCFOrnBRkkn-20nD8yDclUHuZZZKkjvgkDQfqpcj_JT8HG1Ha1oiHAJSXHeE01XFoQFrYmBBxEVQ9iFOSiLR8PEWaB6KhpzPEEOyCxr2yR7ZwbQ5xiqOGsfAbxVdAUovaLoN1Nw4ap1HBHOh6uRR-yag-rpv7JLDtD3EV407YPyZh7rKCCTuWBAE1BtrL_7_ZyMJ9DVwWmsHGmcM23jLDqkfMAJxi69B4UEs4o6IuIxaWcFup310dEDqYoNWr0mnTzCG8NdMOt7NK8In26fl23Lbz1O_M7srMK8Hoi8mOGfi1-abYhKVGEcx5PZk_hq9qc_LfbqoSN_y6MlUeZNMUsguuaJppi48R0jDYXh4mUaPx4nZxYWwbxdFztcr_cqC8mnrbbJrVpdMJwrJ3CZm8Q/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "5f093cf7-d2b6-4ed9-bfca-d87c442ece76",
+      "name": "논산시양지추모원",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJqfljGQoHcDURQSzjl0jujuE/photos/AZLasHpMIwAlO2rNSBSZC6Caeod7Vnm697BrQThVv5RIHbGT5DasFQM-hJeSTPaEnT6KuMUvseQVfPJE9mL7HKLuUP_KTAPPve84iLS6RvQJAvIyQoO-NLnrYHVkOwSp93rpFMMYCsh0eS3RE_5SPiI3C8C2JNDNXt85quD1ctD9KqLfe18_z_3TOi8D2XeOUYFOOghnAzV9dBtoloE3fwhftG_s5gQ3yDuh-pltiHBrIqP2-v60AiO5u6Opq6WTCwnjmaIZn9cBiPIVoYYGUNFfYgtpc6M6RFMu5IS0ljoN4xxM9dl1Ek5OkqF0W8gEpfrpeRQPqiKvZzR2pDh9HXPejFGyj_b6hDrK432EKu94AV0IqvFCzHLoKR-7JrImwYcjvInXk264CJ11gUkKmupwbbrCA5XaCxUAKgXmaWBlYd8/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "충청남도 논산시 양촌면 중산길 165-11 (중산리)",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJqfljGQoHcDURQSzjl0jujuE/photos/AZLasHpMIwAlO2rNSBSZC6Caeod7Vnm697BrQThVv5RIHbGT5DasFQM-hJeSTPaEnT6KuMUvseQVfPJE9mL7HKLuUP_KTAPPve84iLS6RvQJAvIyQoO-NLnrYHVkOwSp93rpFMMYCsh0eS3RE_5SPiI3C8C2JNDNXt85quD1ctD9KqLfe18_z_3TOi8D2XeOUYFOOghnAzV9dBtoloE3fwhftG_s5gQ3yDuh-pltiHBrIqP2-v60AiO5u6Opq6WTCwnjmaIZn9cBiPIVoYYGUNFfYgtpc6M6RFMu5IS0ljoN4xxM9dl1Ek5OkqF0W8gEpfrpeRQPqiKvZzR2pDh9HXPejFGyj_b6hDrK432EKu94AV0IqvFCzHLoKR-7JrImwYcjvInXk264CJ11gUkKmupwbbrCA5XaCxUAKgXmaWBlYd8/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "df4fdfd1-1830-408b-a43a-25d07a9aecef",
+      "name": "보장사영각당",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJI6Zmq-VgezURRm8dOboJ6hk/photos/AZLasHplsESmzy7LBq-6AStMNwrZfSEHnKsY6atLxkMBjMsG4Ws3fEdiroPYK9WUCY9T_l5Fd2W25RMp7gaHCB76n63hJldD9VAOiJ30sh_DXHEhEaYvJPOLsP7R7FTOiXwBfETSrJKruGjQJSVrEmsv8ivez1iu3sOXE_40SiJ0lCopWJLr5B-s59tctBDz8rHEn4DE4CUs9AdXtGGya9zOAq_RILWnF67I4BsPJlYA1BJv6F04GNXZyBbHjpHjBzNPb4l_Dewj6EGNGRSeRGE7yOO4gGAz1PnWv6cpWXNob13vMlpBDHKY0xSd1fk7DboWAkB-VJWgqC85jw4CqWxZmm8-5N0cNijHovS5SFgKZ9fFaEFXhUuMo45YjktHO4VgBrnVz96qgG1wZuOvCXtyzgkH_B6H9QQBPRLwGk1Ip08/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경기도 안양시 만안구 예술공원로131번길 11",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJI6Zmq-VgezURRm8dOboJ6hk/photos/AZLasHplsESmzy7LBq-6AStMNwrZfSEHnKsY6atLxkMBjMsG4Ws3fEdiroPYK9WUCY9T_l5Fd2W25RMp7gaHCB76n63hJldD9VAOiJ30sh_DXHEhEaYvJPOLsP7R7FTOiXwBfETSrJKruGjQJSVrEmsv8ivez1iu3sOXE_40SiJ0lCopWJLr5B-s59tctBDz8rHEn4DE4CUs9AdXtGGya9zOAq_RILWnF67I4BsPJlYA1BJv6F04GNXZyBbHjpHjBzNPb4l_Dewj6EGNGRSeRGE7yOO4gGAz1PnWv6cpWXNob13vMlpBDHKY0xSd1fk7DboWAkB-VJWgqC85jw4CqWxZmm8-5N0cNijHovS5SFgKZ9fFaEFXhUuMo45YjktHO4VgBrnVz96qgG1wZuOvCXtyzgkH_B6H9QQBPRLwGk1Ip08/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "92c89115-f0ab-4353-9bfe-172a6567475d",
+      "name": "수원시연화장 추모의집",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJhcIw9P1aezURNPPXsYVS5Ys/photos/AZLasHpRUI9Ev0KpYq3LJK9TFM7dV2LnEjjZrDgRT3mY3GuArIKET-zk6TkWyEV9qsGO_m2nHTsKmBCBsUo2_RN-VJ3GKVwYoFs2oNX8nikGdRFFRfRzLBNKH2-PnEMH_eBEGU6beiObxytB_pWeae9u0eg1u8ORRd4ggwDySyf8TZBMJzLn8zvFso9Wv-h_9JlNKpD2bc2YMTDMVk4zP9Bww94mTlnbG-9q9ANVJn8kiycLPZRDST3kHlehbZhuEb_LxqxUmKM84xTrQJdXZ9UzdBJrk_oagBYGEkrmgHyudqfkipAgTbGWcX4gs_Y-R5cbRhXs5BSXGLfzzjSjvqvT4KcAG48RC7WyBYmNCAtqY27ebrVt0CQTxOErFNQNze3YKd8gL755A1Yr5-jbWbxVpCY76iBNM8tbmj7cuIkTgBk/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경기도 수원시 영통구 광교호수로 278 수원시 연화장",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJhcIw9P1aezURNPPXsYVS5Ys/photos/AZLasHpRUI9Ev0KpYq3LJK9TFM7dV2LnEjjZrDgRT3mY3GuArIKET-zk6TkWyEV9qsGO_m2nHTsKmBCBsUo2_RN-VJ3GKVwYoFs2oNX8nikGdRFFRfRzLBNKH2-PnEMH_eBEGU6beiObxytB_pWeae9u0eg1u8ORRd4ggwDySyf8TZBMJzLn8zvFso9Wv-h_9JlNKpD2bc2YMTDMVk4zP9Bww94mTlnbG-9q9ANVJn8kiycLPZRDST3kHlehbZhuEb_LxqxUmKM84xTrQJdXZ9UzdBJrk_oagBYGEkrmgHyudqfkipAgTbGWcX4gs_Y-R5cbRhXs5BSXGLfzzjSjvqvT4KcAG48RC7WyBYmNCAtqY27ebrVt0CQTxOErFNQNze3YKd8gL755A1Yr5-jbWbxVpCY76iBNM8tbmj7cuIkTgBk/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "6bc4fc04-8d67-42d4-bfc7-43a4723df50e",
+      "name": "서울시립승화원추모의집",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJy9jg1emWfDUR9GN9XyG7U14/photos/AZLasHq8SbJHSLquaYOyQnFZRGwA9MK16ubMTjbD905WBf0kjwXPlzJU6CGYNpk1hnc3p_btPdh0mMoOJ3WLFg6LwmVepZBz1Ge8GSricPxVgstOoW3_zvSvXXbFU6DtXCp0jZ-4aDfLO1yC4NU9xrcXkR3ClFDBJsno3_H5ymp7qYPugidU6Gk4kn3ySORBPIMEa0dyD3nNjuaB5d1StK4X8wXGF8Ljob9EoEgzoroCpMrO2kVqPnje2a6G_wJf-ehPRIGvgF_Zi4sqyrTJsrgvl18490yqoUUaHQHWoEr6_7RNasHON8isQ0c0vhyV_UwMUunDKpJkGur4fDa-WL8g7FV9R15zupCkjGQEobVbJINKNQCjdyxY5PXeAuECh5uxpmabdvv3PaYXJ9TQ9Zeqf_dpZ-zBVGXn2_6hOwmQ7m8/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경기도 고양시 덕양구 통일로 504 서울시장묘사업소",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJy9jg1emWfDUR9GN9XyG7U14/photos/AZLasHq8SbJHSLquaYOyQnFZRGwA9MK16ubMTjbD905WBf0kjwXPlzJU6CGYNpk1hnc3p_btPdh0mMoOJ3WLFg6LwmVepZBz1Ge8GSricPxVgstOoW3_zvSvXXbFU6DtXCp0jZ-4aDfLO1yC4NU9xrcXkR3ClFDBJsno3_H5ymp7qYPugidU6Gk4kn3ySORBPIMEa0dyD3nNjuaB5d1StK4X8wXGF8Ljob9EoEgzoroCpMrO2kVqPnje2a6G_wJf-ehPRIGvgF_Zi4sqyrTJsrgvl18490yqoUUaHQHWoEr6_7RNasHON8isQ0c0vhyV_UwMUunDKpJkGur4fDa-WL8g7FV9R15zupCkjGQEobVbJINKNQCjdyxY5PXeAuECh5uxpmabdvv3PaYXJ9TQ9Zeqf_dpZ-zBVGXn2_6hOwmQ7m8/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "641e372d-ae70-40ca-8ec0-28df998e7a55",
+      "name": "선약사",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJd8TNWDg6bzURAnuwYeULFJ8/photos/AZLasHqMojV95yJmw0wRxc5PRMiuQaEobMGi5CyNGDHWBgiuOdIpZgqmiarf0Py06eRs_jDKEQ16AS4RuH2BywaQfhXVStsT5IwP0Q-IBNc1GPPpVE5AP05gcA-udTR0Y6QOmn9XMbyiMl_omGad-01ccTeWp6P2cSWWanmriVGp4aL9_m4jatIpvHk48fJmBek6iwAA27ain-lIhLY3Uk92Sj-h7cPNljHz1GMFZVd8jPSIrngYcyHRRW-ZK2OUjwdnimICLB6BV3C08Aqs0EaHnJIXuE4k92UJ2YlIYL6TZJqLXfK_zfTZkplh-F3dsRvTlw1_WVQEw8w2-f0KOnUnIpjvBBq0nQFDc41TlWshOyCtdMGThLN_IF7GNdzLSEY-m6wZpIZH4bAttDM51Haku-w3laEWEZJPAbTYnFUcdP0/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경상남도 함안군 산인면 싸리재로 34-2",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJd8TNWDg6bzURAnuwYeULFJ8/photos/AZLasHqMojV95yJmw0wRxc5PRMiuQaEobMGi5CyNGDHWBgiuOdIpZgqmiarf0Py06eRs_jDKEQ16AS4RuH2BywaQfhXVStsT5IwP0Q-IBNc1GPPpVE5AP05gcA-udTR0Y6QOmn9XMbyiMl_omGad-01ccTeWp6P2cSWWanmriVGp4aL9_m4jatIpvHk48fJmBek6iwAA27ain-lIhLY3Uk92Sj-h7cPNljHz1GMFZVd8jPSIrngYcyHRRW-ZK2OUjwdnimICLB6BV3C08Aqs0EaHnJIXuE4k92UJ2YlIYL6TZJqLXfK_zfTZkplh-F3dsRvTlw1_WVQEw8w2-f0KOnUnIpjvBBq0nQFDc41TlWshOyCtdMGThLN_IF7GNdzLSEY-m6wZpIZH4bAttDM51Haku-w3laEWEZJPAbTYnFUcdP0/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "26ecaea1-00d5-4ba2-87fc-57eb9568f182",
+      "name": "연꽃피우는행복도량용문사",
+      "category": "columbarium",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJh0X_q8R9fDUR5f5egWJdaZE/photos/AZLasHpuTud1O57CgUUq1TVsjxfyMprAjtPDviW8k5zrKY2-hifwQwBLp8UP1jlipgN8SKxugWeQuoaVIfSQFgZP7fZDAWWN4PdxXmA9FQGMrFPqN1d345udXv-o3lso-6NjE3V3oLjoosCyb1Jj7LFEALrI8vVtocFYVqX2jDPT4QpShYR-A-Qfd01rlqDVkdnqwBVVQjcNhra-cH_Bqg5EUXKiw8C-0QxCbzD4BDuA5BxMp_ovilhcbqpkmJklmk50qd3IeDXghyKqTB3emXQBztc6auPPpDrnJ2Lx7CX26DBXsA/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경기도 김포시 월곶면 대곶로 570",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJh0X_q8R9fDUR5f5egWJdaZE/photos/AZLasHpuTud1O57CgUUq1TVsjxfyMprAjtPDviW8k5zrKY2-hifwQwBLp8UP1jlipgN8SKxugWeQuoaVIfSQFgZP7fZDAWWN4PdxXmA9FQGMrFPqN1d345udXv-o3lso-6NjE3V3oLjoosCyb1Jj7LFEALrI8vVtocFYVqX2jDPT4QpShYR-A-Qfd01rlqDVkdnqwBVVQjcNhra-cH_Bqg5EUXKiw8C-0QxCbzD4BDuA5BxMp_ovilhcbqpkmJklmk50qd3IeDXghyKqTB3emXQBztc6auPPpDrnJ2Lx7CX26DBXsA/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "40ad9d05-dd26-4564-98d7-9b6ec37e7a78",
+      "name": "한림대학교성심병원 장례식장",
+      "category": "funeral_home",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJKTrrKDBfezURH92f718lTP0/photos/AZLasHoPqDKzsq5s_JdL-1ys4d344RcAs4t-AHojy7Ai7L-M1c0g4GoXIBKNxG_EQirgXOlEI745qcsrCSXslPtKOmlZMHFcNN-_oJZ5tur-nCbBLdTR9W7nwBUapf9f4ex-ofUixRGH6dWiLuCLgjyx6k8bM92k3sNFCBwDf7VQNrwsrCWfE8CrMdUk1AeOEZGzZu4RGF0imMQAzYUOrFXMpX90xVbPQbWBqScinJMYH0tyAiOVUkuVKQ6b8MENhiX1EladGpgscvaBfr64EzmM0TkEDw4i43L8ufQtpKDF9wMoIo7Flt_afR1fJSDPSJDaQHSIaUBH6d09C8iWMr1XKvEoIHBtITINhKzB-5nAYPgImL-Xt1jiahv3volpisu6_j16IAlzwQ38SbVAJawqw22Gs99LY_KzRAxIeOVsKQ/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경기도 안양시 동안구 관평로170번길 22",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJKTrrKDBfezURH92f718lTP0/photos/AZLasHoPqDKzsq5s_JdL-1ys4d344RcAs4t-AHojy7Ai7L-M1c0g4GoXIBKNxG_EQirgXOlEI745qcsrCSXslPtKOmlZMHFcNN-_oJZ5tur-nCbBLdTR9W7nwBUapf9f4ex-ofUixRGH6dWiLuCLgjyx6k8bM92k3sNFCBwDf7VQNrwsrCWfE8CrMdUk1AeOEZGzZu4RGF0imMQAzYUOrFXMpX90xVbPQbWBqScinJMYH0tyAiOVUkuVKQ6b8MENhiX1EladGpgscvaBfr64EzmM0TkEDw4i43L8ufQtpKDF9wMoIo7Flt_afR1fJSDPSJDaQHSIaUBH6d09C8iWMr1XKvEoIHBtITINhKzB-5nAYPgImL-Xt1jiahv3volpisu6_j16IAlzwQ38SbVAJawqw22Gs99LY_KzRAxIeOVsKQ/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "38188d25-113e-4bda-a6e3-1798fa07954c",
+      "name": "화순고려병원장례식장",
+      "category": "funeral_home",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJgQ2YuXX1cTURXMc9FMEMV7o/photos/AZLasHqi3Mflzuvd1n6zgg5j0i-OQMlbcqqCgonPC4Wq1tgZ9fPL_bskixaNq1XAsGlGr1JB1iaib1GdFRtQb4FOzjUpkJBiB1rlfN_hnmuCdUTX8Lpbik9Sno4iDDnvzGaIH_szC4nkKlEA_H3pbU9ZSaI2PxCUTnXWkrk4XZISxmTvPqAMpRQ7CmOx4npVVet4tjZdr-CROOY9ve4St8NcLd0nC7mrpk7nOXq21fP0oz1F6Y_BamdSDYJvP6A8e9zbHM3WXzLTzL-8iTI1mQgtnabUDtHVp5Rr099-LX2VnvEa1To0DvDHjcRWae4a6oL_HybhxMFQ9yCpDKbv0KYj5r8scpobiyO_02DE6Zpo8IgIfGvXbEGd7Bt8eidl47yjZSa21XfeInU57NLTg-dCeuyJq0bUGmeQU5zCQsod5IKT1yg/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "전라남도 화순군 화순읍 충의로 109",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJgQ2YuXX1cTURXMc9FMEMV7o/photos/AZLasHqi3Mflzuvd1n6zgg5j0i-OQMlbcqqCgonPC4Wq1tgZ9fPL_bskixaNq1XAsGlGr1JB1iaib1GdFRtQb4FOzjUpkJBiB1rlfN_hnmuCdUTX8Lpbik9Sno4iDDnvzGaIH_szC4nkKlEA_H3pbU9ZSaI2PxCUTnXWkrk4XZISxmTvPqAMpRQ7CmOx4npVVet4tjZdr-CROOY9ve4St8NcLd0nC7mrpk7nOXq21fP0oz1F6Y_BamdSDYJvP6A8e9zbHM3WXzLTzL-8iTI1mQgtnabUDtHVp5Rr099-LX2VnvEa1To0DvDHjcRWae4a6oL_HybhxMFQ9yCpDKbv0KYj5r8scpobiyO_02DE6Zpo8IgIfGvXbEGd7Bt8eidl47yjZSa21XfeInU57NLTg-dCeuyJq0bUGmeQU5zCQsod5IKT1yg/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "435964e8-53c7-4857-af57-471ca1b46abf",
+      "name": "강원도속초의료원 장례식장",
+      "category": "funeral_home",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJIXOnBBS82F8RQA95pS5Xq0U/photos/AZLasHo2QPksSS0drzkuRFSG5GMo41AFW5bEwrJw-0TyJBb4XEW-kBBchT_8UhKVVplYMAocsBJVnWUssGWBLWQTJOqu5NPmCe8wG13jefM8vH7DyJvtEK32qvX4BPFSXZJvcoKLpnNIPrzy1YLihkQf342faG0hErIwPvDtB76DZTwzpS5ZODLXwPzEK9DtFSrCUYZgQkaVTFFdQaS1QQ2wBuDQPQm_huDoK1FDAdADRlCTxxR-3MIlwuHSlgvd8XiAnFrPw4ql8KJbr2vGkTa8Ufhd2pZ2Av91AVChR_CtZ0wcHtVUfQtxFeEEHbQkHVCSgpO7w2BWzZn9a8Df7s_ti6cYywCmUrgyVhuggdVnTPAUWcaV1V-ZyKwP-YdVbijJnQd6vEh8NmLJJRSYNSt61uqm1bifpP5j-da5GVB_liyJzzA/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "강원특별자치도 속초시 영랑호반길 3 속초의료원",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJIXOnBBS82F8RQA95pS5Xq0U/photos/AZLasHo2QPksSS0drzkuRFSG5GMo41AFW5bEwrJw-0TyJBb4XEW-kBBchT_8UhKVVplYMAocsBJVnWUssGWBLWQTJOqu5NPmCe8wG13jefM8vH7DyJvtEK32qvX4BPFSXZJvcoKLpnNIPrzy1YLihkQf342faG0hErIwPvDtB76DZTwzpS5ZODLXwPzEK9DtFSrCUYZgQkaVTFFdQaS1QQ2wBuDQPQm_huDoK1FDAdADRlCTxxR-3MIlwuHSlgvd8XiAnFrPw4ql8KJbr2vGkTa8Ufhd2pZ2Av91AVChR_CtZ0wcHtVUfQtxFeEEHbQkHVCSgpO7w2BWzZn9a8Df7s_ti6cYywCmUrgyVhuggdVnTPAUWcaV1V-ZyKwP-YdVbijJnQd6vEh8NmLJJRSYNSt61uqm1bifpP5j-da5GVB_liyJzzA/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "ced54049-03a8-4d6f-a9e9-56c821a837bc",
+      "name": "선진요양병원장례식장",
+      "category": "funeral_home",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJFahPPrrkZTUR_o0ViJzOakM/photos/AZLasHqJm2piLZTPa8ZVMu4oa8lmP-KjhbC1UTpeOStphzFCjiXr0yUXtjxXvOgi50W19F3qEmRXZWH9DfagGDxjrXQUaxRpdJkcc9C8DLjZLfVfyMoH6kZnzFLOoSrqGnC9txADc8Pnar3HjCVgc_w-1rg5Ko374qaZ7doXG2ulxPEPVy5Yld-LdnkScWulfaIElIPkn0O22Jo9F_MICLIltA6nOiF8INVDbWPgV_XcFwWCOOJHlCI763Wwodcg-VzESHEw0EmH-pHTZ9HqTsnIXQQrL2Db7nBeJL7C4nd-yarqYwH-7YbhmfalcJCt7vsdDEEzZEaRvE5RLZp_g4AkAURr135i7tmkaGC6r7gsM7KU1Qj7h-LL5gKcpHK88ngd09af92m67nN2J9DlCXmF4KNqdVaTaeM78L2XzbX4f2nbRZOf6fvVQCysx9Vl/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "대구광역시 달서구 월배로 446 다동",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJFahPPrrkZTUR_o0ViJzOakM/photos/AZLasHqJm2piLZTPa8ZVMu4oa8lmP-KjhbC1UTpeOStphzFCjiXr0yUXtjxXvOgi50W19F3qEmRXZWH9DfagGDxjrXQUaxRpdJkcc9C8DLjZLfVfyMoH6kZnzFLOoSrqGnC9txADc8Pnar3HjCVgc_w-1rg5Ko374qaZ7doXG2ulxPEPVy5Yld-LdnkScWulfaIElIPkn0O22Jo9F_MICLIltA6nOiF8INVDbWPgV_XcFwWCOOJHlCI763Wwodcg-VzESHEw0EmH-pHTZ9HqTsnIXQQrL2Db7nBeJL7C4nd-yarqYwH-7YbhmfalcJCt7vsdDEEzZEaRvE5RLZp_g4AkAURr135i7tmkaGC6r7gsM7KU1Qj7h-LL5gKcpHK88ngd09af92m67nN2J9DlCXmF4KNqdVaTaeM78L2XzbX4f2nbRZOf6fvVQCysx9Vl/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "758a961f-db5a-40db-a9c3-70d2d55e9917",
+      "name": "울산전문장례식장",
+      "category": "funeral_home",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJVbh7O4HMZzUR40ZJn1ggnxk/photos/AZLasHqv_4TCYw24N5iP2QdtMnNQosM1nV0Z-s2BPXNGZnNGo6UTn_6mOVg5NKB8zPe3XAAgB1bMq6N_UmBTjGrOgdsivnZJWe6nj5Qoi9YmWhcUHZGFu8N0QIrr7Ie_L1Eg4wP_1-pcUF-wE8heUFN6EWSZqSPfkl1ATF5dqsg9C-yGNbwCGQT3nN2ALhXe7j3SV6inXLMHpSe3MYvdFza56aaBB79No_rwF_gd9TCKjy_XFq4DTT0BKOPY0Q9hEL0X-ldI2KgFd0ANA6CZ4hS4rp6KyB_7hNKCObgX_e1WiDeonefJSJB9CZt5uzoBOf_etLzIgNB0kQ0B1rLjXh2ewNnme3CC55YgZkGhbXxRlprWJepYqHxBlOtclEX6yIR4KuAv5klLOaLEMWiFR-34Ox7jLrzafd53kVn9DYa1OIbAQWc/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "울산광역시 북구 산업로 1023 울산전문장례식장",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJVbh7O4HMZzUR40ZJn1ggnxk/photos/AZLasHqv_4TCYw24N5iP2QdtMnNQosM1nV0Z-s2BPXNGZnNGo6UTn_6mOVg5NKB8zPe3XAAgB1bMq6N_UmBTjGrOgdsivnZJWe6nj5Qoi9YmWhcUHZGFu8N0QIrr7Ie_L1Eg4wP_1-pcUF-wE8heUFN6EWSZqSPfkl1ATF5dqsg9C-yGNbwCGQT3nN2ALhXe7j3SV6inXLMHpSe3MYvdFza56aaBB79No_rwF_gd9TCKjy_XFq4DTT0BKOPY0Q9hEL0X-ldI2KgFd0ANA6CZ4hS4rp6KyB_7hNKCObgX_e1WiDeonefJSJB9CZt5uzoBOf_etLzIgNB0kQ0B1rLjXh2ewNnme3CC55YgZkGhbXxRlprWJepYqHxBlOtclEX6yIR4KuAv5klLOaLEMWiFR-34Ox7jLrzafd53kVn9DYa1OIbAQWc/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "f7402f40-ec3b-4325-a8a6-871c0af8a42f",
+      "name": "쉴낙원 양산시민 장례식장",
+      "category": "funeral_home",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJzUgocqGZaDUR84r6gvntGSg/photos/AZLasHoZqEky87Z8wiQjzvGzMXIMa2NIqq52XzVXIv7lKKrIYgbgzTaDXMAoYTTsxZ-w_UVAYqO6TSgGyE58CsP98_psUP3oCZJgqybZrJ4B35rRNyh_NMwp6xhqMf1BBouspV4Dwe_Mz1gEU-o2EqVFl4RIWAXzz7m-Urw3lifD2TFRneUa6tb349bMKKTFnfuWFiYb_58tuJInAt3BmPAyB8r9K4-qvteunJsHp33dBagpuEsZEg_8HDzqTzgPmycc0x9Ug0G1BW9Pm8Qvph2nWDQ_2GQ68C-LCRD8U4HbpBoWvI-JW2uF7VkPMJMXIiXURT7X-TlKmY0ZzcglgJa-S01RrnoQSqrNYjLNmRSnZCeJeJcnjiSGmJVDZb1nCv601ZHPvR0Ci4xrX8BYxn16W_1rOAVIqlclfl9ck9JI8p-hsD8/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경상남도 양산시 상북면 와곡1길 26 쉴낙원 양산시민 장례식장",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJzUgocqGZaDUR84r6gvntGSg/photos/AZLasHoZqEky87Z8wiQjzvGzMXIMa2NIqq52XzVXIv7lKKrIYgbgzTaDXMAoYTTsxZ-w_UVAYqO6TSgGyE58CsP98_psUP3oCZJgqybZrJ4B35rRNyh_NMwp6xhqMf1BBouspV4Dwe_Mz1gEU-o2EqVFl4RIWAXzz7m-Urw3lifD2TFRneUa6tb349bMKKTFnfuWFiYb_58tuJInAt3BmPAyB8r9K4-qvteunJsHp33dBagpuEsZEg_8HDzqTzgPmycc0x9Ug0G1BW9Pm8Qvph2nWDQ_2GQ68C-LCRD8U4HbpBoWvI-JW2uF7VkPMJMXIiXURT7X-TlKmY0ZzcglgJa-S01RrnoQSqrNYjLNmRSnZCeJeJcnjiSGmJVDZb1nCv601ZHPvR0Ci4xrX8BYxn16W_1rOAVIqlclfl9ck9JI8p-hsD8/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "caaf134e-10ab-4e9d-aad1-b670f0f59e19",
+      "name": "쉴낙원 논산장례식장",
+      "category": "funeral_home",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJ71SWwGqoejUR6EU4_ykQm3E/photos/AZLasHr4to4oehAD0mXQlyuEX0lQsQ6R6vaA28BG4MGa1wr3C3GwL9_h_5TzVsl20BjIjPM2lWjGSOKnVdtCAcFzrIJkew1DSdct196Uoim1019u3FAGFBNfBCczweS0LCzA-QgCqG4DfU0YQgO8OLkrBUk1gKx4V5g0c2cyX38Wlm55drWRhDyikOzZfsurlvsKtoW7gfRZnxnt0wBxWFI2kebbf5zy38zyaMVeGqTldnDdJ98NqYO6f3OzI6atJRr1OAyLGkgx3QW7FGaziJahe0-7vBTc8093N_6I-qP-L9HEK5Ptg2NKsNsZgqBZI-fOW43pgLjuYLzmBfTQIBxxi3IJelStdmufsntUxrp6rRTNoB_KNzva06NFST3xFp7rJdBqkF_vyijfbb0vfn4yePHjs66TiaXd7jyz3Oc58QEkN2w/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "충청남도 논산시 부적면 계백로 1543-5 쉴낙원 논산장례식장",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJ71SWwGqoejUR6EU4_ykQm3E/photos/AZLasHr4to4oehAD0mXQlyuEX0lQsQ6R6vaA28BG4MGa1wr3C3GwL9_h_5TzVsl20BjIjPM2lWjGSOKnVdtCAcFzrIJkew1DSdct196Uoim1019u3FAGFBNfBCczweS0LCzA-QgCqG4DfU0YQgO8OLkrBUk1gKx4V5g0c2cyX38Wlm55drWRhDyikOzZfsurlvsKtoW7gfRZnxnt0wBxWFI2kebbf5zy38zyaMVeGqTldnDdJ98NqYO6f3OzI6atJRr1OAyLGkgx3QW7FGaziJahe0-7vBTc8093N_6I-qP-L9HEK5Ptg2NKsNsZgqBZI-fOW43pgLjuYLzmBfTQIBxxi3IJelStdmufsntUxrp6rRTNoB_KNzva06NFST3xFp7rJdBqkF_vyijfbb0vfn4yePHjs66TiaXd7jyz3Oc58QEkN2w/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "c1281247-6b25-4d8f-9518-d841a6d4f160",
+      "name": "괴산성모병원장례식장",
+      "category": "funeral_home",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJtYcD8qDtZDURpNlM3cAypR8/photos/AZLasHq8AHLm9upAZ7iexgSEURX1gezOfrww_WGKXji1OB0tp1cO7Ft8Cf0VfD-m4WkqgxvqwwXB9_rbIasEKZmCjEgsKqywJwpd3HovUAdPVHE-wGuENaiSaqtzACv_m5zz_vBwXY3D0lsrCsdL-7hLTm7Yu1wT3Yqm7ouV8wxKCp7Njb5YU5MOwOM-gBx5nKC7fkNLUwbeZ7gbEKNtaPpZLka_L6yP4gOEnltjEUI8JQO_NR0qSqgizc5vw5NEOgGlTTqHk2bk78FL9l9wChKh9dxS6u7EzVgvwRfLhVEelUxr-9bS4W0CgxxfO8SGBvrWTY0Zvoxdawqteh7-cHq9PMrQHAHnOaMqaXuZPL1vfxuK-z_7C9okW9iSm5lXHeOqTloWvE0K2VdiyaRiByKwX6IVGomc1hXgsBI3P3C6y6g/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "충청북도 괴산군 괴산읍 임꺽정로 116",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJtYcD8qDtZDURpNlM3cAypR8/photos/AZLasHq8AHLm9upAZ7iexgSEURX1gezOfrww_WGKXji1OB0tp1cO7Ft8Cf0VfD-m4WkqgxvqwwXB9_rbIasEKZmCjEgsKqywJwpd3HovUAdPVHE-wGuENaiSaqtzACv_m5zz_vBwXY3D0lsrCsdL-7hLTm7Yu1wT3Yqm7ouV8wxKCp7Njb5YU5MOwOM-gBx5nKC7fkNLUwbeZ7gbEKNtaPpZLka_L6yP4gOEnltjEUI8JQO_NR0qSqgizc5vw5NEOgGlTTqHk2bk78FL9l9wChKh9dxS6u7EzVgvwRfLhVEelUxr-9bS4W0CgxxfO8SGBvrWTY0Zvoxdawqteh7-cHq9PMrQHAHnOaMqaXuZPL1vfxuK-z_7C9okW9iSm5lXHeOqTloWvE0K2VdiyaRiByKwX6IVGomc1hXgsBI3P3C6y6g/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "93a5904e-f2cc-4ce1-9dd7-40fc6e9dffd2",
+      "name": "천상포항장례식장",
+      "category": "funeral_home",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJ6Tc6sRkBZzURyzJZEMLHx-o/photos/AZLasHrxS_H3t25kwJMkzyF6sQaJjNvfPACTfa-Zkxn_kihK4tB8A1LuajZDqLmbwdTnkbyE0BrhHGtczff7hN0KxYdI6Gffhes8lQyN4XWHm-hPkkikY5p820sO8VM0v6ZRVKJ57l_WajLMkCoStNTYf_ZgCFwBThCjFbybbAYcVjSOojZarc1RUyRz_mMf25U7yzmq5C8wvLyqDy0Kubx-VDy3TQpXKXxm_OMymNiM2xr1IHd-t0KpInzTRphrKJMJjK4TWVQ5D1TvYTHJi76EiBrXXJqtBs2H8XxeShsvll4D5A/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경상북도 포항시 남구 오천읍 송덕로 324",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJ6Tc6sRkBZzURyzJZEMLHx-o/photos/AZLasHrxS_H3t25kwJMkzyF6sQaJjNvfPACTfa-Zkxn_kihK4tB8A1LuajZDqLmbwdTnkbyE0BrhHGtczff7hN0KxYdI6Gffhes8lQyN4XWHm-hPkkikY5p820sO8VM0v6ZRVKJ57l_WajLMkCoStNTYf_ZgCFwBThCjFbybbAYcVjSOojZarc1RUyRz_mMf25U7yzmq5C8wvLyqDy0Kubx-VDy3TQpXKXxm_OMymNiM2xr1IHd-t0KpInzTRphrKJMJjK4TWVQ5D1TvYTHJi76EiBrXXJqtBs2H8XxeShsvll4D5A/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "34b4beee-0cfd-4689-a61b-5a8fb9c86a3a",
+      "name": "관산장례식장",
+      "category": "funeral_home",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJrTv9TnFdcjUR7P3brF22Sc0/photos/AZLasHrAydBEnShETp7fkG4tagkk7NGCnI5R4LbP37J4RyWwL5uKo7PV04JQUIzJW-UJIgXOZX66yISG5A_p8weLlH94UKW_08l-uFIf9yqP1qG8NSLXDoWRusytUxAe9FrEgoKzp9UOeX-EoUQlAGmC6GD6FjDtm_gm7fJVl-JiVsO-s8ncORKBqOl0Dc02PRldjbmb_DY48GmpVrf_zznGmtAuW-rKo-_KCH9DhG-rsTDBL3oyYCJTJNwFKxi6Gyt4AyeIXFRmi6-TRhli5HRn2Mz29vyuoDKAEt8-42lu4Jz3ZIBJW8svXoWo-k6obcke2bAzP3rjp1n2Ylxl5J-aUY6FToC1NxEwCsYlJgaBhiVFGRbpKbkVQXvvHV_g9yQKV5Out-icbhqficicS9h_mYaCHPX-s39UXPbBLJkKG-cE/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "전라남도 장흥군 관산읍 죽교상하발로 13 관산장례식장",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJrTv9TnFdcjUR7P3brF22Sc0/photos/AZLasHrAydBEnShETp7fkG4tagkk7NGCnI5R4LbP37J4RyWwL5uKo7PV04JQUIzJW-UJIgXOZX66yISG5A_p8weLlH94UKW_08l-uFIf9yqP1qG8NSLXDoWRusytUxAe9FrEgoKzp9UOeX-EoUQlAGmC6GD6FjDtm_gm7fJVl-JiVsO-s8ncORKBqOl0Dc02PRldjbmb_DY48GmpVrf_zznGmtAuW-rKo-_KCH9DhG-rsTDBL3oyYCJTJNwFKxi6Gyt4AyeIXFRmi6-TRhli5HRn2Mz29vyuoDKAEt8-42lu4Jz3ZIBJW8svXoWo-k6obcke2bAzP3rjp1n2Ylxl5J-aUY6FToC1NxEwCsYlJgaBhiVFGRbpKbkVQXvvHV_g9yQKV5Out-icbhqficicS9h_mYaCHPX-s39UXPbBLJkKG-cE/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "197144f3-e01b-4a0d-bd38-dc17813c8048",
+      "name": "세종연서농협장례식장",
+      "category": "funeral_home",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJm9MEEDnNejURCH4g-vMlS48/photos/AZLasHoeK3dAGqwG5oxpGmD5DwO3gLA22XwQWN6JoBX0aaOqYhAstO7kQJTSsDkpq8wMj_DapCulIEwkhnIUBiPq7MvPDTXH8mLZuhUo10snNg7mUIM0DPmPCg-2ZLi-aiK1sqQ8XjpDjaUF2sqZ3TYt6cSPeAMdkrBRKz9uRQva9xxnnbB8Z_7gZ7ZF0cno_jZXYw5YktklpkifSFxq2n2cOgfEMmfWLmMMD8zuPZHXJvRIg7PutyQFVxYtWV1tE9Lx--aowhwKQJCywwS23SYEPkXT0B93AnwGZZTp_65JEB7sitik-tvxsT08VQR2tIuYuGv3LV0MW2UdtyZX46GaS3w_mnmH4e91km3lRbvflNaJCfSZD4dpnEJA4nh1uwitUBYldTIyVuYd3UTjC7DwOrh7Zmx4GkEaefRQMwqEVxNYNNc/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "세종특별자치시 연서면 함박로 300",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJm9MEEDnNejURCH4g-vMlS48/photos/AZLasHoeK3dAGqwG5oxpGmD5DwO3gLA22XwQWN6JoBX0aaOqYhAstO7kQJTSsDkpq8wMj_DapCulIEwkhnIUBiPq7MvPDTXH8mLZuhUo10snNg7mUIM0DPmPCg-2ZLi-aiK1sqQ8XjpDjaUF2sqZ3TYt6cSPeAMdkrBRKz9uRQva9xxnnbB8Z_7gZ7ZF0cno_jZXYw5YktklpkifSFxq2n2cOgfEMmfWLmMMD8zuPZHXJvRIg7PutyQFVxYtWV1tE9Lx--aowhwKQJCywwS23SYEPkXT0B93AnwGZZTp_65JEB7sitik-tvxsT08VQR2tIuYuGv3LV0MW2UdtyZX46GaS3w_mnmH4e91km3lRbvflNaJCfSZD4dpnEJA4nh1uwitUBYldTIyVuYd3UTjC7DwOrh7Zmx4GkEaefRQMwqEVxNYNNc/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "cd77a522-8e5a-4960-9bee-24316e67695c",
+      "name": "춘천시민장례식장",
+      "category": "funeral_home",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJc0fDByXvYjUR-JfRE7pch-o/photos/AZLasHrjmdTpcCCB8HYEjytoD4wiWXiNwnq_DzdA0bbbVbM1uU1pN3Aq19jXc6vRwJkvj1hP_dAMj1QOKAyGIXol0inA9pfYAakjOUyTXxR9dkpelrjxjT2NW-xY6oFZIia7B9CimhFmfOmWoxsHinoNS1YXtPsIPzQ78a3tHZiQvY4oQYIYQgmT_26WKV5dGi6UGxbeKim-Z8AnQDqGcnaEcGa4HDsLfpMy8n-aIAP3NttHfeCKe5m2ohiDFH9qX4IT50gjAmajSnR--_oP3VTkcBqcYheMnEnMZ-e38nZzpfPUMA/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "강원특별자치도 춘천시 영서로 2970 춘천시민장례식장",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJc0fDByXvYjUR-JfRE7pch-o/photos/AZLasHrjmdTpcCCB8HYEjytoD4wiWXiNwnq_DzdA0bbbVbM1uU1pN3Aq19jXc6vRwJkvj1hP_dAMj1QOKAyGIXol0inA9pfYAakjOUyTXxR9dkpelrjxjT2NW-xY6oFZIia7B9CimhFmfOmWoxsHinoNS1YXtPsIPzQ78a3tHZiQvY4oQYIYQgmT_26WKV5dGi6UGxbeKim-Z8AnQDqGcnaEcGa4HDsLfpMy8n-aIAP3NttHfeCKe5m2ohiDFH9qX4IT50gjAmajSnR--_oP3VTkcBqcYheMnEnMZ-e38nZzpfPUMA/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "c55a59ff-7a40-403b-9fc0-cd3ad8dce404",
+      "name": "기업 인천힘찬종합병원장례식장 ATM",
+      "category": "funeral_home",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJUbB3qud7ezURs4nviFOOuys/photos/AZLasHrLCKruXVKLaO76_gDuL9OEXfIM3xn7yBNQsjRk0M8YEWONajxy3lwtXlc9iYyCvFUpARRzGVt9EY54IYK54lpqyTUQ1hGkvLq-uKENhqDo4PcIUnl4Xp7xBR2ED2ewbNP5xbdBXo0ppGtmbuuMcKvNS59sXrbGhPKkDdukifqreDvbMT9TQNI7PTuX9mykB-UTuXJ1Sjzx-7H1iK5rpCq-bJvfKO0YZDr4HEPpKaBHg0RdC_8I-5HL7260DPALmS9JF4Ro6y7LF2uw-gu2JSzwpo-cPAyLp7Orb53BG73F8Q6p7NIW1WefNfSmmoBRGtbqBk3AcwhOkogpDERxMCvJ-kjGIvQGi1z8Aj5kbIAGZXlO7xp1pWJmiu0caHsreWIPYBmxu02Tos6sMvAIGbZp6zbUUpv6dxloNH7wEXTagi0/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "인천광역시 남동구 논현로 72 지하1층",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJUbB3qud7ezURs4nviFOOuys/photos/AZLasHrLCKruXVKLaO76_gDuL9OEXfIM3xn7yBNQsjRk0M8YEWONajxy3lwtXlc9iYyCvFUpARRzGVt9EY54IYK54lpqyTUQ1hGkvLq-uKENhqDo4PcIUnl4Xp7xBR2ED2ewbNP5xbdBXo0ppGtmbuuMcKvNS59sXrbGhPKkDdukifqreDvbMT9TQNI7PTuX9mykB-UTuXJ1Sjzx-7H1iK5rpCq-bJvfKO0YZDr4HEPpKaBHg0RdC_8I-5HL7260DPALmS9JF4Ro6y7LF2uw-gu2JSzwpo-cPAyLp7Orb53BG73F8Q6p7NIW1WefNfSmmoBRGtbqBk3AcwhOkogpDERxMCvJ-kjGIvQGi1z8Aj5kbIAGZXlO7xp1pWJmiu0caHsreWIPYBmxu02Tos6sMvAIGbZp6zbUUpv6dxloNH7wEXTagi0/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "6b3f00d6-73c2-4391-b2b1-4a1c53759722",
+      "name": "구미강동병원장례식장",
+      "category": "funeral_home",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJA9pvbwDFZTURxgxGCX_RWG4/photos/AZLasHoJdShuAg_bVkpfjrCfrbTcjXKLV7aVAhvicn1tYHKTaYZ0mT--Br5l0a6mQ-fVsxHrA2YpmvSYlOV8k-qqH02yrGbGkPBicvwlq4690PLj9he0djKWey_rQ_uWW_rbKvBFDEzn9FH4p2-vIvnkTjRk3-mOXL9HMqJIFtUUlUvez-1RJ6K3-rkFegV8KyFYKoDueN8f7f9OkIFiupb0Yt9Q2WdvLY8GA2hlHLY9NToeov4a4bsdwo5ahdeHCrIt14hJny4ajDHTkJKmz__y15PaLzu8HHJMUAyQDBGHkg8oJSTmELjCQkhlnQ3iRYJzTK5uPqihXyw4QcbOjULvl4oQIyHa9RKy6nIElkaeqL3MM6Kb1B8ILBuwovcpSvtkK7zV3Vi5TTaLgX0sejIV4p8q8mBRtjN57el2JSvYPqL6GXf3Q_k8AeLyw4Dd/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경상북도 구미시 인동20길 46 구미강동병원",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJA9pvbwDFZTURxgxGCX_RWG4/photos/AZLasHoJdShuAg_bVkpfjrCfrbTcjXKLV7aVAhvicn1tYHKTaYZ0mT--Br5l0a6mQ-fVsxHrA2YpmvSYlOV8k-qqH02yrGbGkPBicvwlq4690PLj9he0djKWey_rQ_uWW_rbKvBFDEzn9FH4p2-vIvnkTjRk3-mOXL9HMqJIFtUUlUvez-1RJ6K3-rkFegV8KyFYKoDueN8f7f9OkIFiupb0Yt9Q2WdvLY8GA2hlHLY9NToeov4a4bsdwo5ahdeHCrIt14hJny4ajDHTkJKmz__y15PaLzu8HHJMUAyQDBGHkg8oJSTmELjCQkhlnQ3iRYJzTK5uPqihXyw4QcbOjULvl4oQIyHa9RKy6nIElkaeqL3MM6Kb1B8ILBuwovcpSvtkK7zV3Vi5TTaLgX0sejIV4p8q8mBRtjN57el2JSvYPqL6GXf3Q_k8AeLyw4Dd/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "3232c4eb-14ae-462e-91d9-793c64d6f808",
+      "name": "대명아임레디 군산중앙장례식장",
+      "category": "funeral_home",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJJZIwNI5bcDURK_1DkBnSSOo/photos/AZLasHpaSwn3puc0prX9YAmMWLg5sFwyKSjhL0jX_NUiklCOvmOj7ehNY0SxrUnvzRkCsgeM4xkFwDX6wfYkV03DpWPaKMIZ1r644ksLu4aVKk0I881zjVR2bjD5u9ulpqNoYTQlBYXiez92-BBELFyQUVgJC9YmyC1gyZVJEyPV2nm62c1YFHyWtvwvupSzoiO53dMZuJI_JtoqINjnM9mn8pJYAJ1lSIE-h13ThdwKBbivfO8y1QXh5JfwowvDfMo40jeoycOv4XZ7bdHpe5u0UjJu9rj_eZFCc3DDBfwWwFlyWQln67lQryIg83CnF64qTjW1V3ivVQ3p-smOvkZj-F2Ixtu2EdqVOiK6mjyoA6zqyGTv81jqOwmSrzTGcduPkJIOOtWoMPHriKZmJX6SkkLe6FgkhlPuKWkf5hquH0o/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "전북특별자치도 군산시 공단대로 153",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJJZIwNI5bcDURK_1DkBnSSOo/photos/AZLasHpaSwn3puc0prX9YAmMWLg5sFwyKSjhL0jX_NUiklCOvmOj7ehNY0SxrUnvzRkCsgeM4xkFwDX6wfYkV03DpWPaKMIZ1r644ksLu4aVKk0I881zjVR2bjD5u9ulpqNoYTQlBYXiez92-BBELFyQUVgJC9YmyC1gyZVJEyPV2nm62c1YFHyWtvwvupSzoiO53dMZuJI_JtoqINjnM9mn8pJYAJ1lSIE-h13ThdwKBbivfO8y1QXh5JfwowvDfMo40jeoycOv4XZ7bdHpe5u0UjJu9rj_eZFCc3DDBfwWwFlyWQln67lQryIg83CnF64qTjW1V3ivVQ3p-smOvkZj-F2Ixtu2EdqVOiK6mjyoA6zqyGTv81jqOwmSrzTGcduPkJIOOtWoMPHriKZmJX6SkkLe6FgkhlPuKWkf5hquH0o/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "fd46f5d7-42fc-4fd6-8c17-967aaf71b334",
+      "name": "초정장례식장",
+      "category": "funeral_home",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJ0Wm7-UrcZDUR7KtTEuMIcnc/photos/AZLasHrVkbPqH9wk8JrawMuQfMxsGw8CkX_ZEtwSZtPchEXVD4qW6cis6lzXA-xgpxYcbhdJVgj0ND6H1c9aTS86cQ7CJMvt4OLHC_678Xgbp4eEjuFU08vMVrBeNrlbMQ377xfPswzuMmOEuW6fXn0LDoqbPuI6knjzGvED2HeGhgldfXsKu2MkluGb-M3AyoKu9Wu5WdFs0QKBASHXJdxBZmRUbA5if2kWxLV2FFMG3p04zUOF7296pbtl-yuKefnUNfWA-_zYzxw4hujt0lFOivmUQ3gUycwM8oTWZfKFPRnBx1df0Mj5BwSt89Y_kdx1lrwMHVh6OIIUu20ytMUwKulnh4oeBkfiggQZPmXrVUzTRvhQk7q9WltA6xOHF8gBWrvf9-mLn-fmeni1WrsuLg1XJkm6VxvC9zvUXKI-sNaCqT4/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "충청북도 청주시 청원구 내수읍 우산길 93 초정장례식장",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJ0Wm7-UrcZDUR7KtTEuMIcnc/photos/AZLasHrVkbPqH9wk8JrawMuQfMxsGw8CkX_ZEtwSZtPchEXVD4qW6cis6lzXA-xgpxYcbhdJVgj0ND6H1c9aTS86cQ7CJMvt4OLHC_678Xgbp4eEjuFU08vMVrBeNrlbMQ377xfPswzuMmOEuW6fXn0LDoqbPuI6knjzGvED2HeGhgldfXsKu2MkluGb-M3AyoKu9Wu5WdFs0QKBASHXJdxBZmRUbA5if2kWxLV2FFMG3p04zUOF7296pbtl-yuKefnUNfWA-_zYzxw4hujt0lFOivmUQ3gUycwM8oTWZfKFPRnBx1df0Mj5BwSt89Y_kdx1lrwMHVh6OIIUu20ytMUwKulnh4oeBkfiggQZPmXrVUzTRvhQk7q9WltA6xOHF8gBWrvf9-mLn-fmeni1WrsuLg1XJkm6VxvC9zvUXKI-sNaCqT4/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    },
+    {
+      "id": "f195c9c6-41f1-4b02-8203-8f76cad2c2dc",
+      "name": "청도전문장례식장",
+      "category": "funeral_home",
+      "images": [
+        "https://places.googleapis.com/v1/places/ChIJNyGuoMIDZjUR1qKsSDfcQzY/photos/AZLasHo3z1nnBvvEsJ9QLACMdM5gRQ7-FoV79UIgALP_ure2qwcmNomXD3moHvd1i_yMLKvH8EB6FcIsWjwgO0jNT2hWiZVbhZpx9jLN_EUkeWj6nwWdJ8lUXDi-DPfx2bjDLlf1XLFwi1QK7IDmmHU-pdeM-uf-lXC7ZVgMJn7Dz7EalLscYi2WETos2YUaUGOkFNviaZKQpygHuuCyd7LICwgc85Ans0NLSl9idZCck_zvZrs9ELcYCzNnvZT63gxiQLi5xdIJsnf37leq_DL9a8mVwBvOo87S0wgIbXS3IHmZrbApu6SQAzDnDEYAQIWQZ3lDe_F69C2wFrRg_yZu4BCzgisetncO6QSLWhKDqH4nVcCwDBO4mtQnfcuaPvasZkfS1oFX3OcVtYPt2ioTV1iWXwTRBY9kw1DytI1EtyCqkGE/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ],
+      "address": "경상북도 청도군 청도읍 새마을로 1405",
+      "issue": "BROKEN_URL",
+      "brokenUrls": [
+        "https://places.googleapis.com/v1/places/ChIJNyGuoMIDZjUR1qKsSDfcQzY/photos/AZLasHo3z1nnBvvEsJ9QLACMdM5gRQ7-FoV79UIgALP_ure2qwcmNomXD3moHvd1i_yMLKvH8EB6FcIsWjwgO0jNT2hWiZVbhZpx9jLN_EUkeWj6nwWdJ8lUXDi-DPfx2bjDLlf1XLFwi1QK7IDmmHU-pdeM-uf-lXC7ZVgMJn7Dz7EalLscYi2WETos2YUaUGOkFNviaZKQpygHuuCyd7LICwgc85Ans0NLSl9idZCck_zvZrs9ELcYCzNnvZT63gxiQLi5xdIJsnf37leq_DL9a8mVwBvOo87S0wgIbXS3IHmZrbApu6SQAzDnDEYAQIWQZ3lDe_F69C2wFrRg_yZu4BCzgisetncO6QSLWhKDqH4nVcCwDBO4mtQnfcuaPvasZkfS1oFX3OcVtYPt2ioTV1iWXwTRBY9kw1DytI1EtyCqkGE/media?maxHeightPx=800&maxWidthPx=800&key=AIzaSyBS18mDdul10bgKMyu15WPpevY1Y_jZBTg"
+      ]
+    }
+  ]
+}

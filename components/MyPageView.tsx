@@ -9,6 +9,8 @@ import { EditProfileModal } from './EditProfileModal';
 import { LegalModal } from './LegalModal';
 import { Info, Heart, Star } from 'lucide-react';
 import { favoriteService, Favorite } from '../services/favoriteService';
+import { sangjoFavoriteService, SangjoFavorite } from '../services/sangjoFavoriteService';
+import { FUNERAL_COMPANIES } from '../constants';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { MyConsultations } from './dashboard/MyConsultations';
@@ -38,13 +40,15 @@ export const MyPageView: React.FC<Props> = ({
     const [myReservations, setMyReservations] = useState<Reservation[]>(propReservations);
     const [isLoadingReviews, setIsLoadingReviews] = useState(false);
     const [isLoadingReservations, setIsLoadingReservations] = useState(false);
-    const [activeTab, setActiveTab] = useState<'consultations' | 'pending' | 'confirmed' | 'cancelled' | 'favorites'>('consultations');
+    const [activeTab, setActiveTab] = useState<'consultations' | 'pending' | 'confirmed' | 'cancelled' | 'favorites' | 'sangjo_favorites'>('consultations');
     const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
     const [showEditProfile, setShowEditProfile] = useState(false);
     const [showLegalModal, setShowLegalModal] = useState(false);
     const [userPhone, setUserPhone] = useState<string>('');
     const [myFavorites, setMyFavorites] = useState<Favorite[]>([]);
     const [isLoadingFavorites, setIsLoadingFavorites] = useState(false);
+    const [sangjoFavorites, setSangjoFavorites] = useState<SangjoFavorite[]>([]);
+    const [isLoadingSangjoFavorites, setIsLoadingSangjoFavorites] = useState(false);
 
     useEffect(() => {
         if (isLoggedIn && user) {
@@ -52,6 +56,7 @@ export const MyPageView: React.FC<Props> = ({
             fetchMyReservations();
             fetchUserPhone();
             fetchMyFavorites();
+            fetchSangjoFavorites();
         }
     }, [isLoggedIn, user]);
 
@@ -106,6 +111,34 @@ export const MyPageView: React.FC<Props> = ({
         try {
             await favoriteService.toggleFavorite(user.id, facilityId);
             setMyFavorites(prev => prev.filter(f => f.facility_id !== facilityId));
+            toast.success('즐겨찾기가 해제되었습니다.');
+        } catch (err) {
+            toast.error('오류가 발생했습니다.');
+        }
+    };
+
+    const fetchSangjoFavorites = async () => {
+        if (!user) return;
+        setIsLoadingSangjoFavorites(true);
+        try {
+            const data = await sangjoFavoriteService.getFavorites(user.id);
+            setSangjoFavorites(data || []);
+        } catch (err) {
+            console.error('Failed to fetch sangjo favorites:', err);
+        } finally {
+            setIsLoadingSangjoFavorites(false);
+        }
+    };
+
+    const handleRemoveSangjoFavorite = async (companyId: string) => {
+        if (!user) return;
+        if (!confirm('즐겨찾기를 해제하시겠습니까?')) return;
+        try {
+            const company = FUNERAL_COMPANIES.find(c => c.id === companyId);
+            if (!company) return;
+
+            await sangjoFavoriteService.toggleFavorite(user.id, company);
+            setSangjoFavorites(prev => prev.filter(f => f.company_id !== companyId));
             toast.success('즐겨찾기가 해제되었습니다.');
         } catch (err) {
             toast.error('오류가 발생했습니다.');
@@ -282,7 +315,17 @@ export const MyPageView: React.FC<Props> = ({
                         }`}
                 >
                     <Heart size={14} fill={activeTab === 'favorites' ? 'currentColor' : 'none'} />
-                    즐겨찾기 ({myFavorites.length})
+                    시설 ({myFavorites.length})
+                </button>
+                <button
+                    onClick={() => setActiveTab('sangjo_favorites')}
+                    className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors whitespace-nowrap flex items-center justify-center gap-1 ${activeTab === 'sangjo_favorites'
+                        ? 'bg-primary text-white'
+                        : 'bg-white text-gray-600 hover:bg-gray-50'
+                        }`}
+                >
+                    <Heart size={14} fill={activeTab === 'sangjo_favorites' ? 'currentColor' : 'none'} />
+                    상조 ({sangjoFavorites.length})
                 </button>
             </div>
 
@@ -347,6 +390,58 @@ export const MyPageView: React.FC<Props> = ({
                                             /* Since I don't see 'onOpenFacility' prop, I might need to just show them or link if possible. */
                                             /* For now, I'll assume users just view them here. */
                                         }
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )
+                ) : activeTab === 'sangjo_favorites' ? (
+                    isLoadingSangjoFavorites ? (
+                        <div className="text-center py-10">
+                            <Loader2 size={32} className="animate-spin text-primary mx-auto" />
+                        </div>
+                    ) : sangjoFavorites.length === 0 ? (
+                        <div className="text-center py-10 text-gray-400 bg-white rounded-xl border border-dashed">
+                            즐겨찾기한 상조 회사가 없습니다.
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            {sangjoFavorites.map(fav => {
+                                const company = FUNERAL_COMPANIES.find(c => c.id === fav.company_id);
+                                if (!company) return null;
+                                return (
+                                    <div key={fav.id} className="bg-white border rounded-xl p-4 hover:shadow-md transition-shadow relative">
+                                        <div className="flex gap-4">
+                                            <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden shrink-0">
+                                                <img
+                                                    src={company.imageUrl}
+                                                    alt={company.name}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex justify-between items-start">
+                                                    <h3 className="font-bold text-gray-900 truncate pr-6">{company.name}</h3>
+                                                    <button
+                                                        onClick={() => handleRemoveSangjoFavorite(company.id)}
+                                                        className="text-red-500 hover:bg-red-50 p-1 rounded-full absolute top-3 right-3"
+                                                        title="즐겨찾기 해제"
+                                                    >
+                                                        <Heart size={18} fill="currentColor" />
+                                                    </button>
+                                                </div>
+                                                <p className="text-xs text-gray-500 mt-1">{company.description}</p>
+                                                <div className="flex items-center gap-2 mt-2">
+                                                    <div className="flex items-center text-xs text-yellow-500 font-bold">
+                                                        <Star size={12} fill="currentColor" />
+                                                        <span className="ml-0.5">{company.rating}</span>
+                                                    </div>
+                                                    <span className="text-xs text-gray-400">
+                                                        {new Date(fav.created_at).toLocaleDateString()} 추가
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 );
                             })}
