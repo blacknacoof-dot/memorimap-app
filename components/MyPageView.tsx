@@ -269,70 +269,101 @@ export const MyPageView: React.FC<Props> = ({
             {/* Reservations Section */}
             <h3 className="font-bold mb-4 border-l-4 border-primary pl-3">나의 예약 내역</h3>
 
-            <div className="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
+            <div className="flex gap-1.5 mb-4 overflow-x-auto no-scrollbar">
                 <button
                     onClick={() => setActiveTab('consultations')}
-                    className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors whitespace-nowrap flex items-center justify-center gap-1 ${activeTab === 'consultations'
+                    className={`min-w-0 py-2 px-2.5 rounded-lg font-medium transition-colors flex items-center justify-center gap-1 text-xs sm:text-sm ${activeTab === 'consultations'
                         ? 'bg-primary text-white'
                         : 'bg-white text-gray-600 hover:bg-gray-50'
                         }`}
+                    title="상담"
                 >
-                    <Calendar size={14} />
-                    상담
+                    <Calendar size={14} className="shrink-0" />
+                    <span className="hidden sm:inline whitespace-nowrap">상담</span>
                 </button>
                 <button
                     onClick={() => setActiveTab('pending')}
-                    className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'pending'
+                    className={`min-w-0 py-2 px-2.5 rounded-lg font-medium transition-colors flex items-center justify-center gap-1 text-xs sm:text-sm ${activeTab === 'pending'
                         ? 'bg-primary text-white'
                         : 'bg-white text-gray-600 hover:bg-gray-50'
                         }`}
+                    title="대기중"
                 >
-                    대기 ({myReservations.filter(r => r.status === 'pending' || r.status === 'urgent').length})
+                    <span className="whitespace-nowrap">대기 {myReservations.filter(r => r.status === 'pending' || r.status === 'urgent').length}</span>
                 </button>
                 <button
                     onClick={() => setActiveTab('confirmed')}
-                    className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'confirmed'
+                    className={`min-w-0 py-2 px-2.5 rounded-lg font-medium transition-colors flex items-center justify-center gap-1 text-xs sm:text-sm ${activeTab === 'confirmed'
                         ? 'bg-primary text-white'
                         : 'bg-white text-gray-600 hover:bg-gray-50'
                         }`}
+                    title="확정됨"
                 >
-                    확정 ({myReservations.filter(r => r.status === 'confirmed').length})
+                    <span className="whitespace-nowrap">확정 {myReservations.filter(r => r.status === 'confirmed').length}</span>
                 </button>
                 <button
                     onClick={() => setActiveTab('cancelled')}
-                    className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'cancelled'
+                    className={`min-w-0 py-2 px-2.5 rounded-lg font-medium transition-colors flex items-center justify-center gap-1 text-xs sm:text-sm ${activeTab === 'cancelled'
                         ? 'bg-primary text-white'
                         : 'bg-white text-gray-600 hover:bg-gray-50'
                         }`}
+                    title="취소됨"
                 >
-                    취소 ({myReservations.filter(r => r.status === 'cancelled').length})
-                </button>
-                <button
-                    onClick={() => setActiveTab('favorites')}
-                    className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors whitespace-nowrap flex items-center justify-center gap-1 ${activeTab === 'favorites'
-                        ? 'bg-primary text-white'
-                        : 'bg-white text-gray-600 hover:bg-gray-50'
-                        }`}
-                >
-                    <Heart size={14} fill={activeTab === 'favorites' ? 'currentColor' : 'none'} />
-                    시설 ({myFavorites.length})
-                </button>
-                <button
-                    onClick={() => setActiveTab('sangjo_favorites')}
-                    className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors whitespace-nowrap flex items-center justify-center gap-1 ${activeTab === 'sangjo_favorites'
-                        ? 'bg-primary text-white'
-                        : 'bg-white text-gray-600 hover:bg-gray-50'
-                        }`}
-                >
-                    <Heart size={14} fill={activeTab === 'sangjo_favorites' ? 'currentColor' : 'none'} />
-                    상조 ({sangjoFavorites.length})
+                    <span className="whitespace-nowrap">취소 {myReservations.filter(r => r.status === 'cancelled').length}</span>
                 </button>
             </div>
 
             <div className="mb-8">
                 {activeTab === 'consultations' ? (
                     <MyConsultations userId={user.id} />
-                ) : activeTab === 'favorites' ? (
+                ) : isLoadingReservations ? (
+                    <div className="text-center py-10">
+                        <Loader2 size={32} className="animate-spin text-primary mx-auto" />
+                    </div>
+                ) : (
+                    <ReservationList
+                        reservations={filteredReservations}
+                        onViewDetails={setSelectedReservation}
+                        onCancel={handleCancelReservation}
+                        emptyMessage={
+                            activeTab === 'pending' ? '대기중인 예약이 없습니다.' :
+                                activeTab === 'confirmed' ? '확정된 예약이 없습니다.' :
+                                    '취소된 예약이 없습니다.'
+                        }
+                    />
+                )}
+            </div>
+
+            {/* Favorites Section */}
+            <h3 className="font-bold mb-4 border-l-4 border-pink-500 pl-3">찜한 목록</h3>
+
+            <div className="flex gap-1.5 mb-4">
+                <button
+                    onClick={() => setActiveTab('favorites')}
+                    className={`flex-1 py-2 px-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-1 text-sm ${activeTab === 'favorites'
+                        ? 'bg-pink-500 text-white'
+                        : 'bg-white text-gray-600 hover:bg-pink-50'
+                        }`}
+                    title="즐겨찾기 시설"
+                >
+                    <Heart size={14} fill={activeTab === 'favorites' ? 'currentColor' : 'none'} className="shrink-0" />
+                    <span className="whitespace-nowrap">시설 {myFavorites.length}</span>
+                </button>
+                <button
+                    onClick={() => setActiveTab('sangjo_favorites')}
+                    className={`flex-1 py-2 px-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-1 text-sm ${activeTab === 'sangjo_favorites'
+                        ? 'bg-pink-500 text-white'
+                        : 'bg-white text-gray-600 hover:bg-pink-50'
+                        }`}
+                    title="즐겨찾기 상조"
+                >
+                    <Heart size={14} fill={activeTab === 'sangjo_favorites' ? 'currentColor' : 'none'} className="shrink-0" />
+                    <span className="whitespace-nowrap">상조 {sangjoFavorites.length}</span>
+                </button>
+            </div>
+
+            <div className="mb-8">
+                {activeTab === 'favorites' ? (
                     isLoadingFavorites ? (
                         <div className="text-center py-10">
                             <Loader2 size={32} className="animate-spin text-primary mx-auto" />
@@ -345,7 +376,7 @@ export const MyPageView: React.FC<Props> = ({
                         <div className="space-y-3">
                             {myFavorites.map(fav => {
                                 const facility = facilities.find(f => String(f.id) === String(fav.facility_id));
-                                if (!facility) return null; // Or show 'Unavailable Facility'
+                                if (!facility) return null;
                                 return (
                                     <div key={fav.id} className="bg-white border rounded-xl p-4 hover:shadow-md transition-shadow relative">
                                         <div className="flex gap-4">
@@ -383,13 +414,6 @@ export const MyPageView: React.FC<Props> = ({
                                                 </div>
                                             </div>
                                         </div>
-                                        {/* Optional: Add View Details Button if needed, or rely on facility sheet opening elsewhere? */
-                                            /* Assuming onNavigate or separate handler to open sheet. */
-                                            /* Currently MyPageView doesn't seem to trigger sheet open directly for facilities list */
-                                            /* Typically MyPage allows managing reservations/reviews. Favorites usually navigate to facility detail. */
-                                            /* Since I don't see 'onOpenFacility' prop, I might need to just show them or link if possible. */
-                                            /* For now, I'll assume users just view them here. */
-                                        }
                                     </div>
                                 );
                             })}
@@ -447,22 +471,7 @@ export const MyPageView: React.FC<Props> = ({
                             })}
                         </div>
                     )
-                ) : isLoadingReservations ? (
-                    <div className="text-center py-10">
-                        <Loader2 size={32} className="animate-spin text-primary mx-auto" />
-                    </div>
-                ) : (
-                    <ReservationList
-                        reservations={filteredReservations}
-                        onViewDetails={setSelectedReservation}
-                        onCancel={handleCancelReservation}
-                        emptyMessage={
-                            activeTab === 'pending' ? '대기중인 예약이 없습니다.' :
-                                activeTab === 'confirmed' ? '확정된 예약이 없습니다.' :
-                                    '취소된 예약이 없습니다.'
-                        }
-                    />
-                )}
+                ) : null}
             </div>
 
             {/* My Reviews Section */}
