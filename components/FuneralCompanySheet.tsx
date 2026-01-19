@@ -44,8 +44,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                 currentUser.id,
                 reviewRating,
                 reviewContent,
-                [],
-                currentUser.name || currentUser.email?.split('@')[0] || '익명'
+                [] // images array
             );
 
             alert('소중한 후기가 등록되었습니다!');
@@ -436,19 +435,10 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                         {/* Write Review Section */}
                         {!isWritingReview ? (
                             <button
-                                onClick={async () => {
+                                onClick={() => {
                                     if (!isLoggedIn || !currentUser) {
                                         alert('로그인이 필요한 기능입니다.');
                                         if (onOpenLogin) onOpenLogin();
-                                        return;
-                                    }
-
-                                    // [New] Check Eligibility
-                                    const { checkReviewEligibility } = await import('../lib/queries');
-                                    const isEligible = await checkReviewEligibility(currentUser.id, company.id);
-
-                                    if (!isEligible) {
-                                        alert('후기 작성은 가입상담 신청 내역이 있는 고객님만 가능합니다.\n(상담 신청 후 승인이 완료되면 작성하실 수 있습니다.)');
                                         return;
                                     }
 
@@ -491,21 +481,29 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                         )}
 
                         <div className="space-y-4">
-                            {company.reviews && company.reviews.length > 0 ? (
-                                company.reviews.map(review => (
-                                    <ReviewCard
-                                        key={review.id}
-                                        review={review}
-                                        isOwner={currentUser && review.userId === currentUser.id}
-                                        onDelete={() => { }}
-                                    />
-                                ))
-                            ) : (
-                                <div className="py-20 flex flex-col items-center justify-center text-gray-400">
-                                    <MessageCircleQuestion size={48} className="mb-4 opacity-20" />
-                                    <p className="text-sm">첫 번째 소중한 후기를 기다리고 있습니다.</p>
-                                </div>
-                            )}
+                            {(() => {
+                                console.log('[FuneralCompanySheet] Company reviews:', company.reviews);
+                                console.log('[FuneralCompanySheet] Review count:', company.reviewCount);
+                                console.log('[FuneralCompanySheet] Company ID:', company.id);
+
+                                if (company.reviews && company.reviews.length > 0) {
+                                    return company.reviews.map(review => (
+                                        <ReviewCard
+                                            key={review.id}
+                                            review={review}
+                                            isOwner={currentUser && review.userId === currentUser.id}
+                                            onDelete={() => { }}
+                                        />
+                                    ));
+                                } else {
+                                    return (
+                                        <div className="py-20 flex flex-col items-center justify-center text-gray-400">
+                                            <MessageCircleQuestion size={48} className="mb-4 opacity-20" />
+                                            <p className="text-sm">첫 번째 소중한 후기를 기다리고 있습니다.</p>
+                                        </div>
+                                    );
+                                }
+                            })()}
                         </div>
 
                         <div className="p-4 bg-gray-50 rounded-2xl text-xs text-gray-500 leading-relaxed italic">
