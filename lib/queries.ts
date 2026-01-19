@@ -528,11 +528,8 @@ export const getReviews = async (facilityId: string) => {
 
 export const getUserReviews = async (userId: string) => {
     const { data, error } = await supabase
-        .from('reviews')
-        .select(`
-            *,
-            facilities (name)
-        `) // Changed from memorial_spaces to facilities
+        .from('facility_reviews')
+        .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
