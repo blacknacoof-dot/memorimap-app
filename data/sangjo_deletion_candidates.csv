@@ -1,0 +1,61 @@
+facility_id,facility_name,category,match_type,matched_constant_name,similarity_score,action_recommendation
+94314961-8168-490f-8f54-e31e215fa3c5,"(재)미타불교원",sangjo,LOW_SIMILARITY,"불국토",0.20,DELETE_BUT_CHECK
+32db8a2a-62fa-4978-978a-ddbe5b40f4b5,"JK상조",sangjo,LOW_SIMILARITY,"착한상조",0.50,DELETE
+f5ecf230-4561-411b-addb-eb3ff13aab9d,"교원라이프",sangjo,EXACT,"교원라이프",1.00,DELETE
+e5b8ee66-2a06-4504-81b3-51507f219014,"교원예움 강원장례식장",sangjo,LOW_SIMILARITY,"교원라이프",0.20,DELETE_BUT_CHECK
+8f83f1b9-28ef-4646-9f4c-b85bf5caf24b,"교원예움 김해장례식장",sangjo,LOW_SIMILARITY,"교원라이프",0.20,DELETE_BUT_CHECK
+4db19224-c086-4c91-afe7-b0a510624a8c,"교원예움 서서울장례식장",sangjo,LOW_SIMILARITY,"교원라이프",0.18,DELETE_BUT_CHECK
+d9e78cfc-dc64-405e-bbc4-8b407082ad41,"교원예움 아산장례식장",sangjo,LOW_SIMILARITY,"교원라이프",0.20,DELETE_BUT_CHECK
+a726f4f9-bc47-4034-a10a-4af653932098,"교원예움 충주시민장례식장",sangjo,LOW_SIMILARITY,"교원라이프",0.17,DELETE_BUT_CHECK
+605767b3-8775-412d-a80a-544ea76aa8eb,"교원예움 평택장례식장",sangjo,LOW_SIMILARITY,"교원라이프",0.20,DELETE_BUT_CHECK
+8d5eac95-01a2-4d37-8d10-7bbec024ad4e,"교원예움 포항국화원 장례식장",sangjo,LOW_SIMILARITY,"교원라이프",0.15,DELETE_BUT_CHECK
+b66afe92-1b8e-4192-b706-b6be1c42f2f7,"교원예움 화성장례식장",sangjo,LOW_SIMILARITY,"교원라이프",0.20,DELETE_BUT_CHECK
+42a60b62-2a48-44c0-bf82-d18eeb724dac,"금강문화허브",sangjo,LOW_SIMILARITY,"평화누리",0.17,DELETE_BUT_CHECK
+912a7921-6c69-43e5-a243-c744627b9eb8,"늘곁애라이프",sangjo,CONTAINS,"늘곁애라이프온",0.86,DELETE
+20dda25d-f948-4523-823a-e21c564e36cf,"다나상조",sangjo,EXACT,"다나상조",1.00,DELETE
+60816610-3cee-4462-bd3b-1ff22c48f9e5,"다온플랜",sangjo,EXACT,"다온플랜",1.00,DELETE
+fa31ebc0-cdd4-41c4-9115-6fcc311c1160,"대노복지사업단",sangjo,EXACT,"대노복지사업단",1.00,DELETE
+e8d2f85e-dbfb-4440-938b-6b1a337619bf,"대명스테이션",sangjo,EXACT,"대명스테이션",1.00,DELETE
+615eb822-1fd4-4e50-b007-49cc9787fb50,"대전상조",sangjo,LOW_SIMILARITY,"착한상조",0.50,DELETE
+f47ef999-1010-4717-94cd-dd1a60c4aea5,"대한공무원상조",sangjo,LOW_SIMILARITY,"착한상조",0.43,DELETE_BUT_CHECK
+9a9954e9-90a1-4972-9251-bdaf40bccbae,"더리본",sangjo,EXACT,"더리본",1.00,DELETE
+604d9ec4-5b82-462d-8a31-d9e027a8c2bf,"더케이예다함",sangjo,EXACT,"더케이예다함",1.00,DELETE
+e388f909-baf8-48cc-a225-7a0220d03587,"동래봉생병원SKY보람장례식장",sangjo,LOW_SIMILARITY,"보람상조개발",0.13,DELETE_BUT_CHECK
+763b55b7-879b-4bf7-9e21-c83628fb3f63,"두레문화",sangjo,NONE,"",0.00,DELETE_BUT_CHECK
+11e76099-2da2-42b9-8ded-04d353cb1ce7,"디에스라이프",sangjo,EXACT,"디에스라이프",1.00,DELETE
+4537ed3c-9135-4a67-855d-6393cdf1ee7e,"마인3디피",sangjo,LOW_SIMILARITY,"보람상조피플",0.17,DELETE_BUT_CHECK
+ba455122-ed09-4c90-9f69-88f4b14bbe27,"매일상조",sangjo,LOW_SIMILARITY,"착한상조",0.50,DELETE
+ac665864-6cde-4d94-93ac-cb3f8bbe91be,"바라밀",sangjo,LOW_SIMILARITY,"한라상조",0.25,DELETE_BUT_CHECK
+9137d56e-a999-4f14-8280-d04e894618ab,"보람상조",sangjo,CONTAINS,"보람상조개발",0.80,DELETE
+e9625e6c-0745-43ea-a232-c01540acca61,"보람세민에스장례식장",sangjo,LOW_SIMILARITY,"보람상조개발",0.20,DELETE_BUT_CHECK
+fbe46dc3-42a8-48b6-aa4e-2e8b04b48bb6,"보람여주장례식장",sangjo,LOW_SIMILARITY,"보람상조개발",0.25,DELETE_BUT_CHECK
+85289823-454d-436b-bc09-4efa14f65929,"보람의정부장례식장",sangjo,LOW_SIMILARITY,"보람상조개발",0.22,DELETE_BUT_CHECK
+2e024c3a-8580-45af-a8b0-2d98ea98ab58,"보람인천장례식장",sangjo,LOW_SIMILARITY,"보람상조개발",0.25,DELETE_BUT_CHECK
+7c955e23-22c2-43c5-992f-215b7f83197d,"보람재향상조",sangjo,LOW_SIMILARITY,"보훈상조",0.50,DELETE
+4b81d1a6-0063-4040-907a-c7b32c058aac,"부모사랑",sangjo,EXACT,"부모사랑",1.00,DELETE
+2ccd9d1a-7bc5-4f88-b169-dc8e33e53c6c,"불국토",sangjo,EXACT,"불국토",1.00,DELETE
+3bb089dd-14f1-4720-9d35-9288bc1db277,"삼목장례프리드",sangjo,LOW_SIMILARITY,"삼우라이프",0.29,DELETE_BUT_CHECK
+265f33b5-30f6-4045-b0b0-ff0bd65fc7db,"아주상조",sangjo,LOW_SIMILARITY,"착한상조",0.50,DELETE
+eae05f2a-68dd-4a97-9371-86044f9b0afa,"에스제이산림조합",sangjo,LOW_SIMILARITY,"SJ산림조합상조",0.25,DELETE_BUT_CHECK
+64de8529-2ae4-43d1-ad69-d4223fef79b9,"에이치서비스 마린바다장",sea_burial,LOW_SIMILARITY,"에이치디투어존",0.27,DELETE_BUT_CHECK
+d0256fbb-8dbe-4371-9825-64f9f9885f96,"여수보람장례식장",sangjo,LOW_SIMILARITY,"보람상조개발",0.25,DELETE_BUT_CHECK
+602d9e58-79ee-4fc9-8212-140013198ce7,"우리가족상조",sangjo,LOW_SIMILARITY,"우리제주상조",0.67,DELETE
+ee55af60-00a2-4d47-aabc-4d7b84c1343d,"우상조",sangjo,LOW_SIMILARITY,"착한상조",0.50,DELETE
+45aaddfd-4122-45c0-b218-37765fcc1965,"위드라이프",sangjo,LOW_SIMILARITY,"프리드라이프",0.67,DELETE
+3c81249d-3554-4e34-b395-3a593a7c320f,"유토피아퓨처",sangjo,EXACT,"유토피아퓨처",1.00,DELETE
+41a333c3-067e-4d33-82c3-fa15d63a9575,"전국공무원상조",sangjo,LOW_SIMILARITY,"효원상조",0.43,DELETE_BUT_CHECK
+b7faead4-f9d0-4a19-bb77-a29d4647c195,"제주상조",sangjo,CONTAINS,"우리제주상조",0.80,DELETE
+aa428bcf-58ef-4203-b567-197f0ee4ac7c,"좋은라이프",sangjo,LOW_SIMILARITY,"교원라이프",0.60,DELETE
+b4b3f248-abdf-407c-acc7-f04abbba686a,"크리스찬상조",sangjo,EXACT,"크리스찬상조",1.00,DELETE
+f5cb1783-7342-4fb4-a7bd-775e2eb51c24,"태양상조",sangjo,LOW_SIMILARITY,"착한상조",0.50,DELETE
+450c9322-cce6-453d-b541-7157c07d8541,"파주보람장례식장",sangjo,LOW_SIMILARITY,"보람상조개발",0.25,DELETE_BUT_CHECK
+2df02a83-297d-4141-baa1-eeae1e84e2f7,"평화상조",sangjo,LOW_SIMILARITY,"착한상조",0.50,DELETE
+c10390ce-33de-4ff4-9920-f90fce4f04b7,"프리드라이프",sangjo,EXACT,"프리드라이프",1.00,DELETE
+28901f23-0618-4eef-a51e-76c55397d720,"피플맥",sangjo,LOW_SIMILARITY,"더피플라이프",0.33,DELETE_BUT_CHECK
+a12822d4-9be3-460b-931e-2cc5fa37b634,"한강라이프",sangjo,LOW_SIMILARITY,"교원라이프",0.60,DELETE
+4a1b592f-d8f2-4704-b2c5-1dd5bfcfdce7,"한국불교원각종 장수사",sangjo,LOW_SIMILARITY,"교원라이프",0.20,DELETE_BUT_CHECK
+42bbb10b-30a0-4b48-8d7f-91c915b67ca7,"한라상조",sangjo,EXACT,"한라상조",1.00,DELETE
+c92d9fa0-55f6-48ba-9f15-0ad9b10095d3,"현대S라이프연세병원장례식장",sangjo,LOW_SIMILARITY,"현대에스라이프",0.29,DELETE_BUT_CHECK
+b20a16fc-275a-4b97-abac-8a1e56d7a5d0,"현대에스라이프",sangjo,EXACT,"현대에스라이프",1.00,DELETE
+3725775c-2337-42e4-adad-48abb49e619b,"효원상조",sangjo,EXACT,"효원상조",1.00,DELETE
+0dab177c-8ec6-46f1-bf0f-af82a632ecba,"효원장례문화센타",sangjo,LOW_SIMILARITY,"효원상조",0.25,DELETE_BUT_CHECK

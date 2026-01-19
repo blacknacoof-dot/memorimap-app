@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { FuneralCompany } from '../types';
 import { FUNERAL_COMPANIES } from '../constants';
-import { Star, Phone, ChevronRight, Award, ShieldCheck, HeartHandshake, Search, Scale, Check, Bot } from 'lucide-react';
+import { Star, Phone, ChevronRight, Award, ShieldCheck, HeartHandshake, Search, Scale, Check, Bot, Heart } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 
 import { SangjoConsultationModal } from './Consultation/SangjoConsultationModal';
+import { sangjoFavoriteService } from '../services/sangjoFavoriteService';
+import { useUser } from '@clerk/clerk-react';
 
 interface Props {
     onCompanySelect: (company: FuneralCompany, startChat?: boolean) => void;
@@ -30,6 +32,8 @@ export const FuneralCompanyView: React.FC<Props> = ({
     // [Change] Dynamic state for companies instead of static constant
     const [companies, setCompanies] = useState<FuneralCompany[]>(FUNERAL_COMPANIES);
     const [isLoading, setIsLoading] = useState(true);
+    const { user } = useUser();
+    const [favoritedCompanies, setFavoritedCompanies] = useState<Set<string>>(new Set());
 
     // [Change] Fetch companies from Supabase on mount
     React.useEffect(() => {
@@ -104,6 +108,51 @@ export const FuneralCompanyView: React.FC<Props> = ({
         setShowConsultation(true);
     };
 
+    // Load user favorites
+    React.useEffect(() => {
+        if (user) {
+            loadFavorites();
+        }
+    }, [user]);
+
+    const loadFavorites = async () => {
+        if (!user) return;
+        try {
+            const favorites = await sangjoFavoriteService.getFavorites(user.id);
+            setFavoritedCompanies(new Set(favorites.map(f => f.company_id)));
+        } catch (error) {
+            console.error('Failed to load sangjo favorites:', error);
+        }
+    };
+
+    const handleToggleFavorite = async (
+        e: React.MouseEvent,
+        company: FuneralCompany
+    ) => {
+        e.stopPropagation();
+
+        if (!user) {
+            if (onOpenLogin) onOpenLogin();
+            return;
+        }
+
+        try {
+            const isFavorite = await sangjoFavoriteService.toggleFavorite(user.id, company);
+
+            setFavoritedCompanies(prev => {
+                const next = new Set(prev);
+                if (isFavorite) {
+                    next.add(company.id);
+                } else {
+                    next.delete(company.id);
+                }
+                return next;
+            });
+        } catch (error) {
+            console.error('Failed to toggle sangjo favorite:', error);
+        }
+    };
+
     const filteredCompanies = companies.filter(c =>
         c.name.includes(searchQuery) || c.description.includes(searchQuery)
     );
@@ -157,6 +206,22 @@ export const FuneralCompanyView: React.FC<Props> = ({
                         className={`bg-white rounded-2xl p-2.5 shadow-sm border transition-all active:scale-[0.98] group relative ${compareList.some(c => c.id === company.id) ? 'border-primary ring-1 ring-primary/20 shadow-md' : 'border-gray-100 hover:shadow-md'
                             }`}
                     >
+                        {/* Favorite Button - Heart Icon */}
+                        <button
+                            onClick={(e) => handleToggleFavorite(e, company)}
+                            className={`absolute right-2 top-2 p-2 rounded-full transition-all shadow-sm z-10 ${favoritedCompanies.has(company.id)
+                                    ? 'bg-red-50 text-red-500'
+                                    : 'bg-white/80 text-gray-400 hover:text-red-500 hover:bg-red-50'
+                                }`}
+                            title={favoritedCompanies.has(company.id) ? "즐겨찾기 해제" : "즐겨찾기 추가"}
+                        >
+                            <Heart
+                                size={18}
+                                fill={favoritedCompanies.has(company.id) ? 'currentColor' : 'none'}
+                                strokeWidth={2}
+                            />
+                        </button>
+
                         {/* Compare Button - Icon Only Style */}
                         <button
                             onClick={(e) => {
