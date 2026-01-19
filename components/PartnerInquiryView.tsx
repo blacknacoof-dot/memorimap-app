@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, Building2, Phone, User, Send, CheckCircle, Upload, AlertCircle, FileText, MapPin, Search } from 'lucide-react';
 import { useUser } from '../lib/auth';
 
-import { submitPartnerApplication, searchKnownFacilities } from '../lib/queries';
+import { submitPartnerApplication, searchKnownFacilities, PARTNER_CATEGORIES, getFacilitiesByCategory } from '../lib/queries';
 import { FUNERAL_COMPANIES } from '../constants';
 
 interface Props {
@@ -73,22 +73,14 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
                         ).map(c => ({
                             id: c.id,
                             name: c.name,
-                            address: '전국 서비스 (본사)', // Sangjo usually doesn't have local address in this context
+                            address: '전국 서비스 (본사)',
                             phone: c.phone
                         }));
                         setSearchResults(results);
                         setShowResults(true);
                     } else {
-                        // Search DB for facilities
-                        // Map UI type to DB type
-                        const typeMap: Record<string, string> = {
-                            'funeral_home': 'funeral',
-                            'memorial_park': 'charnel',
-                            'sea': 'sea',
-                            'pet': 'pet'
-                        };
-                        const dbType = typeMap[formData.type] || formData.type;
-                        const results = await searchKnownFacilities(formData.companyName, dbType);
+                        // Search DB for facilities - use the category directly (no mapping needed)
+                        const results = await searchKnownFacilities(formData.companyName, formData.type);
                         setSearchResults(results);
                         setShowResults(true);
                     }
@@ -248,21 +240,31 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
                             <label className="text-sm font-bold text-gray-700 flex items-center gap-1">
                                 업종 구분 <span className="text-red-500">*</span>
                             </label>
-                            <div className="grid grid-cols-3 gap-2">
-                                {['funeral_home', 'memorial_park', 'sea', 'sangjo', 'pet'].map((type) => (
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                {Object.entries(PARTNER_CATEGORIES).map(([key, config]) => (
                                     <button
-                                        key={type}
+                                        key={key}
                                         type="button"
-                                        onClick={() => setFormData(prev => ({ ...prev, type, companyName: '', address: '', phone: '' }))}
-                                        className={`py-3 px-2 rounded-xl text-sm font-medium border transition-colors ${formData.type === type
-                                            ? 'bg-primary border-primary text-white shadow-md transform scale-[1.02]'
+                                        onClick={() => {
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                type: key,
+                                                companyName: '',
+                                                address: '',
+                                                phone: '',
+                                                targetFacilityId: null
+                                            }));
+                                            setIsReadOnly(false);
+                                        }}
+                                        className={`py-4 px-3 rounded-xl text-sm font-medium border-2 transition-all ${formData.type === key
+                                            ? key === 'sangjo'
+                                                ? 'bg-orange-50 border-orange-500 text-orange-700 shadow-md transform scale-[1.02]'
+                                                : 'bg-primary border-primary text-white shadow-md transform scale-[1.02]'
                                             : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
                                             }`}
                                     >
-                                        {type === 'funeral_home' ? '장례식장' :
-                                            type === 'memorial_park' ? '봉안/묘지' :
-                                                type === 'sea' ? '해양장' :
-                                                    type === 'sangjo' ? '상조회사' : '동물장묘'}
+                                        <div className="text-2xl mb-1">{config.icon}</div>
+                                        <div>{config.label}</div>
                                     </button>
                                 ))}
                             </div>

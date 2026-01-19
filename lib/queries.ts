@@ -1,5 +1,20 @@
 ﻿// import { Database } from '../types/db'; // Database type missing, using default inference
+import { Facility, Review, Reservation } from '../types';
+import { FUNERAL_COMPANIES } from '../constants';
 import { supabase } from './supabaseClient';
+
+// Partner Inquiry Category Configuration
+export const PARTNER_CATEGORIES = {
+    funeral_home: { label: '장례식장', icon: '🏢', color: 'blue', category: 'funeral_home' },
+    columbarium: { label: '봉안시설', icon: '⛩️', color: 'purple', category: 'columbarium' },
+    natural_burial: { label: '자연장', icon: '🌳', color: 'green', category: 'natural_burial' },
+    cemetery: { label: '공원묘지', icon: '🏞️', color: 'amber', category: 'cemetery' },
+    sea_burial: { label: '해양장', icon: '🌊', color: 'cyan', category: 'sea_burial' },
+    pet_funeral: { label: '동물장', icon: '🐾', color: 'pink', category: 'pet_funeral' },
+    sangjo: { label: '상조회사', icon: '🤝', color: 'orange', category: 'sangjo' }
+} as const;
+
+export type PartnerCategoryType = keyof typeof PARTNER_CATEGORIES;
 
 export { supabase };
 
@@ -699,9 +714,6 @@ export const getUserRole = async (userId: string) => {
 };
 
 /**
- * [추가] 파트너 신청용: 기존 시설 검색
- */
-/**
  * [추가] 파트너 신청용: 기존 시설 검색 (모든 시설 검색 - UI에서 owner 여부 표시)
  */
 export const searchKnownFacilities = async (query: string, type?: string) => {
@@ -722,6 +734,35 @@ export const searchKnownFacilities = async (query: string, type?: string) => {
         console.error('Error searching known facilities:', error);
         return [];
     }
+    return data || [];
+};
+
+/**
+ * Get facilities by category for partner inquiry autocomplete
+ */
+export const getFacilitiesByCategory = async (category: string) => {
+    // Sangjo companies come from constants, not facilities table
+    if (category === 'sangjo') {
+        return FUNERAL_COMPANIES.map(c => ({
+            id: c.id,
+            name: c.name,
+            address: '전국 서비스',
+            phone: c.phone || '',
+            category: 'sangjo' as const
+        }));
+    }
+
+    const { data, error } = await supabase
+        .from('facilities')
+        .select('id, name, address, phone, category, manager_id')
+        .eq('category', category)
+        .order('name');
+
+    if (error) {
+        console.error('Error fetching facilities by category:', error);
+        return [];
+    }
+
     return data || [];
 };
 
