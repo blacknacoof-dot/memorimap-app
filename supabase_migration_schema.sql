@@ -6,7 +6,7 @@
 CREATE TABLE IF NOT EXISTS memorial_spaces (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
-  type TEXT NOT NULL CHECK (type IN ('charnel', 'park', 'natural', 'complex', 'sea')),
+  category TEXT NOT NULL CHECK (category IN ('charnel', 'park', 'natural', 'complex', 'sea')),
   religion TEXT NOT NULL CHECK (religion IN ('none', 'christian', 'catholic', 'buddhism')),
   address TEXT NOT NULL,
   lat DECIMAL(10, 7) NOT NULL,
@@ -34,11 +34,11 @@ CREATE POLICY "Anyone can view memorial spaces"
   ON memorial_spaces FOR SELECT
   USING (true);
 
--- Only admins can insert/update/delete (you can customize this)
+-- Only super admins can insert/update/delete
 CREATE POLICY "Admins can manage memorial spaces"
   ON memorial_spaces FOR ALL
   USING (auth.uid()::text IN (
-    SELECT user_id FROM user_roles WHERE role IN ('admin', 'super_admin')
+    SELECT id FROM super_admins
   ));
 
 -- ============================================
@@ -67,17 +67,17 @@ CREATE POLICY "Anyone can view funeral companies"
   ON funeral_companies FOR SELECT
   USING (true);
 
--- Only admins can insert/update/delete
+-- Only super admins can insert/update/delete
 CREATE POLICY "Admins can manage funeral companies"
   ON funeral_companies FOR ALL
   USING (auth.uid()::text IN (
-    SELECT user_id FROM user_roles WHERE role IN ('admin', 'super_admin')
+    SELECT id FROM super_admins
   ));
 
 -- ============================================
 -- 3. Indexes for Performance
 -- ============================================
-CREATE INDEX IF NOT EXISTS idx_memorial_spaces_type ON memorial_spaces(type);
+CREATE INDEX IF NOT EXISTS idx_memorial_spaces_category ON memorial_spaces(category);
 CREATE INDEX IF NOT EXISTS idx_memorial_spaces_religion ON memorial_spaces(religion);
 CREATE INDEX IF NOT EXISTS idx_memorial_spaces_rating ON memorial_spaces(rating DESC);
 CREATE INDEX IF NOT EXISTS idx_funeral_companies_rating ON funeral_companies(rating DESC);

@@ -40,11 +40,10 @@ export const FuneralCompanyView: React.FC<Props> = ({
         const fetchCompanies = async () => {
             console.log('🔍 [FuneralCompanyView] Fetching companies...');
             try {
-                // Use singleton instance
+                // [FIX] Query funeral_companies table instead of memorial_spaces
                 const { data, error } = await supabase
-                    .from('memorial_spaces')
+                    .from('funeral_companies')
                     .select('*')
-                    .in('category', ['상조', 'sangjo', 'Sangjo']) // Robust filtering
                     .order('id', { ascending: true });
 
                 if (error) {
@@ -55,40 +54,119 @@ export const FuneralCompanyView: React.FC<Props> = ({
                 console.log('✅ [FuneralCompanyView] Fetched data:', data?.length);
 
                 if (data && data.length > 0) {
-                    // Map DB data to FuneralCompany interface
-                    const mappedCompanies: FuneralCompany[] = data.map(item => {
+                    // Fetch reviews for each company
+                    const mappedCompaniesPromises = data.map(async (item) => {
+                        // Fetch reviews for this company
+                        const { data: reviews, error: reviewError } = await supabase
+                            .from('reviews')
+                            .select('*')
+                            .eq('facility_id', item.id)
+                            .order('created_at', { ascending: false });
+
+                        console.log(`🔍 [${item.name}] Reviews:`, reviews?.length || 0, 'Error:', reviewError);
+
                         // Attempt to find a matching static image or use default
                         const staticMatch = FUNERAL_COMPANIES.find(c => c.name.replace(/\s/g, '') === item.name.replace(/\s/g, ''));
 
+                        // 상조 서비스 상품 (하드코딩)
+                        const products = [
+                            {
+                                id: 'basic',
+                                name: '베이직형',
+                                price: 3500000,
+                                badges: ['기본형'],
+                                tagline: '합리적인 가격의 기본 상조 서비스',
+                                description: '장례 의전에 필요한 기본 서비스를 제공합니다.',
+                                serviceDetails: [
+                                    { category: '의전', items: ['영정사진 제작', '부고 안내', '접객 지원'] },
+                                    { category: '장례용품', items: ['수의 1벌', '관 1구', '제단 화환'] }
+                                ],
+                                includedServices: ['영정사진 제작', '부고 안내', '수의 1벌', '관 1구'],
+                                optionalServices: ['추가 화환', '식사 추가']
+                            },
+                            {
+                                id: 'standard',
+                                name: '스탠다드형',
+                                price: 5000000,
+                                badges: ['표준형'],
+                                tagline: '가장 많이 선택하는 표준 서비스',
+                                description: '합리적인 가격에 충실한 서비스를 제공합니다.',
+                                serviceDetails: [
+                                    { category: '의전', items: ['영정사진 제작', '부고 안내', '접객 지원', '사회자 파견'] },
+                                    { category: '장례용품', items: ['고급 수의 1벌', '고급관 1구', '제단 화환 3개'] },
+                                    { category: '추가', items: ['식사 50인분', '답례품 제공'] }
+                                ],
+                                includedServices: ['영정사진 제작', '사회자 파견', '고급 수의', '식사 50인분'],
+                                optionalServices: ['VIP 의전', '추가 식사']
+                            },
+                            {
+                                id: 'premium',
+                                name: '프리미엄형',
+                                price: 10000000,
+                                badges: ['고급형'],
+                                tagline: '최상의 서비스로 고인을 예우하는 프리미엄 상조',
+                                description: '최고급 서비스로 품격있는 마지막 인사를 준비합니다.',
+                                serviceDetails: [
+                                    { category: '의전', items: ['전문 사회자', '의전팀 24시간 상주'] },
+                                    { category: '장례용품', items: ['최고급 수의', '최고급 관', '제단 화환 10개'] },
+                                    { category: '추가', items: ['식사 100인분', '고급 답례품', '추모 영상 제작'] }
+                                ],
+                                includedServices: ['전문 사회자', '의전팀 24시간', '최고급 수의', '식사 100인분', '추모 영상'],
+                                optionalServices: ['해외 현지 의전', '프리미엄 답례품 업그레이드']
+                            }
+                        ];
+
+                        // 갤러리 이미지 (하드코딩)
+                        const galleryImages = [
+                            'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400',
+                            'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400',
+                            'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=400'
+                        ];
+
                         return {
-                            id: item.id.toString(), // Convert int ID to string
+                            id: item.id.toString(),
                             name: item.name,
-                            rating: item.rating || 4.8, // Default high rating for trusted partners
-                            reviewCount: item.review_count || 120,
+                            rating: item.rating || 4.8,
+                            reviewCount: item.review_count || 0,
                             imageUrl: staticMatch?.imageUrl || item.image_url || '/images/default_sangjo.png',
-                            // [Fix] Prioritize DB description/features over static match
                             description: item.description || staticMatch?.description || `${item.name}의 프리미엄 상조 서비스입니다.`,
                             features: (item.features && item.features.length > 0) ? item.features : (staticMatch?.features || ["전국 의전망", "24시간 상담"]),
                             phone: item.phone || item.contact || '1588-0000',
                             priceRange: item.priceRange || '문의',
                             benefits: item.benefits || ["회원 전용 혜택"],
-                            galleryImages: item.gallery_images || [], // ✅ Map newly added gallery images
-                            products: item.price_info?.products // Include fetched products
+                            galleryImages: galleryImages,
+                            products: products,
+                            reviews: (reviews || []).map((r: any) => ({
+                                id: r.id,
+                                userId: r.user_id, // Map snake_case to camelCase
+                                user_id: r.user_id,
+                                userName: '익명', // DB review table doesn't have user names, default to Anonymous
+                                facility_id: r.facility_id,
+                                rating: r.rating,
+                                content: r.content,
+                                images: r.images || [],
+                                created_at: r.created_at,
+                                date: r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : new Date().toLocaleDateString()
+                            }))
                         };
                     });
+
+                    const mappedCompanies: FuneralCompany[] = await Promise.all(mappedCompaniesPromises);
+
+                    console.log('✅ [FuneralCompanyView] All mapped:', mappedCompanies.length);
+                    if (mappedCompanies.length > 0) {
+                        console.log('🔍 [First Company] Reviews:', mappedCompanies[0].name, mappedCompanies[0].reviews?.length);
+                    }
 
                     // Sort by Sales Rank (Order in FUNERAL_COMPANIES constant)
                     const sortedCompanies = mappedCompanies.sort((a, b) => {
                         const indexA = FUNERAL_COMPANIES.findIndex(fc => fc.name.replace(/\s/g, '') === a.name.replace(/\s/g, ''));
                         const indexB = FUNERAL_COMPANIES.findIndex(fc => fc.name.replace(/\s/g, '') === b.name.replace(/\s/g, ''));
-                        // If not found in constant, put at the end
                         const rankA = indexA === -1 ? 999 : indexA;
                         const rankB = indexB === -1 ? 999 : indexB;
                         return rankA - rankB;
                     });
 
-                    // Merge: Use fetched list, but if filtered by search, just filter this list.
-                    // Prioritize fetched data.
                     setCompanies(sortedCompanies);
                 }
             } catch (err) {
@@ -210,8 +288,8 @@ export const FuneralCompanyView: React.FC<Props> = ({
                         <button
                             onClick={(e) => handleToggleFavorite(e, company)}
                             className={`absolute right-2 top-2 p-2 rounded-full transition-all shadow-sm z-10 ${favoritedCompanies.has(company.id)
-                                    ? 'bg-red-50 text-red-500'
-                                    : 'bg-white/80 text-gray-400 hover:text-red-500 hover:bg-red-50'
+                                ? 'bg-red-50 text-red-500'
+                                : 'bg-white/80 text-gray-400 hover:text-red-500 hover:bg-red-50'
                                 }`}
                             title={favoritedCompanies.has(company.id) ? "즐겨찾기 해제" : "즐겨찾기 추가"}
                         >
