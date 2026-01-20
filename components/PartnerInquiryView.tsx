@@ -7,9 +7,10 @@ import { FUNERAL_COMPANIES } from '../constants';
 
 interface Props {
     onBack: () => void;
+    onLoginClick?: () => void;
 }
 
-export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
+export const PartnerInquiryView: React.FC<Props> = ({ onBack, onLoginClick }) => {
     const { user, isSignedIn } = useUser();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -18,11 +19,14 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
         managerName: '',
         phone: '',
         managerMobile: '',
+        companyPhone: '',        // 추가: 업체 대표 전화
+        managerPosition: '',     // 추가: 담당자 부서/직급
         address: '',
         email: '',
         companyEmail: '',
         type: 'funeral_home',
         message: '',
+        privacyConsent: false,   // 추가: 개인정보 동의
         targetFacilityId: null as number | null // [Fixed] Match DB type
     });
     const [isReadOnly, setIsReadOnly] = useState(false); // [New] Lock fields
@@ -103,19 +107,12 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
             ...prev,
             companyName: facility.name,
             address: facility.address || '',
-            phone: facility.phone || '', // Might be missing in facility search result, user can fill? No, read-only
-            // If phone is missing from DB, we might want to let them edit it? 
-            // User request says "Read-Only". Let's lock it. If DB is empty, user might be stuck.
-            // Assumption: Facility list has phone. If not, maybe allow edit?
-            // "기본 정보는 자동 입력되고 수정 불가" -> Strict interpretation.
+            phone: facility.phone || '',
             targetFacilityId: facility.id
         }));
         setIsReadOnly(true);
         setShowResults(false);
     };
-
-    // Reset read-only if type changes
-    // ... logic inside existing change handler to clear targetFacilityId if cleared?
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -133,19 +130,34 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
                 type: formData.type,
                 address: formData.address,
                 phone: formData.phone,
+                companyPhone: formData.companyPhone,        // 추가
                 managerName: formData.managerName,
+                managerPosition: formData.managerPosition,  // 추가
                 managerMobile: formData.managerMobile,
                 companyEmail: formData.companyEmail,
                 email: formData.email,
                 businessLicenseImage: selectedFile,
                 userId: user?.id,
-                targetFacilityId: formData.targetFacilityId // Pass ID
+                privacyConsent: formData.privacyConsent,    // 추가
+                targetFacilityId: formData.targetFacilityId
             });
             console.log('Submission success');
             setIsSuccess(true);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Submission failed', error);
-            alert('신청 제출 중 오류가 발생했습니다.');
+
+            // 🔍 중복 이메일 에러 감지
+            if (error?.code === '23505' && error?.message?.includes('partner_inquiries_company_email_idx')) {
+                alert('⚠️ 이미 등록된 회사 이메일입니다.\n\n다른 이메일로 신청하시거나, 기존 신청 상태를 확인해주세요.\n문의: 고객센터');
+            }
+            // 🔍 기타 DB 제약 에러
+            else if (error?.code?.startsWith('23')) {
+                alert('⚠️ 입력하신 정보에 문제가 있습니다.\n\n모든 필드를 확인 후 다시 시도해주세요.');
+            }
+            // 🔍 일반 에러
+            else {
+                alert('❌ 신청 제출 중 오류가 발생했습니다.\n\n잠시 후 다시 시도해주세요.');
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -219,15 +231,26 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
                         </div>
                     </div>
                 ) : (
-                    <div className="bg-amber-50 p-4 px-6 flex items-start gap-3 border-b border-amber-100">
-                        <AlertCircle className="text-amber-600 mt-0.5 shrink-0" size={18} />
-                        <div>
-                            <p className="text-sm font-bold text-amber-800">비회원 상태입니다</p>
-                            <p className="text-xs text-amber-700 mt-1">
-                                신청은 가능하지만, 관리자 권한 부여를 위해<br />
-                                가급적 <strong>로그인 후 신청</strong>해주시는 것을 권장합니다.
-                            </p>
+                    <div className="bg-red-50 p-4 px-6 flex items-start gap-3 border-b border-red-100 justify-between">
+                        <div className="flex items-start gap-3">
+                            <AlertCircle className="text-red-600 mt-0.5 shrink-0" size={18} />
+                            <div>
+                                <p className="text-sm font-bold text-red-800">로그인이 필요합니다</p>
+                                <p className="text-xs text-red-700 mt-1">
+                                    파트너 신청 및 관리자 권한 부여를 위해<br />
+                                    반드시 <strong>로그인 후 신청</strong>해주세요. (비회원 신청 불가)
+                                </p>
+                            </div>
                         </div>
+                        {onLoginClick && (
+                            <button
+                                type="button"
+                                onClick={onLoginClick}
+                                className="px-3 py-1.5 bg-red-100 text-red-700 text-xs font-bold rounded-lg hover:bg-red-200 transition-colors"
+                            >
+                                로그인하기
+                            </button>
+                        )}
                     </div>
                 )}
 
@@ -411,6 +434,40 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
                             </div>
 
                             <div className="space-y-1">
+                                <label className="text-sm font-bold text-gray-700">부서/직급 <span className="text-red-500">*</span></label>
+                                <div className="relative">
+                                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                    <input
+                                        type="text"
+                                        name="managerPosition"
+                                        required
+                                        value={formData.managerPosition}
+                                        onChange={handleChange}
+                                        placeholder="예: 관리팀 과장, 대표이사"
+                                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                    />
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1 pl-1">신청자의 직책을 입력해주세요.</p>
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="text-sm font-bold text-gray-700">업체 대표 전화번호 <span className="text-red-500">*</span></label>
+                                <div className="relative">
+                                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                    <input
+                                        type="tel"
+                                        name="companyPhone"
+                                        required
+                                        value={formData.companyPhone}
+                                        onChange={handleChange}
+                                        placeholder="02-1234-5678"
+                                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                    />
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1 pl-1">시설의 고정 유선 번호입니다.</p>
+                            </div>
+
+                            <div className="space-y-1">
                                 <label className="text-sm font-bold text-gray-700">담당자 휴대폰 <span className="text-red-500">*</span></label>
                                 <div className="relative">
                                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -452,13 +509,45 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
                         </div>
 
 
+                        {/* Privacy Consent */}
+                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <label className="flex items-start gap-3 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    name="privacyConsent"
+                                    checked={formData.privacyConsent}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, privacyConsent: e.target.checked }))}
+                                    className="mt-0.5 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                />
+                                <span className="text-sm text-gray-700 flex-1">
+                                    <strong className="text-blue-900">[필수]</strong> 개인정보 수집 및 이용에 동의합니다.
+                                    <p className="text-xs text-gray-600 mt-1.5 leading-relaxed">
+                                        • 수집항목: 담당자명, 휴대폰, 이메일, 회사 이메일<br />
+                                        • 수집목적: 파트너 신청 처리 및 연락<br />
+                                        • 보유기간: 승인 후 3년 또는 거절 시 즉시 파기
+                                    </p>
+                                </span>
+                            </label>
+                        </div>
+
                         {/* Submit Button */}
                         <button
                             type="submit"
-                            disabled={isSubmitting}
-                            className="w-full py-4 bg-dark text-white rounded-xl font-bold shadow-lg hover:bg-gray-800 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+                            disabled={isSubmitting || !isSignedIn || !formData.privacyConsent}
+                            className={`w-full py-4 rounded-xl font-bold shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 mt-4 
+                                ${!isSignedIn || !formData.privacyConsent
+                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                    : 'bg-dark text-white hover:bg-gray-800'
+                                }
+                                ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}
+                            `}
                         >
-                            {isSubmitting ? (
+                            {!isSignedIn ? (
+                                <>
+                                    <User size={18} />
+                                    로그인 후 신청 가능합니다
+                                </>
+                            ) : isSubmitting ? (
                                 <>
                                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                     신청서 제출 중...
@@ -475,7 +564,7 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack }) => {
                         </p>
                     </form>
                 </div>
-            </div >
-        </div >
+            </div>
+        </div>
     );
 };
