@@ -482,9 +482,10 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
 
                         <div className="space-y-4">
                             {(() => {
-                                console.log('[FuneralCompanySheet] Company reviews:', company.reviews);
-                                console.log('[FuneralCompanySheet] Review count:', company.reviewCount);
-                                console.log('[FuneralCompanySheet] Company ID:', company.id);
+                                // 🔕 DEBUG LOGS - 나중에 최적화할 때 다시 켜기
+                                // console.log('[FuneralCompanySheet] Company reviews:', company.reviews);
+                                // console.log('[FuneralCompanySheet] Review count:', company.reviewCount);
+                                // console.log('[FuneralCompanySheet] Company ID:', company.id);
 
                                 if (company.reviews && company.reviews.length > 0) {
                                     return company.reviews.map(review => (

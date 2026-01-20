@@ -889,10 +889,13 @@ const App: React.FC = () => {
         return (
           <Suspense fallback={<LoadingFallback />}>
             <div className="h-full bg-white pb-20 overflow-y-auto">
-              <PartnerInquiryView onBack={() => {
-                window.location.hash = '';
-                setViewState(ViewState.MAP);
-              }} />
+              <PartnerInquiryView
+                onBack={() => {
+                  window.location.hash = '';
+                  setViewState(ViewState.MAP);
+                }}
+                onLoginClick={handleLoginClick}
+              />
             </div>
           </Suspense>
         );

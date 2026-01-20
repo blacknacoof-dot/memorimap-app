@@ -38,9 +38,8 @@ export const FuneralCompanyView: React.FC<Props> = ({
     // [Change] Fetch companies from Supabase on mount
     React.useEffect(() => {
         const fetchCompanies = async () => {
-            console.log('🔍 [FuneralCompanyView] Fetching companies...');
             try {
-                // [FIX] Query funeral_companies table instead of memorial_spaces
+                // Fetch companies
                 const { data, error } = await supabase
                     .from('funeral_companies')
                     .select('*')
@@ -51,19 +50,32 @@ export const FuneralCompanyView: React.FC<Props> = ({
                     throw error;
                 }
 
-                console.log('✅ [FuneralCompanyView] Fetched data:', data?.length);
-
                 if (data && data.length > 0) {
-                    // Fetch reviews for each company
-                    const mappedCompaniesPromises = data.map(async (item) => {
-                        // Fetch reviews for this company
-                        const { data: reviews, error: reviewError } = await supabase
-                            .from('reviews')
-                            .select('*')
-                            .eq('facility_id', item.id)
-                            .order('created_at', { ascending: false });
+                    // 🔥 OPTIMIZATION: Fetch ALL reviews in a single query instead of 46 individual queries
+                    const companyIds = data.map(item => item.id);
+                    const { data: allReviews, error: reviewError } = await supabase
+                        .from('reviews')
+                        .select('*')
+                        .in('facility_id', companyIds)
+                        .order('created_at', { ascending: false });
 
-                        console.log(`🔍 [${item.name}] Reviews:`, reviews?.length || 0, 'Error:', reviewError);
+                    if (reviewError) {
+                        console.error('❌ [FuneralCompanyView] Reviews Error:', reviewError);
+                    }
+
+                    // Group reviews by company ID for O(1) lookup
+                    const reviewsByCompany = new Map<string, any[]>();
+                    allReviews?.forEach(review => {
+                        const companyId = review.facility_id;
+                        if (!reviewsByCompany.has(companyId)) {
+                            reviewsByCompany.set(companyId, []);
+                        }
+                        reviewsByCompany.get(companyId)!.push(review);
+                    });
+
+                    // Map companies with their reviews
+                    const mappedCompanies: FuneralCompany[] = data.map(item => {
+                        const reviews = reviewsByCompany.get(item.id) || [];
 
                         // Attempt to find a matching static image or use default
                         const staticMatch = FUNERAL_COMPANIES.find(c => c.name.replace(/\s/g, '') === item.name.replace(/\s/g, ''));
@@ -116,12 +128,14 @@ export const FuneralCompanyView: React.FC<Props> = ({
                             }
                         ];
 
-                        // 갤러리 이미지 (하드코딩)
-                        const galleryImages = [
-                            'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400',
-                            'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400',
-                            'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=400'
-                        ];
+                        // 갤러리 이미지 - DB에서 가져오거나 기본 이미지 사용
+                        const galleryImages = item.gallery_images && item.gallery_images.length > 0
+                            ? item.gallery_images
+                            : [
+                                'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400',
+                                'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400',
+                                'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=400'
+                            ];
 
                         return {
                             id: item.id.toString(),
@@ -136,11 +150,11 @@ export const FuneralCompanyView: React.FC<Props> = ({
                             benefits: item.benefits || ["회원 전용 혜택"],
                             galleryImages: galleryImages,
                             products: products,
-                            reviews: (reviews || []).map((r: any) => ({
+                            reviews: reviews.map((r: any) => ({
                                 id: r.id,
-                                userId: r.user_id, // Map snake_case to camelCase
+                                userId: r.user_id,
                                 user_id: r.user_id,
-                                userName: '익명', // DB review table doesn't have user names, default to Anonymous
+                                userName: '익명',
                                 facility_id: r.facility_id,
                                 rating: r.rating,
                                 content: r.content,
@@ -150,13 +164,6 @@ export const FuneralCompanyView: React.FC<Props> = ({
                             }))
                         };
                     });
-
-                    const mappedCompanies: FuneralCompany[] = await Promise.all(mappedCompaniesPromises);
-
-                    console.log('✅ [FuneralCompanyView] All mapped:', mappedCompanies.length);
-                    if (mappedCompanies.length > 0) {
-                        console.log('🔍 [First Company] Reviews:', mappedCompanies[0].name, mappedCompanies[0].reviews?.length);
-                    }
 
                     // Sort by Sales Rank (Order in FUNERAL_COMPANIES constant)
                     const sortedCompanies = mappedCompanies.sort((a, b) => {

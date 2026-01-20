@@ -798,10 +798,12 @@ export const submitPartnerApplication = async (data: any) => {
         .insert([{
             user_id: data.userId,
             company_name: data.name,
+            company_phone: data.companyPhone,        // \ucd94\uac00: \uc5c5\uccb4 \ub300\ud45c \uc804\ud654
             type: data.type, // [Fix] Add required type field
             business_type: data.type,
             contact_person: data.managerName,
             manager_name: data.managerName,
+            manager_position: data.managerPosition,  // \ucd94\uac00: \ub2f4\ub2f9\uc790 \ubd80\uc11c/\uc9c1\uae09
             contact_number: data.phone || data.managerMobile,
             phone: data.phone || data.managerMobile,
             manager_mobile: data.managerMobile,
@@ -810,6 +812,7 @@ export const submitPartnerApplication = async (data: any) => {
             address: data.address,
             business_license_url: licenseUrl,
             message: '',
+            privacy_consent: data.privacyConsent,    // \ucd94\uac00: \uac1c\uc778\uc815\ubcf4 \ub3d9\uc758
             status: 'pending',
             target_facility_id: (data.targetFacilityId && !isNaN(Number(data.targetFacilityId)))
                 ? Number(data.targetFacilityId)
