@@ -616,7 +616,7 @@ export const FACILITIES: Facility[] = [
       'https://images.unsplash.com/photo-1464243936082-27352f23246f?q=80&w=800&auto=format&fit=crop'
     ],
     reviews: [
-      { id: 'r1', space_id: '1', user_id: 'mock1', userName: '김철수', rating: 5, date: '2023.10.15', content: '가족들과 함께 방문했는데 관리가 정말 잘 되어 있어서 좋았습니다.' }
+      { id: 'r1', facility_id: '1', user_id: 'mock1', userName: '김철수', rating: 5, date: '2023.10.15', content: '가족들과 함께 방문했는데 관리가 정말 잘 되어 있어서 좋았습니다.' }
     ],
     naverBookingUrl: 'https://booking.naver.com/booking/13/bizes/123456'
   },
@@ -643,7 +643,7 @@ export const FACILITIES: Facility[] = [
       'https://images.unsplash.com/photo-1623165246232-a56763595cb6?q=80&w=800&auto=format&fit=crop'
     ],
     reviews: [
-      { id: 'r1', space_id: '2', user_id: 'mock4', userName: '최민수', rating: 5, date: '2023.11.02', content: '시설이 굉장히 크고 웅장합니다.' }
+      { id: 'r1', facility_id: '2', user_id: 'mock4', userName: '최민수', rating: 5, date: '2023.11.02', content: '시설이 굉장히 크고 웅장합니다.' }
     ]
   },
   {
@@ -669,7 +669,7 @@ export const FACILITIES: Facility[] = [
       'https://images.unsplash.com/photo-1445052344078-7b9668383a8b?q=80&w=800&auto=format&fit=crop'
     ],
     reviews: [
-      { id: 'r1', space_id: '3', user_id: 'mock6', userName: 'Hannah Kim', rating: 5, date: '2023.12.01', content: '납골당이 아니라 휴양지 같은 느낌이에요.' }
+      { id: 'r1', facility_id: '3', user_id: 'mock6', userName: 'Hannah Kim', rating: 5, date: '2023.12.01', content: '납골당이 아니라 휴양지 같은 느낌이에요.' }
     ],
     naverBookingUrl: 'https://booking.naver.com/booking/13/bizes/654321'
   },
