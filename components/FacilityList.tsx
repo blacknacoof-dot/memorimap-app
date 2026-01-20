@@ -10,7 +10,7 @@ interface FacilityListProps {
     onToggleCompare: (facility: Facility) => void;
 }
 
-export const FacilityList = React.memo<FacilityListProps>(({ facilities, onSelect, compareList, onToggleCompare }) => {
+const FacilityListComponent: React.FC<FacilityListProps> = ({ facilities, onSelect, compareList, onToggleCompare }) => {
     // compareList를 Set으로 변환하여 빠른 조회 성능 확보 (O(n) -> O(1))
     const compareIdSet = useMemo(
         () => new Set(compareList.map(f => f.id)),
@@ -54,7 +54,10 @@ export const FacilityList = React.memo<FacilityListProps>(({ facilities, onSelec
             />
         </div>
     );
-});
+};
+
+// React.memo로 감싸서 export
+export const FacilityList = React.memo(FacilityListComponent);
 
 
 
