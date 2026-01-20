@@ -37,14 +37,14 @@ export type FacilityCategoryLabel =
 export interface Facility {
     id: string;
     name: string;
-    facility_type: FacilityCategoryType;
+    facility_type?: FacilityCategoryType; // DB standard (optional for backward compatibility)
     category?: FacilityCategoryType; // Legacy support
 
     // Location
-    lat: number;
-    lng: number;
-    latitude: number; // For backward compatibility
-    longitude: number; // For backward compatibility
+    lat?: number; // Legacy
+    lng?: number; // Legacy
+    latitude?: number; // For backward compatibility
+    longitude?: number; // For backward compatibility
     address: string;
     address_detail?: string;
 
@@ -67,6 +67,7 @@ export interface Facility {
     // Management
     manager_id?: string;
     is_verified?: boolean;
+    isVerified?: boolean; // Legacy
     is_public?: boolean;
 
     // Timestamps
@@ -74,7 +75,7 @@ export interface Facility {
     updated_at?: string; // Optional for compatibility
 
     // Extra fields for compatibility with existing code
-    type?: string;
+    type?: string; // Legacy
     religion?: string;
     prices?: any[];
     naverBookingUrl?: string;
@@ -82,6 +83,9 @@ export interface Facility {
     dataSource?: string;
     priceInfo?: any;
     aiContext?: string;
+    ai_tone?: string;
+    ai_welcome_message?: string;
+    ai_price_summary?: Record<string, string | number>;
     subscription?: any;
     products?: any[];
 }
