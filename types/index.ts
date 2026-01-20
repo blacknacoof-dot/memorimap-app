@@ -41,11 +41,12 @@ export interface FuneralCompany {
 
 export interface Review {
   id: string;
-  userId: string; // [New] for identifying ownership
-  user_id: string; // Keeps compatibility with DB snake_case if used raw
+  userId?: string; // Optional for backward compatibility
+  user_id?: string; // Keeps compatibility with DB snake_case if used raw
   userName: string;
   userImage?: string;
-  facility_id: string;
+  facility_id?: string;
+  space_id?: string; // Legacy compatibility
   rating: number;
   content: string;
   images?: string[];
@@ -67,41 +68,26 @@ export type FacilityCategoryType =
   | 'sea_burial' | 'sea'
   | 'sangjo';
 
-export interface Facility {
-  id: string;
-  name: string;
-  // type: 'charnel' | 'natural' | 'park' | 'complex' | 'sea' | 'pet' | 'funeral' | 'sangjo' | 'assistant'; // DEPRECATED
-  category: FacilityCategoryType; // Strict Type
-  type?: string; // Optional fallback for backward compatibility if needed, but aim to remove
-  religion: 'buddhism' | 'christian' | 'catholic' | 'none';
-  address: string;
-  lat: number;
-  lng: number;
-  priceRange: string;
-  rating: number;
-  reviewCount: number;
-  imageUrl: string;
-  description: string;
-  features: string[];
-  phone: string;
-  prices: {
-    type: string;
-    price: string;
-  }[];
-  galleryImages: string[];
-  reviews: Review[];
-  naverBookingUrl?: string;
-  isDetailLoaded?: boolean;
-  isVerified?: boolean; // 업체 직접 관리 여부
-  dataSource?: 'ai' | 'admin' | 'partner' | 'db'; // 데이터 출처
-  priceInfo?: any; // 업체 직접 입력 가격 데이터 (JSONB)
-  aiContext?: string; // AI 상담용 추가 지식
-  ai_tone?: AiTone; // AI 말투 설정
-  ai_welcome_message?: string; // AI 첫인사 메시지
-  ai_price_summary?: Record<string, string | number>; // AI 학습용 가격 요약 (JSON)
-  subscription?: any; // FacilitySubscription interface type
-  products?: SangjoProduct[]; // 상조 상품 데이터
-}
+// ============================================================
+// RE-EXPORT FROM FACILITY TYPES (Single Source of Truth)
+// ============================================================
+export type {
+  Facility,
+  FacilityFilter,
+  FacilitySearchParams,
+  CategoryConfig
+} from './facility';
+
+export {
+  FACILITY_CATEGORIES,
+  CATEGORY_CODE_TO_LABEL,
+  CATEGORY_LABEL_TO_CODE,
+  getCategoryLabel,
+  getCategoryCode,
+  getCategoryConfig,
+  isValidCategory,
+  normalizeCategoryValue
+} from './facility';
 
 export interface Reservation {
   id: string;
