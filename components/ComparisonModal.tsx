@@ -1,5 +1,4 @@
-import React from 'react';
-import { Facility } from '../types';
+import { Facility, getCategoryLabel, normalizeCategoryValue } from '../types';
 import { X, Star, MapPin, Trash2, AlertCircle } from 'lucide-react';
 
 interface Props {
@@ -36,16 +35,16 @@ export const ComparisonModal: React.FC<Props> = ({ facilities, onClose, onRemove
                   <div className="relative h-40 w-full rounded-t-xl overflow-hidden group">
                     <img src={facility.imageUrl} alt={facility.name} className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-start justify-end p-2">
-                       <button 
-                         onClick={() => onRemove(facility.id)}
-                         className="bg-white/90 p-1.5 rounded-full text-red-500 hover:bg-white shadow-sm transition-transform hover:scale-110"
-                         title="비교함에서 제거"
-                       >
-                         <Trash2 size={16} />
-                       </button>
+                      <button
+                        onClick={() => onRemove(facility.id)}
+                        className="bg-white/90 p-1.5 rounded-full text-red-500 hover:bg-white shadow-sm transition-transform hover:scale-110"
+                        title="비교함에서 제거"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
                     <div className="absolute top-2 left-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full">
-                       {facility.type === 'charnel' ? '납골당' : facility.type === 'natural' ? '자연장' : '추모공원'}
+                      {getCategoryLabel(normalizeCategoryValue(facility.category || facility.type))}
                     </div>
                   </div>
 
@@ -78,30 +77,30 @@ export const ComparisonModal: React.FC<Props> = ({ facilities, onClose, onRemove
 
                     {/* Features */}
                     <div>
-                       <div className="text-xs text-gray-400 mb-1">주요 특징</div>
-                       <div className="flex flex-wrap gap-1.5">
-                         {facility.features.slice(0, 4).map(f => (
-                           <span key={f} className="text-[10px] bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                             {f}
-                           </span>
-                         ))}
-                       </div>
+                      <div className="text-xs text-gray-400 mb-1">주요 특징</div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(facility.features || []).slice(0, 4).map(f => (
+                          <span key={f} className="text-[10px] bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                            {f}
+                          </span>
+                        ))}
+                      </div>
                     </div>
 
                     {/* Religion */}
                     <div>
-                       <div className="text-xs text-gray-400 mb-1">종교 시설</div>
-                       <div className="text-sm text-gray-700">
-                         {facility.religion === 'christian' ? '기독교 전용' : 
-                          facility.religion === 'catholic' ? '천주교 전용' : 
-                          facility.religion === 'buddhism' ? '불교 전용' : '종교 무관'}
-                       </div>
+                      <div className="text-xs text-gray-400 mb-1">종교 시설</div>
+                      <div className="text-sm text-gray-700">
+                        {facility.religion === 'christian' ? '기독교 전용' :
+                          facility.religion === 'catholic' ? '천주교 전용' :
+                            facility.religion === 'buddhism' ? '불교 전용' : '종교 무관'}
+                      </div>
                     </div>
                   </div>
 
                   {/* Footer Action */}
                   <div className="p-4 border-t mt-auto">
-                    <button 
+                    <button
                       onClick={() => onBook(facility)}
                       className="w-full py-2 bg-primary text-white rounded-lg text-sm font-bold shadow hover:bg-opacity-90 active:scale-95 transition-transform"
                     >
@@ -110,13 +109,13 @@ export const ComparisonModal: React.FC<Props> = ({ facilities, onClose, onRemove
                   </div>
                 </div>
               ))}
-              
+
               {/* Empty Placeholder if less than 2 items (Optional, just to show space) */}
               {facilities.length === 1 && (
-                 <div className="w-[280px] rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 p-8 text-center shrink-0">
-                    <AlertCircle size={32} className="mb-2 opacity-50" />
-                    <p className="text-sm">비교할 다른 시설을<br/>추가해보세요.</p>
-                 </div>
+                <div className="w-[280px] rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 p-8 text-center shrink-0">
+                  <AlertCircle size={32} className="mb-2 opacity-50" />
+                  <p className="text-sm">비교할 다른 시설을<br />추가해보세요.</p>
+                </div>
               )}
             </div>
           </div>

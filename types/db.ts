@@ -118,6 +118,7 @@ export interface Payment {
     status: 'succeeded' | 'failed' | 'pending' | 'refunded';
     payment_method: string | null;
     paid_at: string;
+    description?: string; // Added for compatibility
 }
 
 /**
