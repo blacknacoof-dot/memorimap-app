@@ -604,7 +604,7 @@ export const updateFacility = async (id: string, updates: any) => {
 };
 
 // --- Missing Exports Stubs (Restored mostly, keeping others as stubs if needed) ---
-export const updateConsultation = async (id: string, data: any) => { console.log('STUB: updateConsultation'); };
+// export const updateConsultation = async (id: string, data: any) => { console.log('STUB: updateConsultation'); }; // Removed in favor of full implementation
 export const updateUserProfile = async (id: string, data: any) => { console.log('STUB: updateUserProfile'); };
 export const getFacilityReservations = async (facilityId: string) => {
     const { data, error } = await supabase
@@ -1154,6 +1154,9 @@ export interface Consultation extends ConsultationData {
     updated_at: string;
     status: 'waiting' | 'accepted' | 'cancelled' | 'completed';
     notes?: string;
+    answer?: string; // Admin's response
+    answered_at?: string; // ISO timestamp
+    is_read?: boolean; // Admin read status
 }
 
 /**
@@ -1299,6 +1302,66 @@ export const updateConsultationStatus = async (
         console.error('updateConsultationStatus exception:', e);
         return false;
     }
+};
+
+export const getFacilityConsultations = getConsultationsByFacility;
+
+/**
+ * Answer a consultation (Admin to User)
+ */
+export const answerConsultation = async (
+    consultationId: string,
+    answer: string
+): Promise<boolean> => {
+    try {
+        const { error } = await supabase
+            .from('consultations')
+            .update({
+                status: 'accepted', // Automatically mark as accepted/answered (or use 'completed'?)
+                // 'accepted' implies "received and looking". 'completed' implies "done".
+                // Let's us 'accepted' for now as per schema comments 'waiting, accepted ...'
+                answer: answer,
+                answered_at: new Date().toISOString()
+            })
+            .eq('id', consultationId);
+
+        if (error) {
+            console.error('answerConsultation error:', error);
+            return false;
+        }
+        return true;
+    } catch (e) {
+        console.error('answerConsultation exception:', e);
+        return false;
+    }
+};
+
+/**
+ * Mark consultation as read by admin
+ */
+export const markConsultationAsRead = async (consultationId: string): Promise<boolean> => {
+    try {
+        const { error } = await supabase
+            .from('consultations')
+            .update({ is_read: true })
+            .eq('id', consultationId);
+
+        return !error;
+    } catch (e) {
+        console.error('markConsultationAsRead exception:', e);
+        return false;
+    }
+};
+
+// Remove Stub or Redirect
+export const updateConsultation = async (id: string, data: any) => {
+    // If data has answer, route to answerConsultation logic?
+    // But better to deprecate this stub.
+    console.warn('Deprecated updateConsultation called. Use answerConsultation or updateConsultationStatus');
+    if (data.answer) {
+        return answerConsultation(id, data.answer);
+    }
+    return false;
 };
 
 /**

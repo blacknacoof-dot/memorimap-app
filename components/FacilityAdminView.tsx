@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Reservation, ViewState, Facility } from '../types';
-import { getFacilityReservations, approveReservation, rejectReservation, getUserFacility, getFacilitySubscription } from '../lib/queries';
+import { getFacilityReservations, approveReservation, rejectReservation, getUserFacility, getFacilitySubscription, getFacilityConsultations, answerConsultation, Consultation, markConsultationAsRead, supabase } from '../lib/queries';
 import { ReservationList } from './ReservationList';
+import { ConsultationList } from './ConsultationList';
 import { ReservationDetailModal } from './ReservationDetailModal';
 import { FacilityEditModal } from './FacilityEditModal';
 import { FacilityFAQManager } from './FacilityFAQManager';
 import { ConfirmModal } from '../src/components/common/ConfirmModal';
-import { Loader2, CheckCircle, XCircle, Clock, ArrowLeft, Home, Edit, Building2, MapPin, Phone, ArrowRight, Siren, HelpCircle } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Clock, ArrowLeft, Home, Edit, Building2, MapPin, Phone, ArrowRight, Siren, HelpCircle, MessageSquare } from 'lucide-react';
 
 interface Props {
     user: any;
@@ -17,8 +18,9 @@ interface Props {
 export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigate }) => {
     const [myFacilityId, setMyFacilityId] = useState<string | null>(null);
     const [reservations, setReservations] = useState<Reservation[]>([]);
+    const [consultations, setConsultations] = useState<Consultation[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'pending' | 'confirmed' | 'cancelled' | 'faq'>('pending');
+    const [activeTab, setActiveTab] = useState<'pending' | 'confirmed' | 'cancelled' | 'faq' | 'consultations'>('pending');
     const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
     const [editingFacility, setEditingFacility] = useState<Facility | null>(null);
     const [subscription, setSubscription] = useState<any>(null);
@@ -47,6 +49,10 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
                 // Get subscription info
                 const sub = await getFacilitySubscription(facilityId);
                 setSubscription(sub);
+
+                // Get consultations
+                const cons = await getFacilityConsultations(facilityId);
+                setConsultations(cons);
             }
         } catch (err) {
             console.error('Error loading facility data:', err);
@@ -54,6 +60,40 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
             setIsLoading(false);
         }
     };
+
+    // Realtime Subscription
+    useEffect(() => {
+        if (!myFacilityId) return;
+
+        console.log('Setting up Realtime subscription for facility:', myFacilityId);
+        const channel = supabase
+            .channel('facility-consultations')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'consultations',
+                    filter: `facility_id=eq.${myFacilityId}`
+                },
+                (payload) => {
+                    console.log('Realtime update:', payload);
+                    if (payload.eventType === 'INSERT') {
+                        setConsultations(prev => [payload.new as Consultation, ...prev]);
+                        // Optional: Show toast notification?
+                    } else if (payload.eventType === 'UPDATE') {
+                        setConsultations(prev => prev.map(c =>
+                            c.id === payload.new.id ? { ...c, ...payload.new } : c
+                        ));
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [myFacilityId]);
 
     const handleApprove = async (reservationId: string) => {
         if (!confirm('이 예약을 승인하시겠습니까?')) return;
@@ -88,6 +128,8 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
     const myFacility = facilities.find(f => f.id === myFacilityId);
     const pendingCount = reservations.filter(r => r.status === 'pending' || r.status === 'urgent').length;
     const urgentCount = reservations.filter(r => r.status === 'urgent').length;
+    // Unread count based on is_read flag (fallback to waiting if is_read undefined for legacy)
+    const consultationCount = consultations.filter(c => !c.is_read).length;
 
     return (
         <div className="h-full overflow-y-auto pt-24 pb-20 px-4 bg-gray-50">
@@ -223,19 +265,34 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-2 mb-4">
+            <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
                 <button
                     onClick={() => setActiveTab('pending')}
-                    className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${activeTab === 'pending'
+                    className={`flex-1 min-w-[100px] py-2 px-4 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'pending'
                         ? 'bg-primary text-white'
                         : 'bg-white text-gray-600 hover:bg-gray-50'
                         }`}
                 >
-                    대기 ({reservations.filter(r => r.status === 'pending' || r.status === 'urgent').length})
+                    예약 대기 ({reservations.filter(r => r.status === 'pending' || r.status === 'urgent').length})
+                </button>
+                <button
+                    onClick={() => setActiveTab('consultations')}
+                    className={`flex-1 min-w-[100px] py-2 px-4 rounded-lg font-medium transition-colors whitespace-nowrap flex items-center justify-center gap-1 ${activeTab === 'consultations'
+                        ? 'bg-primary text-white'
+                        : 'bg-white text-gray-600 hover:bg-gray-50'
+                        }`}
+                >
+                    <MessageSquare size={16} />
+                    상담 문의
+                    {consultationCount > 0 && (
+                        <span className="ml-1 px-1.5 py-0.5 bg-red-500 text-white text-[10px] rounded-full font-bold">
+                            {consultationCount}
+                        </span>
+                    )}
                 </button>
                 <button
                     onClick={() => setActiveTab('confirmed')}
-                    className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${activeTab === 'confirmed'
+                    className={`flex-1 min-w-[80px] py-2 px-4 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'confirmed'
                         ? 'bg-primary text-white'
                         : 'bg-white text-gray-600 hover:bg-gray-50'
                         }`}
@@ -244,7 +301,7 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
                 </button>
                 <button
                     onClick={() => setActiveTab('cancelled')}
-                    className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${activeTab === 'cancelled'
+                    className={`flex-1 min-w-[80px] py-2 px-4 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'cancelled'
                         ? 'bg-primary text-white'
                         : 'bg-white text-gray-600 hover:bg-gray-50'
                         }`}
@@ -253,7 +310,7 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
                 </button>
                 <button
                     onClick={() => setActiveTab('faq')}
-                    className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${activeTab === 'faq'
+                    className={`flex-1 min-w-[80px] py-2 px-4 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'faq'
                         ? 'bg-primary text-white'
                         : 'bg-white text-gray-600 hover:bg-gray-50'
                         }`}
@@ -266,7 +323,28 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
             </div>
 
             {/* Content Area */}
-            {activeTab === 'faq' ? (
+            {activeTab === 'consultations' ? (
+                <ConsultationList
+                    consultations={consultations}
+                    onAnswer={async (id, text) => {
+                        const success = await answerConsultation(id, text);
+                        if (success) {
+                            setConsultations(prev => prev.map(c =>
+                                c.id === id ? { ...c, answer: text, answered_at: new Date().toISOString(), status: 'accepted', is_read: true } : c
+                            ));
+                            loadData(); // Reload for freshness
+                        }
+                    }}
+                    onRead={async (id) => {
+                        const success = await markConsultationAsRead(id);
+                        if (success) {
+                            setConsultations(prev => prev.map(c =>
+                                c.id === id ? { ...c, is_read: true } : c
+                            ));
+                        }
+                    }}
+                />
+            ) : activeTab === 'faq' ? (
                 <FacilityFAQManager />
             ) : isLoading ? (
                 <div className="text-center py-10">

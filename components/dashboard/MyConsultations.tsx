@@ -173,6 +173,22 @@ export const MyConsultations: React.FC<Props> = ({ userId }) => {
                                 </div>
                             </div>
 
+                            {/* Answer Section */}
+                            {consultation.answer && (
+                                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-3">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <div className="bg-blue-100 p-1 rounded-full">
+                                            <CheckCircle size={14} className="text-blue-600" />
+                                        </div>
+                                        <span className="font-bold text-blue-800 text-sm">담당자 답변</span>
+                                        <span className="text-xs text-blue-400">
+                                            {consultation.answered_at ? new Date(consultation.answered_at).toLocaleDateString() : ''}
+                                        </span>
+                                    </div>
+                                    <p className="text-blue-900 text-sm whitespace-pre-wrap">{consultation.answer}</p>
+                                </div>
+                            )}
+
                             {/* Actions */}
                             {consultation.status === 'waiting' && (
                                 <button
@@ -196,20 +212,20 @@ export const MyConsultations: React.FC<Props> = ({ userId }) => {
                                             <React.Fragment key={step}>
                                                 <div
                                                     className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${isCancelled
-                                                            ? 'bg-red-100 text-red-400'
-                                                            : isActive
-                                                                ? 'bg-indigo-600 text-white'
-                                                                : 'bg-slate-200 text-slate-400'
+                                                        ? 'bg-red-100 text-red-400'
+                                                        : isActive
+                                                            ? 'bg-indigo-600 text-white'
+                                                            : 'bg-slate-200 text-slate-400'
                                                         }`}
                                                 >
                                                     {idx + 1}
                                                 </div>
                                                 {idx < 2 && (
                                                     <div className={`flex-1 h-1 rounded ${isCancelled
-                                                            ? 'bg-red-100'
-                                                            : stepOrder[step as keyof typeof stepOrder] < currentOrder
-                                                                ? 'bg-indigo-600'
-                                                                : 'bg-slate-200'
+                                                        ? 'bg-red-100'
+                                                        : stepOrder[step as keyof typeof stepOrder] < currentOrder
+                                                            ? 'bg-indigo-600'
+                                                            : 'bg-slate-200'
                                                         }`} />
                                                 )}
                                             </React.Fragment>
