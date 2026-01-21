@@ -562,15 +562,17 @@ export const createReview = async (
     content: string,
     images: string[] = []
 ) => {
-    // 리뷰 기능 구현 시 주석 해제
-    /*
     const { data, error } = await supabase
-      .from('reviews')
-      .insert([{ facility_id: facilityId, user_id: userId, rating, content, images }])
-      .select()
-      .single();
-    */
-    return null;
+        .from('reviews')
+        .insert([{ facility_id: facilityId, user_id: userId, rating, content, images }])
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error creating review:', error);
+        throw error;
+    }
+    return data;
 };
 
 export const deleteReview = async (reviewId: string) => {
@@ -621,8 +623,47 @@ export const getFacilityReservations = async (facilityId: string) => {
         status: item.status as any
     }));
 };
-export const approveReservation = async (id: string) => { console.log('STUB: approveReservation'); };
-export const rejectReservation = async (id: string, reason?: string) => { console.log('STUB: rejectReservation', id, reason); };
+export const approveReservation = async (id: string) => {
+    const { data, error } = await supabase
+        .from('reservations')
+        .update({ status: 'confirmed' })
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error approving reservation:', error);
+        throw error;
+    }
+    return data;
+};
+
+export const rejectReservation = async (id: string, reason?: string) => {
+    // 거절 사유를 notes에 추가하거나 별도 컬럼이 있다면 사용. 여기서는 notes에 [거절 사유] 형태로 추가
+    // 먼저 기존 notes를 가져와야 하나, 간단히 update로 처리. 
+    // 하지만 SQL update는 기존 값을 참조하기 어려우므로, 단순히 status만 변경하거나
+    // 클라이언트에서 notes를 합쳐서 보내주는게 맞음. 
+    // 여기서는 reason이 있으면 notes를 덮어쓰거나(단순화) 함.
+    // 더 안전하게는 status만 변경.
+
+    const updateData: any = { status: 'cancelled' };
+    if (reason) {
+        updateData.notes = `[거절 사유] ${reason}`;
+    }
+
+    const { data, error } = await supabase
+        .from('reservations')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error rejecting reservation:', error);
+        throw error;
+    }
+    return data;
+};
 export const getMyReservations = async (userId: string) => { console.log('STUB: getMyReservations'); return []; };
 export const cancelReservation = async (id: string) => { console.log('STUB: cancelReservation'); };
 export const getUserPhoneNumber = async (userId: string) => { console.log('STUB: getUserPhoneNumber'); return ''; };

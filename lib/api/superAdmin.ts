@@ -198,26 +198,27 @@ export const deleteNotice = async (id: string) => {
 
 // --- 상담 신청 관리 API ---
 export const fetchLeads = async () => {
-    // consultation_leads 테이블이 없으면 생성해야 함.
-    // 현재는 consultation_leads 테이블이 있다고 가정하거나, 혹은 없을 경우를 대비해 
-    // 예전 Mock data와 유사한 구조로 매핑.
-    // *실제로는 consultation_leads 테이블이 없어서 reservation 테이블을 대신 쓰거나 해야 할 수도 있음.*
-    // 하지만 user request가 '상담 관리'이므로 별도 테이블이 맞음.
-    // 만약 에러나면 reservation 테이블로 fallback 하겠음.
-
+    // [Fix] consultation_leads 테이블이 없으므로 consultations 테이블 사용
+    // Error hint suggests 'consultations' table exists.
     const { data: leads, error } = await supabase
-        .from('consultation_leads')
+        .from('consultations')
         .select('*')
         .order('created_at', { ascending: false });
 
     if (error) {
-        // Table might not exist, return empty array to prevent crash
-        console.warn('Failed to fetch leads (Table might be missing):', error);
+        console.warn('Failed to fetch leads:', error);
         return [];
     }
 
     return leads.map((lead: any) => ({
-        ...lead,
-        type: lead.inquiry_type || 'consultation', // map DB column to type
+        id: lead.id,
+        user_name: lead.user_name || lead.visitor_name || '익명 고객',
+        phone_number: lead.phone_number || lead.contact_number,
+        type: lead.consultation_type || lead.type || 'consultation',
+        status: lead.status || 'new',
+        created_at: lead.created_at,
+        // Map to frontend expected props if needed
+        customer_name: lead.user_name || lead.visitor_name || '익명 고객',
+        customer_phone: lead.phone_number || lead.contact_number,
     }));
 };

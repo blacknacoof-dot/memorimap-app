@@ -47,10 +47,29 @@ export const sendMessageToGemini = async (
   const userMsg = message.trim();
 
   // === [CONTEXT CHECK] Determine Type ===
-  // facility.type 이 'funeral' or 'sangjo' 면 장례식장/상조 로직
-  // facility.type 이 'charnel' | 'natural' | 'park' | 'sea' 이면 추모시설(봉안당) 로직
-  const isMemorial = facility && ['charnel', 'natural', 'park', 'sea', 'memorial'].includes((facility as Facility).type);
-  const isPet = facility && (facility as Facility).type === 'pet';
+  const isMemorial = facility && ['columbarium', 'natural_burial', 'cemetery', 'sea_burial', 'memorial'].includes((facility as Facility).facility_type || (facility as Facility).type as any);
+  const isPet = facility && (facility as Facility).facility_type === 'pet_funeral';
+
+  // Helper to format prices
+  const getPriceInfo = () => {
+    if (!facility) return '가격 정보는 상담을 통해 확인하실 수 있습니다.';
+
+    // 1. Check for specific products (Sangjo/Funeral)
+    if ('products' in facility && facility.products && facility.products.length > 0) {
+      return facility.products.map(p => `- **${p.name}**: ${p.price.toLocaleString()}원~`).join('\n');
+    }
+
+    // 2. Check for prices array (Facility)
+    if ('prices' in facility && Array.isArray(facility.prices) && facility.prices.length > 0) {
+      return facility.prices.map((p: any) => `- **${p.item_name || p.name}**: ${parseInt(p.price || 0).toLocaleString()}원~`).join('\n');
+    }
+
+    // 3. Fallback to priceRange string
+    if (facility.priceRange) return facility.priceRange;
+
+    // 4. Default
+    return '상세 가격은 방문 상담 시 안내해 드립니다.';
+  };
 
   // ==========================================
   // [SCENARIO A] Memorial Facility (봉안당/수목장)
@@ -58,8 +77,9 @@ export const sendMessageToGemini = async (
   if (isMemorial) {
     // [1] Price Inquiry
     if (userMsg.includes("가격") || userMsg.includes("비용") || userMsg.includes("분양") || userMsg.includes("얼마")) {
+      const priceText = getPriceInfo();
       return {
-        text: `**${facility?.name}**의 분양 가격대입니다.\n\n- **개인단**: 300만 원 ~ 800만 원\n- **부부단**: 600만 원 ~ 1,500만 원\n- **관리비**: 1년 약 5만 원 (5년 선납)\n\n*정확한 가격은 안치단의 위치(단 높이)와 채광에 따라 다릅니다.*\n\n상세 견적이나 카탈로그가 필요하신가요?`,
+        text: `**${facility?.name}**의 가격 정보입니다.\n\n${priceText}\n\n*정확한 비용은 안치 위치와 조건에 따라 달라질 수 있습니다.*\n\n상세 견적이나 카탈로그가 필요하신가요?`,
         action: 'NONE'
       };
     }

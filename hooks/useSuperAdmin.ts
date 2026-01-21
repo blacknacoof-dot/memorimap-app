@@ -176,3 +176,25 @@ export function useAllFacilities() {
 
     return { facilities, loading, search, updateManager };
 }
+
+// 7. 상담 신청 관리 Hook [NEW]
+export function useLeads() {
+    const [leads, setLeads] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const refresh = useCallback(async () => {
+        setLoading(true);
+        try {
+            const res = await api.fetchLeads();
+            setLeads(res);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => { refresh(); }, [refresh]);
+
+    return { leads, loading, refresh };
+}
