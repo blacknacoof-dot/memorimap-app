@@ -76,7 +76,7 @@ export const searchFacilities = async (
     });
 
     if (error) {
-        console.error('Error searching facilities:', error);
+        console.error('❌ searchFacilities 실패:', error);
         throw error;
     }
 
@@ -361,7 +361,7 @@ export const getFacility = async (id: string) => {
     const { data, error } = await query.single();
 
     if (error) {
-        console.error('Error fetching facility:', error);
+        console.error('❌ getFacility 실패:', error);
         throw error;
     }
     // Map DB fields to Frontend types
@@ -530,13 +530,13 @@ export const getReviews = async (facilityId: string) => {
         const { data, error } = await query.order('created_at', { ascending: false });
 
         if (error) {
-            console.error('Error fetching reviews:', error);
+            console.error('❌ getReviews 실패:', error);
             // Ignore fallback logic as schema is now unified
             return [];
         }
         return data || [];
     } catch (e) {
-        console.error('Exception in getReviews:', e);
+        console.error('❌ getReviews 예외 발생:', e);
         return [];
     }
 };
