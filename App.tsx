@@ -10,7 +10,7 @@ import { SignUpModal } from './components/SignUpModal';
 import { Facility, Reservation, ViewState, Review, FuneralCompany, FacilityCategoryType } from './types';
 import { RecommendationStarter } from './components/RecommendationStarter';
 import { Consultation } from './types/consultation';
-import { Menu, Search, Filter, Crosshair, Map as MapIcon, User, List, Settings, Scale, Ticket, X, Check, AlertCircle, Database, Shield, Award, ArrowLeft, Bot, Loader2 } from 'lucide-react';
+import { Menu, Crosshair, Map as MapIcon, User, List, Settings, Scale, Ticket, X, AlertCircle, Database, Shield, Award, ArrowLeft, Loader2 } from 'lucide-react';
 import { FACILITIES } from './constants';
 import { useUser, useClerk, useSession } from './lib/auth';
 import { supabase, isSupabaseConfigured, setSupabaseAuth } from './lib/supabaseClient';
@@ -87,22 +87,15 @@ const App: React.FC = () => {
   const [isBooking, setIsBooking] = useState(false);
   const [viewState, setViewState] = useState<ViewState>(ViewState.MAP);
   const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [showFilters, setShowFilters] = useState(true);
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showPromo, setShowPromo] = useState(true); // Promo Banner State
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [isDataLoading, setIsDataLoading] = useState(false);
 
-  // 🚧 Phase 4: State Removed (Moved to Store)
-  // const [searchQuery, setSearchQuery] = useState('');
-  // const [selectedFilter, setSelectedFilter] = useState('전체');
-
   // 🚑 Hotfix: Connect to Store to keep existing logic working
-  const searchQuery = useFilterStore(state => state.searchQuery);
   const setSearchQuery = useFilterStore(state => state.setSearchQuery);
-  // selectedFilter is less critical but let's connect it if needed, or leave it as '전체'
-  // const selectedFilter = useFilterStore(state => state.selectedCategories[0]) || '전체'; // Mapping needed
   const selectedFilter = '전체'; // For now, force pass-through since Map/List handle filtering
 
   // Comparison State
@@ -820,9 +813,8 @@ const App: React.FC = () => {
             <div className="h-full flex flex-col pt-24 pb-20 bg-gray-50">
               <div className="px-4 shrink-0">
                 {/* Spacers */}
-                {showFilters && !showPromo && <div className="h-10"></div>}
-                {!showFilters && showPromo && <div className="h-16"></div>}
-                {showFilters && showPromo && <div className="h-28"></div>}
+                {/* Spacers - Increased to h-40 to clear the top-44 absolute banner */}
+                {showPromo && <div className="h-40"></div>}
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="font-bold text-lg">추천 시설 목록</h2>
                   {isDataLoading && (
@@ -845,13 +837,7 @@ const App: React.FC = () => {
 
             {/* Floating Action Buttons Area - Adjusted z-index and bottom position */}
             <div className="absolute bottom-20 right-0 left-0 px-4 pointer-events-none z-30 flex justify-center items-end">
-              <button
-                onClick={() => setViewState(ViewState.MAP)}
-                className="pointer-events-auto bg-dark text-white px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2 font-bold text-sm hover:bg-gray-800 transition-colors active:scale-95 transform hover:-translate-y-1"
-              >
-                <MapIcon size={16} />
-                지도에서 보기
-              </button>
+
 
               {compareList.length > 0 && (
                 <button
@@ -1208,28 +1194,7 @@ const App: React.FC = () => {
   };
 
 
-  const handleSearchSubmit = () => {
-    // Check if query matches a region
-    const query = searchQuery.trim();
-    // Check exact match or if query contains region name (e.g. "서울시" -> "서울")
-    // Simple lookup first
-    let region = REGION_COORDINATES[query];
 
-    // If not found, try partial match (e.g., user types '경기도' matches '경기')
-    if (!region) {
-      const regionName = Object.keys(REGION_COORDINATES).find(key => query.includes(key));
-      if (regionName) {
-        region = REGION_COORDINATES[regionName];
-      }
-    }
-
-    if (region) {
-      setTargetMapCenter(region.center);
-      setTargetMapZoom(region.zoom);
-      setViewState(ViewState.MAP); // Ensure we are on the map
-      showToast(`${query} 지역으로 이동합니다.`);
-    }
-  };
 
   if (!isLoaded) {
     return (
@@ -1269,11 +1234,13 @@ const App: React.FC = () => {
           {(viewState === ViewState.MAP || viewState === ViewState.LIST || viewState === ViewState.MY_PAGE) && (
             <>
               {/* 🚧 Step 3-1: Parallel Implementation Test - Temporary Placement */}
-              <div className="absolute top-16 left-0 right-0 z-[60] px-4 pointer-events-none">
-                <div className="pointer-events-auto">
-                  <FilterBar />
+              {viewState !== ViewState.MY_PAGE && (
+                <div className="absolute top-16 left-0 right-0 z-[60] px-4 pointer-events-none">
+                  <div className="pointer-events-auto">
+                    <FilterBar />
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className={`absolute z-30 flex gap-2 transition-all duration-300 ${viewState === ViewState.LIST
                 ? 'top-0 left-0 right-0 p-4 bg-white/95 backdrop-blur shadow-sm'
@@ -1291,24 +1258,6 @@ const App: React.FC = () => {
                     <span className="font-bold text-gray-800">내 정보</span>
                   </div>
                 ) : (
-                  /* 
-                  // 🚧 Phase 4: Migrated to FilterBar.tsx
-                  <div className="flex-1 bg-white rounded-xl shadow-md flex items-center px-4">
-                    <Search size={18} className="text-gray-400 mr-2" />
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          handleSearchSubmit();
-                        }
-                      }}
-                      placeholder="지역명(서울, 경기...) 또는 시설명 검색"
-                      className="w-full h-12 outline-none text-sm bg-transparent text-gray-900 placeholder:text-gray-400"
-                    />
-                  </div>
-                  */
                   <div className="flex-1 h-12" /> // Spacer
                 )}
 
@@ -1326,16 +1275,7 @@ const App: React.FC = () => {
 
 
 
-                {
-                  viewState !== ViewState.MY_PAGE && (
-                    <button
-                      onClick={() => setShowFilters(!showFilters)}
-                      className={`p-3 rounded-xl shadow-md transition-colors ${showFilters ? 'bg-primary text-white' : 'bg-white text-gray-700'}`}
-                    >
-                      <Filter size={20} />
-                    </button>
-                  )
-                }
+
 
                 {
                   viewState === ViewState.MY_PAGE && (
@@ -1374,31 +1314,7 @@ const App: React.FC = () => {
                 )
               }
 
-              {/* Filter Bar */}
-              {/* 
-              // 🚧 Phase 4: Migrated to FilterBar.tsx
-              {
-                showFilters && (viewState === ViewState.MAP || viewState === ViewState.LIST) && (
-                  <div className="absolute top-20 left-0 right-0 z-20 overflow-x-auto filter-scroll touch-pan-x">
-                    <div className="flex gap-2 px-4 pb-2 w-max">
-                      {['전체', '장례식장', '봉안시설', '자연장', '공원묘지', '동물장례', '해양장'].map((f) => (
-                        <button
-                          key={f}
-                          onClick={() => setSelectedFilter(f)}
-                          className={`px-3 py-1.5 rounded-full text-[11px] font-medium shadow-sm border whitespace-nowrap transition-colors flex-shrink-0 ${selectedFilter === f
-                            ? 'bg-primary text-white border-primary'
-                            : 'bg-white/90 backdrop-blur text-gray-900 hover:bg-white'
-                            }`}
-                        >
-                          {f}
-                        </button>
-                      ))}
-                      <div className="w-16 shrink-0 h-4" />
-                    </div>
-                  </div>
-                )
-              }
-              */}
+
             </>
           )}
 
