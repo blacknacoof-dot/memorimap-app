@@ -71,9 +71,9 @@ export const useAuthSync = () => {
 
         syncUser();
 
-        // Proactive Token Refresh (every 10 minutes)
-        // This ensures the Supabase client always has a valid token even if the session object doesn't change
-        const REFRESH_INTERVAL = 10 * 60 * 1000; // 10 minutes
+        // Proactive Token Refresh
+        // Clerk tokens are short-lived (usually 60s). We refresh every 50s to be safe.
+        const REFRESH_INTERVAL = 50 * 1000;
         const intervalId = setInterval(async () => {
             if (isSignedIn && session) {
                 const token = await session.getToken({ template: 'supabase' });
