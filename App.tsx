@@ -1783,6 +1783,15 @@ const App: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* Toast Notification */}
+        {toast && (
+          <div className={`fixed top-20 left-1/2 -translate-x-1/2 z-[10001] px-6 py-3 rounded-xl shadow-2xl animate-in slide-in-from-top-2 ${toast.type === 'success' ? 'bg-green-500' :
+              toast.type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+            } text-white font-medium max-w-md`}>
+            {toast.message}
+          </div>
+        )}
       </div>
     </HashRouter>
   );
