@@ -48,7 +48,7 @@
     "string-similarity-js": "^2.1.4",
     "xlsx": "^0.18.5",
     "zod": "^4.3.5",
-    "zustand": "^5.0.9"
+    "zustand": "^5.0.10"
   },
   "devDependencies": {
     "@types/date-fns": "^2.5.3",

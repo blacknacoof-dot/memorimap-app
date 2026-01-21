@@ -18,6 +18,9 @@ import { useAuthSync } from './lib/useAuthSync';
 import { getFacilitySubscription, incrementAiUsage } from './lib/queries';
 import { FacilityList } from './components/FacilityList';
 import { useLocation } from './hooks/useLocation';
+import { SkeletonCard } from './components/ui/SkeletonCard';
+import { FilterBar } from './components/FilterBar';
+import { useFilterStore } from './stores/useFilterStore';
 
 // Lazy Load Components
 const AdminView = React.lazy(() => import('./components/AdminView').then(m => ({ default: m.AdminView })));
@@ -91,9 +94,16 @@ const App: React.FC = () => {
   const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [isDataLoading, setIsDataLoading] = useState(false);
 
-  // Search & Filter State
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState('전체');
+  // 🚧 Phase 4: State Removed (Moved to Store)
+  // const [searchQuery, setSearchQuery] = useState('');
+  // const [selectedFilter, setSelectedFilter] = useState('전체');
+
+  // 🚑 Hotfix: Connect to Store to keep existing logic working
+  const searchQuery = useFilterStore(state => state.searchQuery);
+  const setSearchQuery = useFilterStore(state => state.setSearchQuery);
+  // selectedFilter is less critical but let's connect it if needed, or leave it as '전체'
+  // const selectedFilter = useFilterStore(state => state.selectedCategories[0]) || '전체'; // Mapping needed
+  const selectedFilter = '전체'; // For now, force pass-through since Map/List handle filtering
 
   // Comparison State
   const [compareList, setCompareList] = useState<Facility[]>([]);
@@ -338,16 +348,18 @@ const App: React.FC = () => {
             else if (category === 'sangjo' || category === 'sangjo_company' || name.includes('프리드라이프') || name.includes('대명스테이션') || name.includes('보람상조') || name.includes('교원라이프')) type = 'sangjo';
 
             // Map strict category
-            const categoryMap: Record<string, FacilityCategoryType> = {
-              'funeral': '장례식장',
-              'charnel': '봉안시설',
-              'natural': '자연장',
-              'park': '공원묘지',
-              'pet': '동물장례',
-              'sea': '해양장',
-              'sangjo': '상조'
+            // Map strict category to Internal Types (English)
+            // matching types/facility.ts and FilterBar.tsx
+            const categoryMap: Record<string, any> = {
+              'funeral': 'funeral_home',
+              'charnel': 'columbarium',
+              'natural': 'natural_burial',
+              'park': 'cemetery',
+              'pet': 'pet_funeral',
+              'sea': 'sea_burial',
+              'sangjo': 'sangjo'
             };
-            const mappedCategory = categoryMap[type] || '봉안시설';
+            const mappedCategory = categoryMap[type] || 'columbarium';
 
             // Simulation Logic (Preserved)
             const idNum = item.id ? item.id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) : 0;
@@ -416,7 +428,8 @@ const App: React.FC = () => {
             };
           });
           setFacilities(mappedFacilities);
-          showToast(`총 ${mappedFacilities.length}개의 시설 정보를 불러왔습니다.`, 'info');
+          // Initial toast removed as per user request (too verbose)
+          // showToast(`총 ${mappedFacilities.length}개의 시설 정보를 불러왔습니다.`, 'info');
         } else {
           console.log("Supabase DB is empty or RPC error");
         }
@@ -435,39 +448,9 @@ const App: React.FC = () => {
 
 
   // Filtered Facilities Logic
-  const filteredFacilities = facilities.filter(f => {
-    // 0. Remove Invalid Data
-    if (f.name === '--------' || f.name.includes('--------')) return false;
-
-    // 1. Geo Filter (Current visible area)
-    if (currentBounds && !searchQuery) {
-      if (!currentBounds.contains([f.lat, f.lng])) return false;
-    }
-    // 3. Filter Logic (Refactored to check category instead of deprecated type)
-    // 1. Search Query
-    if (searchQuery) {
-      if (!f.name.includes(searchQuery) && !f.address?.includes(searchQuery)) {
-        return false;
-      }
-    }
-
-    // 2. Category Filter
-    if (selectedFilter !== '전체') {
-      const cat = f.category || ''; // This is Korean (e.g., '장례식장')
-
-      // Since 'cat' is already mapped to Korean in fetchFacilities, we can compare directly
-      if (selectedFilter !== cat) return false;
-
-      // Fallback for special cases if needed (e.g. mapping differences)
-      // But currently categoryMap ensures 1:1 mapping with buttons
-    }
-
-    // 3. Exclude Sangjo from general views (They have their own dedicated tab)
-    // Strictly check category, guarding against null
-    if (f.category === 'sangjo' || f.category === '상조') return false;
-
-    return true;
-  });
+  // 🚧 Phase 4: Filtering Logic Removed (Moved to Store & Components)
+  // const filteredFacilities = facilities.filter(facility => { ... });
+  const filteredFacilities = facilities; // Pass through raw data - components handle exclusion now
 
   const handleBoundsChange = (bounds: L.LatLngBounds) => {
     setCurrentBounds(bounds);
@@ -554,7 +537,7 @@ const App: React.FC = () => {
         const updatedFacility: Facility = {
           id: data.id?.toString(),
           name: data.name,
-          category: mappedCategory,
+          category: mappedCategory as any,
           type: type,
           religion: data.religion || 'none',
           address: data.address,
@@ -620,7 +603,7 @@ const App: React.FC = () => {
 
   const handleViewOnMap = () => {
     if (selectedFacility) {
-      setTargetMapCenter([selectedFacility.lat, selectedFacility.lng]);
+      setTargetMapCenter([selectedFacility.lat || 0, selectedFacility.lng || 0]);
       setTargetMapZoom(16);
       // Also close the sheet so user sees the map
       setSelectedFacility(null);
@@ -658,8 +641,8 @@ const App: React.FC = () => {
 
     const updateFacility = (f: Facility) => {
       const currentReviews = f.reviews || [];
-      const newCount = f.reviewCount + 1;
-      const newRating = Number(((f.rating * f.reviewCount + rating) / newCount).toFixed(1));
+      const newCount = (f.reviewCount || 0) + 1;
+      const newRating = Number((((f.rating || 0) * (f.reviewCount || 0) + rating) / newCount).toFixed(1));
 
       return {
         ...f,
@@ -681,7 +664,7 @@ const App: React.FC = () => {
     const updateFacility = (f: Facility) => {
       const currentReviews = f.reviews || [];
       const newReviews = currentReviews.filter(r => r.id !== reviewId);
-      const newCount = Math.max(0, f.reviewCount - 1);
+      const newCount = Math.max(0, (f.reviewCount || 0) - 1);
 
       // Calculate new average rating
       let newRating = 0;
@@ -690,7 +673,7 @@ const App: React.FC = () => {
         // Current Total Score = Current Rating * Current Count
         // Note: Using stored review data if available might be more accurate, 
         // but simple calculation is often enough for optimistic UI.
-        const currentTotalScore = f.rating * f.reviewCount;
+        const currentTotalScore = (f.rating || 0) * (f.reviewCount || 0);
         newRating = Number(((currentTotalScore - rating) / newCount).toFixed(1));
         // Clamp between 0 and 5 just in case
         newRating = Math.max(0, Math.min(5, newRating));
@@ -1285,6 +1268,13 @@ const App: React.FC = () => {
           {/* Top Bar - Only on Main Views */}
           {(viewState === ViewState.MAP || viewState === ViewState.LIST || viewState === ViewState.MY_PAGE) && (
             <>
+              {/* 🚧 Step 3-1: Parallel Implementation Test - Temporary Placement */}
+              <div className="absolute top-16 left-0 right-0 z-[60] px-4 pointer-events-none">
+                <div className="pointer-events-auto">
+                  <FilterBar />
+                </div>
+              </div>
+
               <div className={`absolute z-30 flex gap-2 transition-all duration-300 ${viewState === ViewState.LIST
                 ? 'top-0 left-0 right-0 p-4 bg-white/95 backdrop-blur shadow-sm'
                 : 'top-4 left-4 right-4'
@@ -1301,6 +1291,8 @@ const App: React.FC = () => {
                     <span className="font-bold text-gray-800">내 정보</span>
                   </div>
                 ) : (
+                  /* 
+                  // 🚧 Phase 4: Migrated to FilterBar.tsx
                   <div className="flex-1 bg-white rounded-xl shadow-md flex items-center px-4">
                     <Search size={18} className="text-gray-400 mr-2" />
                     <input
@@ -1316,6 +1308,8 @@ const App: React.FC = () => {
                       className="w-full h-12 outline-none text-sm bg-transparent text-gray-900 placeholder:text-gray-400"
                     />
                   </div>
+                  */
+                  <div className="flex-1 h-12" /> // Spacer
                 )}
 
                 {
@@ -1358,8 +1352,7 @@ const App: React.FC = () => {
               {/* Promo Banner - Persistent underneath filters */}
               {
                 showPromo && (viewState === ViewState.MAP || viewState === ViewState.LIST) && (
-                  <div className={`absolute left-4 right-4 z-20 animate-in fade-in slide-in-from-top-2 transition-all duration-300 ${showFilters ? 'top-32' : 'top-20'
-                    }`}>
+                  <div className={`absolute left-4 right-4 z-20 animate-in fade-in slide-in-from-top-2 transition-all duration-300 top-44`}>
                     <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-amber-400 p-3 rounded-xl shadow-xl border border-amber-500/30 flex justify-between items-center">
                       <div className="flex items-center gap-3">
                         <div className="bg-amber-500/20 p-1.5 rounded-lg shrink-0">
@@ -1382,11 +1375,12 @@ const App: React.FC = () => {
               }
 
               {/* Filter Bar */}
+              {/* 
+              // 🚧 Phase 4: Migrated to FilterBar.tsx
               {
                 showFilters && (viewState === ViewState.MAP || viewState === ViewState.LIST) && (
                   <div className="absolute top-20 left-0 right-0 z-20 overflow-x-auto filter-scroll touch-pan-x">
                     <div className="flex gap-2 px-4 pb-2 w-max">
-                      {/* Simplified Filters: User Request */}
                       {['전체', '장례식장', '봉안시설', '자연장', '공원묘지', '동물장례', '해양장'].map((f) => (
                         <button
                           key={f}
@@ -1399,12 +1393,12 @@ const App: React.FC = () => {
                           {f}
                         </button>
                       ))}
-                      {/* Explicit Spacer for Scroll - Larger to ensure no cut-off on tiny screens */}
                       <div className="w-16 shrink-0 h-4" />
                     </div>
                   </div>
                 )
               }
+              */}
             </>
           )}
 
@@ -1704,7 +1698,7 @@ const App: React.FC = () => {
                     const exactMatches = facilities.filter(f => f.address.includes(region) && f.type === 'funeral'); // Recommend Funeral Homes primarily for Scenario A
 
                     // 2. Sort by Rating/Review
-                    const sorted = exactMatches.sort((a, b) => b.rating - a.rating || b.reviewCount - a.reviewCount);
+                    const sorted = exactMatches.sort((a, b) => (b.rating || 0) - (a.rating || 0) || (b.reviewCount || 0) - (a.reviewCount || 0));
 
                     // 3. Fallback: If no exact matches, fuzzy search or broader region?
                     // For now, return top 3 exact matches. If empty, maybe search "Seoul" if region is "Seoul Sinchon-dong"?
@@ -1786,8 +1780,8 @@ const App: React.FC = () => {
 
         {/* Toast Notification */}
         {toast && (
-          <div className={`fixed top-20 left-1/2 -translate-x-1/2 z-[10001] px-6 py-3 rounded-xl shadow-2xl animate-in slide-in-from-top-2 ${toast.type === 'success' ? 'bg-green-500' :
-              toast.type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+          <div className={`fixed bottom-24 left-1/2 -translate-x-1/2 z-[10001] px-6 py-3 rounded-xl shadow-2xl animate-in slide-in-from-bottom-2 ${toast.type === 'success' ? 'bg-green-500' :
+            toast.type === 'error' ? 'bg-red-500' : 'bg-blue-500'
             } text-white font-medium max-w-md`}>
             {toast.message}
           </div>

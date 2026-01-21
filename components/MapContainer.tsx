@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 're
 import L from 'leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { Facility } from '../types';
+import { useFilterStore } from '../stores/useFilterStore';
 
 // Fix for Leaflet default icons in React/Vite
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -98,6 +99,27 @@ import { createCustomMarker } from '../utils/mapHelpers';
 const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelect, onBoundsChange, initialCenter, initialZoom }, ref) => {
   const locationRef = React.useRef<MapRef>(null);
 
+  // Store State for Filtering
+  const searchQuery = useFilterStore(s => s.searchQuery);
+  const selectedCategories = useFilterStore(s => s.selectedCategories);
+
+  // Internal Filtering Logic (Duplicate of FacilityList for now - parallel implementation)
+  const filteredFacilities = React.useMemo(() => {
+    return facilities.filter(facility => {
+      const matchesSearch = !searchQuery ||
+        facility.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        facility.address.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesCategory = selectedCategories.length === 0 ||
+        (facility.category && selectedCategories.includes(facility.category));
+
+      // 3. Exclude 'Sangjo'
+      const isSangjo = (facility.category as string) === 'sangjo' || (facility.category as string) === '상조';
+
+      return matchesSearch && matchesCategory && !isSangjo;
+    });
+  }, [facilities, searchQuery, selectedCategories]);
+
   useImperativeHandle(ref, () => ({
     flyToLocation: () => {
       if (locationRef.current) {
@@ -127,13 +149,13 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
           maxClusterRadius={50}
           spiderfyOnMaxZoom={true}
         >
-          {facilities
+          {filteredFacilities
             .filter(f => f.lat && f.lng && f.lat !== 0 && f.lng !== 0)
             .map((facility) => (
               <Marker
                 key={facility.id}
-                position={[facility.lat, facility.lng]}
-                icon={createCustomMarker(facility.category)}
+                position={[facility.lat as number, facility.lng as number]}
+                icon={createCustomMarker((facility.category as string) || '')}
                 eventHandlers={{
                   click: () => onFacilitySelect(facility),
                 }}

@@ -1,38 +1,39 @@
 import L from 'leaflet';
 import { FacilityCategoryType } from '../types';
 
-export const FACILITY_CATEGORIES: Record<FacilityCategoryType | '상조', { label: string; color: string; icon: string }> = {
-    '장례식장': {
+// Keys must match FacilityCategoryType values + 'sangjo'
+export const FACILITY_CATEGORIES: Record<string, { label: string; color: string; icon: string }> = {
+    'funeral_home': {
         label: '장례식장',
         color: '#374151', // gray-700
         icon: '🏢'
     },
-    '봉안시설': {
+    'columbarium': {
         label: '봉안시설',
         color: '#9333ea', // purple-600
         icon: '🕊️'
     },
-    '자연장': {
+    'natural_burial': {
         label: '자연장',
         color: '#65a30d', // lime-600
         icon: '🌿'
     },
-    '공원묘지': {
+    'cemetery': {
         label: '공원묘지',
         color: '#16a34a', // green-600
         icon: '🌳'
     },
-    '동물장례': {
+    'pet_funeral': {
         label: '동물장례',
         color: '#ec4899', // pink-500
         icon: '🐾'
     },
-    '해양장': {
+    'sea_burial': {
         label: '해양장',
         color: '#0891b2', // cyan-600
         icon: '🌊'
     },
-    '상조': {
+    'sangjo': {
         label: '상조',
         color: '#3b82f6', // blue-500
         icon: '🤝'
@@ -40,11 +41,8 @@ export const FACILITY_CATEGORIES: Record<FacilityCategoryType | '상조', { labe
 };
 
 export const createCustomMarker = (category: string) => {
-    // Safe cast or fallback
-    const safeCategory = (category in FACILITY_CATEGORIES) ? category as FacilityCategoryType : '장례식장';
-
-    // Fallback for types not strictly in FacilityCategoryType but existing in data (like 'sangjo') if any
-    const meta = FACILITY_CATEGORIES[safeCategory as keyof typeof FACILITY_CATEGORIES] || FACILITY_CATEGORIES['장례식장'];
+    // category is now English internal type (e.g., 'funeral_home')
+    const meta = FACILITY_CATEGORIES[category] || FACILITY_CATEGORIES['funeral_home'];
 
     return L.divIcon({
         className: 'custom-marker-icon',
