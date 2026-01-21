@@ -18,6 +18,7 @@ import { useAuthSync } from './lib/useAuthSync';
 import { getFacilitySubscription, incrementAiUsage } from './lib/queries';
 import { FacilityList } from './components/FacilityList';
 import { useLocation } from './hooks/useLocation';
+import { SkeletonCard } from './components/ui/SkeletonCard';
 
 // Lazy Load Components
 const AdminView = React.lazy(() => import('./components/AdminView').then(m => ({ default: m.AdminView })));
@@ -846,21 +847,24 @@ const App: React.FC = () => {
                 {showFilters && showPromo && <div className="h-28"></div>}
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="font-bold text-lg">추천 시설 목록</h2>
-                  {isDataLoading && (
-                    <div className="text-xs text-primary flex items-center gap-1">
-                      <Database size={12} className="animate-pulse" /> 로딩중...
-                    </div>
-                  )}
                 </div>
               </div>
 
               <div className="flex-1 px-4 min-h-0">
-                <FacilityList
-                  facilities={filteredFacilities}
-                  onSelect={handleFacilitySelect}
-                  compareList={compareList}
-                  onToggleCompare={toggleCompare}
-                />
+                {isDataLoading && filteredFacilities.length === 0 ? (
+                  <>
+                    <SkeletonCard />
+                    <SkeletonCard />
+                    <SkeletonCard />
+                  </>
+                ) : (
+                  <FacilityList
+                    facilities={filteredFacilities}
+                    onSelect={handleFacilitySelect}
+                    compareList={compareList}
+                    onToggleCompare={toggleCompare}
+                  />
+                )}
               </div>
             </div>
 
