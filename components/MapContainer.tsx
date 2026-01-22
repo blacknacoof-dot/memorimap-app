@@ -66,6 +66,18 @@ const MapEvents = ({ onBoundsChange }: { onBoundsChange?: (bounds: L.LatLngBound
       onBoundsChange?.(map.getBounds());
     }
   });
+
+  // Trigger initial bounds
+  useEffect(() => {
+    if (map) {
+      // Small timeout to ensure map is ready and layout is stable
+      const timer = setTimeout(() => {
+        onBoundsChange?.(map.getBounds());
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [map, onBoundsChange]);
+
   return null;
 };
 

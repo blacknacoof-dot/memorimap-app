@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNotices } from '../../../hooks/useSuperAdmin';
+import { useNotices } from '../../../hooks/useNotices';
 import { Notice } from '../../../types/db';
 import { Megaphone, Plus, Trash2, Tag, User } from 'lucide-react';
 import { format } from 'date-fns';

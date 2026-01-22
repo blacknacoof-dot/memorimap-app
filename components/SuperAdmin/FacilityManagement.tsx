@@ -1,38 +1,21 @@
 import React, { useState } from 'react';
-import { useAllFacilities, useAllUsers } from '../../hooks/useSuperAdmin';
+import { useAllFacilities } from '../../hooks/useAdminFacilities';
+import { useAllUsers } from '../../hooks/useUsers';
 import { Search, Building2, MapPin, User, Edit2, AlertCircle } from 'lucide-react';
 
 export const FacilityManagement: React.FC = () => {
     const { facilities, loading, search, updateManager } = useAllFacilities();
-    const { users } = useAllUsers(); // For manager assignment dropdown
+    const { users } = useAllUsers();
     const [searchTerm, setSearchTerm] = useState('');
-    const [editingId, setEditingId] = useState<number | null>(null);
+    const [editingId, setEditingId] = useState<string | null>(null); // Changed to string for UUID
     const [tempManagerId, setTempManagerId] = useState<string>('');
+    const [hasSearched, setHasSearched] = useState(false);
 
-    const [hasSearched, setHasSearched] = useState(false); // [Opt] Track if search performed
-
-    // Don't auto-load all facilities
-    // useEffect(() => { refresh() }, []); 
-
-    // Filter local list if loaded
-    const filteredFacilities = facilities.filter(f =>
-        f.name.includes(searchTerm) ||
-        f.address?.includes(searchTerm)
-    );
+    const filteredFacilities = facilities; // Filtering is done by DB search now
 
     const handleSearch = async () => {
         if (!searchTerm) return;
         setHasSearched(true);
-        // We need a search function in hook or here.
-        // Existing 'refresh' loads ALL. We should probably use 'refresh' but it might be heavy?
-        // User requested "Only when search term is entered".
-        // Ideally, we should have a 'searchFacilities' API.
-        // But for now, user instruction: "Remove useEffect... ensure only search loads".
-        // Creating a temporary search logic or reusing 'refresh' if 'refresh' in hook can accept query?
-        // Hook `useAllFacilities` uses `fetchAllFacilities` which returns ALL.
-        // I should probably update `useAllFacilities` or just call API directly here for search optimization.
-        // Let's call `refresh` for now but only on button click, AND ideally refactor hook/API to search DB.
-        // But to keep it simple as per "Remove useEffect":
         await search(searchTerm);
     };
 
@@ -41,12 +24,10 @@ export const FacilityManagement: React.FC = () => {
 
     const handleStartEdit = (f: any) => {
         setEditingId(f.id);
-        // Try to find valid manager id, checking common fields
-        setTempManagerId(f.owner_user_id || f.manager_id || f.admin_id || '');
+        setTempManagerId(f.user_id || '');
     };
 
-    const handleSave = async (facilityId: number) => {
-        // null string checks
+    const handleSave = async (facilityId: string) => {
         const finalId = tempManagerId === '' ? null : tempManagerId;
         await updateManager(facilityId, finalId);
         setEditingId(null);
@@ -147,14 +128,11 @@ export const FacilityManagement: React.FC = () => {
                                 ) : (
                                     <div className="flex justify-between items-center group">
                                         <div className="text-sm">
-                                            {(f.owner_user_id || f.manager_id || f.admin_id) ? (
+                                            {f.user_id ? (
                                                 <span className="text-blue-600 font-medium">
-                                                    {/* We only have ID here unless we join user data. 
-                                                        Ideally backend joins this. For now showing ID or matching from user list if loaded. 
-                                                    */}
-                                                    {users.find(u => u.id === (f.owner_user_id || f.manager_id))?.full_name ||
-                                                        users.find(u => u.id === (f.owner_user_id || f.manager_id))?.email ||
-                                                        'ID: ' + (f.owner_user_id || f.manager_id).substring(0, 8) + '...'}
+                                                    {users.find(u => u.id === f.user_id)?.full_name ||
+                                                        users.find(u => u.id === f.user_id)?.email ||
+                                                        'ID: ' + f.user_id.substring(0, 8) + '...'}
                                                 </span>
                                             ) : (
                                                 <span className="text-gray-400 italic">지정되지 않음</span>

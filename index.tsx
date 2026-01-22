@@ -1,8 +1,19 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import ReactDOM from 'react-dom/client';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
 import './index.css';
 import { ClerkProviderWrapper } from './lib/auth';
+
+// Initialize QueryClient
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 interface ErrorBoundaryProps {
   children?: ReactNode;
@@ -59,9 +70,11 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <ErrorBoundary>
-      <ClerkProviderWrapper>
-        <App />
-      </ClerkProviderWrapper>
+      <QueryClientProvider client={queryClient}>
+        <ClerkProviderWrapper>
+          <App />
+        </ClerkProviderWrapper>
+      </QueryClientProvider>
     </ErrorBoundary>
   </React.StrictMode>
 );
