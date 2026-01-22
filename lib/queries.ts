@@ -144,7 +144,7 @@ export const getIntelligentRecommendations = async (
         if (isMemorialGroup) {
             // [FIX] Use Whitelist
             const MEMORIAL_CATEGORIES = ['charnel_house', 'natural_burial', 'tree_burial', 'park_cemetery', 'complex', 'sea_burial', 'memorial', '봉안시설', '자연장', '공원묘지', '해양장'];
-            return items.filter((i: any) => MEMORIAL_CATEGORIES.includes(i.category) || MEMORIAL_CATEGORIES.includes(i.type));
+            return items.filter((i: any) => MEMORIAL_CATEGORIES.includes(i.type) || MEMORIAL_CATEGORIES.includes(i.category));
         }
 
         return items;
@@ -349,7 +349,8 @@ export const getFacility = async (id: string) => {
         .select(`
       *,
       lat: st_y(location::geometry),
-      lng: st_x(location::geometry)
+      lng: st_x(location::geometry),
+      image_url
     `);
 
     if (isUUID) {
@@ -461,13 +462,13 @@ export const getConsultationHistory = async (userId: string) => {
         .from('consultations')
         .select(`
       *,
-      facilities (
-        id,
-        name,
-        address,
-        images,
-        category
-      )
+        facilities (
+            id,
+            name,
+            address,
+            images,
+            type
+        )
     `)
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
@@ -719,7 +720,7 @@ export const getUserFacility = async (userId: string) => {
     const { data, error } = await supabase
         .from('facilities') // Changed from memorial_spaces
         .select('id')
-        .eq('manager_id', userId) // Updated owner_user_id -> manager_id
+        .eq('user_id', userId) // [Fix] Updated manager_id -> user_id
         .maybeSingle();
 
     if (error) {
@@ -729,6 +730,9 @@ export const getUserFacility = async (userId: string) => {
     return data?.id || null;
 };
 
+/**
+ * [추가] 사용자 역할(Role) 조회 함수
+ */
 /**
  * [추가] 사용자 역할(Role) 조회 함수
  */
@@ -745,7 +749,62 @@ export const getUserRole = async (userId: string) => {
             return { role: 'super_admin', isError: false };
         }
 
-        // 2. 기본 유저 권한 반환
+        // 2. 시설 관리자 확인 (facilities 테이블의 user_id 확인)
+        const { data: facility } = await supabase
+            .from('facilities')
+            .select('id')
+            .eq('user_id', userId)
+            .maybeSingle();
+        /* [Fix] manager_id -> user_id */
+
+        if (facility) {
+            return { role: 'facility_admin', isError: false };
+        }
+
+        // 3. 상조 관리자 확인
+        // 상조 쿼리는 별도 파일에서 가져오는 것이 좋으나, 
+        // 순환 참조 방지를 위해 여기서 직접 import하거나 로직 통합 필요.
+        // 여기서는 동적 import를 사용하지 않고 직접 쿼리 (가장 안전)
+        // [주의] getSangjoUser가 lib/sangjoQueries.ts에 있으므로,
+        // 여기서는 직접 테이블 조회하는 것이 깔끔함.
+
+        // 3-1. 본사 관리자 확인
+        let hqAdmin = null;
+        try {
+            const { data } = await supabase
+                .from('sangjo_hq_admins')
+                .select('id')
+                .eq('user_id', userId)
+                .maybeSingle();
+            hqAdmin = data;
+        } catch (e) {
+            // Ignore if table doesn't exist
+            console.log('Sangjo HQ check skipped (table missing or error)');
+        }
+
+        if (hqAdmin) {
+            return { role: 'sangjo_hq_admin', isError: false };
+        }
+
+        // 3-2. 지점 관리자 확인
+        let branchAdmin = null;
+        try {
+            const { data } = await supabase
+                .from('sangjo_users')
+                .select('id')
+                .eq('user_id', userId)
+                .maybeSingle();
+            branchAdmin = data;
+        } catch (e) {
+            // Ignore if table doesn't exist
+            console.log('Sangjo Branch check skipped (table missing or error)');
+        }
+
+        if (branchAdmin) {
+            return { role: 'sangjo_branch_admin', isError: false };
+        }
+
+        // 4. 기본 유저 권한 반환
         return { role: 'user', isError: false, error: null };
     } catch (error: any) {
         // 406 Not Acceptable 등 에러가 나도 기본 유저로 처리
@@ -761,12 +820,12 @@ export const searchKnownFacilities = async (query: string, type?: string) => {
     // facilities 테이블 사용
     let queryBuilder = supabase
         .from('facilities') // Changed from memorial_spaces
-        .select('id, name, address, category, manager_id') // Updated owner_user_id -> manager_id
+        .select('id, name, address, type, user_id') // [Fix] category -> type, manager_id -> user_id
         .ilike('name', `%${query}%`);
     // Note: Removed owner_user_id filter - show all facilities, UI will warn if already claimed
 
     if (type) {
-        queryBuilder = queryBuilder.eq('category', type);
+        queryBuilder = queryBuilder.eq('type', type);
     }
 
     const { data, error } = await queryBuilder.limit(10);
@@ -795,8 +854,8 @@ export const getFacilitiesByCategory = async (category: string) => {
 
     const { data, error } = await supabase
         .from('facilities')
-        .select('id, name, address, phone, category, manager_id')
-        .eq('category', category)
+        .select('id, name, address, phone, type, user_id')
+        .eq('type', category)
         .order('name');
 
     if (error) {
@@ -1027,12 +1086,12 @@ export const getPendingFacilities = async () => {
         return (data || []).map((item: any) => ({
             id: item.id?.toString(),
             name: item.name,
-            type: item.category, // Changed item.type to item.category
+            type: item.type || item.category, // [Fix] item.type priority
             address: item.address,
             phone: item.phone,
-            businessLicenseImage: item.business_license_image || null, // Might need check if column exists
+            businessLicenseImage: item.business_license_image || null,
             createdAt: item.created_at,
-            ownerUserId: item.manager_id // Changed item.owner_user_id to item.manager_id
+            ownerUserId: item.user_id // [Fix] manager_id -> user_id
         }));
     } catch (e) {
         console.error('getPendingFacilities error:', e);
@@ -1091,10 +1150,12 @@ export const getFacilityLatestInfo = async (facilityId: string) => {
                     name,
                     address,
                     phone,
-                    category,
+                    type,
                     ai_context,
                     description,
-                    features
+                    features,
+                    image_url,
+                    images
                 `)
                 .eq('id', facilityId)
                 .single();
@@ -1107,10 +1168,12 @@ export const getFacilityLatestInfo = async (facilityId: string) => {
                     name,
                     address,
                     phone,
-                    category,
+                    type,
                     ai_context,
-                    features,
-                    description
+                    ai_features,
+                    description,
+                    image_url,
+                    images
                 `)
                 .eq('legacy_id', facilityId)
                 .single();
@@ -1384,5 +1447,29 @@ export const getConsultationById = async (consultationId: string): Promise<Consu
     } catch (e) {
         console.error('getConsultationById exception:', e);
         return null;
+    }
+};
+
+/**
+ * Fetch facilities within the current map viewport
+ * Uses RPC 'search_facilities_in_view'
+ */
+export const fetchFacilitiesInView = async (bounds: any) => {
+    try {
+        const sw = bounds.getSouthWest();
+        const ne = bounds.getNorthEast();
+
+        const { data, error } = await supabase.rpc('search_facilities_in_view', {
+            min_lat: sw.lat,
+            min_lng: sw.lng,
+            max_lat: ne.lat,
+            max_lng: ne.lng
+        });
+
+        if (error) throw error;
+        return data;
+    } catch (e) {
+        console.error('fetchFacilitiesInView error:', e);
+        return [];
     }
 };

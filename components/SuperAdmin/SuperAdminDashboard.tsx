@@ -7,7 +7,9 @@ import {
     Lock, BellRing, MonitorStop, Percent
 } from 'lucide-react';
 import { PartnerAdmissions } from './PartnerAdmissions';
-import { useSubscriptions, useRevenue, useLeads } from '../../hooks/useSuperAdmin';
+import { useLeads } from '../../hooks/useLeads';
+import { useSubscriptions, useRevenue } from '../../hooks/useFinancials';
+import { useSuperAdmin } from '../../hooks/useSuperAdmin';
 import { UserManagement } from './UserManagement';
 import { FacilityManagement } from './FacilityManagement';
 import { NoticeManager } from '../dashboard/super-admin/NoticeManager';
@@ -379,14 +381,14 @@ const AdminLeadsView = () => {
                             <div className="flex flex-col">
                                 <div className="flex items-center gap-2">
                                     <span className={`text-sm font-bold ${lead.status === 'new' ? 'text-slate-900' : 'text-slate-600'}`}>
-                                        {lead.customer_name || '고객'}
+                                        {lead.contact_name || '고객'}
                                     </span>
                                     <span className="text-xs text-slate-400 tracking-tight">
-                                        {lead.customer_phone}
+                                        {lead.contact_phone}
                                     </span>
                                 </div>
                                 <span className="text-[10px] text-slate-500 mt-0.5">
-                                    {lead.type}
+                                    {lead.category}
                                 </span>
                             </div>
                         </div>

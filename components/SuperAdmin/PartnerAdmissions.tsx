@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
-import { usePartnerInquiries } from '../../hooks/useSuperAdmin';
+import { usePartnerInquiries } from '../../hooks/usePartnerInquiries';
+import { useApprovePartner } from '../../hooks/useAdminActions';
 import { CheckCircle, XCircle, Search, FileText, Phone, MapPin, Building2, User, MessageSquare } from 'lucide-react';
 import { PartnerInquiry } from '../../types/db';
 import { useConfirmModal } from '../../src/components/common/ConfirmModal';
 
 export const PartnerAdmissions: React.FC = () => {
-    const { data: facilities, loading: isLoading, refresh, approve, reject } = usePartnerInquiries();
+    const { data: inquiryData, isLoading, refetch } = usePartnerInquiries();
+    const facilities = inquiryData?.data || [];
+
+    const { approvePartner } = useApprovePartner();
     const [searchTerm, setSearchTerm] = useState('');
     const confirmModal = useConfirmModal();
 
@@ -15,12 +19,12 @@ export const PartnerAdmissions: React.FC = () => {
             message: `${inquiry.company_name} 업체의 입점을 승인하시겠습니까?`,
             onConfirm: async () => {
                 try {
-                    await approve(inquiry);
+                    await approvePartner({ inquiryId: inquiry.id, action: 'approve' });
                     alert('승인되었습니다.');
-                    refresh();
-                } catch (error) {
+                    refetch();
+                } catch (error: any) {
                     console.error('Approve failed:', error);
-                    alert('승인 처리 중 오류가 발생했습니다.');
+                    alert('승인 처리 중 오류가 발생했습니다: ' + error.message);
                 }
             }
         });
@@ -32,12 +36,12 @@ export const PartnerAdmissions: React.FC = () => {
             message: `${name} 업체의 입점을 거절하시겠습니까? (반려 사유: "운영팀 문의 요망")`,
             onConfirm: async () => {
                 try {
-                    await reject(id);
+                    await approvePartner({ inquiryId: id, action: 'reject', rejectionReason: '운영팀 문의 요망' });
                     alert('거절되었습니다.');
-                    refresh();
-                } catch (error) {
+                    refetch();
+                } catch (error: any) {
                     console.error('Reject failed:', error);
-                    alert('거절 처리 중 오류가 발생했습니다.');
+                    alert('거절 처리 중 오류가 발생했습니다: ' + error.message);
                 }
             }
         });
@@ -73,7 +77,7 @@ export const PartnerAdmissions: React.FC = () => {
                     placeholder="업체명, 담당자 검색..."
                     className="flex-1 outline-none text-sm"
                 />
-                <div onClick={refresh} className="cursor-pointer p-2 hover:bg-gray-100 rounded-full" title="새로고침">
+                <div onClick={() => refetch()} className="cursor-pointer p-2 hover:bg-gray-100 rounded-full" title="새로고침">
                     <div className={`w-2 h-2 rounded-full ${isLoading ? 'bg-amber-400 animate-pulse' : 'bg-green-400'}`} />
                 </div>
             </div>

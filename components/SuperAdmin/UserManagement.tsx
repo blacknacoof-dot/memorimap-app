@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAllUsers } from '../../hooks/useSuperAdmin';
+import { useAllUsers } from '../../hooks/useUsers';
 import { Search, Shield, User, RefreshCw, UserCheck } from 'lucide-react';
 
 export const UserManagement: React.FC = () => {
@@ -90,9 +90,9 @@ export const UserManagement: React.FC = () => {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`px-2 py-1 rounded text-xs font-bold border ${user.role === 'super_admin' ? 'bg-purple-100 text-purple-700 border-purple-200' :
-                                                    user.role === 'facility_admin' ? 'bg-blue-100 text-blue-700 border-blue-200' :
-                                                        user.role === 'sangjo_admin' ? 'bg-amber-100 text-amber-700 border-amber-200' :
-                                                            'bg-gray-100 text-gray-600 border-gray-200'
+                                                user.role === 'facility_admin' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                                                    user.role === 'sangjo_admin' ? 'bg-amber-100 text-amber-700 border-amber-200' :
+                                                        'bg-gray-100 text-gray-600 border-gray-200'
                                                 }`}>
                                                 {user.role}
                                             </span>

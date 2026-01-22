@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { HashRouter } from 'react-router-dom';
 import MapComponent, { MapRef } from './components/MapContainer';
 import { FacilitySheet } from './components/FacilitySheet';
@@ -10,12 +10,13 @@ import { SignUpModal } from './components/SignUpModal';
 import { Facility, Reservation, ViewState, Review, FuneralCompany, FacilityCategoryType } from './types';
 import { RecommendationStarter } from './components/RecommendationStarter';
 import { Consultation } from './types/consultation';
-import { Menu, Crosshair, Map as MapIcon, User, List, Settings, Scale, Ticket, X, AlertCircle, Database, Shield, Award, ArrowLeft, Loader2 } from 'lucide-react';
+import { Map as MapIcon, List, User, Settings, Menu, X, Plus, Search, ChevronRight, Star, Share2, Navigation, Phone, Calendar, Clock, Info, Check, AlertCircle, Loader2, ArrowLeft, Building2, ExternalLink, MessageCircle, Heart, Filter, Shield, AlertTriangle, ShieldAlert, Ticket, Crosshair, Award, Scale, Database } from 'lucide-react';
 import { FACILITIES } from './constants';
 import { useUser, useClerk, useSession } from './lib/auth';
 import { supabase, isSupabaseConfigured, setSupabaseAuth } from './lib/supabaseClient';
+import L from 'leaflet';
 import { useAuthSync } from './lib/useAuthSync';
-import { getFacilitySubscription, incrementAiUsage } from './lib/queries';
+import { getFacilitySubscription, incrementAiUsage, fetchFacilitiesInView } from './lib/queries';
 import { FacilityList } from './components/FacilityList';
 import { useLocation } from './hooks/useLocation';
 import { SkeletonCard } from './components/ui/SkeletonCard';
@@ -87,6 +88,7 @@ const App: React.FC = () => {
   const [isBooking, setIsBooking] = useState(false);
   const [viewState, setViewState] = useState<ViewState>(ViewState.MAP);
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [mapBounds, setMapBounds] = useState<L.LatLngBounds | null>(null);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showPromo, setShowPromo] = useState(true); // Promo Banner State
@@ -314,35 +316,29 @@ const App: React.FC = () => {
       try {
         const center = REGION_COORDINATES['서울'].center; // Default Center
 
-        // RPC Call: search_facilities
+        // 🛰️ Stable Data Fetching: Using .select() with fallback fields
         const { data, error } = await supabase
-          .rpc('search_facilities', {
-            user_lat: center[0], // [Fix] DB 함수 파라미터 매칭
-            user_lng: center[1],
-            radius_meters: 500000, // 500km (Covering whole Korea)
-            filter_category: null
-          });
+          .from('facilities')
+          .select('*')
+          .eq('status', 'active');
 
         if (error) throw error;
 
         if (data && data.length > 0) {
           const mappedFacilities = data.map((item: any) => {
-            // Category Mapping
+            // 🔄 Category/Type Normalization (Use item.type as primary)
+            const resolvedCategory = item.type || item.category || 'charnel';
+
             let type: any = 'charnel';
             const name = item.name || '';
-            const category = item.category || '';
 
-            if (category === 'funeral_hall' || category === 'funeral' || category === 'funeral_home') type = 'funeral';
-            else if (category === 'charnel_house' || category === 'charnel' || category === 'memorial' || category === 'columbarium') type = 'charnel'; // Added columbarium
-            else if (category === 'natural_burial' || category === 'natural' || category === 'tree_burial') type = 'natural';
-            else if (category === 'park_cemetery' || category === 'park' || category === 'complex' || category === 'cemetery') type = 'park'; // Added cemetery
-            else if (category === 'pet_funeral' || category === 'pet' || category === 'pet_memorial') type = 'pet';
-            else if (category === 'sea_burial' || category === 'sea') type = 'sea';
-            else if (category === 'sangjo' || category === 'sangjo_company' || name.includes('프리드라이프') || name.includes('대명스테이션') || name.includes('보람상조') || name.includes('교원라이프')) type = 'sangjo';
+            if (resolvedCategory === 'funeral_home' || resolvedCategory === 'funeral' || resolvedCategory === 'funeral_home') type = 'funeral';
+            else if (resolvedCategory === 'charnel_house' || resolvedCategory === 'charnel' || resolvedCategory === 'memorial' || resolvedCategory === 'columbarium') type = 'charnel';
+            else if (resolvedCategory === 'natural_burial' || resolvedCategory === 'natural' || resolvedCategory === 'tree_burial') type = 'natural';
+            else if (resolvedCategory === 'park_cemetery' || resolvedCategory === 'park' || resolvedCategory === 'complex' || resolvedCategory === 'cemetery') type = 'park';
+            else if (resolvedCategory === 'pet_funeral' || resolvedCategory === 'pet' || resolvedCategory === 'pet_memorial') type = 'pet';
+            else if (resolvedCategory === 'sea_burial' || resolvedCategory === 'sea') type = 'sea';
 
-            // Map strict category
-            // Map strict category to Internal Types (English)
-            // matching types/facility.ts and FilterBar.tsx
             const categoryMap: Record<string, any> = {
               'funeral': 'funeral_home',
               'charnel': 'columbarium',
@@ -369,40 +365,82 @@ const App: React.FC = () => {
               if (!url) return true;
               const badPatterns = [
                 'placeholder', 'placehold.it', 'placehold.co',
-                'unsplash', // Known guitar image source in this DB
-                'mediahub.seoul.go.kr', // Known broken/placeholder source
-                'noimage', 'no-image', 'guitar'
+                'unsplash',
+                'mediahub.seoul.go.kr',
+                'noimage', 'no-image', 'guitar',
+                '_random', '/defaults/' // [FIX] These are our placeholders, not real facility photos
               ];
               return badPatterns.some(pattern => url.toLowerCase().includes(pattern));
             };
 
             // Selection Logic: Pick the first good one from images[] or use image_url
-            let selectedImage = rawImages.find((url: string) => !isBadUrl(url)) || (isBadUrl(dbImageUrl) ? null : dbImageUrl);
+            // 1. First Pass: Look for a REAL photo (Not a placeholder)
+            let selectedImage = rawImages.find((url: string) => !isBadUrl(url));
+            if (!selectedImage && dbImageUrl && !isBadUrl(dbImageUrl)) {
+              selectedImage = dbImageUrl;
+            }
+
+            // 2. Second Pass: If no real photo, allow our own placeholders from images/image_url
+            if (!selectedImage) {
+              const isOnlyMissing = (url: string) => {
+                if (!url) return true;
+                return ['placeholder', 'noimage', 'guitar'].some(p => url.toLowerCase().includes(p));
+              };
+              selectedImage = rawImages.find((url: string) => !isOnlyMissing(url)) || (isOnlyMissing(dbImageUrl) ? null : dbImageUrl);
+            }
 
             // Ultimate Fallback: Category-based placeholder if nothing found
+            // Ultimate Fallback: Category-based placeholder if NO GOOD IMAGE exists at all
             if (!selectedImage) {
-              const defaultMap: Record<string, string> = {
-                'funeral': 'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/funeral.jpg',
-                'charnel': 'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/charnel.jpg',
-                'natural': 'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/natural.jpg',
-                'park': 'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/park.jpg',
-                'pet': 'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/pet.jpg',
-                'sea': 'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/sea.jpg',
-                'complex': 'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/park.jpg',
-                'sangjo': 'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/funeral.jpg'
+              const defaultMap: Record<string, string[]> = {
+                'funeral': [
+                  'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/funeral.jpg',
+                  'https://images.unsplash.com/photo-1516733968668-dbdce39c4a41?q=80&w=800', // Alternative interior
+                  'https://images.unsplash.com/photo-1544161515-4af62f4b92ba?q=80&w=800'  // Calm interior
+                ],
+                'charnel': [
+                  'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/charnel.jpg',
+                  'https://images.unsplash.com/photo-1518135714426-c18f5fe26967?q=80&w=800',
+                  'https://images.unsplash.com/photo-1471623197343-ccb79a1bd717?q=80&w=800'
+                ],
+                'natural': [
+                  'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/natural.jpg',
+                  'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?q=80&w=800',
+                  'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=800'
+                ],
+                'park': [
+                  'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/park.jpg',
+                  'https://images.unsplash.com/photo-1531171012276-10f293385226?q=80&w=800',
+                  'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=800'
+                ],
+                'pet': [
+                  'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/pet.jpg',
+                  'https://images.unsplash.com/photo-1544568100-847a948585b9?q=80&w=800',
+                  'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=800'
+                ],
+                'sea': [
+                  'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/sea.jpg',
+                  'https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?q=80&w=800',
+                  'https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?q=80&w=800'
+                ]
               };
-              selectedImage = defaultMap[type] || defaultMap['funeral'];
+
+              const options = defaultMap[type] || defaultMap['funeral'];
+              // Use ID or name to pick a stable variation
+              const variantIndex = (idNum || 0) % options.length;
+              selectedImage = options[variantIndex];
             }
 
             return {
               id: item.id?.toString(),
               name: item.name || '이름 없음',
               category: mappedCategory,
-              type: type,
+              type: type, // This is 'funeral', 'charnel', etc.
+              db_type: item.type, // Preserving original DB type for detail queries
               religion: 'none',
               address: item.address || '',
-              lat: Number(item.lat),
-              lng: Number(item.lng),
+              lat: Number(item.lat || item.latitude),
+              lng: Number(item.lng || item.longitude),
               priceRange: '가격 정보 상담',
               rating: simulatedRating,
               reviewCount: simulatedReviewCount,
@@ -502,19 +540,20 @@ const App: React.FC = () => {
           date: r.date || (r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : '')
         }));
 
-        let type: any = 'charnel';
+        // 🔄 Category/Type Normalization (Use item.type as primary)
         const name = data.name || '';
-        const category = data.category || '';
+        const resolvedCategory = data.type || data.category || 'charnel';
 
-        if (category === 'funeral_hall' || category === 'funeral' || category === 'funeral_home') type = 'funeral';
-        else if (category === 'charnel_house' || category === 'charnel' || category === 'memorial') type = 'charnel';
-        else if (category === 'natural_burial' || category === 'natural' || category === 'tree_burial') type = 'natural';
-        else if (category === 'park_cemetery' || category === 'park' || category === 'complex') type = 'park';
-        else if (category === 'pet_funeral' || category === 'pet' || category === 'pet_memorial') type = 'pet';
-        else if (category === 'sea_burial' || category === 'sea') type = 'sea';
-        else if (category === 'sangjo' || category === 'sangjo_company' || name.includes('프리드라이프') || name.includes('대명스테이션') || name.includes('보람상조') || name.includes('교원라이프')) type = 'sangjo';
+        let type: any = 'charnel';
+        if (resolvedCategory === 'funeral_hall' || resolvedCategory === 'funeral' || resolvedCategory === 'funeral_home') type = 'funeral';
+        else if (resolvedCategory === 'charnel_house' || resolvedCategory === 'charnel' || resolvedCategory === 'memorial' || resolvedCategory === 'columbarium') type = 'charnel';
+        else if (resolvedCategory === 'natural_burial' || resolvedCategory === 'natural' || resolvedCategory === 'tree_burial') type = 'natural';
+        else if (resolvedCategory === 'park_cemetery' || resolvedCategory === 'park' || resolvedCategory === 'complex' || resolvedCategory === 'cemetery') type = 'park';
+        else if (resolvedCategory === 'pet_funeral' || resolvedCategory === 'pet' || resolvedCategory === 'pet_memorial') type = 'pet';
+        else if (resolvedCategory === 'sea_burial' || resolvedCategory === 'sea') type = 'sea';
+        else if (name.includes('프리드라이프') || name.includes('대명스테이션') || name.includes('보람상조') || name.includes('교원라이프')) type = 'sangjo';
 
-        const categoryMap: Record<string, FacilityCategoryType> = {
+        const categoryLabels: Record<string, FacilityCategoryType> = {
           'funeral': '장례식장',
           'charnel': '봉안시설',
           'natural': '자연장',
@@ -523,9 +562,68 @@ const App: React.FC = () => {
           'sea': '해양장',
           'sangjo': '상조'
         };
-        const mappedCategory = categoryMap[type] || '봉안시설';
+        const mappedCategory = categoryLabels[type] || '봉안시설';
 
-        const details = data.details || {};
+        // 🖼️ Image Logic (Sync with fetchFacilities)
+        const rawImages = data.images || [];
+        const dbImageUrl = data.image_url || '';
+        const isBadUrl = (url: string) => {
+          if (!url) return true;
+          const bad = ['placeholder', 'placehold.it', 'placehold.co', 'unsplash', 'noimage', 'guitar', '_random', '/defaults/'];
+          return bad.some(p => url.toLowerCase().includes(p));
+        };
+
+        // 1. First Pass: REAL photo
+        let selectedImage = rawImages.find((url: string) => !isBadUrl(url)) || (isBadUrl(dbImageUrl) ? null : dbImageUrl);
+
+        // 2. Second Pass: Allow internal placeholders if no real photo
+        if (!selectedImage) {
+          const isOnlyMissing = (url: string) => {
+            if (!url) return true;
+            return ['placeholder', 'noimage', 'guitar'].some(p => url.toLowerCase().includes(p));
+          };
+          selectedImage = rawImages.find((url: string) => !isOnlyMissing(url)) || (isOnlyMissing(dbImageUrl) ? null : dbImageUrl);
+        }
+
+        if (!selectedImage) {
+          const defaultMap: Record<string, string[]> = {
+            'funeral': [
+              'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/funeral.jpg',
+              'https://images.unsplash.com/photo-1516733968668-dbdce39c4a41?q=80&w=800',
+              'https://images.unsplash.com/photo-1544161515-4af62f4b92ba?q=80&w=800'
+            ],
+            'charnel': [
+              'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/charnel.jpg',
+              'https://images.unsplash.com/photo-1518135714426-c18f5fe26967?q=80&w=800',
+              'https://images.unsplash.com/photo-1471623197343-ccb79a1bd717?q=80&w=800'
+            ],
+            'natural': [
+              'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/natural.jpg',
+              'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?q=80&w=800',
+              'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=800'
+            ],
+            'park': [
+              'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/park.jpg',
+              'https://images.unsplash.com/photo-1531171012276-10f293385226?q=80&w=800',
+              'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=800'
+            ],
+            'pet': [
+              'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/pet.jpg',
+              'https://images.unsplash.com/photo-1544568100-847a948585b9?q=80&w=800',
+              'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=800'
+            ],
+            'sea': [
+              'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/sea.jpg',
+              'https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?q=80&w=800',
+              'https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?q=80&w=800'
+            ]
+          };
+
+          const idNum = data.id ? data.id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) : 0;
+          const options = defaultMap[type] || defaultMap['funeral'];
+          const variantIndex = idNum % options.length;
+          selectedImage = options[variantIndex];
+        }
 
         const updatedFacility: Facility = {
           id: data.id?.toString(),
@@ -534,17 +632,17 @@ const App: React.FC = () => {
           type: type,
           religion: data.religion || 'none',
           address: data.address,
-          lat: Number(data.lat || (data.location?.coordinates ? data.location.coordinates[1] : 0)),
-          lng: Number(data.lng || (data.location?.coordinates ? data.location.coordinates[0] : 0)),
+          lat: Number(data.lat || data.latitude || (data.location?.coordinates ? data.location.coordinates[1] : 0)),
+          lng: Number(data.lng || data.longitude || (data.location?.coordinates ? data.location.coordinates[0] : 0)),
           priceRange: data.price_min ? `${(data.price_min / 10000).toLocaleString()}만원~` : '가격 정보 상담',
           rating: Number(data.rating || 0),
           reviewCount: Number(data.reviews_count || 0),
-          imageUrl: (data.images && data.images[0]) || 'https://placehold.co/800x600?text=No+Image',
+          imageUrl: selectedImage,
           description: data.description || '',
-          features: data.features || [],
+          features: data.ai_features || data.features || [],
           phone: data.phone || data.contact || '',
           prices: data.prices || [],
-          galleryImages: data.images || [],
+          galleryImages: rawImages,
           reviews: reviews.length > 0 ? reviews : [],
           naverBookingUrl: data.naver_booking_url,
           isDetailLoaded: true,
@@ -564,8 +662,8 @@ const App: React.FC = () => {
         const existing = facilities.find(f => f.id === realUuid || f.id === facilityId);
         if (existing) {
           if (!updatedFacility.lat) { updatedFacility.lat = existing.lat; updatedFacility.lng = existing.lng; }
-          updatedFacility.rating = existing.rating;
-          updatedFacility.reviewCount = existing.reviewCount;
+          if (updatedFacility.rating === 0) updatedFacility.rating = existing.rating;
+          if (updatedFacility.reviewCount === 0) updatedFacility.reviewCount = existing.reviewCount;
         }
 
         setFacilities(prev => prev.map(f => f.id === realUuid || f.id === facilityId ? updatedFacility : f));
@@ -768,6 +866,66 @@ const App: React.FC = () => {
   }
 
   // Normal User App Layout
+  const mapDebounceRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const handleMapBoundsChange = (bounds: L.LatLngBounds) => {
+    setMapBounds(bounds);
+
+    // Server-Side Viewport Fetching (Debounced)
+    if (mapDebounceRef.current) {
+      clearTimeout(mapDebounceRef.current);
+    }
+
+    mapDebounceRef.current = setTimeout(async () => {
+      const fetchedData = await fetchFacilitiesInView(bounds);
+      if (fetchedData && fetchedData.length > 0) {
+        // Transform fetched data to match Facility interface if needed
+        // The SQL returns consistent columns, but we need to map to Facility type
+        const mappedFacilities: Facility[] = fetchedData.map((f: any) => {
+          // 🔄 Robust Normalization (Same as fetchFacilities)
+          const rawType = f.type || f.category || 'charnel';
+          let normalizedType = 'charnel';
+
+          if (rawType === 'funeral_home' || rawType === 'funeral' || rawType === 'funeral_hall') normalizedType = 'funeral';
+          else if (rawType === 'charnel_house' || rawType === 'charnel' || rawType === 'memorial' || rawType === 'columbarium') normalizedType = 'charnel';
+          else if (rawType === 'natural_burial' || rawType === 'natural' || rawType === 'tree_burial') normalizedType = 'natural';
+          else if (rawType === 'park_cemetery' || rawType === 'park' || rawType === 'complex' || rawType === 'cemetery') normalizedType = 'park';
+          else if (rawType === 'pet_funeral' || rawType === 'pet' || rawType === 'pet_memorial') normalizedType = 'pet';
+          else if (rawType === 'sea_burial' || rawType === 'sea') normalizedType = 'sea';
+          else if (rawType === 'sangjo') normalizedType = 'sangjo';
+
+          const categoryMap: Record<string, any> = {
+            'funeral': 'funeral_home',
+            'charnel': 'columbarium',
+            'natural': 'natural_burial',
+            'park': 'cemetery',
+            'pet': 'pet_funeral',
+            'sea': 'sea_burial',
+            'sangjo': 'sangjo'
+          };
+          const mappedCategory = categoryMap[normalizedType] || 'columbarium';
+
+          return {
+            id: f.id,
+            name: f.name,
+            category: mappedCategory, // Safe Normalized Category
+            type: normalizedType,     // Safe Short Type
+            address: f.address,
+            lat: Number(f.lat || f.latitude), // Safe Number (Handle both RPC versions)
+            lng: Number(f.lng || f.longitude), // Safe Number (Handle both RPC versions)
+            imageUrl: f.image_url || (f.images && f.images.length > 0 ? f.images[0] : null),
+            rating: Number(f.rating || 0),
+            reviewCount: f.review_count || 0,
+            priceRange: '가격 정보 상담',
+            features: {},
+            images: f.images || []
+          };
+        });
+        setFacilities(mappedFacilities);
+      }
+    }, 300); // 300ms debounce
+  };
+
   const renderContent = () => {
     switch (viewState) {
       case ViewState.MAP:
@@ -777,7 +935,7 @@ const App: React.FC = () => {
               ref={mapRef}
               facilities={filteredFacilities}
               onFacilitySelect={handleFacilitySelect}
-              onBoundsChange={handleBoundsChange}
+              onBoundsChange={handleMapBoundsChange}
               initialCenter={targetMapCenter || [userLocation.lat, userLocation.lng]}
               initialZoom={targetMapZoom || (userLocation.type === 'gps' ? 14 : undefined)}
             />
@@ -926,6 +1084,39 @@ const App: React.FC = () => {
         );
 
       case ViewState.FACILITY_ADMIN:
+        // [Security Fix] Only allow facility_admin role
+        if (userRole !== 'facility_admin') {
+          return (
+            <div className="h-full flex flex-col items-center justify-center p-6 bg-gray-50">
+              <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <ShieldAlert className="text-red-500" size={32} />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">접근 권한이 없습니다</h2>
+                <p className="text-gray-600 mb-8 break-keep">
+                  이 페이지는 <span className="font-bold text-gray-900">승인된 시설 관리자</span>만 접근할 수 있습니다.<br />
+                  시설 입점을 원하시면 아래 버튼을 눌러 신청해주세요.
+                </p>
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={() => setViewState(ViewState.PARTNER_INQUIRY)}
+                    className="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Building2 size={20} />
+                    업체 입점 신청하기
+                  </button>
+                  <button
+                    onClick={() => setViewState(ViewState.MAP)}
+                    className="w-full bg-gray-100 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-200 transition-colors"
+                  >
+                    메인으로 돌아가기
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
         return (
           <div className="h-full relative flex flex-col">
             <FacilityAdminView
