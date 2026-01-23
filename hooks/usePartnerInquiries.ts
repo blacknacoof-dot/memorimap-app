@@ -32,10 +32,22 @@ export function usePartnerInquiries(options: UsePartnerInquiriesOptions = {}) {
 
             if (error) throw error;
 
+            // [Fix] Deduplicate by company_name (User Feedback: "Prevent duplicate applications")
+            // We keep the latest one (since we ordered by created_at DESC)
+            const uniqueData: PartnerInquiry[] = [];
+            const seen = new Set<string>();
+
+            for (const item of (data as PartnerInquiry[]) || []) {
+                if (!seen.has(item.company_name)) {
+                    seen.add(item.company_name);
+                    uniqueData.push(item);
+                }
+            }
+
             return {
-                data: (data as PartnerInquiry[]) || [],
-                totalCount: count || 0,
-                totalPages: Math.ceil((count || 0) / pageSize),
+                data: uniqueData,
+                totalCount: uniqueData.length, // Adjust count to reflect unique items
+                totalPages: Math.ceil(uniqueData.length / pageSize),
                 currentPage: page
             };
         }

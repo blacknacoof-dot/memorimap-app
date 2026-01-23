@@ -22,6 +22,7 @@ import { useLocation } from './hooks/useLocation';
 import { SkeletonCard } from './components/ui/SkeletonCard';
 import { FilterBar } from './components/FilterBar';
 import { useFilterStore } from './stores/useFilterStore';
+import { logger } from './utils/logger';
 
 // Lazy Load Components
 const AdminView = React.lazy(() => import('./components/AdminView').then(m => ({ default: m.AdminView })));
@@ -598,7 +599,7 @@ const App: React.FC = () => {
 
       if (error) throw error;
 
-      console.log(`✅ [DEBUG] Fetched Data from facilities:`, data);
+      logger.debug(`Fetched Data from facilities:`, data);
 
       if (data) {
         const realUuid = data.id;
@@ -750,7 +751,7 @@ const App: React.FC = () => {
   };
 
   const handleFacilitySelect = async (facility: Facility) => {
-    console.log('👆 [DEBUG] handleFacilitySelect CLICKED:', facility.name, facility.id, 'Loaded:', facility.isDetailLoaded);
+    logger.debug('handleFacilitySelect CLICKED:', facility.name, facility.id, 'Loaded:', facility.isDetailLoaded);
     setSelectedFacility(facility);
 
     // Lazy Load Details
@@ -952,7 +953,17 @@ const App: React.FC = () => {
     }
 
     mapDebounceRef.current = setTimeout(async () => {
-      const fetchedData = await fetchFacilitiesInView(bounds);
+      // 🟢 [Fix] Get Fresh Token for Map Requests
+      let token: string | undefined;
+      try {
+        if (session) {
+          token = await session.getToken({ template: 'supabase' }) || undefined;
+        }
+      } catch (e) {
+        console.warn('Failed to get token for map fetch:', e);
+      }
+
+      const fetchedData = await fetchFacilitiesInView(bounds, token);
       if (fetchedData && fetchedData.length > 0) {
         // Transform fetched data to match Facility interface if needed
         // The SQL returns consistent columns, but we need to map to Facility type

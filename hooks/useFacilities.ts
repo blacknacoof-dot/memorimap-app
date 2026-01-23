@@ -178,6 +178,12 @@ export function useFacilities(options: UseFacilitiesOptions = {}): UseFacilities
         // Apply bounds filter if provided
         if (filter?.bounds) {
             const { north, south, east, west } = filter.bounds;
+
+            // Check if coordinates exist
+            if (facility.latitude === undefined || facility.longitude === undefined) {
+                return false;
+            }
+
             if (
                 facility.latitude > north ||
                 facility.latitude < south ||
@@ -284,7 +290,8 @@ export function useFacilityStats() {
         natural_burial: 0,
         cemetery: 0,
         pet_funeral: 0,
-        sea_burial: 0
+        sea_burial: 0,
+        sangjo: 0
     });
     const [loading, setLoading] = useState(true);
 
@@ -308,7 +315,8 @@ export function useFacilityStats() {
                         natural_burial: counts.natural_burial || 0,
                         cemetery: counts.cemetery || 0,
                         pet_funeral: counts.pet_funeral || 0,
-                        sea_burial: counts.sea_burial || 0
+                        sea_burial: counts.sea_burial || 0,
+                        sangjo: counts.sangjo || 0
                     });
                 }
             } catch (err) {

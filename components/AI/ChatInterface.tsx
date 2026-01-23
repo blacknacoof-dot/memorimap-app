@@ -7,6 +7,7 @@ import { PetChatInterface } from '../Consultation/PetChatInterface';
 import { ConsultationForm } from '../Consultation/BrandChatHelpers';
 import FuneralSearchForm from './FuneralSearchForm';
 import { useClerk } from '../../lib/auth'; // For login modal
+import { logger } from '../../utils/logger';
 
 interface Props {
     facility: Facility;
@@ -292,7 +293,7 @@ export const ChatInterface: React.FC<Props> = ({
                         features: data.ai_features || data.features || prev.features,
                         ai_welcome_message: data.ai_welcome_message || prev.ai_welcome_message,
                     }));
-                    console.log('[Dynamic Prompt Injection] Loaded latest facility data:', data.name);
+                    logger.debug('[Dynamic Prompt Injection] Loaded latest facility data:', data.name);
                 }
             } catch (e) {
                 console.error('[Dynamic Prompt Injection] Failed to fetch latest data:', e);
@@ -395,8 +396,20 @@ export const ChatInterface: React.FC<Props> = ({
                 setTimeout(() => inputRef.current?.focus(), 100);
                 return; // Skip default setMessages below
 
+            } else if (['charnel', 'columbarium', 'natural', 'natural_burial', 'park', 'cemetery', 'sea', 'sea_burial', 'memorial'].includes(facility.type || '')) {
+                // [Fix] Auto-show consultation form for memorial facilities (User Request)
+                defaultWelcome = `안녕하세요. **${facility.name}**입니다.\n고인과 유족분들의 평온한 안식을 위해 최선을 다해 돕겠습니다.\n\n원하시는 조건을 선택해 주시면, 맞춤 상담을 도와드립니다.`;
+                setMessages([{
+                    role: 'model',
+                    text: defaultWelcome,
+                    timestamp: new Date(),
+                    action: 'SHOW_FORM_B'
+                }]);
+                setTimeout(() => inputRef.current?.focus(), 100);
+                return;
+
             } else {
-                // Scenario B-like for specific facility
+                // Scenario B-like for specific facility (Generic fallback)
                 let contextText = "";
                 if (handoverContext) {
                     const urgencyMap: any = { immediate: '긴급한', imminent: '위독하신', prepare: '준비하시는' };
