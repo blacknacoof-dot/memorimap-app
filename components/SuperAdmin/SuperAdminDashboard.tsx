@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useUser } from '@clerk/clerk-react';
 import {
     Building2, CheckCircle2, AlertCircle, Search,
     TrendingUp, Wallet, CreditCard, Users,
@@ -410,6 +411,7 @@ const AdminLeadsView = () => {
 
 /** [Main Container] */
 export default function SuperAdminDashboard() {
+    const { user } = useUser();
     const [activeTab, setActiveTab] = useState<'subs' | 'revenue' | 'leads' | 'admissions' | 'facilities' | 'users' | 'notices'>('leads');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -436,7 +438,7 @@ export default function SuperAdminDashboard() {
 
                         <div className="flex flex-col">
                             <h1 className="text-sm font-bold text-slate-900 leading-none">Super Admin</h1>
-                            <p className="text-[10px] text-slate-500 mt-0.5">master@memorimap.com</p>
+                            <p className="text-[10px] text-slate-500 mt-0.5">{user?.primaryEmailAddress?.emailAddress || 'User'}</p>
                         </div>
                     </div>
                     <div className="flex gap-2">

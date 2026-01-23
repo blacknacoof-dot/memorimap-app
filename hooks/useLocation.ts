@@ -40,12 +40,25 @@ export const useLocation = () => {
                 setError(null);
             },
             (err) => {
-                console.warn('Geolocation failed:', err);
-
-                // If the error is not PERMISSION_DENIED, we could try high accuracy as a last resort? 
-                // But usually if low accuracy fails, high won't work either on desktop.
-                // Just handle error gracefully.
-                setError('위치 정보를 가져올 수 없습니다.');
+                // [Fix] Handle permission denied silently (User Request)
+                if (err.code === err.PERMISSION_DENIED) {
+                    // User denied - Just fallback silently without warning
+                    setLocation({
+                        lat: 37.5665,
+                        lng: 126.9780,
+                        type: 'default'
+                    });
+                    setError(null);
+                } else {
+                    // Actual error - Log it
+                    console.warn('Geolocation failed, falling back to default:', err);
+                    setLocation({
+                        lat: 37.5665,
+                        lng: 126.9780,
+                        type: 'default'
+                    });
+                    setError('위치 정보를 가져올 수 없습니다. 기본 위치로 설정합니다.');
+                }
                 setIsLocating(false);
             },
             { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }

@@ -4,14 +4,30 @@ import { useApprovePartner } from '../../hooks/useAdminActions';
 import { CheckCircle, XCircle, Search, FileText, Phone, MapPin, Building2, User, MessageSquare } from 'lucide-react';
 import { PartnerInquiry } from '../../types/db';
 import { useConfirmModal } from '../../src/components/common/ConfirmModal';
+import { useIsSuperAdmin } from '../../hooks/useIsSuperAdmin';
 
 export const PartnerAdmissions: React.FC = () => {
+    const { isSuperAdmin } = useIsSuperAdmin();
+
+
     const { data: inquiryData, isLoading, refetch } = usePartnerInquiries();
     const facilities = inquiryData?.data || [];
 
     const { approvePartner } = useApprovePartner();
     const [searchTerm, setSearchTerm] = useState('');
     const confirmModal = useConfirmModal();
+
+    if (!isSuperAdmin) {
+        return (
+            <div className="p-6 bg-red-50 border border-red-200 rounded-xl flex items-center justify-center gap-3">
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center text-red-500 font-bold shrink-0">!</div>
+                <div>
+                    <h3 className="text-red-800 font-bold">권한이 없습니다</h3>
+                    <p className="text-red-600 text-sm mt-0.5">이 페이지는 슈퍼관리자(blacknacoof@gmail.com)만 접근할 수 있습니다.</p>
+                </div>
+            </div>
+        );
+    }
 
     const handleApprove = (inquiry: PartnerInquiry) => {
         confirmModal.open({
@@ -132,18 +148,18 @@ export const PartnerAdmissions: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="flex gap-2 w-full md:w-auto mt-4 md:mt-0">
+                            <div className="flex flex-wrap gap-2 w-full md:w-auto mt-4 md:mt-0 justify-end">
                                 <button
                                     onClick={() => handleApprove(f)}
                                     data-testid="approve-button"
-                                    className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-bold text-sm transition-all shadow-md active:scale-95 whitespace-nowrap"
+                                    className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-bold text-sm transition-all shadow-md active:scale-95 whitespace-nowrap min-w-[100px]"
                                 >
                                     <CheckCircle size={18} /> 승인
                                 </button>
                                 <button
                                     onClick={() => handleReject(f.id, f.company_name)}
                                     data-testid="reject-button"
-                                    className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-6 py-2.5 bg-red-50 text-red-600 border border-red-100 rounded-xl hover:bg-red-100 font-bold text-sm transition-all active:scale-95 whitespace-nowrap"
+                                    className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-6 py-2.5 bg-red-50 text-red-600 border border-red-100 rounded-xl hover:bg-red-100 font-bold text-sm transition-all active:scale-95 whitespace-nowrap min-w-[100px]"
                                 >
                                     <XCircle size={18} /> 거절
                                 </button>

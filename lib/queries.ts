@@ -2,6 +2,7 @@
 import { Facility, Review, Reservation } from '../types';
 import { FUNERAL_COMPANIES } from '../constants';
 import { supabase } from './supabaseClient';
+import { logger } from '../utils/logger';
 
 // Partner Inquiry Category Configuration
 export const PARTNER_CATEGORIES = {
@@ -17,7 +18,7 @@ export const PARTNER_CATEGORIES = {
 export type PartnerCategoryType = keyof typeof PARTNER_CATEGORIES;
 
 export { supabase };
-export * from './scenario_queries';
+// export * from './scenario_queries'; // Removed broken import
 
 // --- [Phase 8] 지도 검색 기능 ---
 
@@ -684,7 +685,7 @@ export const getFacilitySubscription = async (facilityId: string) => {
         if (isUUID) {
             // UUID means it's from 'facilities' table, not 'memorial_spaces' (BIGINT)
             // Subscription feature only works with memorial_spaces for now
-            console.log('[getFacilitySubscription] Skipping for UUID facility:', facilityId);
+            logger.debug('[getFacilitySubscription] Skipping for UUID facility:', facilityId);
             return null;
         }
 
@@ -1458,10 +1459,18 @@ export const getConsultationById = async (consultationId: string): Promise<Consu
  * Fetch facilities within the current map viewport
  * Uses RPC 'search_facilities_in_view'
  */
-export const fetchFacilitiesInView = async (bounds: any) => {
+export const fetchFacilitiesInView = async (bounds: any, token?: string) => {
     try {
         const sw = bounds.getSouthWest();
         const ne = bounds.getNorthEast();
+
+        // 🟢 [Fix] Refresh Token if provided (Solves JWT Expired)
+        if (token) {
+            await supabase.auth.setSession({
+                access_token: token,
+                refresh_token: ''
+            });
+        }
 
         const { data, error } = await supabase.rpc('search_facilities_in_view', {
             min_lat: sw.lat,

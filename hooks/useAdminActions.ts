@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
+import { logger } from '../utils/logger';
 
 interface ApprovePartnerParams {
     inquiryId: string;
@@ -28,6 +29,7 @@ export function useApprovePartner() {
             const token = await getToken({ template: 'supabase' });
 
             if (!token) {
+                logger.error('[approvePartner] No auth token available');
                 throw new Error('인증 토큰을 가져올 수 없습니다');
             }
 
@@ -35,6 +37,8 @@ export function useApprovePartner() {
             // Note: VITE_SUPABASE_URL assumes strict naming. If previously it was something else, update accordingly.
             // Usually VITE_SUPABASE_URL is correct for standard setups.
             const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/approve-partner`;
+
+            logger.debug('[approvePartner] Token retrieved, sending request to:', functionUrl);
 
             const response = await fetch(functionUrl, {
                 method: 'POST',
