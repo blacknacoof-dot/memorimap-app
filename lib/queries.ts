@@ -17,6 +17,7 @@ export const PARTNER_CATEGORIES = {
 export type PartnerCategoryType = keyof typeof PARTNER_CATEGORIES;
 
 export { supabase };
+export * from './scenario_queries';
 
 // --- [Phase 8] 지도 검색 기능 ---
 
@@ -1151,9 +1152,8 @@ export const getFacilityLatestInfo = async (facilityId: string) => {
                     address,
                     phone,
                     type,
-                    ai_context,
                     description,
-                    features,
+                    ai_features,
                     image_url,
                     images
                 `)
@@ -1169,7 +1169,6 @@ export const getFacilityLatestInfo = async (facilityId: string) => {
                     address,
                     phone,
                     type,
-                    ai_context,
                     ai_features,
                     description,
                     image_url,
@@ -1220,6 +1219,11 @@ export interface Consultation extends ConsultationData {
     answer?: string; // Admin's response
     answered_at?: string; // ISO timestamp
     is_read?: boolean; // Admin read status
+    // New AI Fields
+    is_ai_response: boolean;
+    metadata: Record<string, any>;
+    responder_id?: string | null;
+    source: string;
 }
 
 /**

@@ -63,9 +63,9 @@ const FacilityListComponent: React.FC<FacilityListProps> = ({ facilities, onSele
     }
 
     // 개발 모드에서만 렌더링 로그 출력
-    if (import.meta.env.DEV) {
-        console.log('FacilityList render - Filtered:', filteredFacilities.length, 'Total:', facilities.length);
-    }
+    // if (import.meta.env.DEV) {
+    //     console.log('FacilityList render - Filtered:', filteredFacilities.length, 'Total:', facilities.length);
+    // }
 
     return (
         <div className="flex-1 w-full h-full min-h-[500px] bg-white">

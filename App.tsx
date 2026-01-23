@@ -38,6 +38,7 @@ const SangjoContractModal = React.lazy(() => import('./components/Consultation/S
 const SangjoComparisonModal = React.lazy(() => import('./components/SangjoComparisonModal').then(m => ({ default: m.SangjoComparisonModal })));
 const SangjoDashboard = React.lazy(() => import('./components/SangjoDashboard').then(m => ({ default: m.SangjoDashboard })));
 import { ChatInterface } from './components/AI/ChatInterface';
+import { useConversationStore, generateContextSummary } from './stores/conversationStore';
 
 // Lazy Load Static Views (Named Exports)
 const GuideView = React.lazy(() => import('./components/StaticViews').then(module => ({ default: module.GuideView })));
@@ -159,13 +160,13 @@ const App: React.FC = () => {
       try {
         const token = await session.getToken({ template: 'supabase' });
         if (token) {
-          console.log("🔄 Injecting Clerk Token into Supabase Client...");
+          // console.log("🔄 Injecting Clerk Token into Supabase Client...");
           // [Fix] Explicitly set session on the global Supabase client
           await supabase.auth.setSession({
             access_token: token,
             refresh_token: '', // Clerk manages refresh, so empty string is fine
           });
-          console.log('✅ Supabase Session Synced!');
+          // console.log('✅ Supabase Session Synced!');
         } else {
           console.warn("⚠️ Clerk getToken returned null. Check 'supabase' template.");
         }
@@ -197,11 +198,11 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (isSignedIn && userInfo) {
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('🔑 Clerk User ID:', userInfo.id);
-      console.log('📧 이메일:', userInfo.email);
-      console.log('👤 이름:', userInfo.name);
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      // console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      // console.log('🔑 Clerk User ID:', userInfo.id);
+      // console.log('📧 이메일:', userInfo.email);
+      // console.log('👤 이름:', userInfo.name);
+      // console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     }
   }, [isSignedIn, userInfo]);
 
@@ -350,8 +351,19 @@ const App: React.FC = () => {
             };
             const mappedCategory = categoryMap[type] || 'columbarium';
 
-            // Simulation Logic (Preserved)
-            const idNum = item.id ? item.id.toString().split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) : 0;
+            // Improved Randomization Logic (DJB2 Hash with Salt)
+            // Use ID suffix for better entropy if available
+            const idSuffix = item.id ? item.id.toString().slice(-8) : '';
+            const seedString = (item.name || '') + idSuffix + 'salt_v2';
+
+            let hash = 5381;
+            for (let i = 0; i < seedString.length; i++) {
+              hash = ((hash << 5) + hash) + seedString.charCodeAt(i); /* hash * 33 + c */
+            }
+            // Add extra mix to ensure good distribution for small result sets
+            hash = Math.abs(hash ^ (hash >> 16));
+            const idNum = hash;
+
             const pseudoRandom = (idNum % 10);
             const simulatedRating = pseudoRandom < 2 ? 3 : (pseudoRandom < 6 ? 4 : 5);
             const simulatedReviewCount = 3 + (idNum % 6);
@@ -394,34 +406,82 @@ const App: React.FC = () => {
             if (!selectedImage) {
               const defaultMap: Record<string, string[]> = {
                 'funeral': [
-                  'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/funeral.jpg',
-                  'https://images.unsplash.com/photo-1516733968668-dbdce39c4a41?q=80&w=800', // Alternative interior
-                  'https://images.unsplash.com/photo-1544161515-4af62f4b92ba?q=80&w=800'  // Calm interior
+                  // optimized images: funeral_1.jpg ~ funeral_8.jpg
+                  '/images/defaults/funeral/funeral_1.jpg',
+                  '/images/defaults/funeral/funeral_2.jpg',
+                  '/images/defaults/funeral/funeral_3.jpg',
+                  '/images/defaults/funeral/funeral_4.jpg',
+                  '/images/defaults/funeral/funeral_5.jpg',
+                  '/images/defaults/funeral/funeral_6.jpg',
+                  '/images/defaults/funeral/funeral_7.jpg',
+                  '/images/defaults/funeral/funeral_8.jpg'
                 ],
                 'charnel': [
-                  'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/charnel.jpg',
-                  'https://images.unsplash.com/photo-1518135714426-c18f5fe26967?q=80&w=800',
-                  'https://images.unsplash.com/photo-1471623197343-ccb79a1bd717?q=80&w=800'
+                  // optimized images: columbarium_1.jpg ~ columbarium_13.jpg
+                  '/images/defaults/columbarium/columbarium_1.jpg',
+                  '/images/defaults/columbarium/columbarium_2.jpg',
+                  '/images/defaults/columbarium/columbarium_3.jpg',
+                  '/images/defaults/columbarium/columbarium_4.jpg',
+                  '/images/defaults/columbarium/columbarium_5.jpg',
+                  '/images/defaults/columbarium/columbarium_6.jpg',
+                  '/images/defaults/columbarium/columbarium_7.jpg',
+                  '/images/defaults/columbarium/columbarium_8.jpg',
+                  '/images/defaults/columbarium/columbarium_9.jpg',
+                  '/images/defaults/columbarium/columbarium_10.jpg',
+                  '/images/defaults/columbarium/columbarium_11.jpg',
+                  '/images/defaults/columbarium/columbarium_12.jpg',
+                  '/images/defaults/columbarium/columbarium_13.jpg'
                 ],
                 'natural': [
-                  'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/natural.jpg',
-                  'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?q=80&w=800',
-                  'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=800'
+                  // optimized images: natural_1.png ~ natural_8.png
+                  '/images/defaults/natural/natural_1.png',
+                  '/images/defaults/natural/natural_2.png',
+                  '/images/defaults/natural/natural_3.png',
+                  '/images/defaults/natural/natural_4.png',
+                  '/images/defaults/natural/natural_5.png',
+                  '/images/defaults/natural/natural_6.png',
+                  '/images/defaults/natural/natural_7.png',
+                  '/images/defaults/natural/natural_8.png'
                 ],
                 'park': [
-                  'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/park.jpg',
-                  'https://images.unsplash.com/photo-1531171012276-10f293385226?q=80&w=800',
-                  'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=800'
+                  // optimized images: cemetery_1.png ~ cemetery_11.png
+                  '/images/defaults/cemetery/cemetery_1.png',
+                  '/images/defaults/cemetery/cemetery_2.png',
+                  '/images/defaults/cemetery/cemetery_3.png',
+                  '/images/defaults/cemetery/cemetery_4.png',
+                  '/images/defaults/cemetery/cemetery_5.png',
+                  '/images/defaults/cemetery/cemetery_6.png',
+                  '/images/defaults/cemetery/cemetery_7.png',
+                  '/images/defaults/cemetery/cemetery_8.png',
+                  '/images/defaults/cemetery/cemetery_9.png',
+                  '/images/defaults/cemetery/cemetery_10.png',
+                  '/images/defaults/cemetery/cemetery_11.png'
+                ],
+                'cemetery': [
+                  // optimized images: cemetery_1.png ~ cemetery_11.png
+                  '/images/defaults/cemetery/cemetery_1.png',
+                  '/images/defaults/cemetery/cemetery_2.png',
+                  '/images/defaults/cemetery/cemetery_3.png',
+                  '/images/defaults/cemetery/cemetery_4.png',
+                  '/images/defaults/cemetery/cemetery_5.png',
+                  '/images/defaults/cemetery/cemetery_6.png',
+                  '/images/defaults/cemetery/cemetery_7.png',
+                  '/images/defaults/cemetery/cemetery_8.png',
+                  '/images/defaults/cemetery/cemetery_9.png',
+                  '/images/defaults/cemetery/cemetery_10.png',
+                  '/images/defaults/cemetery/cemetery_11.png'
                 ],
                 'pet': [
                   'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/pet.jpg',
                   'https://images.unsplash.com/photo-1544568100-847a948585b9?q=80&w=800',
-                  'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=800'
+                  'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=800',
+                  'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=800'
                 ],
                 'sea': [
                   'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/sea.jpg',
                   'https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?q=80&w=800',
-                  'https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?q=80&w=800'
+                  'https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?q=80&w=800',
+                  'https://images.unsplash.com/photo-1483683804023-6ccdb62f86ef?q=80&w=800'
                 ]
               };
 
@@ -439,8 +499,9 @@ const App: React.FC = () => {
               db_type: item.type, // Preserving original DB type for detail queries
               religion: 'none',
               address: item.address || '',
-              lat: Number(item.lat || item.latitude),
-              lng: Number(item.lng || item.longitude),
+              // [Fix] Ensure lat/lng are numbers
+              lat: Number(item.lat || item.latitude || 0),
+              lng: Number(item.lng || item.longitude || 0),
               priceRange: '가격 정보 상담',
               rating: simulatedRating,
               reviewCount: simulatedReviewCount,
@@ -479,9 +540,23 @@ const App: React.FC = () => {
 
 
   // Filtered Facilities Logic
-  // 🚧 Phase 4: Filtering Logic Removed (Moved to Store & Components)
-  // const filteredFacilities = facilities.filter(facility => { ... });
-  const filteredFacilities = facilities; // Pass through raw data - components handle exclusion now
+  // [Fix] Filter by Map Bounds to solve "Seoul showing Uijeongbu" issue
+  const filteredFacilities = React.useMemo(() => {
+    if (!currentBounds) return facilities; // If no bounds (init), show all or maybe default? All is fine for now.
+
+    return facilities.filter(f => {
+      // Filter by location (Bounds contains)
+      if (f.lat && f.lng) {
+        try {
+          const latLng = L.latLng(f.lat, f.lng);
+          return currentBounds.contains(latLng);
+        } catch (e) {
+          return true; // Fallback if error
+        }
+      }
+      return false;
+    });
+  }, [facilities, currentBounds]);
 
   const handleBoundsChange = (bounds: L.LatLngBounds) => {
     setCurrentBounds(bounds);
@@ -1814,8 +1889,13 @@ const App: React.FC = () => {
                     return sorted.slice(0, 3);
                   }}
                   onSwitchToFacility={(target, context) => {
+                    // [Phase 2] Context Handoff
+                    const globalContext = useConversationStore.getState().mainBotContext;
+                    const summary = generateContextSummary(globalContext);
+
                     setAiChatFacility(target);
-                    if (context) setHandoverContext(context);
+                    // Prefer direct context if passed, otherwise use global summary
+                    setHandoverContext(context || summary);
                   }}
                   onAction={(action, data) => {
                     const isGlobalAI = aiChatFacility?.id === 'maum-i';
