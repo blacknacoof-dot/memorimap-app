@@ -10,7 +10,30 @@ const MOCK_LEADS = [
     { id: 5, name: '최동욱', phone: '010-1111-9999', facility: '인천 가족 공원', time: '2 days ago', status: 'read', message: '주말 방문 예약' },
 ];
 
+import { useRealtimeSubscription } from '@/hooks/useRealtimeSubscription';
+import { useState } from 'react';
+
 export const AdminLeadsView: React.FC = () => {
+    const [leads, setLeads] = useState(MOCK_LEADS);
+
+    // [New] Realtime Integration mimicking the plan
+    useRealtimeSubscription({
+        table: 'consultations', // Asking to listen to leads/consultations
+        event: 'INSERT',
+        callback: (newLead: any) => {
+            // Adapt DB payload to UI model if needed
+            const adaptedLead = {
+                id: newLead.id,
+                name: newLead.user_name || '익명',
+                phone: newLead.phone_number || '',
+                facility: '새로운 문의', // facility name lookup might be needed
+                time: 'Just now',
+                status: 'new',
+                message: '실시간 상담 요청',
+            };
+            setLeads(prev => [adaptedLead, ...prev]);
+        }
+    });
     return (
         <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
             {/* Header */}

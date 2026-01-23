@@ -44,6 +44,7 @@ export const MemorialSpaceSchema = z.object({
     category: z.enum(['장례식장', '봉안시설', '자연장', '공원묘지', '동물장례', '해양장', '상조']),
     ai_context: z.string().optional(),
     ai_features: z.array(z.string()).optional(),
+    images: z.array(z.string()).optional(),
     is_verified: z.boolean(),
 });
 

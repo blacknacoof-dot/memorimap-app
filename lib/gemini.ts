@@ -44,6 +44,64 @@ const MODEL_CONFIG = {
     safetySettings: SAFETY_SETTINGS
 };
 
+// [Phase 4] Function Calling Tools Definition
+export const BOOKING_TOOLS = [
+    {
+        name: 'book_facility_visit',
+        description: '시설 방문 상담 예약을 생성합니다',
+        parameters: {
+            type: 'object',
+            properties: {
+                facility_id: { type: 'string', description: '시설 ID' },
+                visitor_name: { type: 'string', description: '방문자 이름 (필수)' },
+                visitor_phone: { type: 'string', description: '연락처 (필수, 형식: 010-xxxx-xxxx)' },
+                preferred_date: { type: 'string', description: 'ISO 8601 형식 날짜' },
+                preferred_time: { type: 'string', description: '희망 시간 (예: 14:00)' },
+                consultation_type: {
+                    type: 'string',
+                    enum: ['입종(운명)', '임종 임박', '사별 이후', '단순 상담'],
+                    description: '상담 유형'
+                },
+                special_requests: { type: 'string', description: '특별 요청사항 (선택)' }
+            },
+            required: ['facility_id', 'visitor_name', 'visitor_phone', 'preferred_date']
+        }
+    },
+    {
+        name: 'create_sangjo_contract',
+        description: '상조 서비스 계약 신청을 생성합니다',
+        parameters: {
+            type: 'object',
+            properties: {
+                sangjo_company_id: { type: 'string' },
+                customer_name: { type: 'string' },
+                customer_phone: { type: 'string' },
+                package_type: {
+                    type: 'string',
+                    enum: ['기본형', '프리미엄', 'VIP'],
+                    description: '상조 패키지 유형'
+                },
+                monthly_payment: { type: 'number', description: '월 납입액' }
+            },
+            required: ['sangjo_company_id', 'customer_name', 'customer_phone', 'package_type']
+        }
+    }
+];
+
+export const SLOT_FILLING_INSTRUCTION = `
+[예약 정보 수집 규칙]
+1. 사용자가 "예약하고 싶어요" 같은 의도를 표현하면, 필수 정보를 하나씩 확인합니다.
+2. 누락된 필수 정보가 있으면 자연스럽게 되물어야 합니다.
+
+필수 정보 체크리스트:
+- 이름 (visitor_name)
+- 연락처 (visitor_phone) - 반드시 010-xxxx-xxxx 형식 검증
+- 희망 날짜 (preferred_date)
+- 상담 유형 (consultation_type)
+
+중요: 정보가 모두 모이기 전까지는 절대 도구를 호출하지 마세요. 필요한 정보만 물어보세요.
+`;
+
 export async function* streamConsultationMessage(
     facility: Facility,
     history: Message[],

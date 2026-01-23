@@ -17,7 +17,8 @@ export type FacilityCategoryType =
     | 'natural_burial'  // 자연장
     | 'cemetery'        // 공원묘지
     | 'pet_funeral'     // 동물장례
-    | 'sea_burial';     // 해양장
+    | 'sea_burial'      // 해양장
+    | 'sangjo';         // 상조
 
 /**
  * Display labels for categories (Korean)
@@ -29,7 +30,8 @@ export type FacilityCategoryLabel =
     | '자연장'
     | '공원묘지'
     | '동물장례'
-    | '해양장';
+    | '해양장'
+    | '상조';
 
 /**
  * Main Facility interface
@@ -82,7 +84,8 @@ export interface Facility {
     isDetailLoaded?: boolean;
     dataSource?: string;
     priceInfo?: any;
-    aiContext?: string;
+    aiContext?: string; // Re-enabled for frontend logic compatibility
+    ai_features?: any; // Added to match query selection
     ai_tone?: string;
     ai_welcome_message?: string;
     ai_price_summary?: Record<string, string | number>;
@@ -157,6 +160,13 @@ export const FACILITY_CATEGORIES: CategoryConfig[] = [
         icon: '🌊',
         color: '#0EA5E9',
         description: '해양 산골'
+    },
+    {
+        code: 'sangjo',
+        label: '상조',
+        icon: '🤝',
+        color: '#6366F1',
+        description: '후불제 상조 서비스'
     }
 ];
 
@@ -169,7 +179,8 @@ export const CATEGORY_CODE_TO_LABEL: Record<FacilityCategoryType, FacilityCatego
     natural_burial: '자연장',
     cemetery: '공원묘지',
     pet_funeral: '동물장례',
-    sea_burial: '해양장'
+    sea_burial: '해양장',
+    sangjo: '상조'
 };
 
 /**
@@ -182,7 +193,8 @@ export const CATEGORY_LABEL_TO_CODE: Record<FacilityCategoryLabel, FacilityCateg
     '자연장': 'natural_burial',
     '공원묘지': 'cemetery',
     '동물장례': 'pet_funeral',
-    '해양장': 'sea_burial'
+    '해양장': 'sea_burial',
+    '상조': 'sangjo'
 };
 
 // ============================================================

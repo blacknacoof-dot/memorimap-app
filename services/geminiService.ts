@@ -39,7 +39,8 @@ export interface AIResponse {
 export const sendMessageToGemini = async (
   message: string,
   history: ChatMessage[] = [],
-  facility?: Facility | FuneralCompany
+  facility?: Facility | FuneralCompany,
+  context?: string
 ): Promise<AIResponse> => {
 
   // 1. Mock Delay
