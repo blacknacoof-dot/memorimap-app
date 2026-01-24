@@ -5,7 +5,7 @@ import {
     TrendingUp, Wallet, CreditCard, Users,
     Phone, ChevronRight, Bell, LogOut, Menu, X,
     FileText, UserCog, Settings, ShieldCheck,
-    Lock, BellRing, MonitorStop, Percent
+    Lock, BellRing, MonitorStop, Percent, History
 } from 'lucide-react';
 import { PartnerAdmissions } from './PartnerAdmissions';
 import { useLeads } from '../../hooks/useLeads';
@@ -15,6 +15,8 @@ import { UserManagement } from './UserManagement';
 import { FacilityManagement } from './FacilityManagement';
 import { NoticeManager } from '../dashboard/super-admin/NoticeManager';
 import { ConfirmModal } from '../../src/components/common/ConfirmModal';
+import { NotificationCenter } from '../NotificationCenter';
+import { AdminLogsView } from './AdminLogsView';
 
 // MOCK_DATA removed. Using real hooks.
 
@@ -52,6 +54,7 @@ const SideMenuDrawer = ({ isOpen, onClose, onNavigate }: { isOpen: boolean; onCl
                             { icon: Building2, label: '시설 통합 관리', id: 'facilities' },
                             { icon: Users, label: '회원/권한 관리', id: 'users' },
                             { icon: FileText, label: '공지사항 관리', id: 'notices' },
+                            { icon: History, label: '시스템 활동 로그', id: 'logs' },
                         ].map((item) => (
                             <button
                                 key={item.id}
@@ -412,7 +415,7 @@ const AdminLeadsView = () => {
 /** [Main Container] */
 export default function SuperAdminDashboard() {
     const { user } = useUser();
-    const [activeTab, setActiveTab] = useState<'subs' | 'revenue' | 'leads' | 'admissions' | 'facilities' | 'users' | 'notices'>('leads');
+    const [activeTab, setActiveTab] = useState<'subs' | 'revenue' | 'leads' | 'admissions' | 'facilities' | 'users' | 'notices' | 'logs'>('leads');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
@@ -442,9 +445,7 @@ export default function SuperAdminDashboard() {
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <button className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors">
-                            <Bell className="w-5 h-5" />
-                        </button>
+                        <NotificationCenter />
                         <button className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors">
                             <LogOut className="w-5 h-5" />
                         </button>
@@ -486,6 +487,7 @@ export default function SuperAdminDashboard() {
                 {activeTab === 'facilities' && <FacilityManagement />}
                 {activeTab === 'users' && <UserManagement />}
                 {activeTab === 'notices' && <NoticeManager />}
+                {activeTab === 'logs' && <AdminLogsView />}
                 <ConfirmModal />
             </main>
         </div>

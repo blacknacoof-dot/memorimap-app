@@ -134,18 +134,29 @@ export interface Notice {
     created_at: string;
 }
 
-/**
- * [Consultation Leads] 상담 신청 내역
- */
 export interface ConsultationLead {
-    id: string; // or number depending on DB
+    id: string;
     user_id: string | null;
     user_name: string;
     phone_number: string;
     facility_id: number | null;
-    facility_name?: string; // Optional joined
+    facility_name?: string;
     type: 'visit' | 'counsel' | 'price' | 'other';
     status: 'new' | 'read' | 'contacted' | 'completed';
+    created_at: string;
+}
+
+/**
+ * [Notifications] 유저 알림
+ */
+export interface UserNotification {
+    id: string;
+    user_id: string;
+    title: string;
+    message: string;
+    type: 'info' | 'success' | 'warning' | 'error';
+    is_read: boolean;
+    link?: string;
     created_at: string;
 }
 

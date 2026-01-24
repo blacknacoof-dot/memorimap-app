@@ -44,7 +44,9 @@ export function useApprovePartner() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`, // Some Supabase setups expect it here
+                    'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY, // Required for Supabase Gateway
+                    'X-Clerk-Auth': `Bearer ${token}`
                 },
                 body: JSON.stringify(params)
             });

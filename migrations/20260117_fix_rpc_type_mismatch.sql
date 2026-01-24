@@ -6,6 +6,7 @@
 -- 1. 모든 알려진 시그니처 삭제 (청소)
 DROP FUNCTION IF EXISTS public.search_facilities(text, double precision, double precision, double precision);
 DROP FUNCTION IF EXISTS public.search_facilities(double precision, double precision, double precision, text);
+DROP FUNCTION IF EXISTS public.search_facilities(double precision, double precision, integer, text);
 
 -- 2. 안전한 타입(TEXT)으로 함수 재생성
 CREATE OR REPLACE FUNCTION public.search_facilities(
@@ -28,9 +29,9 @@ AS $$
 BEGIN
   RETURN QUERY
   SELECT 
-    f.id::text,               -- ✅ 명시적 형변환 (UUID일 수도, TEXT일 수도 있는 상황 방지)
+    f.id::text,
     f.name,
-    f.category,
+    f.facility_type as category,  -- ✅ Use facility_type but alias as category for frontend compatibility
     f.address,
     f.lat,
     f.lng,
@@ -43,7 +44,7 @@ BEGIN
     )) AS distance_meters
   FROM facilities f
   WHERE 
-    (filter_category IS NULL OR f.category = filter_category)
+    (filter_category IS NULL OR f.facility_type = filter_category)
     AND f.lat IS NOT NULL AND f.lng IS NOT NULL
     AND (6371000 * acos(
       cos(radians(user_lat)) * 

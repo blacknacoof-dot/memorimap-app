@@ -10,7 +10,8 @@ import { SignUpModal } from './components/SignUpModal';
 import { Facility, Reservation, ViewState, Review, FuneralCompany, FacilityCategoryType } from './types';
 import { RecommendationStarter } from './components/RecommendationStarter';
 import { Consultation } from './types/consultation';
-import { Map as MapIcon, List, User, Settings, Menu, X, Plus, Search, ChevronRight, Star, Share2, Navigation, Phone, Calendar, Clock, Info, Check, AlertCircle, Loader2, ArrowLeft, Building2, ExternalLink, MessageCircle, Heart, Filter, Shield, AlertTriangle, ShieldAlert, Ticket, Crosshair, Award, Scale, Database } from 'lucide-react';
+import { Map as MapIcon, List, User, Settings, Menu, X, Plus, Search, ChevronRight, Star, Share2, Navigation, Phone, Calendar, Clock, Info, Check, AlertCircle, Loader2, ArrowLeft, Building2, ExternalLink, MessageCircle, Heart, Filter, Shield, AlertTriangle, ShieldAlert, Ticket, Crosshair, Award, Scale, Database, Bell } from 'lucide-react';
+import { NotificationCenter } from './components/NotificationCenter';
 import { FACILITIES } from './constants';
 import { useUser, useClerk, useSession } from './lib/auth';
 import { supabase, isSupabaseConfigured, setSupabaseAuth } from './lib/supabaseClient';
@@ -582,7 +583,7 @@ const App: React.FC = () => {
   };
 
   // Validate & Fetch Details Helper
-  const fetchFacilityDetails = async (facilityId: string) => {
+  const fetchFacilityDetails = React.useCallback(async (facilityId: string) => {
     try {
       // Determine table based on ID format (UUID vs BigInt)
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
@@ -704,21 +705,21 @@ const App: React.FC = () => {
         const updatedFacility: Facility = {
           id: data.id?.toString(),
           name: data.name,
-          category: mappedCategory as any,
+          category: mappedCategory,
           type: type,
           religion: data.religion || 'none',
           address: data.address,
-          lat: Number(data.lat || data.latitude || (data.location?.coordinates ? data.location.coordinates[1] : 0)),
-          lng: Number(data.lng || data.longitude || (data.location?.coordinates ? data.location.coordinates[0] : 0)),
+          lat: Number(data.lat || (data.location?.coordinates ? data.location.coordinates[1] : 0)),
+          lng: Number(data.lng || (data.location?.coordinates ? data.location.coordinates[0] : 0)),
           priceRange: data.price_min ? `${(data.price_min / 10000).toLocaleString()}만원~` : '가격 정보 상담',
           rating: Number(data.rating || 0),
           reviewCount: Number(data.reviews_count || 0),
-          imageUrl: selectedImage,
+          imageUrl: selectedImage || 'https://placehold.co/800x600?text=No+Image',
           description: data.description || '',
           features: data.ai_features || data.features || [],
           phone: data.phone || data.contact || '',
           prices: data.prices || [],
-          galleryImages: rawImages,
+          galleryImages: data.images || [],
           reviews: reviews.length > 0 ? reviews : [],
           naverBookingUrl: data.naver_booking_url,
           isDetailLoaded: true,
@@ -738,8 +739,8 @@ const App: React.FC = () => {
         const existing = facilities.find(f => f.id === realUuid || f.id === facilityId);
         if (existing) {
           if (!updatedFacility.lat) { updatedFacility.lat = existing.lat; updatedFacility.lng = existing.lng; }
-          if (updatedFacility.rating === 0) updatedFacility.rating = existing.rating;
-          if (updatedFacility.reviewCount === 0) updatedFacility.reviewCount = existing.reviewCount;
+          updatedFacility.rating = existing.rating;
+          updatedFacility.reviewCount = existing.reviewCount;
         }
 
         setFacilities(prev => prev.map(f => f.id === realUuid || f.id === facilityId ? updatedFacility : f));
@@ -748,25 +749,17 @@ const App: React.FC = () => {
     } catch (err) {
       console.error("Detail fetch error:", err);
     }
-  };
+  }, [facilities, setSelectedFacility, setFacilities]);
 
-  const handleFacilitySelect = async (facility: Facility) => {
+  const handleFacilitySelect = React.useCallback(async (facility: Facility) => {
     logger.debug('handleFacilitySelect CLICKED:', facility.name, facility.id, 'Loaded:', facility.isDetailLoaded);
     setSelectedFacility(facility);
 
     // Lazy Load Details
-    if (isSupabaseConfigured() && !facility.isDetailLoaded && facility.id.startsWith('db-') === false) { // Assuming db- random ID means not real Supabase ID? No, fetch map uses random if id missing? 
-      // Actually my mapping uses `item.id` OR random. If real DB, it has item.id.
-      // If facility.isDetailLoaded is undefined or false.
-      // Fallback data (constants) doesn't have isDetailLoaded, so it's undefined. 
-      // But we shouldn't fetch for constants.
-      // fetchFacilities sets isDetailLoaded: false.
-      // So checks: isSupabaseConfigured() AND facility.isDetailLoaded === false.
-
-      // showToast("상세 정보를 불러옵니다...", 'info');
+    if (isSupabaseConfigured() && !facility.isDetailLoaded && facility.id.startsWith('db-') === false) {
       await fetchFacilityDetails(facility.id);
     }
-  };
+  }, [setSelectedFacility, fetchFacilityDetails]);
 
   const handleViewOnMap = () => {
     if (selectedFacility) {
@@ -778,7 +771,7 @@ const App: React.FC = () => {
     setViewState(ViewState.MAP);
   };
 
-  const toggleCompare = (facility: Facility) => {
+  const toggleCompare = React.useCallback((facility: Facility) => {
     setCompareList(prev => {
       const exists = prev.find(f => f.id === facility.id);
       if (exists) {
@@ -792,7 +785,7 @@ const App: React.FC = () => {
       showToast("비교함에 추가되었습니다. 하단 아이콘을 눌러 비교해보세요!", 'success');
       return [...prev, facility];
     });
-  };
+  }, [setCompareList]);
 
   const handleAddReview = (facilityId: string, content: string, rating: number) => {
     const newReview: Review = {
@@ -1529,6 +1522,10 @@ const App: React.FC = () => {
                 >
                   <Menu size={20} />
                 </button>
+
+                <div className="bg-white rounded-xl shadow-md flex items-center justify-center">
+                  <NotificationCenter />
+                </div>
 
                 {viewState === ViewState.MY_PAGE ? (
                   <div className="flex-1 bg-white rounded-xl shadow-md flex items-center justify-center h-12">
