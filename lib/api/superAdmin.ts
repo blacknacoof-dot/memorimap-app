@@ -222,3 +222,31 @@ export const fetchLeads = async () => {
         customer_phone: lead.phone_number || lead.contact_number,
     }));
 };
+
+// --- 관리 활동 로그 API [NEW] ---
+export interface AuditLog {
+    id: string;
+    actor_id: string;
+    actor_email: string | null;
+    action: string;
+    target_resource: string;
+    target_id: string;
+    details: any;
+    status: string;
+    created_at: string;
+}
+
+export const fetchAuditLogs = async () => {
+    const { data, error } = await supabase
+        .from('audit_logs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+    if (error) {
+        console.error('Failed to fetch audit logs:', error);
+        throw error;
+    }
+
+    return data as AuditLog[];
+};

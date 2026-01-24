@@ -11,7 +11,7 @@
  * Standardized facility category codes (English)
  * These match the database enum values
  */
-export type FacilityCategoryType =
+export type StandardFacilityCategoryType =
     | 'funeral_home'    // 장례식장
     | 'columbarium'     // 봉안시설
     | 'natural_burial'  // 자연장
@@ -19,6 +19,34 @@ export type FacilityCategoryType =
     | 'pet_funeral'     // 동물장례
     | 'sea_burial'      // 해양장
     | 'sangjo';         // 상조
+
+/**
+ * Standardized facility category codes
+ * Includes both English codes (DB) and Korean labels (Display)
+ * and common variants for backward compatibility.
+ */
+export type FacilityCategoryType =
+    | StandardFacilityCategoryType
+    // Korean Labels (Display)
+    | '장례식장'
+    | '봉안시설'
+    | '자연장'
+    | '공원묘지'
+    | '동물장례'
+    | '해양장'
+    | '상조'
+    // Common Variants / DB Legacy
+    | 'funeral'
+    | 'charnel'
+    | 'charnel_house'
+    | 'memorial'
+    | 'memorial_facility'
+    | 'tree_burial'
+    | 'park_cemetery'
+    | 'complex'
+    | 'pet'
+    | 'pet_memorial'
+    | 'sea';
 
 /**
  * Display labels for categories (Korean)
@@ -101,7 +129,7 @@ export interface Facility {
  * Category configuration with English code and Korean label
  */
 export interface CategoryConfig {
-    code: FacilityCategoryType | 'all';
+    code: StandardFacilityCategoryType | 'all';
     label: FacilityCategoryLabel;
     icon?: string;
     color?: string;
@@ -173,7 +201,7 @@ export const FACILITY_CATEGORIES: CategoryConfig[] = [
 /**
  * Map English code to Korean label
  */
-export const CATEGORY_CODE_TO_LABEL: Record<FacilityCategoryType, FacilityCategoryLabel> = {
+export const CATEGORY_CODE_TO_LABEL: Record<StandardFacilityCategoryType, FacilityCategoryLabel> = {
     funeral_home: '장례식장',
     columbarium: '봉안시설',
     natural_burial: '자연장',
@@ -186,7 +214,7 @@ export const CATEGORY_CODE_TO_LABEL: Record<FacilityCategoryType, FacilityCatego
 /**
  * Map Korean label to English code
  */
-export const CATEGORY_LABEL_TO_CODE: Record<FacilityCategoryLabel, FacilityCategoryType | 'all'> = {
+export const CATEGORY_LABEL_TO_CODE: Record<FacilityCategoryLabel, StandardFacilityCategoryType | 'all'> = {
     '전체': 'all',
     '장례식장': 'funeral_home',
     '봉안시설': 'columbarium',
@@ -204,14 +232,14 @@ export const CATEGORY_LABEL_TO_CODE: Record<FacilityCategoryLabel, FacilityCateg
 /**
  * Get category label from code
  */
-export function getCategoryLabel(code: FacilityCategoryType): FacilityCategoryLabel {
+export function getCategoryLabel(code: StandardFacilityCategoryType): FacilityCategoryLabel {
     return CATEGORY_CODE_TO_LABEL[code];
 }
 
 /**
  * Get category code from label
  */
-export function getCategoryCode(label: FacilityCategoryLabel): FacilityCategoryType | 'all' {
+export function getCategoryCode(label: FacilityCategoryLabel): StandardFacilityCategoryType | 'all' {
     return CATEGORY_LABEL_TO_CODE[label];
 }
 

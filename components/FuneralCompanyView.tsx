@@ -138,7 +138,7 @@ export const FuneralCompanyView: React.FC<Props> = ({
                             ];
 
                         return {
-                            id: item.id.toString(),
+                            id: staticMatch?.id || item.id.toString(),
                             name: item.name,
                             rating: item.rating || 4.8,
                             reviewCount: item.review_count || 0,

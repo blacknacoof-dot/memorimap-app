@@ -58,16 +58,7 @@ export type AiTone = 'polite' | 'warm' | 'factual';
 export type FacilityType = 'FUNERAL_HOME' | 'MEMORIAL_PARK' | 'SANGJO';
 export type AiActionType = 'NONE' | 'RESERVE' | 'MAP' | 'CALL_MANAGER' | 'RECOMMEND' | 'SWITCH_TO_CONSULT' | 'SHOW_FORM_A';
 
-export type FacilityCategoryType =
-  | '장례식장' | '봉안시설' | '자연장' | '공원묘지' | '동물장례' | '해양장' | '상조'
-  | 'funeral_home' | 'funeral' // DB codes
-  | 'charnel_house' | 'charnel' | 'memorial' | 'memorial_facility'
-  | 'natural_burial' | 'tree_burial'
-  | 'park_cemetery' | 'complex'
-  | 'pet_memorial' | 'pet'
-  | 'sea_burial' | 'sea'
-  | 'sangjo';
-
+export type { FacilityCategoryType } from './facility';
 // ============================================================
 // RE-EXPORT FROM FACILITY TYPES (Single Source of Truth)
 // ============================================================

@@ -11,7 +11,7 @@ interface FacilityListProps {
     onToggleCompare: (facility: Facility) => void;
 }
 
-const FacilityListComponent: React.FC<FacilityListProps> = ({ facilities, onSelect, compareList, onToggleCompare }) => {
+export const FacilityList = React.memo<FacilityListProps>(({ facilities, onSelect, compareList, onToggleCompare }) => {
     // Store State
     const searchQuery = useFilterStore(s => s.searchQuery);
     const selectedCategories = useFilterStore(s => s.selectedCategories);
@@ -78,10 +78,7 @@ const FacilityListComponent: React.FC<FacilityListProps> = ({ facilities, onSele
             />
         </div>
     );
-};
-
-// React.memo로 감싸서 export
-export const FacilityList = React.memo(FacilityListComponent);
+});
 
 
 

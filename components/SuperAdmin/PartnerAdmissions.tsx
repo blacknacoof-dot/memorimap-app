@@ -10,7 +10,7 @@ export const PartnerAdmissions: React.FC = () => {
     const { isSuperAdmin } = useIsSuperAdmin();
 
 
-    const { data: inquiryData, isLoading, refetch } = usePartnerInquiries();
+    const { data: inquiryData, isLoading, refetch } = usePartnerInquiries({ status: 'pending' });
     const facilities = inquiryData?.data || [];
 
     const { approvePartner } = useApprovePartner();
@@ -117,8 +117,13 @@ export const PartnerAdmissions: React.FC = () => {
                                                     f.business_type === 'sangjo' ? '상조회사' :
                                                         f.business_type === 'pet_funeral' ? '동물장묘' : f.business_type}
                                         </span>
-                                        <span className="px-2 py-0.5 bg-amber-50 text-amber-600 text-xs rounded border border-amber-100 font-bold flex items-center gap-1 whitespace-nowrap">
-                                            <FileText size={10} /> 승인 대기
+                                        <span className={`px-2 py-0.5 text-xs rounded border font-bold flex items-center gap-1 whitespace-nowrap ${f.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                                                f.status === 'rejected' ? 'bg-red-50 text-red-600 border-red-100' :
+                                                    'bg-green-50 text-green-600 border-green-100'
+                                            }`}>
+                                            <FileText size={10} />
+                                            {f.status === 'pending' ? '승인 대기' :
+                                                f.status === 'rejected' ? '반려됨' : '승인됨'}
                                         </span>
                                     </div>
                                 </div>

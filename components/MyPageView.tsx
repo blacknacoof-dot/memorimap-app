@@ -134,7 +134,8 @@ export const MyPageView: React.FC<Props> = ({
         if (!user) return;
         if (!confirm('즐겨찾기를 해제하시겠습니까?')) return;
         try {
-            const company = FUNERAL_COMPANIES.find(c => c.id === companyId);
+            const company = FUNERAL_COMPANIES.find(c => c.id === companyId) ||
+                FUNERAL_COMPANIES.find(c => c.name === sangjoFavorites.find(f => f.company_id === companyId)?.company_name);
             if (!company) return;
 
             await sangjoFavoriteService.toggleFavorite(user.id, company);
@@ -153,7 +154,7 @@ export const MyPageView: React.FC<Props> = ({
             await deleteReview(id);
             setMyReviews(prev => prev.filter(r => r.id !== id));
 
-            if (onReviewDeleted) {
+            if (onReviewDeleted && reviewToDelete.facility_id) {
                 onReviewDeleted(reviewToDelete.facility_id, id, reviewToDelete.rating);
             }
         } catch (err) {
@@ -358,7 +359,13 @@ export const MyPageView: React.FC<Props> = ({
                     title="즐겨찾기 상조"
                 >
                     <Heart size={14} fill={activeTab === 'sangjo_favorites' ? 'currentColor' : 'none'} className="shrink-0" />
-                    <span className="whitespace-nowrap">상조 {sangjoFavorites.length}</span>
+                    <span className="whitespace-nowrap">상조 {
+                        Array.from(new Set(sangjoFavorites.map(fav => {
+                            const company = FUNERAL_COMPANIES.find(c => c.id === fav.company_id) ||
+                                FUNERAL_COMPANIES.find(c => c.name === fav.company_name);
+                            return company?.id;
+                        }).filter(Boolean))).length
+                    }</span>
                 </button>
             </div>
 
@@ -430,45 +437,52 @@ export const MyPageView: React.FC<Props> = ({
                         </div>
                     ) : (
                         <div className="space-y-3">
-                            {sangjoFavorites.map(fav => {
-                                const company = FUNERAL_COMPANIES.find(c => c.id === fav.company_id);
-                                if (!company) return null;
-                                return (
-                                    <div key={fav.id} className="bg-white border rounded-xl p-4 hover:shadow-md transition-shadow relative">
-                                        <div className="flex gap-4">
-                                            <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden shrink-0">
-                                                <img
-                                                    src={company.imageUrl}
-                                                    alt={company.name}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex justify-between items-start">
-                                                    <h3 className="font-bold text-gray-900 truncate pr-6">{company.name}</h3>
-                                                    <button
-                                                        onClick={() => handleRemoveSangjoFavorite(company.id)}
-                                                        className="text-red-500 hover:bg-red-50 p-1 rounded-full absolute top-3 right-3"
-                                                        title="즐겨찾기 해제"
-                                                    >
-                                                        <Heart size={18} fill="currentColor" />
-                                                    </button>
+                            {(() => {
+                                const seenIds = new Set<string>();
+                                return sangjoFavorites.map(fav => {
+                                    // Try ID match first, then Fallback to Name match (for historical/legacy data)
+                                    const company = FUNERAL_COMPANIES.find(c => c.id === fav.company_id) ||
+                                        FUNERAL_COMPANIES.find(c => c.name === fav.company_name);
+
+                                    if (!company || seenIds.has(company.id)) return null;
+                                    seenIds.add(company.id);
+                                    return (
+                                        <div key={fav.id} className="bg-white border rounded-xl p-4 hover:shadow-md transition-shadow relative">
+                                            <div className="flex gap-4">
+                                                <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden shrink-0">
+                                                    <img
+                                                        src={company.imageUrl}
+                                                        alt={company.name}
+                                                        className="w-full h-full object-cover"
+                                                    />
                                                 </div>
-                                                <p className="text-xs text-gray-500 mt-1">{company.description}</p>
-                                                <div className="flex items-center gap-2 mt-2">
-                                                    <div className="flex items-center text-xs text-yellow-500 font-bold">
-                                                        <Star size={12} fill="currentColor" />
-                                                        <span className="ml-0.5">{company.rating}</span>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex justify-between items-start">
+                                                        <h3 className="font-bold text-gray-900 truncate pr-6">{company.name}</h3>
+                                                        <button
+                                                            onClick={() => handleRemoveSangjoFavorite(company.id)}
+                                                            className="text-red-500 hover:bg-red-50 p-1 rounded-full absolute top-3 right-3"
+                                                            title="즐겨찾기 해제"
+                                                        >
+                                                            <Heart size={18} fill="currentColor" />
+                                                        </button>
                                                     </div>
-                                                    <span className="text-xs text-gray-400">
-                                                        {new Date(fav.created_at).toLocaleDateString()} 추가
-                                                    </span>
+                                                    <p className="text-xs text-gray-500 mt-1">{company.description}</p>
+                                                    <div className="flex items-center gap-2 mt-2">
+                                                        <div className="flex items-center text-xs text-yellow-500 font-bold">
+                                                            <Star size={12} fill="currentColor" />
+                                                            <span className="ml-0.5">{company.rating}</span>
+                                                        </div>
+                                                        <span className="text-xs text-gray-400">
+                                                            {new Date(fav.created_at).toLocaleDateString()} 추가
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
+                                    );
+                                });
+                            })()}
                         </div>
                     )
                 ) : null}
