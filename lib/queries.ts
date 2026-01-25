@@ -362,12 +362,14 @@ export const getFacility = async (id: string) => {
         console.error('Error fetching facility:', error);
         throw error;
     }
-    // Map DB fields to Frontend types
+    // Map DB fields to Frontend types (Normalize snake_case to camelCase for UI)
     return {
         ...data,
         lat: data.latitude,
         lng: data.longitude,
-        galleryImages: data.images || [] // Use images array as galleryImages fallback
+        imageUrl: data.image_url,
+        priceRange: data.price_range,
+        galleryImages: data.images || []
     };
 };
 
