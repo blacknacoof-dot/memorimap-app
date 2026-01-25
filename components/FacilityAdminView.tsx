@@ -17,6 +17,7 @@ interface Props {
 
 export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigate }) => {
     const [myFacilityId, setMyFacilityId] = useState<string | null>(null);
+    const [fetchedFacility, setFetchedFacility] = useState<Facility | null>(null);
     const [reservations, setReservations] = useState<Reservation[]>([]);
     const [consultations, setConsultations] = useState<Consultation[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -35,11 +36,20 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
         setIsLoading(true);
         try {
             // Get the single facility owned by this user
-            const { getUserFacility } = await import('../lib/queries');
+            const { getUserFacility, getFacility } = await import('../lib/queries');
             const facilityId = await getUserFacility(user.id);
             setMyFacilityId(facilityId);
 
             if (facilityId) {
+                // [Fix] If facility is not in props, fetch it directly
+                const foundInProps = facilities.find(f => f.id === facilityId);
+                if (foundInProps) {
+                    setFetchedFacility(foundInProps);
+                } else {
+                    const data = await getFacility(facilityId);
+                    setFetchedFacility(data);
+                }
+
                 // Get reservations for this specific facility
                 const res = await getFacilityReservations(facilityId);
                 // Sort by date
@@ -66,7 +76,9 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
         if (!myFacilityId) return;
 
         console.log('Setting up Realtime subscription for facility:', myFacilityId);
-        const channel = supabase
+
+        // 1. Consultations Subscription
+        const consultationChannel = supabase
             .channel('facility-consultations')
             .on(
                 'postgres_changes',
@@ -77,10 +89,8 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
                     filter: `facility_id=eq.${myFacilityId}`
                 },
                 (payload) => {
-                    console.log('Realtime update:', payload);
                     if (payload.eventType === 'INSERT') {
                         setConsultations(prev => [payload.new as Consultation, ...prev]);
-                        // Optional: Show toast notification?
                     } else if (payload.eventType === 'UPDATE') {
                         setConsultations(prev => prev.map(c =>
                             c.id === payload.new.id ? { ...c, ...payload.new } : c
@@ -90,8 +100,64 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
             )
             .subscribe();
 
+        // 2. Reservations Subscription
+        const reservationChannel = supabase
+            .channel('facility-reservations')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'reservations',
+                    filter: `facility_id=eq.${myFacilityId}`
+                },
+                (payload) => {
+                    console.log('Realtime Reservation Update:', payload);
+                    if (payload.eventType === 'INSERT') {
+                        // Map database row to UI Reservation type if needed
+                        const newRes = {
+                            ...payload.new,
+                            facilityId: payload.new.facility_id,
+                            facilityName: payload.new.facility_name,
+                            date: new Date(payload.new.visit_date),
+                            timeSlot: payload.new.time_slot,
+                            visitorName: payload.new.user_name || payload.new.visitor_name,
+                            visitorCount: payload.new.visitor_count || 1,
+                            userPhone: payload.new.user_phone,
+                            status: payload.new.status as any
+                        } as Reservation;
+
+                        setReservations(prev => [newRes, ...prev]);
+
+                        // Notify user about new booking
+                        if (newRes.status === 'urgent') {
+                            alert('🚨 신규 긴급 예약이 접수되었습니다!');
+                        } else {
+                            // Non-blocking notification or toast would be better, but alert is clear.
+                        }
+                    } else if (payload.eventType === 'UPDATE') {
+                        setReservations(prev => prev.map(r =>
+                            r.id === payload.new.id ? {
+                                ...r,
+                                ...payload.new,
+                                facilityId: payload.new.facility_id,
+                                facilityName: payload.new.facility_name,
+                                date: new Date(payload.new.visit_date),
+                                timeSlot: payload.new.time_slot,
+                                visitorName: payload.new.user_name || payload.new.visitor_name,
+                                visitorCount: payload.new.visitor_count || 1,
+                                userPhone: payload.new.user_phone,
+                                status: payload.new.status as any
+                            } : r
+                        ));
+                    }
+                }
+            )
+            .subscribe();
+
         return () => {
-            supabase.removeChannel(channel);
+            supabase.removeChannel(consultationChannel);
+            supabase.removeChannel(reservationChannel);
         };
     }, [myFacilityId]);
 
@@ -125,7 +191,8 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
         }
     };
 
-    const myFacility = facilities.find(f => f.id === myFacilityId);
+    // [Fix] Use fetchedFacility as fallback if not in prop array
+    const myFacility = facilities.find(f => f.id === myFacilityId) || fetchedFacility;
     const pendingCount = reservations.filter(r => r.status === 'pending' || r.status === 'urgent').length;
     const urgentCount = reservations.filter(r => r.status === 'urgent').length;
     // Unread count based on is_read flag (fallback to waiting if is_read undefined for legacy)
@@ -138,7 +205,7 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
                 <div className="flex-1">
                     <h1 className="text-2xl font-bold text-gray-900 mb-2">업체 관리 대시보드</h1>
                     <p className="text-sm text-gray-600">
-                        {myFacility ? `${myFacility.name} 관리 중` : '할당된 시설이 없습니다.'}
+                        {myFacility ? `${myFacility.name} 관리 중` : '할당된 시설 정보를 불러오는 중...'}
                     </p>
                     {pendingCount > 0 && (
                         <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
@@ -216,10 +283,13 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
                             </div>
                             <button
                                 onClick={() => setEditingFacility(myFacility)}
-                                className="flex items-center gap-1 px-3 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors text-sm font-medium"
+                                className="flex flex-col items-center gap-1 px-4 py-3 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-all shadow-md active:scale-95 group"
                             >
-                                <Edit size={16} />
-                                상세수정
+                                <div className="flex items-center gap-2 font-bold whitespace-nowrap">
+                                    <Edit size={18} />
+                                    정보 수정
+                                </div>
+                                <span className="text-[10px] opacity-90 font-medium">사진 · 가격 · 설명 관리</span>
                             </button>
                         </div>
                     </div>

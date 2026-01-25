@@ -1,7 +1,7 @@
 ﻿// import { Database } from '../types/db'; // Database type missing, using default inference
 import { Facility, Review, Reservation } from '../types';
 import { FUNERAL_COMPANIES } from '../constants';
-import { supabase } from './supabaseClient';
+import { supabase, setSupabaseAuth } from './supabaseClient';
 import { logger } from '../utils/logger';
 
 // Partner Inquiry Category Configuration
@@ -616,12 +616,15 @@ export const getFacilityReservations = async (facilityId: string) => {
         .eq('facility_id', facilityId)
         .order('created_at', { ascending: false });
     if (error) throw error;
-    // Map to expected UI types
+    // Map to expected UI types (match Reservation interface in types/index.ts)
     return (data || []).map((item: any) => ({
         ...item,
+        facilityId: item.facility_id,
+        facilityName: item.facility_name,
         date: new Date(item.visit_date),
-        time: item.time_slot,
-        userName: item.user_name,
+        timeSlot: item.time_slot,
+        visitorName: item.user_name || item.visitorName,
+        visitorCount: item.visitor_count || 1,
         userPhone: item.user_phone,
         status: item.status as any
     }));
@@ -740,6 +743,17 @@ export const getUserFacility = async (userId: string) => {
  */
 export const getUserRole = async (userId: string) => {
     try {
+        // 0. profiles 테이블 최우선 확인 (Phase III 캐시/동기화 최적화)
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('clerk_id', userId)
+            .maybeSingle();
+
+        if (profile && profile.role !== 'user') {
+            return { role: profile.role, isError: false };
+        }
+
         // 1. super_admins 테이블 확인
         const { data: superAdmin } = await supabase
             .from('super_admins')
@@ -1334,6 +1348,7 @@ export const getConsultationsByUser = async (userId: string): Promise<Consultati
             return [];
         }
 
+        // [Fix] Map visit_date to date Object for UI consistency if used
         return (data || []) as Consultation[];
     } catch (e) {
         console.error('getConsultationsByUser exception:', e);
@@ -1466,10 +1481,7 @@ export const fetchFacilitiesInView = async (bounds: any, token?: string) => {
 
         // 🟢 [Fix] Refresh Token if provided (Solves JWT Expired)
         if (token) {
-            await supabase.auth.setSession({
-                access_token: token,
-                refresh_token: ''
-            });
+            setSupabaseAuth(token);
         }
 
         const { data, error } = await supabase.rpc('search_facilities_in_view', {
