@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { fetchLeads } from '@/lib/api/superAdmin';
 
 export interface Lead {
     id: string;
@@ -17,16 +17,11 @@ export function useLeads() {
     const [leads, setLeads] = useState<Lead[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const fetchLeads = async () => {
+    const loadLeads = async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase
-                .from('leads')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-            setLeads(data as Lead[] || []);
+            const data = await fetchLeads();
+            setLeads(data as any || []);
         } catch (error) {
             console.error('Fetch leads failed:', error);
             setLeads([]);
@@ -35,28 +30,13 @@ export function useLeads() {
         }
     };
 
-    const updateStatus = async (id: string, status: string) => {
-        try {
-            const { error } = await supabase
-                .from('leads')
-                .update({ status })
-                .eq('id', id);
-
-            if (error) throw error;
-            await fetchLeads();
-        } catch (err: any) {
-            alert('Failed to update status: ' + err.message);
-        }
-    };
-
     useEffect(() => {
-        fetchLeads();
+        loadLeads();
     }, []);
 
     return {
         leads,
         loading,
-        refresh: fetchLeads,
-        updateStatus
+        refresh: loadLeads,
     };
 }
