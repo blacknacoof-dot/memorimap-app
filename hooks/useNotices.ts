@@ -23,12 +23,20 @@ export function useNotices() {
             // We'll perform a soft select or try to adapt.
             // For now, write strictly what component expects.
             const { data, error } = await supabase
-                .from('admin_notices')
+                .from('notices') // [Fix] Changed from admin_notices
                 .select('*')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            setNotices(data as any[] || []);
+
+            // [Fix] Map fields if DB uses different names than frontend expects
+            const mappedData = (data as any[] || []).map(item => ({
+                ...item,
+                target_audience: item.target_audience || item.category || 'all',
+                is_published: item.is_published !== undefined ? item.is_published : true
+            }));
+
+            setNotices(mappedData);
         } catch (error) {
             console.error('Fetch notices failed:', error);
             // Fallback for safety
@@ -40,7 +48,7 @@ export function useNotices() {
 
     const create = async (notice: Omit<Notice, 'id' | 'created_at'>) => {
         const { error } = await supabase
-            .from('admin_notices')
+            .from('notices') // [Fix] Changed from admin_notices
             .insert([{
                 ...notice,
                 // Optional: Map fields if DB schema is different, e.g. 
@@ -53,7 +61,7 @@ export function useNotices() {
 
     const remove = async (id: string) => {
         const { error } = await supabase
-            .from('admin_notices')
+            .from('notices') // [Fix] Changed from admin_notices
             .delete()
             .eq('id', id);
 
