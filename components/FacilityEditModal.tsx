@@ -90,7 +90,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
                 description,
                 price_range: priceRange,
                 image_url: imageUrl,
-                gallery_images: galleryImages
+                images: galleryImages
             });
             onSave();
             onClose();
