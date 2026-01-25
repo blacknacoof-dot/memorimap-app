@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { UserNotification } from '@/types/db';
 import { useAuth } from '@clerk/clerk-react';
@@ -23,6 +24,31 @@ export function useNotifications() {
         },
         enabled: !!userId,
     });
+
+    // 실시간 구독 추가 [Realtime Sync]
+    useEffect(() => {
+        if (!userId) return;
+
+        const channel = supabase
+            .channel(`notif-${userId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'user_notifications',
+                    filter: `user_id=eq.${userId}`
+                },
+                () => {
+                    refetch();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [userId, refetch]);
 
     // 읽음 처리 Mutation
     const markAsRead = useMutation({
