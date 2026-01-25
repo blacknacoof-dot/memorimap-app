@@ -85,7 +85,7 @@ export const SideMenu: React.FC<Props> = ({
                   onClick={() => { onNavigate(ViewState.FACILITY_ADMIN); onClose(); }}
                   className="mt-2 text-xs bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-full flex items-center gap-1 transition-colors shadow-lg"
                 >
-                  내 추모 시설 관리 <ChevronRight size={12} />
+                  시설 관리자 <ChevronRight size={12} />
                 </button>
               )}
 

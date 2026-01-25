@@ -246,7 +246,7 @@ export const MyPageView: React.FC<Props> = ({
                         onClick={() => onNavigate(ViewState.FACILITY_ADMIN)}
                         className="ml-auto bg-amber-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-md hover:bg-amber-600 transition-colors whitespace-nowrap"
                     >
-                        업체 관리 홈
+                        시설 관리자
                     </button>
                 )}
             </div>
