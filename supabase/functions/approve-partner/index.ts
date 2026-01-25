@@ -90,7 +90,12 @@ serve(async (req) => {
         };
 
         // Parse Request
-        const { inquiryId, action, rejectionReason }: ApproveRequest = await req.json()
+        const { inquiryId: rawInquiryId, action, rejectionReason }: ApproveRequest = await req.json()
+        const inquiryId = parseInt(rawInquiryId, 10)
+
+        if (isNaN(inquiryId)) {
+            throw new Error(`Invalid inquiry ID: ${rawInquiryId}`)
+        }
 
         // Fetch Inquiry Details for notifications
         const { data: v_inquiry, error: fetchError } = await supabaseAdmin
@@ -105,19 +110,33 @@ serve(async (req) => {
         const recipientEmail = v_inquiry.company_email || v_inquiry.email;
 
         if (action === 'reject') {
+            // [Fix] Update ALL pending inquiries for this company to 'rejected'
+            // This solves the issue where duplicate applications stay in the list
             const { error: updateError } = await supabaseAdmin
                 .from('partner_inquiries')
-                .update({ status: 'rejected' })
-                .eq('id', inquiryId)
+                .update({
+                    status: 'rejected',
+                    message: `[System] Bulk rejected due to individual rejection. Reason: ${rejectionReason || '운영 정책 부적합'}`
+                })
+                .eq('company_name', v_inquiry.company_name)
+                .eq('status', 'pending')
 
             if (updateError) throw updateError
 
-            await supabaseAdmin.rpc('log_admin_action', {
-                p_action: 'REJECT_PARTNER',
-                p_target_resource: 'partner_inquiries',
-                p_target_id: inquiryId,
-                p_details: { reason: rejectionReason }
-            })
+            // [Fix] Direct log insert instead of crashing RPC
+            await supabaseAdmin.from('audit_logs').insert([{
+                actor_id: user.id || 'SYSTEM',
+                actor_email: user.email,
+                action: 'REJECT_PARTNER',
+                action_category: 'ADMIN_ACTION',
+                target_resource: 'partner_inquiries',
+                target_id: inquiryId,
+                details: {
+                    reason: rejectionReason || '운영 정책 부적합',
+                    bulk: true,
+                    company_name: v_inquiry.company_name
+                }
+            }])
 
             // 1. In-App Notification
             await supabaseAdmin.from('user_notifications').insert([{
@@ -163,6 +182,18 @@ serve(async (req) => {
 
         if (rpcError) throw rpcError
         if (rpcResult && rpcResult.success === false) throw new Error(rpcResult.error || 'Transaction failed')
+
+        // [Fix] Automatically archive/reject OTHER pending inquiries for the same company
+        // This ensures the pending list stays clean after an approval
+        await supabaseAdmin
+            .from('partner_inquiries')
+            .update({
+                status: 'rejected',
+                message: '[System] Automatically rejected as another application for this company was approved.'
+            })
+            .eq('company_name', v_inquiry.company_name)
+            .eq('status', 'pending')
+            .neq('id', inquiryId);
 
         // 1. In-App Notification
         await supabaseAdmin.from('user_notifications').insert([{
