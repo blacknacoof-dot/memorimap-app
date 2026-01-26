@@ -14,6 +14,7 @@ import { FUNERAL_COMPANIES } from '../constants';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { MyConsultations } from './dashboard/MyConsultations';
+import { supabase } from '../lib/supabaseClient';
 
 interface Props {
     isLoggedIn: boolean;
@@ -24,6 +25,8 @@ interface Props {
     onLoginClick: () => void;
     onNavigate?: (view: any) => void;
     onReviewDeleted?: (facilityId: string, reviewId: string, rating: number) => void;
+    onSelectFacility?: (facility: Facility) => void;
+    onSelectCompany?: (company: any) => void;
 }
 
 export const MyPageView: React.FC<Props> = ({
@@ -34,19 +37,23 @@ export const MyPageView: React.FC<Props> = ({
     facilities,
     onLoginClick,
     onNavigate,
-    onReviewDeleted
+    onReviewDeleted,
+    onSelectFacility,
+    onSelectCompany
 }) => {
     const [myReviews, setMyReviews] = useState<Review[]>([]);
     const [myReservations, setMyReservations] = useState<Reservation[]>(propReservations);
     const [isLoadingReviews, setIsLoadingReviews] = useState(false);
     const [isLoadingReservations, setIsLoadingReservations] = useState(false);
-    const [activeTab, setActiveTab] = useState<'consultations' | 'pending' | 'confirmed' | 'cancelled' | 'favorites' | 'sangjo_favorites'>('consultations');
     const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
     const [showEditProfile, setShowEditProfile] = useState(false);
     const [showLegalModal, setShowLegalModal] = useState(false);
+    const [activeTab, setActiveTab] = useState<'consultations' | 'pending' | 'confirmed' | 'cancelled' | 'favorites' | 'sangjo_favorites' | 'reviews'>('favorites');
     const [userPhone, setUserPhone] = useState<string>('');
     const [myFavorites, setMyFavorites] = useState<Favorite[]>([]);
     const [isLoadingFavorites, setIsLoadingFavorites] = useState(false);
+    const [extraFacilities, setExtraFacilities] = useState<Map<string, Facility>>(new Map());
+    const [myConsultations, setMyConsultations] = useState<any[]>([]);
     const [sangjoFavorites, setSangjoFavorites] = useState<SangjoFavorite[]>([]);
     const [isLoadingSangjoFavorites, setIsLoadingSangjoFavorites] = useState(false);
 
@@ -93,13 +100,68 @@ export const MyPageView: React.FC<Props> = ({
     };
 
     const fetchMyFavorites = async () => {
-        if (!user) return;
-        setIsLoadingFavorites(true);
+        if (!isLoggedIn || !user?.id) return;
+        setIsLoadingFavorites(true); // Moved to the start of the function
         try {
             const data = await favoriteService.getFavorites(user.id);
-            setMyFavorites(data || []);
-        } catch (err) {
-            console.error(err);
+            setMyFavorites(data);
+
+            // 🔄 Two-Step Fetch Logic: Get details for facilities not in global state
+            const missingIds = data
+                .map(fav => String(fav.facility_id))
+                .filter(id => !facilities.find(f => String(f.id) === id));
+
+            if (missingIds.length > 0) {
+                console.log('🔄 Fetching missing favorite details:', missingIds);
+
+                const isUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+                const uuidIds = missingIds.filter(isUUID);
+                const legacyIds = missingIds.filter(id => !isUUID(id));
+
+                let missingFacs: any[] = [];
+
+                // 1. Fetch by UUID
+                if (uuidIds.length > 0) {
+                    const { data } = await supabase.from('facilities').select('*').in('id', uuidIds);
+                    if (data) missingFacs = [...missingFacs, ...data];
+                }
+
+                // 2. Fetch by Legacy ID (BIGINT)
+                if (legacyIds.length > 0) {
+                    const { data } = await supabase.from('facilities').select('*').in('legacy_id', legacyIds.map(id => parseInt(id)).filter(n => !isNaN(n)));
+                    if (data) missingFacs = [...missingFacs, ...data];
+                }
+
+                if (missingFacs.length > 0) {
+                    const mappedFacs: Facility[] = missingFacs.map((f: any) => ({
+                        id: f.id,
+                        legacy_id: f.legacy_id, // Store for lookups
+                        name: f.name,
+                        address: f.address,
+                        imageUrl: f.image_url || (f.images && f.images[0]) || null,
+                        type: f.type?.includes('funeral') ? 'funeral' :
+                            f.type?.includes('natural') ? 'natural' :
+                                (f.type?.includes('park') || f.type?.includes('cemetery')) ? 'park' :
+                                    f.type?.includes('pet') ? 'pet' :
+                                        f.type?.includes('sea') ? 'sea' : 'charnel',
+                        rating: Number(f.rating || 0),
+                        reviewCount: Number(f.review_count || 0),
+                        lat: Number(f.latitude || 0),
+                        lng: Number(f.longitude || 0),
+                        category: 'etc' as any
+                    }));
+                    setExtraFacilities((prev: Map<string, Facility>) => {
+                        const newMap = new Map(prev);
+                        mappedFacs.forEach(f => {
+                            newMap.set(String(f.id), f);
+                            if (f.legacy_id) newMap.set(String(f.legacy_id), f); // Also map by legacy_id
+                        });
+                        return newMap;
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Failed to fetch favorites:', error);
         } finally {
             setIsLoadingFavorites(false);
         }
@@ -197,7 +259,12 @@ export const MyPageView: React.FC<Props> = ({
         );
     }
 
-    const filteredReservations = myReservations.filter(r => activeTab === 'pending' ? (r.status === 'pending' || r.status === 'urgent') : r.status === activeTab);
+    const filteredReservations = myReservations.filter(r => {
+        if (activeTab === 'pending') return r.status === 'pending' || r.status === 'urgent';
+        if (activeTab === 'confirmed') return r.status === 'confirmed';
+        if (activeTab === 'cancelled') return r.status === 'cancelled';
+        return false;
+    });
     const pendingCount = myReservations.filter(r => r.status === 'pending' || r.status === 'urgent').length;
 
     return (
@@ -382,10 +449,21 @@ export const MyPageView: React.FC<Props> = ({
                     ) : (
                         <div className="space-y-3">
                             {myFavorites.map(fav => {
-                                const facility = facilities.find(f => String(f.id) === String(fav.facility_id));
+                                // Try to find in global prop first (most up-to-date state)
+                                let facility = facilities.find(f => String(f.id) === String(fav.facility_id));
+
+                                // Fallback: Use extraFacilities state
+                                if (!facility) {
+                                    facility = extraFacilities.get(String(fav.facility_id));
+                                }
+
                                 if (!facility) return null;
                                 return (
-                                    <div key={fav.id} className="bg-white border rounded-xl p-4 hover:shadow-md transition-shadow relative">
+                                    <div
+                                        key={fav.id}
+                                        onClick={() => onSelectFacility?.(facility!)}
+                                        className="bg-white border rounded-xl p-4 hover:shadow-md transition-shadow relative cursor-pointer active:scale-[0.98]"
+                                    >
                                         <div className="flex gap-4">
                                             <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden shrink-0">
                                                 {facility.imageUrl ? (
@@ -398,8 +476,11 @@ export const MyPageView: React.FC<Props> = ({
                                                 <div className="flex justify-between items-start">
                                                     <h3 className="font-bold text-gray-900 truncate pr-6">{facility.name}</h3>
                                                     <button
-                                                        onClick={() => handleRemoveFavorite(facility.id)}
-                                                        className="text-red-500 hover:bg-red-50 p-1 rounded-full absolute top-3 right-3"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleRemoveFavorite(facility!.id);
+                                                        }}
+                                                        className="text-red-500 hover:bg-red-50 p-1 rounded-full absolute top-3 right-3 z-10"
                                                         title="즐겨찾기 해제"
                                                     >
                                                         <Heart size={18} fill="currentColor" />
@@ -447,7 +528,11 @@ export const MyPageView: React.FC<Props> = ({
                                     if (!company || seenIds.has(company.id)) return null;
                                     seenIds.add(company.id);
                                     return (
-                                        <div key={fav.id} className="bg-white border rounded-xl p-4 hover:shadow-md transition-shadow relative">
+                                        <div
+                                            key={fav.id}
+                                            onClick={() => onSelectCompany?.(company)}
+                                            className="bg-white border rounded-xl p-4 hover:shadow-md transition-shadow relative cursor-pointer active:scale-[0.98]"
+                                        >
                                             <div className="flex gap-4">
                                                 <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden shrink-0">
                                                     <img
@@ -460,8 +545,11 @@ export const MyPageView: React.FC<Props> = ({
                                                     <div className="flex justify-between items-start">
                                                         <h3 className="font-bold text-gray-900 truncate pr-6">{company.name}</h3>
                                                         <button
-                                                            onClick={() => handleRemoveSangjoFavorite(company.id)}
-                                                            className="text-red-500 hover:bg-red-50 p-1 rounded-full absolute top-3 right-3"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleRemoveSangjoFavorite(company.id);
+                                                            }}
+                                                            className="text-red-500 hover:bg-red-50 p-1 rounded-full absolute top-3 right-3 z-10"
                                                             title="즐겨찾기 해제"
                                                         >
                                                             <Heart size={18} fill="currentColor" />

@@ -7,6 +7,7 @@ export const NotificationCenter: React.FC = () => {
     const { notifications, unreadCount, markAsRead, markAllAsRead, isLoading } = useNotifications();
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const navigate = useNavigate();
 
     // Close on outside click
     useEffect(() => {
@@ -45,7 +46,7 @@ export const NotificationCenter: React.FC = () => {
 
             {/* Dropdown */}
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 z-[100] animate-in fade-in zoom-in-95 duration-200">
+                <div className="absolute left-[-64px] sm:left-auto sm:right-0 mt-2 w-72 sm:w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 z-[200] animate-in fade-in zoom-in-95 duration-200 origin-top-right">
                     <div className="p-4 border-b border-gray-50 flex items-center justify-between">
                         <h3 className="font-bold text-gray-900">알림</h3>
                         <div className="flex gap-2">
@@ -74,8 +75,15 @@ export const NotificationCenter: React.FC = () => {
                                     key={notif.id}
                                     className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer relative ${!notif.is_read ? 'bg-blue-50/30' : ''}`}
                                     onClick={() => {
-                                        if (!notif.is_read) markAsRead(notif.id);
-                                        if (notif.link) window.location.href = `/#${notif.link}`;
+                                        if (!notif.is_read) markAsRead(notif.is_read ? notif.id : notif.id); // Optimized call
+                                        if (notif.link) {
+                                            if (notif.link.startsWith('/')) {
+                                                navigate(notif.link);
+                                            } else {
+                                                navigate(`/${notif.link}`);
+                                            }
+                                        }
+                                        setIsOpen(false);
                                     }}
                                 >
                                     {!notif.is_read && (

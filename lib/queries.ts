@@ -681,17 +681,10 @@ export const getReviewsBySpace = getReviews;
 
 export const getFacilitySubscription = async (facilityId: string) => {
     try {
-        // [Fix] facility_subscriptions.facility_id is BIGINT, not UUID
-        // If facilityId looks like a UUID, skip the query to avoid type mismatch error
         const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
-        if (isUUID) {
-            // UUID means it's from 'facilities' table, not 'memorial_spaces' (BIGINT)
-            // Subscription feature only works with memorial_spaces for now
-            logger.debug('[getFacilitySubscription] Skipping for UUID facility:', facilityId);
-            return null;
-        }
 
-        const { data, error } = await supabase
+        // [New Strategy] Query both potential columns based on ID type
+        let query = supabase
             .from('facility_subscriptions')
             .select(`
                 *,
@@ -700,13 +693,19 @@ export const getFacilitySubscription = async (facilityId: string) => {
                     price,
                     features
                 )
-            `)
-            .eq('facility_id', facilityId)
-            .maybeSingle(); // Use maybeSingle to avoid error if no subscription exists
+            `);
+
+        if (isUUID) {
+            query = query.eq('facility_id_uuid', facilityId);
+        } else {
+            // Legacy/BIGINT
+            query = query.or(`facility_id.eq.${facilityId},facility_id_bigint.eq.${facilityId}`);
+        }
+
+        const { data, error } = await query.maybeSingle();
 
         if (error) {
             console.error('Error fetching facility subscription:', error);
-            // Don't throw, just return null as frontend expects optional
             return null;
         }
 
@@ -1012,15 +1011,30 @@ export const incrementAiUsage = async (facilityId: string) => {
 };
 
 export const updateFacilitySubscription = async (facilityId: string, planId: string) => {
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
+
+    const upsertData: any = {
+        plan_id: planId,
+        updated_at: new Date().toISOString()
+    };
+
+    if (isUUID) {
+        upsertData.facility_id_uuid = facilityId;
+    } else {
+        upsertData.facility_id_bigint = Number(facilityId);
+        upsertData.facility_id = Number(facilityId); // Maintain legacy column for backward compatibility
+    }
+
     const { error } = await supabase
         .from('facility_subscriptions')
-        .upsert({
-            facility_id: facilityId,
-            plan_id: planId,
-            updated_at: new Date().toISOString()
-        }, { onConflict: 'facility_id' });
+        .upsert(upsertData, {
+            onConflict: isUUID ? 'facility_id_uuid' : 'facility_id_bigint'
+        });
 
-    if (error) throw error;
+    if (error) {
+        console.error('updateFacilitySubscription error:', error);
+        throw error;
+    }
 };
 
 /**

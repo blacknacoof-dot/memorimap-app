@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Check, X, Sparkles, Crown, Zap, ChevronDown, ChevronUp, MessageCircle, Mail, BarChart3, Star, ShieldCheck } from 'lucide-react';
+import { requestPayment, PORTONE_CONFIG } from '../lib/portone';
 
 interface Plan {
     id: string;
@@ -189,9 +190,9 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
         }
 
         try {
-            const response = await window.PortOne.requestPayment({
-                storeId: "store-4375b430-8d59-4700-985e-990e5d0e70be",
-                channelKey: "channel-key-here", // 필수 필드 추가
+            const response = await requestPayment({
+                storeId: PORTONE_CONFIG.STORE_ID,
+                channelKey: PORTONE_CONFIG.CHANNEL_KEY,
                 paymentId: `sub_${Date.now()}`,
                 orderName: `[추모맵] ${plan.name} 플랜`,
                 totalAmount: plan.price,
@@ -201,7 +202,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                     fullName: "업체 관리자",
                     phoneNumber: "010-0000-0000",
                     email: "admin@facility.com",
-                },
+                }
             });
 
             if (response.code !== undefined) {

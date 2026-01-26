@@ -66,6 +66,7 @@ export type FacilityCategoryLabel =
  */
 export interface Facility {
     id: string;
+    legacy_id?: number | string;
     name: string;
     facility_type?: FacilityCategoryType; // DB standard (optional for backward compatibility)
     category?: FacilityCategoryType; // Legacy support

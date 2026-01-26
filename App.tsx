@@ -98,6 +98,7 @@ const App: React.FC = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [isDataLoading, setIsDataLoading] = useState(false);
+  const { searchQuery, selectedCategories } = useFilterStore();
 
   // 🚑 Hotfix: Connect to Store to keep existing logic working
   const setSearchQuery = useFilterStore(state => state.setSearchQuery);
@@ -544,21 +545,39 @@ const App: React.FC = () => {
   // Filtered Facilities Logic
   // [Fix] Filter by Map Bounds to solve "Seoul showing Uijeongbu" issue
   const filteredFacilities = React.useMemo(() => {
-    if (!currentBounds) return facilities; // If no bounds (init), show all or maybe default? All is fine for now.
+    let result = facilities;
 
-    return facilities.filter(f => {
-      // Filter by location (Bounds contains)
-      if (f.lat && f.lng) {
-        try {
-          const latLng = L.latLng(f.lat, f.lng);
-          return currentBounds.contains(latLng);
-        } catch (e) {
-          return true; // Fallback if error
+    // 1. Filter by Map Bounds if on MAP view
+    if (viewState === ViewState.MAP && currentBounds) {
+      result = result.filter(f => {
+        if (f.lat && f.lng) {
+          try {
+            const latLng = L.latLng(f.lat, f.lng);
+            return currentBounds.contains(latLng);
+          } catch (e) {
+            return true;
+          }
         }
-      }
-      return false;
-    });
-  }, [facilities, currentBounds]);
+        return false;
+      });
+    }
+
+    // 2. Filter by Category
+    if (selectedCategories.length > 0) {
+      result = result.filter(f => selectedCategories.includes(f.category as any) || selectedCategories.includes(f.type as any));
+    }
+
+    // 3. Filter by Search Query
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      result = result.filter(f =>
+        f.name.toLowerCase().includes(q) ||
+        f.address.toLowerCase().includes(q)
+      );
+    }
+
+    return result;
+  }, [facilities, currentBounds, searchQuery, selectedCategories, viewState]);
 
   const handleBoundsChange = (bounds: L.LatLngBounds) => {
     setCurrentBounds(bounds);
@@ -896,6 +915,128 @@ const App: React.FC = () => {
     }
   };
 
+  const handleCompanySelect = React.useCallback(async (company: FuneralCompany, startChat?: boolean) => {
+    // [Fix] Fetch fresh data from DB to ensure we have products AND reviews
+    let productData = company.products;
+    let reviewData: any[] = [];
+
+    const relatedFacility = facilities.find(f => f.name === company.name && f.type === 'sangjo');
+    // [Fix] Support both UUID and Legacy ID
+    let searchId: string | number | null = null;
+
+    // 1. Try to find ID from related facility or company object
+    if (relatedFacility && relatedFacility.id) {
+      searchId = relatedFacility.id;
+    } else if (company.id && !company.id.startsWith('fc_')) {
+      // Use company.id if it's not a static ID (starts with fc_)
+      searchId = company.id;
+    }
+
+    if (searchId) {
+      const searchIdStr = searchId.toString();
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(searchIdStr);
+
+      let uuid: string | null = null;
+      let legacyId: number | null = null;
+
+      if (isUuid) {
+        uuid = searchIdStr;
+        // Fetch Legacy ID from facilities to query memorial_spaces
+        const { data: facData } = await supabase
+          .from('facilities')
+          .select('legacy_id')
+          .eq('id', uuid)
+          .maybeSingle();
+
+        if (facData && facData.legacy_id) {
+          const parsed = parseInt(facData.legacy_id, 10);
+          if (!isNaN(parsed)) legacyId = parsed;
+        }
+      } else {
+        // It is already a legacy numeric ID (from static data?)
+        const parsed = parseInt(searchIdStr, 10);
+        if (!isNaN(parsed)) {
+          legacyId = parsed;
+          // Fetch UUID from facilities to get reviews
+          const { data: facData } = await supabase
+            .from('facilities')
+            .select('id')
+            .eq('legacy_id', searchIdStr)
+            .maybeSingle();
+          if (facData) uuid = facData.id;
+        }
+      }
+
+      // 1. Fetch Products from 'memorial_spaces' (Requires Integer ID)
+      if (legacyId) {
+        const { data } = await supabase
+          .from('memorial_spaces')
+          .select('price_info')
+          .eq('id', legacyId) // Integer column
+          .maybeSingle();
+
+        if (data && data.price_info && data.price_info.products) {
+          productData = data.price_info.products;
+        }
+      }
+
+      // 2. Fetch Reviews from 'reviews' (Requires UUID)
+      if (uuid) {
+        const { data: reviews } = await supabase
+          .from('reviews')
+          .select('*')
+          .eq('facility_id', uuid) // UUID column
+          .order('created_at', { ascending: false });
+
+        if (reviews) {
+          reviewData = reviews;
+        }
+      }
+    } else {
+      // Fallback: Fetch ID by name to get reviews
+      try {
+        const { data } = await supabase
+          .from('memorial_spaces')
+          .select('id, price_info')
+          .eq('name', company.name)
+          .maybeSingle();
+
+        if (data) {
+          if (data.price_info && data.price_info.products) {
+            productData = data.price_info.products;
+          }
+          // Now fetch reviews with this ID
+          const { data: reviews } = await supabase
+            .from('reviews')
+            .select('*')
+            .eq('facility_id', data.id)
+            .order('created_at', { ascending: false });
+
+          if (reviews) reviewData = reviews;
+        }
+      } catch (e) {
+        console.error('Name fallback failed', e);
+      }
+    }
+
+    const mergedCompany = {
+      ...company,
+      products: productData,
+      // [FIX] Map user_name to userName for ReviewCard compatibility
+      reviews: reviewData.map((r: any) => ({
+        ...r,
+        userName: r.user_name || '익명',
+        userId: r.user_id,
+        date: r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : ''
+      }))
+    };
+
+    setSelectedFuneralCompany(mergedCompany);
+    if (startChat) {
+      setShowSangjoAIConsult(true);
+    }
+  }, [facilities]);
+
   const toggleSangjoCompare = (company: FuneralCompany) => {
     setSangjoCompareList(prev => {
       const exists = prev.find(c => c.id === company.id);
@@ -1116,6 +1257,8 @@ const App: React.FC = () => {
             facilities={facilities}
             onLoginClick={handleLoginClick}
             onReviewDeleted={handleReviewDeleted}
+            onSelectFacility={handleFacilitySelect}
+            onSelectCompany={handleCompanySelect}
           />
         );
 
@@ -1250,133 +1393,7 @@ const App: React.FC = () => {
       case ViewState.FUNERAL_COMPANIES:
         return (
           <FuneralCompanyView
-            onCompanySelect={async (company, startChat) => {
-              // [Fix] Fetch fresh data from DB to ensure we have products AND reviews
-              let productData = company.products;
-              let reviewData: any[] = [];
-              let fetched = false;
-
-              const relatedFacility = facilities.find(f => f.name === company.name && f.type === 'sangjo');
-              // [Fix] Support both UUID and Legacy ID
-              let searchId: string | number | null = null;
-
-              // 1. Try to find ID from related facility or company object
-              if (relatedFacility && relatedFacility.id) {
-                searchId = relatedFacility.id;
-              } else if (company.id && !company.id.startsWith('fc_')) {
-                // Use company.id if it's not a static ID (starts with fc_)
-                searchId = company.id;
-              }
-
-
-              // [Fix] Fully Robust Logic: UUID (Facilities) <-> Integer (Memorial_Spaces)
-
-              // 2026-01-17: 'facilities' table has UUID but NO price_info.
-              // 'memorial_spaces' table has Integer ID AND price_info.
-              // 'reviews' table uses facility_id (UUID).
-
-              if (searchId) {
-                const searchIdStr = searchId.toString();
-                const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(searchIdStr);
-
-                let uuid: string | null = null;
-                let legacyId: number | null = null;
-
-                if (isUuid) {
-                  uuid = searchIdStr;
-                  // Fetch Legacy ID from facilities to query memorial_spaces
-                  const { data: facData } = await supabase
-                    .from('facilities')
-                    .select('legacy_id')
-                    .eq('id', uuid)
-                    .maybeSingle();
-
-                  if (facData && facData.legacy_id) {
-                    const parsed = parseInt(facData.legacy_id, 10);
-                    if (!isNaN(parsed)) legacyId = parsed;
-                  }
-                } else {
-                  // It is already a legacy numeric ID (from static data?)
-                  const parsed = parseInt(searchIdStr, 10);
-                  if (!isNaN(parsed)) {
-                    legacyId = parsed;
-                    // Fetch UUID from facilities to get reviews
-                    const { data: facData } = await supabase
-                      .from('facilities')
-                      .select('id')
-                      .eq('legacy_id', searchIdStr)
-                      .maybeSingle();
-                    if (facData) uuid = facData.id;
-                  }
-                }
-
-                // 1. Fetch Products from 'memorial_spaces' (Requires Integer ID)
-                if (legacyId) {
-                  const { data } = await supabase
-                    .from('memorial_spaces')
-                    .select('price_info')
-                    .eq('id', legacyId) // Integer column
-                    .maybeSingle();
-
-                  if (data && data.price_info && data.price_info.products) {
-                    productData = data.price_info.products;
-                  }
-                }
-
-                // 2. Fetch Reviews from 'reviews' (Requires UUID)
-                if (uuid) {
-                  const { data: reviews } = await supabase
-                    .from('reviews')
-                    .select('*')
-                    .eq('facility_id', uuid) // UUID column
-                    .order('created_at', { ascending: false });
-
-                  if (reviews) {
-                    reviewData = reviews;
-                  }
-                }
-              } else {
-                // Fallback: Fetch ID by name to get reviews
-                try {
-                  const { data } = await supabase
-                    .from('memorial_spaces')
-                    .select('id, price_info')
-                    .eq('name', company.name)
-                    .maybeSingle();
-
-                  if (data) {
-                    if (data.price_info && data.price_info.products) {
-                      productData = data.price_info.products;
-                    }
-                    // Now fetch reviews with this ID
-                    const { data: reviews } = await supabase
-                      .from('reviews')
-                      .select('*')
-                      .eq('facility_id', data.id)
-                      .order('created_at', { ascending: false });
-
-                    if (reviews) reviewData = reviews;
-                  }
-                } catch (e) { console.error('Name fallback failed', e); }
-              }
-
-              const mergedCompany = {
-                ...company,
-                products: productData,
-                // [FIX] Map user_name to userName for ReviewCard compatibility
-                reviews: reviewData.map((r: any) => ({
-                  ...r,
-                  userName: r.user_name || '익명',
-                  userId: r.user_id,
-                  date: r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : ''
-                }))
-              };
-
-              setSelectedFuneralCompany(mergedCompany);
-              if (startChat) {
-                setShowSangjoAIConsult(true);
-              }
-            }}
+            onCompanySelect={handleCompanySelect}
             onBack={() => setViewState(ViewState.MAP)}
             compareList={sangjoCompareList}
             onToggleCompare={toggleSangjoCompare}
@@ -1503,9 +1520,9 @@ const App: React.FC = () => {
           {/* Top Bar - Only on Main Views */}
           {(viewState === ViewState.MAP || viewState === ViewState.LIST || viewState === ViewState.MY_PAGE) && (
             <>
-              {/* 🚧 Step 3-1: Parallel Implementation Test - Temporary Placement */}
-              {viewState !== ViewState.MY_PAGE && (
-                <div className="absolute top-16 left-0 right-0 z-[60] px-4 pointer-events-none">
+              {/* 🚧 FilterBar - Hide on My Page and when Menu is Open */}
+              {viewState !== ViewState.MY_PAGE && !isMenuOpen && (
+                <div className="absolute top-20 left-0 right-0 z-40 px-4 pointer-events-none animate-in fade-in slide-in-from-top-1 duration-300">
                   <div className="pointer-events-auto">
                     <FilterBar />
                   </div>

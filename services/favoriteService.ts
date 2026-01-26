@@ -10,7 +10,7 @@ export interface Favorite {
 
 export const favoriteService = {
     // 즐겨찾기 목록 조회
-    async getFavorites(userId: string) {
+    async getFavorites(userId: string): Promise<Favorite[]> {
         const { data, error } = await supabase
             .from('favorites')
             .select('*')
@@ -21,7 +21,7 @@ export const favoriteService = {
             console.error('Error fetching favorites:', error);
             throw error;
         }
-        return data;
+        return data || [];
     },
 
     // 즐겨찾기 여부 확인
