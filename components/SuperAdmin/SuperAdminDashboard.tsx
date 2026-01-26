@@ -214,7 +214,7 @@ const SystemSettings = () => {
 };
 
 /** [Tab A] Subscription Manager */
-const SubscriptionManager = () => {
+const SubscriptionManager = ({ onManage }: { onManage: (facilityName: string) => void }) => {
     const { data: facilities, loading } = useSubscriptions();
 
     if (loading) return <div className="p-10 text-center">로딩 중...</div>;
@@ -263,7 +263,10 @@ const SubscriptionManager = () => {
                                 </div>
                                 <span className="text-[10px] text-slate-400 mt-0.5">만료: {fac.end_date ? new Date(fac.end_date).toLocaleDateString() : '-'}</span>
                             </div>
-                            <button className="text-slate-400 hover:text-slate-600 px-3 py-1 text-xs border border-slate-100 rounded bg-white">
+                            <button
+                                onClick={() => onManage(fac.facility_name)}
+                                className="text-slate-400 hover:text-slate-600 px-3 py-1 text-xs border border-slate-100 rounded bg-white"
+                            >
                                 관리
                             </button>
                         </div>
@@ -478,7 +481,14 @@ export default function SuperAdminDashboard() {
 
             {/* 2. Main Content Area */}
             <main className="max-w-md mx-auto p-4">
-                {activeTab === 'subs' && <SubscriptionManager />}
+                {activeTab === 'subs' && (
+                    <SubscriptionManager
+                        onManage={(name) => {
+                            // TODO: Later implement search by name in FacilityManagement if needed
+                            setActiveTab('facilities');
+                        }}
+                    />
+                )}
                 {activeTab === 'revenue' && <RevenueAnalytics />}
                 {activeTab === 'leads' && <AdminLeadsView />}
 
