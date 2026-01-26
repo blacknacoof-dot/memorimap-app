@@ -41,6 +41,20 @@ export const AdminLeadsView: React.FC = () => {
         return map[u] || u;
     };
 
+    /** Phone Masking Logic: 010-1234-5678 -> 010-****-5678 */
+    const maskPhone = (phone: string) => {
+        if (!phone) return '-';
+        const parts = phone.split('-');
+        if (parts.length === 3) {
+            return `${parts[0]}-****-${parts[2]}`;
+        }
+        // Fallback for non-standard formats
+        return phone.replace(/(\d{3})(\d{3,4})(\d{4})/, '$1-****-$3');
+    };
+
+    // Deduplicate leads by phone number, keeping the newest one
+    const processedLeads = Array.from(new Map(leads.map(lead => [lead.contact_phone || lead.phone_number, lead])).values());
+
     if (loading) return <div className="p-8 text-center text-slate-500">데이터를 불러오는 중...</div>;
 
     return (
@@ -67,14 +81,14 @@ export const AdminLeadsView: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                        {leads.length === 0 ? (
+                        {processedLeads.length === 0 ? (
                             <tr>
                                 <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
                                     접수된 상담 내역이 없습니다.
                                 </td>
                             </tr>
                         ) : (
-                            leads.map((lead) => (
+                            processedLeads.map((lead: any) => (
                                 <tr key={lead.id} className="hover:bg-slate-50 transition">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center gap-2">
@@ -86,7 +100,7 @@ export const AdminLeadsView: React.FC = () => {
                                         <div className="font-bold text-slate-800">{lead.contact_name}</div>
                                         <div className="flex items-center gap-1.5 text-slate-500 mt-1">
                                             <Phone size={12} />
-                                            {lead.contact_phone}
+                                            {maskPhone(lead.contact_phone || lead.phone_number)}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">

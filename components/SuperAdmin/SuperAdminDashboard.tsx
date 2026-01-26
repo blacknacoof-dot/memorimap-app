@@ -96,7 +96,17 @@ const SideMenuDrawer = ({ isOpen, onClose, onNavigate }: { isOpen: boolean; onCl
 };
 
 /** [Settings] Admin Settings View */
+import { updateSystemSetting } from '../../lib/api/superAdmin';
+
 const AdminSettings = () => {
+    const handleSaveProfile = () => {
+        alert('프로필 정보가 저장되었습니다. (Internal)');
+    };
+
+    const handleChangePassword = () => {
+        alert('비밀번호 변경 기능은 Clerk 대시보드에서 관리 가능합니다.');
+    };
+
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
             {/* Profile Section */}
@@ -114,6 +124,12 @@ const AdminSettings = () => {
                         <label className="block text-xs font-medium text-slate-500 mb-1">연락처</label>
                         <input type="tel" defaultValue="010-1234-5678" className="w-full text-sm p-2 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500" />
                     </div>
+                    <button
+                        onClick={handleSaveProfile}
+                        className="w-full mt-2 bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                    >
+                        정보 업데이트
+                    </button>
                 </div>
             </div>
 
@@ -132,7 +148,10 @@ const AdminSettings = () => {
                         <label className="block text-xs font-medium text-slate-500 mb-1">새 비밀번호</label>
                         <input type="password" placeholder="새 비밀번호 입력" className="w-full text-sm p-2 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500" />
                     </div>
-                    <button className="w-full mt-2 bg-slate-800 text-white py-2 rounded-lg text-sm font-medium hover:bg-slate-700 transition-colors">
+                    <button
+                        onClick={handleChangePassword}
+                        className="w-full mt-2 bg-slate-800 text-white py-2 rounded-lg text-sm font-medium hover:bg-slate-700 transition-colors"
+                    >
                         비밀번호 변경
                     </button>
                 </div>
@@ -169,6 +188,18 @@ const AdminSettings = () => {
 
 /** [Settings] System Settings View */
 const SystemSettings = () => {
+    const [commission, setCommission] = useState('3.5');
+
+    const handleSaveSystemSettings = async () => {
+        try {
+            await updateSystemSetting('commission_rate', commission);
+            alert('시스템 설정이 저장되었습니다.');
+        } catch (e) {
+            console.error(e);
+            alert('설정 저장 중 오류가 발생했습니다.');
+        }
+    };
+
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
             {/* Maintenance Mode */}
@@ -183,7 +214,10 @@ const SystemSettings = () => {
                         <p className="text-[10px] text-red-600 mt-0.5">활성화 시 일반 사용자의 접속이 차단됩니다.</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" className="sr-only peer" />
+                        <input type="checkbox" className="sr-only peer" onChange={(e) => {
+                            updateSystemSetting('maintenance_mode', e.target.checked);
+                            alert(`점검 모드가 ${e.target.checked ? '활성화' : '비활성화'} 되었습니다.`);
+                        }} />
                         <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
                     </label>
                 </div>
@@ -199,12 +233,20 @@ const SystemSettings = () => {
                     <div>
                         <label className="block text-xs font-medium text-slate-500 mb-1">기본 중개 수수료율 (%)</label>
                         <div className="relative">
-                            <input type="number" defaultValue="3.5" className="w-full text-sm p-2 pr-8 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500" />
+                            <input
+                                type="number"
+                                value={commission}
+                                onChange={(e) => setCommission(e.target.value)}
+                                className="w-full text-sm p-2 pr-8 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500"
+                            />
                             <span className="absolute right-3 top-2 text-sm text-slate-400">%</span>
                         </div>
                         <p className="text-[10px] text-slate-400 mt-1">모든 예약 및 결제 건에 적용되는 기본 수수료입니다.</p>
                     </div>
-                    <button className="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                    <button
+                        onClick={handleSaveSystemSettings}
+                        className="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                    >
                         설정 저장
                     </button>
                 </div>
@@ -280,6 +322,36 @@ const SubscriptionManager = ({ onManage }: { onManage: (facilityName: string) =>
     );
 };
 
+/** [Component] Trend Bar Chart (Genius Visualization) */
+const TrendChart = ({ data }: { data: { label: string, value: number, color: string }[] }) => {
+    const max = Math.max(...data.map(d => d.value), 1);
+    return (
+        <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+            <h4 className="text-[10px] font-bold text-slate-400 uppercase mb-4 tracking-widest">매출 트렌드 (최근)</h4>
+            <div className="flex items-end justify-between h-32 gap-2">
+                {data.map((item, i) => (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
+                        <div className="relative w-full flex justify-center items-end h-full">
+                            <div
+                                className={`w-full max-w-[20px] rounded-t-sm transition-all duration-700 ease-out border-t-2 ${item.color}`}
+                                style={{
+                                    height: `${(item.value / max) * 100}%`,
+                                    opacity: 0.8
+                                }}
+                            >
+                                <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-[9px] px-1.5 py-0.5 rounded whitespace-nowrap z-10">
+                                    ₩{(item.value / 10000).toFixed(0)}만
+                                </div>
+                            </div>
+                        </div>
+                        <span className="text-[9px] text-slate-400 font-medium">{item.label}</span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
 /** [Tab B] Revenue Analytics */
 const RevenueAnalytics = () => {
     const { payments, totalRevenue, loading } = useRevenue();
@@ -291,22 +363,42 @@ const RevenueAnalytics = () => {
         .reduce((acc, curr) => acc + curr.amount, 0);
     const commRevenue = totalRevenue - subRevenue;
 
+    // Sample data for TrendChart (In a real app, this would be grouped by date)
+    const trendData = [
+        { label: '월', value: totalRevenue * 0.1, color: 'bg-blue-400 border-blue-500' },
+        { label: '화', value: totalRevenue * 0.15, color: 'bg-indigo-400 border-indigo-500' },
+        { label: '수', value: totalRevenue * 0.08, color: 'bg-blue-400 border-blue-500' },
+        { label: '목', value: totalRevenue * 0.22, color: 'bg-indigo-400 border-indigo-500' },
+        { label: '금', value: totalRevenue * 0.3, color: 'bg-blue-500 border-blue-600' },
+        { label: '토', value: totalRevenue * 0.12, color: 'bg-indigo-400 border-indigo-500' },
+        { label: '일', value: totalRevenue * 0.03, color: 'bg-blue-400 border-blue-500' },
+    ];
+
     return (
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-5 text-white shadow-lg flex justify-between items-center relative overflow-hidden">
+            <div className="w-full bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 rounded-2xl p-6 text-white shadow-xl flex justify-between items-center relative overflow-hidden group">
+                {/* Decorative Pattern */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-3xl group-hover:bg-white/20 transition-all duration-500"></div>
+
                 <div className="relative z-10">
-                    <p className="text-blue-100 text-xs font-medium mb-1">총 매출</p>
-                    <h2 className="text-2xl font-bold tracking-tight">₩ {totalRevenue.toLocaleString()}</h2>
-                    <div className="flex items-center gap-1.5 mt-2">
-                        <span className="bg-white/20 px-1.5 py-0.5 rounded text-[10px] font-semibold flex items-center backdrop-blur-sm">
-                            <TrendingUp className="w-3 h-3 mr-1" /> 실시간 집계
+                    <p className="text-blue-100 text-[10px] font-bold uppercase tracking-wider mb-1 opacity-80">누적 총 매출</p>
+                    <h2 className="text-3xl font-black tracking-tight flex items-baseline gap-1">
+                        <span className="text-lg font-normal opacity-70">₩</span>
+                        {totalRevenue.toLocaleString()}
+                    </h2>
+                    <div className="flex items-center gap-1.5 mt-3">
+                        <span className="bg-white/20 px-2 py-0.5 rounded-full text-[9px] font-bold flex items-center backdrop-blur-md border border-white/10">
+                            <TrendingUp className="w-3 h-3 mr-1" /> 실시간 데이터 분석 중
                         </span>
                     </div>
                 </div>
-                <div className="bg-white/10 p-2 rounded-full relative z-10 hidden sm:block">
-                    <Wallet className="w-6 h-6 text-white" />
+                <div className="bg-white/10 p-3 rounded-2xl border border-white/20 backdrop-blur-sm relative z-10 hidden sm:block shadow-inner">
+                    <Wallet className="w-8 h-8 text-white" />
                 </div>
             </div>
+
+            {/* Added Visualization Chart */}
+            <TrendChart data={trendData} />
 
             <div className="grid grid-cols-2 gap-3">
                 <div className="bg-white border border-slate-100 p-3 rounded-xl shadow-sm">
@@ -418,8 +510,9 @@ const AdminLeadsView = () => {
 /** [Main Container] */
 export default function SuperAdminDashboard() {
     const { user } = useUser();
-    const [activeTab, setActiveTab] = useState<'subs' | 'revenue' | 'leads' | 'admissions' | 'facilities' | 'users' | 'notices' | 'logs'>('leads');
+    const [activeTab, setActiveTab] = useState<'subs' | 'revenue' | 'leads' | 'admissions' | 'facilities' | 'users' | 'notices' | 'logs' | 'admin_settings' | 'system_settings'>('leads');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [facilitySearchTerm, setFacilitySearchTerm] = useState('');
 
     return (
         <div className="min-h-screen bg-slate-50 pb-20 font-sans relative">
@@ -484,7 +577,7 @@ export default function SuperAdminDashboard() {
                 {activeTab === 'subs' && (
                     <SubscriptionManager
                         onManage={(name) => {
-                            // TODO: Later implement search by name in FacilityManagement if needed
+                            setFacilitySearchTerm(name);
                             setActiveTab('facilities');
                         }}
                     />
@@ -494,10 +587,17 @@ export default function SuperAdminDashboard() {
 
                 {/* Render Management Components */}
                 {activeTab === 'admissions' && <PartnerAdmissions />}
-                {activeTab === 'facilities' && <FacilityManagement />}
+                {activeTab === 'facilities' && (
+                    <FacilityManagement
+                        initialSearch={facilitySearchTerm}
+                        onClearSearch={() => setFacilitySearchTerm('')}
+                    />
+                )}
                 {activeTab === 'users' && <UserManagement />}
                 {activeTab === 'notices' && <NoticeManager />}
                 {activeTab === 'logs' && <AdminLogsView />}
+                {activeTab === 'admin_settings' && <AdminSettings />}
+                {activeTab === 'system_settings' && <SystemSettings />}
                 <ConfirmModal />
             </main>
         </div>

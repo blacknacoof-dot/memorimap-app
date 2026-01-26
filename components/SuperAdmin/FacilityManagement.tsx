@@ -3,13 +3,20 @@ import { useAllFacilities } from '../../hooks/useAdminFacilities';
 import { useAllUsers } from '../../hooks/useUsers';
 import { Search, Building2, MapPin, User, Edit2, AlertCircle } from 'lucide-react';
 
-export const FacilityManagement: React.FC = () => {
+export const FacilityManagement: React.FC<{ initialSearch?: string; onClearSearch?: () => void }> = ({ initialSearch, onClearSearch }) => {
     const { facilities, loading, search, updateManager } = useAllFacilities();
     const { users } = useAllUsers();
-    const [searchTerm, setSearchTerm] = useState('');
-    const [editingId, setEditingId] = useState<string | null>(null); // Changed to string for UUID
+    const [searchTerm, setSearchTerm] = useState(initialSearch || '');
+    const [editingId, setEditingId] = useState<string | null>(null);
     const [tempManagerId, setTempManagerId] = useState<string>('');
-    const [hasSearched, setHasSearched] = useState(false);
+    const [hasSearched, setHasSearched] = useState(!!initialSearch);
+
+    // Initial Search Logic
+    React.useEffect(() => {
+        if (initialSearch) {
+            search(initialSearch);
+        }
+    }, [initialSearch]);
 
     const filteredFacilities = facilities; // Filtering is done by DB search now
 
@@ -51,6 +58,18 @@ export const FacilityManagement: React.FC = () => {
                 <button onClick={handleSearch} className="text-sm bg-gray-800 text-white px-3 py-1.5 rounded hover:bg-black transition">
                     검색
                 </button>
+                {initialSearch && (
+                    <button
+                        onClick={() => {
+                            setSearchTerm('');
+                            setHasSearched(false);
+                            onClearSearch?.();
+                        }}
+                        className="text-xs text-blue-600 hover:underline"
+                    >
+                        전체보기
+                    </button>
+                )}
             </div>
 
             {/* Warning for admins */}
