@@ -94,6 +94,15 @@ export const updateUserRole = async (userId: string, newRole: string) => {
         .eq('id', userId);
 
     if (error) throw error;
+
+    // 활동 로그 기록
+    await supabase.from('audit_logs').insert([{
+        action: 'UPDATE_ROLE',
+        target_resource: 'profiles',
+        target_id: userId,
+        details: { new_role: newRole },
+        status: 'success'
+    }]);
 };
 
 // --- 시설 통합 관리 API [NEW] ---
@@ -140,38 +149,70 @@ export const updateFacilityManager = async (facilityId: number, newManagerId: st
 
 // --- 구독 관리 API ---
 export const fetchSubscriptions = async () => {
-    // [New Strategy] Use the unified view that handles both UUID and BIGINT
     const { data, error } = await supabase
         .from('admin_subscriptions_with_facility')
         .select(`
             *,
-            plan:subscription_plans(name, price)
+            plan:subscription_plans(name, name_en, price)
         `)
         .order('created_at', { ascending: false });
 
     if (error) throw error;
 
-    return data.map((item: any) => ({
-        ...item,
-        facility_name: item.facility_name || '(삭제된 시설)',
-        plan_name: item.plan?.name || 'Basic'
-    })) as (Subscription & { facility_name: string })[];
+    return data.map((item: any) => {
+        // [Resolve Plan Name]
+        let pName = item.plan?.name;
+
+        // Fallback for cases where join failed but plan_id exists
+        if (!pName && item.plan_id) {
+            const idLower = String(item.plan_id).toLowerCase();
+            if (idLower.includes('enterprise')) pName = '엔터프라이즈';
+            else if (idLower.includes('premium')) pName = '프리미엄';
+            else if (idLower.includes('basic')) pName = '베이직';
+            else if (idLower.includes('free')) pName = '무료체험';
+            else pName = '베이직'; // Default fallback
+        }
+
+        return {
+            ...item,
+            facility_name: item.facility_name || '(삭제된 시설)',
+            plan_name: pName || '베이직'
+        };
+    }) as (Subscription & { facility_name: string })[];
 };
 
 // --- 매출/결제 API ---
 export const fetchPayments = async () => {
-    // [New Strategy] Join with the unified view to get facility names for both types
-    const { data, error } = await supabase
+    // [Crucial] Fetch all payments regardless of joins to ensure Revenue count is correct
+    const { data: payments, error: pError } = await supabase
         .from('subscription_payments')
-        .select('*, facility_subscriptions:admin_subscriptions_with_facility(*)')
+        .select('*')
         .order('paid_at', { ascending: false });
 
-    if (error) throw error;
+    if (pError) {
+        console.error('Fetch payments error:', pError);
+        throw pError;
+    }
 
-    return data.map((item: any) => ({
-        ...item,
-        facility_name: item.facility_subscriptions?.facility_name || '(알 수 없음)',
-    })) as (Payment & { facility_name: string })[];
+    // Try to get facility names for display, but don't let it crash the revenue total
+    try {
+        const { data: subs, error: sError } = await supabase
+            .from('admin_subscriptions_with_facility')
+            .select('id, facility_name');
+
+        if (!sError && subs) {
+            const subMap = new Map(subs.map(s => [s.id, s.facility_name]));
+            return payments.map((item: any) => ({
+                ...item,
+                facility_name: subMap.get(item.subscription_id) || '(시설 정보 유실)',
+            })) as (Payment & { facility_name: string })[];
+        }
+    } catch (e) {
+        console.warn('Facility name resolution failed:', e);
+    }
+
+    // Fallback: Return payments with placeholder names if join fails
+    return payments.map(p => ({ ...p, facility_name: '(알 수 없음)' })) as (Payment & { facility_name: string })[];
 };
 
 // --- 공지사항 API ---
@@ -255,4 +296,25 @@ export const fetchAuditLogs = async () => {
     }
 
     return data as AuditLog[];
+};
+
+// --- 시스템 설정 API [NEW] ---
+export const fetchSystemSettings = async () => {
+    const { data, error } = await supabase
+        .from('system_settings')
+        .select('*');
+
+    if (error) {
+        console.warn('system_settings table might not exist, using defaults');
+        return [];
+    }
+    return data;
+};
+
+export const updateSystemSetting = async (key: string, value: any) => {
+    const { error } = await supabase
+        .from('system_settings')
+        .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+
+    if (error) throw error;
 };

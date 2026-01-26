@@ -1013,11 +1013,11 @@ export const incrementAiUsage = async (facilityId: string) => {
 export const updateFacilitySubscription = async (facilityId: string, planId: string) => {
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
 
-    // 1. 플랜 정보 조회 (가격 등)
+    // 1. 플랜 정보 조회 (가격 등) - 대소문자 구분 없이 조회
     const { data: planData } = await supabase
         .from('subscription_plans')
         .select('*')
-        .eq('name_en', planId)
+        .ilike('name_en', planId)
         .single();
 
     const upsertData: any = {
@@ -1037,7 +1037,10 @@ export const updateFacilitySubscription = async (facilityId: string, planId: str
     // 2. 구독 정보 Upsert
     const { data: subData, error: subError } = await supabase
         .from('facility_subscriptions')
-        .upsert(upsertData, {
+        .upsert({
+            ...upsertData,
+            plan_id: planData?.id || planId // UUID를 우선 사용, 실패 시 원본 시도
+        }, {
             onConflict: conflictTarget
         })
         .select()
@@ -1050,17 +1053,24 @@ export const updateFacilitySubscription = async (facilityId: string, planId: str
 
     // 3. 결제 내역 기록 (매출 통계용)
     if (planData && planData.price > 0 && subData) {
-        await supabase
+        const { error: payError } = await supabase
             .from('subscription_payments')
             .insert([{
                 subscription_id: subData.id,
                 amount: planData.price,
                 final_amount: planData.price,
                 status: 'completed',
-                payment_method: 'card', // 기본값
+                payment_method: 'card', 
                 paid_at: new Date().toISOString(),
                 description: `[구독] ${planData.name} 플랜 결제`
             }]);
+        
+        if (payError) {
+            console.error('Failed to record subscription payment:', payError);
+            // Optional: throw payError; or handle gracefully
+            // If payment record fails, it's a critical revenue data loss.
+            throw new Error(`결제 기록 생성 실패: ${payError.message}`);
+        }
     }
 
     // 4. 슈퍼 관리자 알림 생성
