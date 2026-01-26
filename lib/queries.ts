@@ -1013,27 +1013,74 @@ export const incrementAiUsage = async (facilityId: string) => {
 export const updateFacilitySubscription = async (facilityId: string, planId: string) => {
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
 
+    // 1. 플랜 정보 조회 (가격 등)
+    const { data: planData } = await supabase
+        .from('subscription_plans')
+        .select('*')
+        .eq('name_en', planId)
+        .single();
+
     const upsertData: any = {
         plan_id: planId,
         updated_at: new Date().toISOString()
     };
 
+    const conflictTarget = isUUID ? 'facility_id_uuid' : 'facility_id_bigint';
+
     if (isUUID) {
         upsertData.facility_id_uuid = facilityId;
     } else {
         upsertData.facility_id_bigint = Number(facilityId);
-        upsertData.facility_id = Number(facilityId); // Maintain legacy column for backward compatibility
+        upsertData.facility_id = Number(facilityId);
     }
 
-    const { error } = await supabase
+    // 2. 구독 정보 Upsert
+    const { data: subData, error: subError } = await supabase
         .from('facility_subscriptions')
         .upsert(upsertData, {
-            onConflict: isUUID ? 'facility_id_uuid' : 'facility_id_bigint'
-        });
+            onConflict: conflictTarget
+        })
+        .select()
+        .single();
 
-    if (error) {
-        console.error('updateFacilitySubscription error:', error);
-        throw error;
+    if (subError) {
+        console.error('updateFacilitySubscription error:', subError);
+        throw subError;
+    }
+
+    // 3. 결제 내역 기록 (매출 통계용)
+    if (planData && planData.price > 0 && subData) {
+        await supabase
+            .from('subscription_payments')
+            .insert([{
+                subscription_id: subData.id,
+                amount: planData.price,
+                final_amount: planData.price,
+                status: 'completed',
+                payment_method: 'card', // 기본값
+                paid_at: new Date().toISOString(),
+                description: `[구독] ${planData.name} 플랜 결제`
+            }]);
+    }
+
+    // 4. 슈퍼 관리자 알림 생성
+    const { data: superAdmins } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('role', 'super_admin');
+
+    if (superAdmins && superAdmins.length > 0) {
+        const notifications = superAdmins.map(admin => ({
+            user_id: admin.id,
+            title: '신규 구독 발생',
+            message: `${planData?.name || planId} 플랜 결제가 완료되었습니다.`,
+            type: 'success',
+            link: '/admin?tab=subs'
+        }));
+
+        await supabase
+            .from('user_notifications')
+            .insert(notifications);
     }
 };
 
