@@ -140,31 +140,37 @@ export const updateFacilityManager = async (facilityId: number, newManagerId: st
 
 // --- 구독 관리 API ---
 export const fetchSubscriptions = async () => {
+    // [New Strategy] Use the unified view that handles both UUID and BIGINT
     const { data, error } = await supabase
-        .from('facility_subscriptions')
-        .select('*, memorial_spaces(name)')
+        .from('admin_subscriptions_with_facility')
+        .select(`
+            *,
+            plan:subscription_plans(name, price)
+        `)
         .order('created_at', { ascending: false });
 
     if (error) throw error;
 
     return data.map((item: any) => ({
         ...item,
-        facility_name: item.memorial_spaces?.name || '(삭제된 시설)',
+        facility_name: item.facility_name || '(삭제된 시설)',
+        plan_name: item.plan?.name || 'Basic'
     })) as (Subscription & { facility_name: string })[];
 };
 
 // --- 매출/결제 API ---
 export const fetchPayments = async () => {
+    // [New Strategy] Join with the unified view to get facility names for both types
     const { data, error } = await supabase
         .from('subscription_payments')
-        .select('*, facility_subscriptions(*, memorial_spaces(name))')
+        .select('*, facility_subscriptions:admin_subscriptions_with_facility(*)')
         .order('paid_at', { ascending: false });
 
     if (error) throw error;
 
     return data.map((item: any) => ({
         ...item,
-        facility_name: item.facility_subscriptions?.memorial_spaces?.name || '(알 수 없음)',
+        facility_name: item.facility_subscriptions?.facility_name || '(알 수 없음)',
     })) as (Payment & { facility_name: string })[];
 };
 

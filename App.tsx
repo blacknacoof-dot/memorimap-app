@@ -15,9 +15,10 @@ import { NotificationCenter } from './components/NotificationCenter';
 import { FACILITIES } from './constants';
 import { useUser, useClerk, useSession } from './lib/auth';
 import { supabase, isSupabaseConfigured, setSupabaseAuth } from './lib/supabaseClient';
+import { requestPayment, PORTONE_CONFIG } from './lib/portone';
 import L from 'leaflet';
 import { useAuthSync } from './lib/useAuthSync';
-import { getFacilitySubscription, incrementAiUsage, fetchFacilitiesInView } from './lib/queries';
+import { getFacilitySubscription, incrementAiUsage, fetchFacilitiesInView, updateFacilitySubscription } from './lib/queries';
 import { FacilityList } from './components/FacilityList';
 import { useLocation } from './hooks/useLocation';
 import { SkeletonCard } from './components/ui/SkeletonCard';
@@ -1374,7 +1375,7 @@ const App: React.FC = () => {
                   onSelectPlan={async (planId) => {
                     if (adminFacilityId) {
                       try {
-                        const { updateFacilitySubscription } = await import('./lib/queries');
+                        // Using static import instead of dynamic choice to fix Vite caching issues
                         await updateFacilitySubscription(adminFacilityId, planId);
                         showToast('구독 정보가 업데이트되었습니다.', 'success');
                         // Refresh data
