@@ -46,7 +46,7 @@ export const NotificationCenter: React.FC = () => {
 
             {/* Dropdown */}
             {isOpen && (
-                <div className="absolute left-[-64px] sm:left-auto sm:right-0 mt-2 w-72 sm:w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 z-[200] animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                <div className="absolute right-[-100px] sm:right-0 mt-2 w-[calc(100vw-32px)] sm:w-80 max-w-[320px] bg-white rounded-2xl shadow-2xl border border-gray-100 z-[200] animate-in fade-in zoom-in-95 duration-200 origin-top-right">
                     <div className="p-4 border-b border-gray-50 flex items-center justify-between">
                         <h3 className="font-bold text-gray-900">알림</h3>
                         <div className="flex gap-2">
