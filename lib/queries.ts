@@ -689,6 +689,7 @@ export const getFacilitySubscription = async (facilityId: string) => {
             .select(`
                 *,
                 subscription_plans (
+                    id,
                     name,
                     price,
                     features
@@ -709,7 +710,17 @@ export const getFacilitySubscription = async (facilityId: string) => {
             return null;
         }
 
-        return data; // Returns the subscription object with nested plan details
+        // Return flattened object for easier UI handling
+        if (data) {
+            return {
+                ...data,
+                plan_name: data.subscription_plans?.name,
+                plan_price: data.subscription_plans?.price,
+                next_billing_date: data.next_billing_date
+            };
+        }
+
+        return null;
     } catch (e) {
         console.error('Exception in getFacilitySubscription:', e);
         return null;
@@ -1020,8 +1031,14 @@ export const updateFacilitySubscription = async (facilityId: string, planId: str
         .ilike('name_en', planId)
         .single();
 
+    // 다음 결제일 계산 (기본 1개월 뒤)
+    const nextDate = new Date();
+    nextDate.setMonth(nextDate.getMonth() + 1);
+
     const upsertData: any = {
-        plan_id: planId,
+        plan_id: planData?.id || planId,
+        status: 'active',
+        next_billing_date: nextDate.toISOString(),
         updated_at: new Date().toISOString()
     };
 
@@ -1029,6 +1046,7 @@ export const updateFacilitySubscription = async (facilityId: string, planId: str
 
     if (isUUID) {
         upsertData.facility_id_uuid = facilityId;
+        upsertData.facility_id = null; // Clear bigint if it exists to avoid confusion
     } else {
         upsertData.facility_id_bigint = Number(facilityId);
         upsertData.facility_id = Number(facilityId);
@@ -1039,7 +1057,7 @@ export const updateFacilitySubscription = async (facilityId: string, planId: str
         .from('facility_subscriptions')
         .upsert({
             ...upsertData,
-            plan_id: planData?.id || planId // UUID를 우선 사용, 실패 시 원본 시도
+            plan_id: planData?.id || planId
         }, {
             onConflict: conflictTarget
         })
@@ -1060,38 +1078,62 @@ export const updateFacilitySubscription = async (facilityId: string, planId: str
                 amount: planData.price,
                 final_amount: planData.price,
                 status: 'completed',
-                payment_method: 'card', 
+                payment_method: 'card',
                 paid_at: new Date().toISOString(),
                 description: `[구독] ${planData.name} 플랜 결제`
             }]);
-        
+
         if (payError) {
             console.error('Failed to record subscription payment:', payError);
-            // Optional: throw payError; or handle gracefully
-            // If payment record fails, it's a critical revenue data loss.
             throw new Error(`결제 기록 생성 실패: ${payError.message}`);
         }
     }
 
     // 4. 슈퍼 관리자 알림 생성
-    const { data: superAdmins } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('role', 'super_admin');
+    try {
+        const { data: superAdmins } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('role', 'super_admin');
 
-    if (superAdmins && superAdmins.length > 0) {
-        const notifications = superAdmins.map(admin => ({
-            user_id: admin.id,
-            title: '신규 구독 발생',
-            message: `${planData?.name || planId} 플랜 결제가 완료되었습니다.`,
-            type: 'success',
-            link: '/admin?tab=subs'
-        }));
+        if (superAdmins && superAdmins.length > 0) {
+            const notifications = superAdmins.map(admin => ({
+                user_id: admin.id,
+                title: '신규 구독 발생',
+                message: `${planData?.name || planId} 플랜 결제가 완료되었습니다.`,
+                type: 'success',
+                link: '/admin?tab=subs'
+            }));
 
-        await supabase
-            .from('user_notifications')
-            .insert(notifications);
+            await supabase
+                .from('user_notifications')
+                .insert(notifications);
+        }
+    } catch (e) {
+        console.warn('Failed to send admin notifications:', e);
     }
+};
+
+/**
+ * [추가] 구독 재결제 예정일 수동 업데이트 (관리자용)
+ */
+export const updateSubscriptionBillingDate = async (facilityId: string, nextDate: string) => {
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
+
+    let query = supabase.from('facility_subscriptions').update({
+        next_billing_date: nextDate,
+        updated_at: new Date().toISOString()
+    });
+
+    if (isUUID) {
+        query = query.eq('facility_id_uuid', facilityId);
+    } else {
+        query = query.eq('facility_id_bigint', Number(facilityId));
+    }
+
+    const { error } = await query;
+    if (error) throw error;
+    return true;
 };
 
 /**
