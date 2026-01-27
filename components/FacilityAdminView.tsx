@@ -7,7 +7,7 @@ import { ReservationDetailModal } from './ReservationDetailModal';
 import { FacilityEditModal } from './FacilityEditModal';
 import { FacilityFAQManager } from './FacilityFAQManager';
 import { ConfirmModal } from '../src/components/common/ConfirmModal';
-import { Loader2, CheckCircle, XCircle, Clock, ArrowLeft, Home, Edit, Building2, MapPin, Phone, ArrowRight, Siren, HelpCircle, MessageSquare } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Clock, ArrowLeft, Home, Edit, Building2, MapPin, Phone, ArrowRight, Siren, HelpCircle, MessageSquare, Calendar } from 'lucide-react';
 
 interface Props {
     user: any;
@@ -115,17 +115,20 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
                     console.log('Realtime Reservation Update:', payload);
                     if (payload.eventType === 'INSERT') {
                         // Map database row to UI Reservation type if needed
-                        const newRes = {
-                            ...payload.new,
+                        const newRes: Reservation = {
+                            id: payload.new.id,
                             facilityId: payload.new.facility_id,
                             facilityName: payload.new.facility_name,
                             date: new Date(payload.new.visit_date),
                             timeSlot: payload.new.time_slot,
                             visitorName: payload.new.user_name || payload.new.visitor_name,
                             visitorCount: payload.new.visitor_count || 1,
-                            userPhone: payload.new.user_phone,
-                            status: payload.new.status as any
-                        } as Reservation;
+                            purpose: payload.new.purpose || '상담 및 방문',
+                            status: payload.new.status as any,
+                            paymentAmount: payload.new.payment_amount || 0,
+                            paidAt: payload.new.paid_at ? new Date(payload.new.paid_at) : new Date(),
+                            ...payload.new
+                        };
 
                         setReservations(prev => [newRes, ...prev]);
 
@@ -279,6 +282,12 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
                                         <Phone size={14} />
                                         <span>{myFacility.phone || '전화번호 미등록'}</span>
                                     </div>
+                                    {subscription?.next_billing_date && (
+                                        <div className="flex items-center gap-2 text-primary font-medium mt-1">
+                                            <Calendar size={14} />
+                                            <span>다음 결제 예정일: {new Date(subscription.next_billing_date).toLocaleDateString()}</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             <button
