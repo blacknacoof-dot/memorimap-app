@@ -176,9 +176,31 @@ export const fetchSubscriptions = async () => {
         return {
             ...item,
             facility_name: item.facility_name || '(삭제된 시설)',
-            plan_name: pName || '베이직'
+            plan_name: pName || '베이직',
+            next_billing_date: item.next_billing_date
         };
-    }) as (Subscription & { facility_name: string })[];
+    }) as (Subscription & { facility_name: string, next_billing_date?: string })[];
+};
+
+export const updateSubscriptionBillingDate = async (facilityId: string, nextDate: string) => {
+    // Import from queries to avoid duplication or use direct supabase if preferred
+    // For Super Admin API, direct supabase is often cleaner if it's high-level
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
+
+    let query = supabase.from('facility_subscriptions').update({
+        next_billing_date: nextDate,
+        updated_at: new Date().toISOString()
+    });
+
+    if (isUUID) {
+        query = query.eq('facility_id_uuid', facilityId);
+    } else {
+        query = query.eq('facility_id_bigint', Number(facilityId));
+    }
+
+    const { error } = await query;
+    if (error) throw error;
+    return true;
 };
 
 // --- 매출/결제 API ---

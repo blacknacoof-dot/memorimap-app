@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 
 export interface AdminFacility {
@@ -15,30 +15,41 @@ export interface AdminFacility {
 export function useAllFacilities() {
     const [facilities, setFacilities] = useState<AdminFacility[]>([]);
     const [loading, setLoading] = useState(false);
+    const [totalCount, setTotalCount] = useState(0);
+    const [page, setPage] = useState(0);
+    const itemsPerPage = 50;
 
-    const search = async (term: string) => {
-        if (!term) return;
+    const search = useCallback(async (term: string, targetPage: number = 0) => {
         setLoading(true);
         try {
-            const { data, error } = await supabase
-                .from('facilities')
-                .select('*')
-                .ilike('name', `%${term}%`)
-                .limit(50);
+            // [개선] facilities 대신 memorial_spaces를 기본 참조하도록 변경 (더 정제된 데이터)
+            let query = supabase.from('memorial_spaces').select('*', { count: 'exact' });
+
+            if (term) {
+                query = query.ilike('name', `%${term}%`);
+            }
+
+            // 페이지네이션 계산
+            const start = targetPage * itemsPerPage;
+            const end = start + itemsPerPage - 1;
+
+            const { data, error, count } = await query
+                .order('name')
+                .range(start, end);
 
             if (error) throw error;
 
-            // Map keys for compatibility if needed, but 'facilities' has user_id now.
             setFacilities(data as AdminFacility[]);
+            if (count !== null) setTotalCount(count);
+            setPage(targetPage);
         } catch (error) {
             console.error('Search facilities failed:', error);
-            // setFacilities([]);
         } finally {
             setLoading(false);
         }
-    };
+    }, [itemsPerPage]);
 
-    const updateManager = async (facilityId: string, userId: string | null) => {
+    const updateManager = useCallback(async (facilityId: string, userId: string | null) => {
         try {
             const { error } = await supabase
                 .from('facilities')
@@ -56,11 +67,14 @@ export function useAllFacilities() {
             console.error('Update manager failed:', error);
             alert('업데이트 실패: ' + error.message);
         }
-    };
+    }, []);
 
     return {
         facilities,
         loading,
+        totalCount,
+        page,
+        itemsPerPage,
         search,
         updateManager
     };

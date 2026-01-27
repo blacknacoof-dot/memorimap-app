@@ -96,7 +96,8 @@ const SideMenuDrawer = ({ isOpen, onClose, onNavigate }: { isOpen: boolean; onCl
 };
 
 /** [Settings] Admin Settings View */
-import { updateSystemSetting } from '../../lib/api/superAdmin';
+import { updateSystemSetting, updateSubscriptionBillingDate } from '../../lib/api/superAdmin';
+import { Calendar } from 'lucide-react';
 
 const AdminSettings = () => {
     const handleSaveProfile = () => {
@@ -251,6 +252,31 @@ const SystemSettings = () => {
                     </button>
                 </div>
             </div>
+
+            {/* Revenue Sync Tool */}
+            <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mt-6">
+                <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <History className="w-5 h-5 text-indigo-600" />
+                    매출 데이터 동기화
+                </h3>
+                <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100 mb-4">
+                    <p className="text-sm font-medium text-indigo-800">미집계 매출 복구</p>
+                    <p className="text-[10px] text-indigo-600 mt-1 leading-relaxed">
+                        결제 내역이 누락된 구독 데이터를 찾아 매출 기록을 생성합니다.<br />
+                        데이터 정합성 유지를 위해 주기적으로 실행하는 것을 권장합니다.
+                    </p>
+                </div>
+                <button
+                    onClick={async () => {
+                        if (confirm('데이터베이스를 스캔하여 누락된 매출 기록을 생성하시겠습니까?')) {
+                            alert('SQL 패치(fix_revenue_and_billing_date.sql)를 데이터베이스에서 실행해주세요.');
+                        }
+                    }}
+                    className="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+                >
+                    동기화 프로세스 시작
+                </button>
+            </div>
         </div>
     );
 };
@@ -261,55 +287,97 @@ const SubscriptionManager = ({ onManage }: { onManage: (facilityName: string) =>
 
     if (loading) return <div className="p-10 text-center">로딩 중...</div>;
 
+    const handleUpdateBillingDate = async (facilityId: string, current: string) => {
+        const newDate = prompt('새로운 재결제 예정일을 입력하세요 (YYYY-MM-DD):', current?.split('T')[0] || '');
+        if (newDate) {
+            try {
+                // Ensure valid ISO string
+                const isoDate = new Date(newDate).toISOString();
+                await updateSubscriptionBillingDate(facilityId, isoDate);
+                alert('재결제 예정일이 업데이트되었습니다.');
+                window.location.reload();
+            } catch (e) {
+                alert('날짜 형식이 올바르지 않거나 업데이트에 실패했습니다.');
+            }
+        }
+    };
+
     const total = facilities.length;
     const active = facilities.filter(f => f.status === 'active').length;
     const pending = facilities.filter(f => f.status !== 'active').length;
 
     return (
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="grid grid-cols-3 gap-3">
-                <div className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center">
-                    <Building2 className="w-5 h-5 text-slate-400 mb-1" />
-                    <span className="text-lg font-bold text-slate-800">{total}</span>
-                    <span className="text-[10px] text-slate-500">전체 시설</span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                <div className="bg-white p-4 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 transition-all hover:shadow-md">
+                    <div className="p-2 md:p-3 bg-slate-50 rounded-xl">
+                        <Building2 className="w-5 h-5 md:w-6 md:h-6 text-slate-400" />
+                    </div>
+                    <div>
+                        <p className="text-xl md:text-2xl font-black text-slate-800">{total}</p>
+                        <p className="text-[10px] md:text-xs font-medium text-slate-400">전체 시설</p>
+                    </div>
                 </div>
-                <div className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center">
-                    <CheckCircle2 className="w-5 h-5 text-green-500 mb-1" />
-                    <span className="text-lg font-bold text-slate-800">{active}</span>
-                    <span className="text-[10px] text-slate-500">활성 구독</span>
+                <div className="bg-white p-4 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 transition-all hover:shadow-md">
+                    <div className="p-2 md:p-3 bg-green-50 rounded-xl">
+                        <CheckCircle2 className="w-5 h-5 md:w-6 md:h-6 text-green-500" />
+                    </div>
+                    <div>
+                        <p className="text-xl md:text-2xl font-black text-slate-800">{active}</p>
+                        <p className="text-[10px] md:text-xs font-medium text-slate-400">활성 구독</p>
+                    </div>
                 </div>
-                <div className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center">
-                    <AlertCircle className="w-5 h-5 text-orange-500 mb-1" />
-                    <span className="text-lg font-bold text-slate-800">{pending}</span>
-                    <span className="text-[10px] text-slate-500">대기/만료</span>
+                <div className="bg-white p-4 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 transition-all hover:shadow-md">
+                    <div className="p-2 md:p-3 bg-orange-50 rounded-xl">
+                        <AlertCircle className="w-5 h-5 md:w-6 md:h-6 text-orange-500" />
+                    </div>
+                    <div>
+                        <p className="text-xl md:text-2xl font-black text-slate-800">{pending}</p>
+                        <p className="text-[10px] md:text-xs font-medium text-slate-400">대기/만료</p>
+                    </div>
                 </div>
             </div>
 
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="p-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                    <h3 className="text-sm font-semibold text-slate-700">구독 시설 목록</h3>
-                    <Search className="w-4 h-4 text-slate-400" />
+                <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-white">
+                    <h3 className="text-sm font-bold text-slate-800">구독 시설 목록</h3>
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border rounded-lg">
+                        <Search className="w-3.5 h-3.5 text-slate-400" />
+                        <input type="text" placeholder="간편 검색..." className="bg-transparent text-xs outline-none w-24" />
+                    </div>
                 </div>
-                <div className="divide-y divide-slate-100 max-h-96 overflow-y-auto">
-                    {facilities.map((fac) => (
-                        <div key={fac.id} className="p-3 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                <div className="divide-y divide-slate-100 max-h-[500px] overflow-y-auto">
+                    {(facilities as any[]).map((fac) => (
+                        <div key={fac.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors group">
                             <div className="flex flex-col">
-                                <div className="flex items-center gap-2">
-                                    <span className="font-semibold text-sm text-slate-800">{fac.facility_name}</span>
-                                    <span className={`text-[10px] px-1.5 py-0.5 rounded border ${fac.plan_name === 'Premium' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                <div className="flex items-center gap-3">
+                                    <span className="font-bold text-sm text-slate-800 group-hover:text-blue-600 transition-colors">{fac.facility_name}</span>
+                                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${fac.plan_name === 'Premium' ? 'bg-blue-50 text-blue-600 border-blue-100' :
                                         fac.plan_name === 'Enterprise' ? 'bg-purple-50 text-purple-600 border-purple-100' :
                                             'bg-slate-50 text-slate-500 border-slate-200'
                                         }`}>
                                         {fac.plan_name || 'Basic'}
                                     </span>
                                 </div>
-                                <span className="text-[10px] text-slate-400 mt-0.5">만료: {fac.end_date ? new Date(fac.end_date).toLocaleDateString() : '-'}</span>
+                                <div className="flex items-center gap-4 mt-2">
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
+                                        <span className="text-[11px] text-slate-400">만료: {fac.end_date ? new Date(fac.end_date).toLocaleDateString() : '-'}</span>
+                                    </div>
+                                    <button
+                                        onClick={() => handleUpdateBillingDate(fac.facility_id_uuid || fac.facility_id_bigint || fac.id, fac.next_billing_date)}
+                                        className="flex items-center gap-1.5 text-[11px] text-blue-600 font-black hover:text-blue-700 transition-colors"
+                                    >
+                                        <Calendar className="w-3.5 h-3.5" />
+                                        재결제일: {fac.next_billing_date ? new Date(fac.next_billing_date).toLocaleDateString() : '설정 필요'}
+                                    </button>
+                                </div>
                             </div>
                             <button
                                 onClick={() => onManage(fac.facility_name)}
-                                className="text-slate-400 hover:text-slate-600 px-3 py-1 text-xs border border-slate-100 rounded bg-white"
+                                className="px-4 py-2 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
                             >
-                                관리
+                                관리하기
                             </button>
                         </div>
                     ))}
@@ -375,76 +443,84 @@ const RevenueAnalytics = () => {
     ];
 
     return (
-        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="w-full bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 rounded-2xl p-6 text-white shadow-xl flex justify-between items-center relative overflow-hidden group">
-                {/* Decorative Pattern */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-3xl group-hover:bg-white/20 transition-all duration-500"></div>
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+                {/* Total Revenue Card */}
+                <div className="lg:col-span-2 w-full bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 rounded-2xl p-5 md:p-6 text-white shadow-xl flex justify-between items-center relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-3xl group-hover:bg-white/20 transition-all duration-500"></div>
 
-                <div className="relative z-10">
-                    <p className="text-blue-100 text-[10px] font-bold uppercase tracking-wider mb-1 opacity-80">누적 총 매출</p>
-                    <h2 className="text-3xl font-black tracking-tight flex items-baseline gap-1">
-                        <span className="text-lg font-normal opacity-70">₩</span>
-                        {totalRevenue.toLocaleString()}
-                    </h2>
-                    <div className="flex items-center gap-1.5 mt-3">
-                        <span className="bg-white/20 px-2 py-0.5 rounded-full text-[9px] font-bold flex items-center backdrop-blur-md border border-white/10">
-                            <TrendingUp className="w-3 h-3 mr-1" /> 실시간 데이터 분석 중
-                        </span>
+                    <div className="relative z-10">
+                        <p className="text-blue-100 text-[10px] md:text-xs font-bold uppercase tracking-wider mb-1 opacity-80">누적 총 매출</p>
+                        <h2 className="text-3xl md:text-4xl font-black tracking-tight flex items-baseline gap-1">
+                            <span className="text-lg md:text-xl font-normal opacity-70">₩</span>
+                            {totalRevenue.toLocaleString()}
+                        </h2>
+                        <div className="flex items-center gap-2 mt-4">
+                            <span className="bg-white/20 px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[9px] md:text-[11px] font-bold flex items-center backdrop-blur-md border border-white/10">
+                                <TrendingUp className="w-3 h-3 md:w-4 md:h-4 mr-1" /> 실시간 매출 분석 중
+                            </span>
+                        </div>
+                    </div>
+                    <div className="bg-white/10 p-3 md:p-4 rounded-2xl border border-white/20 backdrop-blur-sm relative z-10 hidden sm:block shadow-inner">
+                        <Wallet className="w-8 h-8 md:w-10 md:h-10 text-white" />
                     </div>
                 </div>
-                <div className="bg-white/10 p-3 rounded-2xl border border-white/20 backdrop-blur-sm relative z-10 hidden sm:block shadow-inner">
-                    <Wallet className="w-8 h-8 text-white" />
+
+                {/* Sub Stats Cards */}
+                <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 md:gap-4">
+                    <div className="bg-white border border-slate-200 p-4 md:p-5 rounded-2xl shadow-sm flex flex-col md:flex-row items-center md:items-center gap-2 md:gap-4">
+                        <div className="p-2 md:p-3 bg-indigo-50 rounded-xl">
+                            <Users className="w-5 h-5 md:w-6 md:h-6 text-indigo-600" />
+                        </div>
+                        <div className="text-center md:text-left">
+                            <span className="text-[10px] md:text-xs text-slate-400 block mb-0.5 md:mb-1">구독료 매출</span>
+                            <p className="text-lg md:text-2xl font-bold text-slate-800">₩ {(subRevenue / 10000).toFixed(0)}만</p>
+                        </div>
+                    </div>
+
+                    <div className="bg-white border border-slate-200 p-4 md:p-5 rounded-2xl shadow-sm flex flex-col md:flex-row items-center md:items-center gap-2 md:gap-4">
+                        <div className="p-2 md:p-3 bg-emerald-50 rounded-xl">
+                            <CreditCard className="w-5 h-5 md:w-6 md:h-6 text-emerald-600" />
+                        </div>
+                        <div className="text-center md:text-left">
+                            <span className="text-[10px] md:text-xs text-slate-400 block mb-0.5 md:mb-1">기타 매출</span>
+                            <p className="text-lg md:text-2xl font-bold text-slate-800">₩ {(commRevenue / 10000).toFixed(0)}만</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* Added Visualization Chart */}
-            <TrendChart data={trendData} />
-
-            <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white border border-slate-100 p-3 rounded-xl shadow-sm">
-                    <div className="flex items-center gap-2 mb-2">
-                        <div className="p-1.5 bg-indigo-50 rounded-lg">
-                            <Users className="w-3.5 h-3.5 text-indigo-600" />
-                        </div>
-                        <span className="text-[10px] text-slate-400">구독료</span>
-                    </div>
-                    <p className="text-lg font-bold text-slate-800">₩ {(subRevenue / 10000).toFixed(0)}만</p>
+            {/* List */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                    <TrendChart data={trendData} />
                 </div>
-
-                <div className="bg-white border border-slate-100 p-3 rounded-xl shadow-sm">
-                    <div className="flex items-center gap-2 mb-2">
-                        <div className="p-1.5 bg-emerald-50 rounded-lg">
-                            <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
-                        </div>
-                        <span className="text-[10px] text-slate-400">기타</span>
-                    </div>
-                    <p className="text-lg font-bold text-slate-800">₩ {(commRevenue / 10000).toFixed(0)}만</p>
-                </div>
-            </div>
-
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
-                <h3 className="text-xs font-bold text-slate-700 mb-3 uppercase tracking-wider">최근 거래 내역</h3>
-                <div className="space-y-3">
-                    {payments.slice(0, 5).map((tx) => (
-                        <div key={tx.id} className="flex items-center justify-between text-sm">
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
-                                    <CreditCard className="w-4 h-4" />
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 h-full">
+                    <h3 className="text-sm font-bold text-slate-800 mb-4 uppercase tracking-wider flex items-center gap-2">
+                        <History className="w-4 h-4 text-blue-600" />
+                        최근 거래 내역
+                    </h3>
+                    <div className="space-y-4">
+                        {payments.slice(0, 6).map((tx) => (
+                            <div key={tx.id} className="flex items-center justify-between group">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
+                                        <CreditCard className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-slate-800 text-sm truncate max-w-[120px]">{tx.facility_name}</p>
+                                        <p className="text-[10px] text-slate-400">{new Date(tx.paid_at).toLocaleDateString()}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="font-medium text-slate-800 text-xs">{tx.facility_name}</p>
-                                    <p className="text-[10px] text-slate-400">{new Date(tx.paid_at).toLocaleDateString()}</p>
+                                <div className="text-right">
+                                    <p className="font-bold text-slate-900 text-sm">+{tx.amount?.toLocaleString()}</p>
+                                    <p className={`text-[10px] font-medium ${tx.status === 'completed' ? 'text-green-600' : 'text-slate-400'}`}>
+                                        {tx.status === 'completed' ? '결제완료' : tx.status}
+                                    </p>
                                 </div>
                             </div>
-                            <div className="text-right">
-                                <p className="font-bold text-slate-800 text-sm">+{tx.amount?.toLocaleString()}</p>
-                                <p className="text-[10px] text-slate-400">{tx.status}</p>
-                            </div>
-                        </div>
-                    ))}
-                    {payments.length === 0 && (
-                        <div className="text-center text-xs text-slate-400">거래 내역이 없습니다.</div>
-                    )}
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>
@@ -523,34 +599,35 @@ export default function SuperAdminDashboard() {
                 onNavigate={(tab) => setActiveTab(tab as any)}
             />
 
-            {/* 1. Sticky Header */}
             <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
-                <div className="max-w-md mx-auto px-4 h-14 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                <div className="max-w-5xl mx-auto px-4 h-14 md:h-16 flex items-center justify-between">
+                    <div className="flex items-center gap-2 md:gap-3">
                         {/* Menu Button (Trigger Drawer) */}
                         <button
                             onClick={() => setIsMenuOpen(true)}
-                            className="p-1 -ml-1 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                            className="p-1.5 md:p-2 -ml-1 md:-ml-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
                         >
-                            <Menu className="w-6 h-6" />
+                            <Menu className="w-5 h-5 md:w-6 md:h-6" />
                         </button>
 
                         <div className="flex flex-col">
-                            <h1 className="text-sm font-bold text-slate-900 leading-none">Super Admin</h1>
-                            <p className="text-[10px] text-slate-500 mt-0.5">{user?.primaryEmailAddress?.emailAddress || 'User'}</p>
+                            <h1 className="text-sm md:text-base font-black text-slate-900 leading-none tracking-tight">Admin</h1>
+                            <p className="hidden md:block text-[11px] font-medium text-slate-400 mt-1">{user?.primaryEmailAddress?.emailAddress || 'User'}</p>
                         </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2 md:gap-3">
                         <NotificationCenter />
-                        <button className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors">
-                            <LogOut className="w-5 h-5" />
+                        <div className="h-5 w-[1px] bg-slate-200 mx-0.5 md:mx-1"></div>
+                        <button className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all text-xs font-bold">
+                            <LogOut className="w-4 h-4" />
+                            <span className="hidden sm:inline">나가기</span>
                         </button>
                     </div>
                 </div>
 
                 {/* Tab Navigation */}
-                <div className="max-w-md mx-auto px-0">
-                    <div className="w-full grid grid-cols-3 border-b border-slate-100">
+                <div className="max-w-5xl mx-auto px-2 md:px-4 overflow-x-auto scrollbar-hide">
+                    <div className="flex items-center gap-4 md:gap-6 min-w-max">
                         {[
                             { id: 'subs', label: '구독 관리', icon: Building2 },
                             { id: 'revenue', label: '매출 통계', icon: TrendingUp },
@@ -559,12 +636,12 @@ export default function SuperAdminDashboard() {
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as any)}
-                                className={`flex flex-col items-center justify-center gap-1 py-3 text-xs font-medium border-b-2 transition-all ${activeTab === tab.id || (activeTab !== 'subs' && activeTab !== 'revenue' && activeTab !== 'leads' && tab.id === 'leads') // Keep leads active visibly if in sub-menu? No, maybe just standard.
-                                    ? activeTab === tab.id ? 'border-blue-600 text-blue-600 bg-blue-50/50' : 'border-transparent text-slate-400'
-                                    : 'border-transparent text-slate-400 hover:text-slate-600 hover:bg-slate-50'
+                                className={`flex items-center gap-1.5 md:gap-2 py-3 md:py-4 px-1 md:px-2 text-[13px] md:text-sm font-bold border-b-2 transition-all whitespace-nowrap ${activeTab === tab.id
+                                    ? 'border-blue-600 text-blue-600'
+                                    : 'border-transparent text-slate-400 hover:text-slate-600'
                                     }`}
                             >
-                                <tab.icon className="w-4 h-4" />
+                                <tab.icon className="w-3.5 h-3.5 md:w-4 h-4" />
                                 {tab.label}
                             </button>
                         ))}
@@ -573,7 +650,7 @@ export default function SuperAdminDashboard() {
             </header>
 
             {/* 2. Main Content Area */}
-            <main className="max-w-md mx-auto p-4">
+            <main className="max-w-5xl mx-auto p-4 md:p-6">
                 {activeTab === 'subs' && (
                     <SubscriptionManager
                         onManage={(name) => {
