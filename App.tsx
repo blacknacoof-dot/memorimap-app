@@ -981,12 +981,13 @@ const App: React.FC = () => {
         }
       }
 
-      // 2. Fetch Reviews from 'reviews' (Requires UUID)
+      // 2. Fetch Reviews from 'facility_reviews' (Requires UUID)
       if (uuid) {
         const { data: reviews } = await supabase
-          .from('reviews')
+          .from('facility_reviews')
           .select('*')
-          .eq('facility_id', uuid) // UUID column
+          .eq('facility_id', uuid)
+          .eq('is_active', true)
           .order('created_at', { ascending: false });
 
         if (reviews) {
@@ -1008,9 +1009,10 @@ const App: React.FC = () => {
           }
           // Now fetch reviews with this ID
           const { data: reviews } = await supabase
-            .from('reviews')
+            .from('facility_reviews')
             .select('*')
             .eq('facility_id', data.id)
+            .eq('is_active', true)
             .order('created_at', { ascending: false });
 
           if (reviews) reviewData = reviews;
@@ -1584,7 +1586,7 @@ const App: React.FC = () => {
               {/* Promo Banner - Persistent underneath filters */}
               {
                 showPromo && (viewState === ViewState.MAP || viewState === ViewState.LIST) && (
-                  <div className={`absolute left-4 right-4 z-20 animate-in fade-in slide-in-from-top-2 transition-all duration-300 top-44`}>
+                  <div className={`absolute left-4 right-4 z-20 animate-in fade-in slide-in-from-top-2 transition-all duration-300 top-48`}>
                     <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-amber-400 p-3 rounded-xl shadow-xl border border-amber-500/30 flex justify-between items-center">
                       <div className="flex items-center gap-3">
                         <div className="bg-amber-500/20 p-1.5 rounded-lg shrink-0">
