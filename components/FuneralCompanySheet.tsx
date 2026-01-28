@@ -3,6 +3,8 @@ import { FuneralCompany } from '../types';
 import { supabase } from '../lib/supabaseClient';
 import { X, Star, Phone, MessageCircleQuestion, Heart, Share2, CheckCircle2, ShieldCheck, CreditCard, Gift, Bot, ChevronRight, Camera, User, ClipboardCheck } from 'lucide-react';
 import { ReviewCard } from './ReviewCard';
+import { useSangjoFavoriteStore } from '../stores/useSangjoFavoriteStore';
+import { sangjoFavoriteService } from '../services/sangjoFavoriteService';
 
 interface Props {
     company: FuneralCompany;
@@ -15,8 +17,11 @@ interface Props {
 }
 
 export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenAIConsult, onOpenContract, currentUser, isLoggedIn = false, onOpenLogin }) => {
-    const [activeTab, setActiveTab] = useState<'info' | 'benefits' | 'price' | 'gallery' | 'reviews'>('info');
-    const [isLiked, setIsLiked] = useState(false);
+    const [activeTab, setActiveTab] = useState<'info' | 'gallery' | 'reviews' | 'benefits' | 'price'>('info');
+
+    // [Change] Using global store for favorite state
+    const { favoritedIds, toggleFavorite: storeToggleFavorite } = useSangjoFavoriteStore();
+    const isLiked = favoritedIds.has(company.id);
 
     // Review Writing State
     const [isWritingReview, setIsWritingReview] = useState(false);
@@ -25,25 +30,40 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
     const handleSubmitReview = async () => {
+        // ⭐ 디버깅 로그 추가
+        console.log('🔍 [DEBUG] company 객체:', company);
+        console.log('🔍 [DEBUG] company.id:', company.id);
+        console.log('🔍 [DEBUG] typeof company.id:', typeof company.id);
+
         if (!isLoggedIn || !currentUser) {
             alert('로그인이 필요한 기능입니다.');
             if (onOpenLogin) onOpenLogin();
             return;
         }
 
-        if (!reviewContent.trim()) {
-            alert('후기 내용을 입력해주세요.');
+        if (!reviewContent.trim() || reviewContent.trim().length < 10) {
+            alert('10자 이상 성의 있는 리뷰 부탁드립니다.');
             return;
         }
 
         setIsSubmittingReview(true);
         try {
             const { createReview } = await import('../lib/queries');
+
+            // ⭐ createReview 호출 전 로그
+            console.log('🔍 [DEBUG] createReview 호출:', {
+                facilityId: company.id,
+                userId: currentUser.id,
+                rating: reviewRating,
+                content: reviewContent
+            });
+
             await createReview(
                 company.id,
                 currentUser.id,
                 reviewRating,
                 reviewContent,
+                currentUser.fullName || currentUser.firstName || '익명',
                 [] // images array
             );
 
@@ -59,21 +79,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
         }
     };
 
-    // 1. Check Like Status
-    useEffect(() => {
-        const checkLikeStatus = async () => {
-            if (isLoggedIn && currentUser && company) {
-                const { data } = await supabase
-                    .from('user_likes')
-                    .select('*')
-                    .eq('user_id', currentUser.id)
-                    .eq('target_id', company.id)
-                    .maybeSingle(); // Changed from single() to avoid 406 error
-                setIsLiked(!!data);
-            }
-        };
-        checkLikeStatus();
-    }, [isLoggedIn, currentUser, company]);
+    // Check Like Status (handled by store subscription and derived variable)
 
     // 2. Share Handler
     const handleShare = async () => {
@@ -103,28 +109,10 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
             return;
         }
 
-        const previousState = isLiked;
-        setIsLiked(!isLiked); // Optimistic
-
         try {
-            if (previousState) {
-                await supabase
-                    .from('user_likes')
-                    .delete()
-                    .eq('user_id', currentUser.id)
-                    .eq('target_id', company.id);
-            } else {
-                await supabase
-                    .from('user_likes')
-                    .insert({
-                        user_id: currentUser.id,
-                        target_id: company.id,
-                        category: 'sangjo'
-                    });
-            }
+            await storeToggleFavorite(currentUser.id, company);
         } catch (error) {
             console.error('Like failed:', error);
-            setIsLiked(previousState);
         }
     };
 
@@ -465,11 +453,16 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                                     ))}
                                 </div>
                                 <textarea
-                                    className="w-full p-3 rounded-xl border border-gray-200 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-primary min-h-[100px]"
-                                    placeholder="솔직한 후기를 남겨주세요."
+                                    className="w-full p-3 rounded-xl border border-gray-200 text-sm mb-1 focus:outline-none focus:ring-2 focus:ring-primary min-h-[100px]"
+                                    placeholder="솔직한 후기를 10자 이상 남겨주세요."
                                     value={reviewContent}
                                     onChange={(e) => setReviewContent(e.target.value)}
                                 />
+                                <div className="flex justify-between items-center mb-3 px-1">
+                                    <span className={`text-[10px] ${reviewContent.length < 10 ? 'text-red-500 font-bold' : 'text-gray-400'}`}>
+                                        {reviewContent.length}/10자 {reviewContent.length < 10 && '(10자 이상 성의 있는 리뷰 부탁드립니다.)'}
+                                    </span>
+                                </div>
                                 <button
                                     onClick={handleSubmitReview}
                                     disabled={isSubmittingReview}

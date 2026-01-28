@@ -80,17 +80,31 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
     }
 
     const handleSubmit = async () => {
-        if (!content.trim()) return;
+        if (!content.trim() || content.trim().length < 10) {
+            alert('10자 이상 성의 있는 리뷰 부탁드립니다.');
+            return;
+        }
 
         setIsSubmitting(true);
         try {
+            // 1. 이미지 업로드
+            const imageUrls: string[] = [];
+            if (images.length > 0) {
+                const { uploadReviewImage } = await import('../lib/queries');
+                for (const file of images) {
+                    const url = await uploadReviewImage(user!.id, file);
+                    imageUrls.push(url);
+                }
+            }
+
+            // [BUG FIX] spaceId와 user!.id의 순서가 잘못되어 있었음
             await createReview(
-                user!.id,
                 spaceId,
+                user!.id,
                 rating,
                 content,
                 user!.firstName || user!.username || '사용자',
-                images
+                imageUrls
             );
 
             // Reset form
@@ -138,11 +152,16 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
             <textarea
                 className="w-full p-3 border rounded-lg text-sm outline-none focus:border-primary resize-none bg-gray-50 focus:bg-white transition-colors"
                 rows={3}
-                placeholder="이 시설에 대한 솔직한 후기를 남겨주세요."
+                placeholder="이 시설에 대한 솔직한 후기를 10자 이상 남겨주세요."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 disabled={isSubmitting}
             />
+            <div className="flex justify-between items-center mt-1 px-1">
+                <span className={`text-[10px] ${content.length < 10 ? 'text-red-500 font-bold' : 'text-gray-400'}`}>
+                    {content.length}/10자 {content.length < 10 && '(10자 이상 성의 있는 리뷰 부탁드립니다.)'}
+                </span>
+            </div>
 
             {/* Image Preview */}
             {images.length > 0 && (
