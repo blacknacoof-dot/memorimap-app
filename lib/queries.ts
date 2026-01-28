@@ -17,8 +17,47 @@ export const PARTNER_CATEGORIES = {
 
 export type PartnerCategoryType = keyof typeof PARTNER_CATEGORIES;
 
+/**
+ * [추가] 중복 리뷰 작성 확인
+ */
+export const checkExistingReview = async (userId: string, facilityId: string) => {
+    const { data, error } = await supabase
+        .from('facility_reviews')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('facility_id', facilityId)
+        .eq('is_active', true)
+        .maybeSingle();
+
+    if (error) {
+        console.error('Error checking existing review:', error);
+        return false;
+    }
+    return !!data;
+};
+
+/**
+ * [추가] 리뷰 이미지 업로드
+ */
+export const uploadReviewImage = async (userId: string, file: File) => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const filePath = `review-images/${userId}/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+        .from('reviews') // 'reviews' bucket must exist in Supabase
+        .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data } = supabase.storage
+        .from('reviews')
+        .getPublicUrl(filePath);
+
+    return data.publicUrl;
+};
+
 export { supabase };
-// export * from './scenario_queries'; // Removed broken import
 
 // --- [Phase 8] 지도 검색 기능 ---
 
@@ -360,6 +399,13 @@ export const getFacility = async (id: string) => {
 
     if (error) {
         console.error('Error fetching facility:', error);
+
+        // [Fix] 존재하지 않는 레거시 ID(fc6 등)인 경우 null 반환하여 UI 충돌 방지
+        if (error.code === 'PGRST116') {
+            console.warn(`Facility not found for ID: ${id} - This may be legacy data`);
+            return null;
+        }
+
         throw error;
     }
     // Map DB fields to Frontend types (Normalize snake_case to camelCase for UI)
@@ -497,43 +543,16 @@ export const deleteConsultation = async (id: string) => {
 // --- [리뷰 기능] ---
 export const getReviews = async (facilityId: string) => {
     try {
-        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
-        let validFacilityId = facilityId;
-
-        // If legacy ID (integer), try to find the UUID first
-        if (!isUUID) {
-            const { data: facilityData } = await supabase
-                .from('facilities')
-                .select('id')
-                .eq('legacy_id', facilityId)
-                .maybeSingle();
-
-            if (facilityData) {
-                validFacilityId = facilityData.id;
-            } else {
-                // If not found, probably old data that didn't migrate well or just invalid
-                console.warn('[getReviews] Legacy ID lookup failed:', facilityId);
-                return [];
-            }
-        }
-
-        let query = supabase.from('reviews').select('*');
-
-        // Check if we found a valid UUID or if the input was already a UUID
-        const shouldUseUUID = isUUID || (validFacilityId !== facilityId);
-
-        if (shouldUseUUID) {
-            query = query.eq('facility_id', validFacilityId);
-        } else {
-            console.warn('[getReviews] Legacy ID used but no UUID mapping found. Returning empty.', validFacilityId);
-            return [];
-        }
-
-        const { data, error } = await query.order('created_at', { ascending: false });
+        // [통합] facility_reviews 테이블 사용, facility_id가 TEXT이므로 ID 매핑 로직 단순화
+        const { data, error } = await supabase
+            .from('facility_reviews')
+            .select('*')
+            .eq('facility_id', facilityId)
+            .eq('is_active', true)
+            .order('created_at', { ascending: false });
 
         if (error) {
             console.error('Error fetching reviews:', error);
-            // Ignore fallback logic as schema is now unified
             return [];
         }
         return data || [];
@@ -548,6 +567,7 @@ export const getUserReviews = async (userId: string) => {
         .from('facility_reviews')
         .select('*')
         .eq('user_id', userId)
+        .eq('is_active', true)
         .order('created_at', { ascending: false });
 
     if (error) {
@@ -562,16 +582,30 @@ export const createReview = async (
     userId: string,
     rating: number,
     content: string,
+    userName?: string,
     images: string[] = []
 ) => {
+    // 🔍 디버깅 로그
+    console.log('=== [DEBUG] facility_reviews.createReview ===');
+
+    const insertData = {
+        facility_id: facilityId,
+        user_id: userId,
+        rating,
+        content,
+        author_name: userName || '익명',
+        photos: images.map(url => ({ url })), // TEXT[] -> JSONB 형식 변환
+        is_active: true
+    };
+
     const { data, error } = await supabase
-        .from('reviews')
-        .insert([{ facility_id: facilityId, user_id: userId, rating, content, images }])
+        .from('facility_reviews')
+        .insert([insertData])
         .select()
         .single();
 
     if (error) {
-        console.error('Error creating review:', error);
+        console.error('Error creating facility review:', error);
         throw error;
     }
     return data;
@@ -579,8 +613,11 @@ export const createReview = async (
 
 export const deleteReview = async (reviewId: string) => {
     const { error } = await supabase
-        .from('reviews')
-        .delete()
+        .from('facility_reviews')
+        .update({
+            is_active: false,
+            deleted_at: new Date().toISOString()
+        })
         .eq('id', reviewId);
 
     if (error) {
