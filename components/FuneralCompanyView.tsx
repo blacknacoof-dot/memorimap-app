@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabaseClient';
 import { SangjoConsultationModal } from './Consultation/SangjoConsultationModal';
 import { sangjoFavoriteService } from '../services/sangjoFavoriteService';
 import { useUser } from '@clerk/clerk-react';
+import { useSangjoFavoriteStore } from '../stores/useSangjoFavoriteStore';
 
 interface Props {
     onCompanySelect: (company: FuneralCompany, startChat?: boolean) => void;
@@ -33,7 +34,9 @@ export const FuneralCompanyView: React.FC<Props> = ({
     const [companies, setCompanies] = useState<FuneralCompany[]>(FUNERAL_COMPANIES);
     const [isLoading, setIsLoading] = useState(true);
     const { user } = useUser();
-    const [favoritedCompanies, setFavoritedCompanies] = useState<Set<string>>(new Set());
+
+    // [Change] Using global store for favorites
+    const { favoritedIds, fetchFavorites, toggleFavorite: storeToggleFavorite } = useSangjoFavoriteStore();
 
     // [Change] Fetch companies from Supabase on mount
     React.useEffect(() => {
@@ -53,92 +56,92 @@ export const FuneralCompanyView: React.FC<Props> = ({
                 if (data && data.length > 0) {
                     // 🔥 OPTIMIZATION: Fetch ALL reviews in a single query instead of 46 individual queries
                     const companyIds = data.map(item => item.id);
+                    // Create a comprehensive set of IDs to fetch reviews for
+                    const staticIds = data.map(item => {
+                        const match = FUNERAL_COMPANIES.find(c => c.name.replace(/\s/g, '') === item.name.replace(/\s/g, ''));
+                        return match?.id;
+                    }).filter(Boolean) as string[];
+
+                    const allTargetIds = Array.from(new Set([...companyIds, ...staticIds]));
+
                     const { data: allReviews, error: reviewError } = await supabase
-                        .from('reviews')
+                        .from('facility_reviews')
                         .select('*')
-                        .in('facility_id', companyIds)
+                        .in('facility_id', allTargetIds)
+                        .eq('is_active', true)
                         .order('created_at', { ascending: false });
 
                     if (reviewError) {
-                        console.error('❌ [FuneralCompanyView] Reviews Error:', reviewError);
+                        console.error('[FuneralCompanyView] ❌ Review fetch error:', reviewError);
                     }
 
-                    // Group reviews by company ID for O(1) lookup
+                    console.log(`[FuneralCompanyView] 🔍 Total reviews fetched from DB: ${allReviews?.length || 0}`);
+
+                    // Group reviews by facility_id (ensure string keys and trim whitespace)
                     const reviewsByCompany = new Map<string, any[]>();
                     allReviews?.forEach(review => {
-                        const companyId = review.facility_id;
-                        if (!reviewsByCompany.has(companyId)) {
-                            reviewsByCompany.set(companyId, []);
+                        const companyId = review.facility_id?.toString().trim();
+                        if (companyId) {
+                            if (!reviewsByCompany.has(companyId)) {
+                                reviewsByCompany.set(companyId, []);
+                            }
+                            reviewsByCompany.get(companyId)!.push(review);
                         }
-                        reviewsByCompany.get(companyId)!.push(review);
                     });
 
                     // Map companies with their reviews
                     const mappedCompanies: FuneralCompany[] = data.map(item => {
-                        const reviews = reviewsByCompany.get(item.id) || [];
-
                         // Attempt to find a matching static image or use default
                         const staticMatch = FUNERAL_COMPANIES.find(c => c.name.replace(/\s/g, '') === item.name.replace(/\s/g, ''));
+
+                        // Combine reviews from both DB ID and Static ID
+                        const dbId = item.id.toString().trim();
+                        const staticId = staticMatch?.id?.toString().trim();
+
+                        const reviews = [
+                            ...(reviewsByCompany.get(dbId) || []),
+                            ...(staticId ? (reviewsByCompany.get(staticId) || []) : [])
+                        ];
+
+                        // Deduplicate reviews by ID
+                        const uniqueReviews = Array.from(new Map(reviews.map(r => [r.id, r])).values());
 
                         // 상조 서비스 상품 (하드코딩)
                         const products = [
                             {
-                                id: 'basic',
-                                name: '베이직형',
-                                price: 3500000,
-                                badges: ['기본형'],
-                                tagline: '합리적인 가격의 기본 상조 서비스',
-                                description: '장례 의전에 필요한 기본 서비스를 제공합니다.',
+                                id: '1',
+                                name: '실속형 (390)',
+                                price: 3900000,
+                                description: '합리적인 가격으로 꼭 필요한 서비스만 담은 실속 상품',
+                                badges: ['실속형', '인기'],
+                                tagline: '합리적인 선택',
                                 serviceDetails: [
-                                    { category: '의전', items: ['영정사진 제작', '부고 안내', '접객 지원'] },
-                                    { category: '장례용품', items: ['수의 1벌', '관 1구', '제단 화환'] }
-                                ],
-                                includedServices: ['영정사진 제작', '부고 안내', '수의 1벌', '관 1구'],
-                                optionalServices: ['추가 화환', '식사 추가']
+                                    { category: '인력', items: ['의전관리사 4명', '장례지도사 2명'] },
+                                    { category: '용품', items: ['오동나무 1단 관', '고급 수의'] },
+                                    { category: '차량', items: ['고인 전용 운구차량 200km'] }
+                                ]
                             },
                             {
-                                id: 'standard',
-                                name: '스탠다드형',
-                                price: 5000000,
-                                badges: ['표준형'],
-                                tagline: '가장 많이 선택하는 표준 서비스',
-                                description: '합리적인 가격에 충실한 서비스를 제공합니다.',
+                                id: '2',
+                                name: '표준형 (490)',
+                                price: 4900000,
+                                description: '가장 많은 고객님이 선택하시는 표준 의전 프로그램',
+                                badges: ['표준형', '추천'],
+                                tagline: '격조 높은 의전',
                                 serviceDetails: [
-                                    { category: '의전', items: ['영정사진 제작', '부고 안내', '접객 지원', '사회자 파견'] },
-                                    { category: '장례용품', items: ['고급 수의 1벌', '고급관 1구', '제단 화환 3개'] },
-                                    { category: '추가', items: ['식사 50인분', '답례품 제공'] }
-                                ],
-                                includedServices: ['영정사진 제작', '사회자 파견', '고급 수의', '식사 50인분'],
-                                optionalServices: ['VIP 의전', '추가 식사']
-                            },
-                            {
-                                id: 'premium',
-                                name: '프리미엄형',
-                                price: 10000000,
-                                badges: ['고급형'],
-                                tagline: '최상의 서비스로 고인을 예우하는 프리미엄 상조',
-                                description: '최고급 서비스로 품격있는 마지막 인사를 준비합니다.',
-                                serviceDetails: [
-                                    { category: '의전', items: ['전문 사회자', '의전팀 24시간 상주'] },
-                                    { category: '장례용품', items: ['최고급 수의', '최고급 관', '제단 화환 10개'] },
-                                    { category: '추가', items: ['식사 100인분', '고급 답례품', '추모 영상 제작'] }
-                                ],
-                                includedServices: ['전문 사회자', '의전팀 24시간', '최고급 수의', '식사 100인분', '추모 영상'],
-                                optionalServices: ['해외 현지 의전', '프리미엄 답례품 업그레이드']
+                                    { category: '인력', items: ['의전관리사 6명', '장례지도사 2명'] },
+                                    { category: '용품', items: ['솔송나무 2단 관', '특수 면수의'] },
+                                    { category: '차량', items: ['리무진 및 버스 왕복 400km'] }
+                                ]
                             }
                         ];
 
-                        // 갤러리 이미지 - DB에서 가져오거나 기본 이미지 사용
-                        const galleryImages = item.gallery_images && item.gallery_images.length > 0
-                            ? item.gallery_images
-                            : [
-                                'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400',
-                                'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400',
-                                'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=400'
-                            ];
+                        const galleryImages = item.gallery_images || item.images || (staticMatch?.imageUrl ? [staticMatch.imageUrl] : ['https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=400']);
 
                         return {
-                            id: staticMatch?.id || item.id.toString(),
+                            ...item,
+                            id: item.id.toString(), // 🔥 [FIX] Always use DB UUID instead of staticId (fc_new_1)
+                            staticId: staticMatch?.id, // Keep static ID for reference if needed
                             name: item.name,
                             rating: item.rating || 4.8,
                             reviewCount: item.review_count || 0,
@@ -150,18 +153,33 @@ export const FuneralCompanyView: React.FC<Props> = ({
                             benefits: item.benefits || ["회원 전용 혜택"],
                             galleryImages: galleryImages,
                             products: products,
-                            reviews: reviews.map((r: any) => ({
-                                id: r.id,
-                                userId: r.user_id,
-                                user_id: r.user_id,
-                                userName: '익명',
-                                facility_id: r.facility_id,
-                                rating: r.rating,
-                                content: r.content,
-                                images: r.images || [],
-                                created_at: r.created_at,
-                                date: r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : new Date().toLocaleDateString()
-                            }))
+                            reviews: uniqueReviews.map((r: any) => {
+                                // Safe date parsing to prevent RangeError: Invalid time value
+                                let displayDate = '최근';
+                                try {
+                                    if (r.created_at) {
+                                        const d = new Date(r.created_at);
+                                        if (!isNaN(d.getTime())) {
+                                            displayDate = d.toISOString().split('T')[0];
+                                        }
+                                    }
+                                } catch (e) {
+                                    console.warn('[FuneralCompanyView] Date parsing error for review:', r.id);
+                                }
+
+                                return {
+                                    id: r.id,
+                                    userId: 'masked', // Security: user_id masking as requested 
+                                    user_id: 'masked',
+                                    userName: r.user_name || r.userName || '익명',
+                                    facility_id: r.facility_id,
+                                    rating: r.rating || 5,
+                                    content: r.content || '',
+                                    images: r.images || [],
+                                    created_at: r.created_at,
+                                    date: displayDate
+                                };
+                            })
                         };
                     });
 
@@ -196,19 +214,11 @@ export const FuneralCompanyView: React.FC<Props> = ({
     // Load user favorites
     React.useEffect(() => {
         if (user) {
-            loadFavorites();
+            fetchFavorites(user.id);
         }
-    }, [user]);
+    }, [user, fetchFavorites]);
 
-    const loadFavorites = async () => {
-        if (!user) return;
-        try {
-            const favorites = await sangjoFavoriteService.getFavorites(user.id);
-            setFavoritedCompanies(new Set(favorites.map(f => f.company_id)));
-        } catch (error) {
-            console.error('Failed to load sangjo favorites:', error);
-        }
-    };
+    // Removal of local loadFavorites as it's now handled by the store
 
     const handleToggleFavorite = async (
         e: React.MouseEvent,
@@ -222,17 +232,7 @@ export const FuneralCompanyView: React.FC<Props> = ({
         }
 
         try {
-            const isFavorite = await sangjoFavoriteService.toggleFavorite(user.id, company);
-
-            setFavoritedCompanies(prev => {
-                const next = new Set(prev);
-                if (isFavorite) {
-                    next.add(company.id);
-                } else {
-                    next.delete(company.id);
-                }
-                return next;
-            });
+            await storeToggleFavorite(user.id, company);
         } catch (error) {
             console.error('Failed to toggle sangjo favorite:', error);
         }
@@ -294,15 +294,15 @@ export const FuneralCompanyView: React.FC<Props> = ({
                         {/* Favorite Button - Heart Icon */}
                         <button
                             onClick={(e) => handleToggleFavorite(e, company)}
-                            className={`absolute right-2 top-2 p-2 rounded-full transition-all shadow-sm z-10 ${favoritedCompanies.has(company.id)
+                            className={`absolute right-2 top-2 p-2 rounded-full transition-all shadow-sm z-10 ${favoritedIds.has(company.id)
                                 ? 'bg-red-50 text-red-500'
                                 : 'bg-white/80 text-gray-400 hover:text-red-500 hover:bg-red-50'
                                 }`}
-                            title={favoritedCompanies.has(company.id) ? "즐겨찾기 해제" : "즐겨찾기 추가"}
+                            title={favoritedIds.has(company.id) ? "즐겨찾기 해제" : "즐겨찾기 추가"}
                         >
                             <Heart
                                 size={18}
-                                fill={favoritedCompanies.has(company.id) ? 'currentColor' : 'none'}
+                                fill={favoritedIds.has(company.id) ? 'currentColor' : 'none'}
                                 strokeWidth={2}
                             />
                         </button>
