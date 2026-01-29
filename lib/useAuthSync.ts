@@ -12,7 +12,7 @@ export const useAuthSync = () => {
             if (!isSignedIn || !user || !isSupabaseConfigured()) {
                 // If signed out, clear Supabase auth
                 if (!isSignedIn && isSupabaseConfigured()) {
-                    setSupabaseAuth(null);
+                    await setSupabaseAuth(null);
                 }
                 return;
             }
@@ -24,7 +24,7 @@ export const useAuthSync = () => {
                         try {
                             const token = await session.getToken({ template: 'supabase' });
                             if (token) {
-                                setSupabaseAuth(token);
+                                await setSupabaseAuth(token);
                             }
                         } catch (tokenError) {
                             console.error("Error fetching Clerk token:", tokenError);
@@ -78,7 +78,7 @@ export const useAuthSync = () => {
             if (isSignedIn && session) {
                 const token = await session.getToken({ template: 'supabase' });
                 if (token) {
-                    setSupabaseAuth(token);
+                    await setSupabaseAuth(token);
                 }
             }
         }, REFRESH_INTERVAL);
