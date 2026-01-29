@@ -117,7 +117,83 @@ export enum ViewState {
   PARTNER_INQUIRY = 'PARTNER_INQUIRY',
 }
 
+export interface Partner {
+  id: string;
+  name: string; // Display name
+  company_name: string;
+  company_logo_url?: string;
+  status: 'pending' | 'approved' | 'rejected' | 'suspended';
+  subscription_plan: 'basic' | 'pro' | 'enterprise';
+  subscription_expires_at?: string;
+  contact_person?: string;
+  contact_phone?: string;
+  contact_email?: string;
+  funeral_location?: string; // Physical location
+  ai_context?: {
+    prices?: string;
+    tone?: string;
+    emphasis?: string[];
+    forbidden?: string[];
+    welcome_message?: string;
+    description?: string;
+    benefits?: string[];
+  };
+  created_at: string;
+  approved_at?: string;
+  approved_by?: string;
+}
+
+export interface PartnerConversation {
+  id: string;
+  partner_id: string;
+  user_id?: string;
+  user_name?: string;
+  user_phone?: string;
+  conversation_status: 'ai_handling' | 'agent_requested' | 'agent_connected' | 'closed';
+  messages: Array<{
+    role: 'user' | 'assistant' | 'system';
+    content: string;
+    timestamp?: string;
+    buttons?: Array<{ label: string; action: string }>;
+  }>;
+  tags: string[];
+  priority: 'normal' | 'high' | 'critical';
+  assigned_agent?: string;
+  created_at: string;
+  last_message_at: string;
+}
+
+export interface PartnerOperation {
+  id: string;
+  partner_id: string;
+  conversation_id?: string;
+  contract_id?: string;
+  operation_stage: 'pending' | 'dispatched' | 'in_progress' | 'completed' | 'cancelled';
+  deceased_name?: string;
+  funeral_director?: string;
+  funeral_location?: string;
+  estimated_cost?: number;
+  actual_cost?: number;
+  dispatch_time?: string;
+  completion_time?: string;
+  field_photos?: string[];
+  notes?: string;
+  created_at: string;
+}
+
+export interface PlatformNotice {
+  id: string;
+  title: string;
+  content: string;
+  notice_type: 'info' | 'warning' | 'urgent';
+  target_partner_ids?: string[];
+  is_active: boolean;
+  created_at: string;
+  expires_at?: string;
+}
+
 export interface SangjoContract {
+  id: string; // Add id for referencing
   contract_number: string;
   sangjo_id: string;
   customer_name: string;
@@ -128,11 +204,14 @@ export interface SangjoContract {
   region?: string;
   total_price: number;
   status: "상담신청" | "예약대기" | "임종발생" | "현장도착" | "염습중" | "장례식진행" | "완료";
+  emergency_level?: 'normal' | 'urgent' | 'critical';
+  platform_fee?: number;
+  assigned_counselor?: string;
   created_at: string;
   death_time?: string;
   current_location?: string;
-  application_type?: 'CONTRACT' | 'CONSULTATION'; // 추가
-  preferred_call_time?: string; // 추가
+  application_type?: 'CONTRACT' | 'CONSULTATION';
+  preferred_call_time?: string;
   timeline?: Array<{
     time: string;
     event: string;

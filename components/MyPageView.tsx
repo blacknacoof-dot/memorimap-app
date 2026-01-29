@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { User, MessageSquare, Loader2, Settings2, Calendar } from 'lucide-react';
+import { User, Loader2, Settings2, Calendar } from 'lucide-react';
 import { Reservation, Facility, Review, ViewState } from '../types';
-import { getUserReviews, deleteReview, getMyReservations, cancelReservation, getUserPhoneNumber } from '../lib/queries';
-import { ReviewCard } from './ReviewCard';
+import { getMyReservations, cancelReservation, getUserPhoneNumber } from '../lib/queries';
 import { ReservationList } from './ReservationList';
 import { ReservationDetailModal } from './ReservationDetailModal';
 import { EditProfileModal } from './EditProfileModal';
@@ -41,9 +40,7 @@ export const MyPageView: React.FC<Props> = ({
     onSelectFacility,
     onSelectCompany
 }) => {
-    const [myReviews, setMyReviews] = useState<Review[]>([]);
     const [myReservations, setMyReservations] = useState<Reservation[]>(propReservations);
-    const [isLoadingReviews, setIsLoadingReviews] = useState(false);
     const [isLoadingReservations, setIsLoadingReservations] = useState(false);
     const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
     const [showEditProfile, setShowEditProfile] = useState(false);
@@ -59,7 +56,6 @@ export const MyPageView: React.FC<Props> = ({
 
     useEffect(() => {
         if (isLoggedIn && user) {
-            fetchMyReviews();
             fetchMyReservations();
             fetchUserPhone();
             fetchMyFavorites();
@@ -71,19 +67,6 @@ export const MyPageView: React.FC<Props> = ({
         if (!user) return;
         const phone = await getUserPhoneNumber(user.id);
         setUserPhone(phone || '');
-    };
-
-    const fetchMyReviews = async () => {
-        if (!user) return;
-        setIsLoadingReviews(true);
-        try {
-            const data = await getUserReviews(user.id);
-            setMyReviews(data);
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setIsLoadingReviews(false);
-        }
     };
 
     const fetchMyReservations = async () => {
@@ -205,22 +188,6 @@ export const MyPageView: React.FC<Props> = ({
             toast.success('즐겨찾기가 해제되었습니다.');
         } catch (err) {
             toast.error('오류가 발생했습니다.');
-        }
-    };
-
-    const handleDeleteReview = async (id: string) => {
-        try {
-            const reviewToDelete = myReviews.find(r => r.id === id);
-            if (!reviewToDelete) return;
-
-            await deleteReview(id);
-            setMyReviews(prev => prev.filter(r => r.id !== id));
-
-            if (onReviewDeleted && reviewToDelete.facility_id) {
-                onReviewDeleted(reviewToDelete.facility_id, id, reviewToDelete.rating);
-            }
-        } catch (err) {
-            alert('리뷰 삭제 중 오류가 발생했습니다.');
         }
     };
 
@@ -575,36 +542,6 @@ export const MyPageView: React.FC<Props> = ({
                     )
                 ) : null}
             </div>
-
-            {/* My Reviews Section */}
-            <h3 className="font-bold mb-4 border-l-4 border-primary pl-3 flex items-center gap-2">
-                나의 작성 리뷰
-                {isLoadingReviews && <Loader2 size={16} className="animate-spin text-gray-400" />}
-            </h3>
-
-            {
-                myReviews.length === 0 ? (
-                    <div className="text-center py-10 text-gray-400 bg-white rounded-xl border border-dashed">
-                        작성한 리뷰가 없습니다.
-                    </div>
-                ) : (
-                    <div className="space-y-2">
-                        {myReviews.map(review => {
-                            const facility = facilities.find(f => f.id === review.facility_id);
-                            return (
-                                <div key={review.id} className="bg-white p-4 rounded-xl shadow-sm border">
-                                    <ReviewCard
-                                        review={review}
-                                        isOwner={true}
-                                        onDelete={handleDeleteReview}
-                                        facilityName={facility?.name}
-                                    />
-                                </div>
-                            );
-                        })}
-                    </div>
-                )
-            }
 
             {/* Service Info Section */}
             <div className="mt-8 border-t pt-6 mb-12 relative z-10 bg-gray-50">
