@@ -10,27 +10,20 @@ interface Props {
 }
 
 export const ReviewCard: React.FC<Props> = ({ review, isOwner, onDelete, facilityName }) => {
-    // 4. Name Masking Utility (Updated per User Request)
+    // 4. Name Masking Utility (Updated: Show only family name prefix)
     const getMaskedName = (originalName: string | null | undefined) => {
-        if (!originalName) return "익명";
-        if (originalName === '익명') return "익명";
+        if (!originalName || originalName === '익명') return "익명";
 
-        // If already masked (contains '*'), return as is
-        if (originalName.includes('*')) return originalName;
+        // If already masked (contains '*'), we still want to ensure it follows the "Prefix**" style
+        // but for safety, if it already has *, we return it unless it's the generic "익명"
+        if (originalName.includes('*') && originalName !== '익명') return originalName;
 
         const len = originalName.length;
+        if (len === 0) return "익명";
 
-        // 1. 2 chars: 김철 -> 김*
-        if (len === 2) {
-            return originalName[0] + "*";
-        }
-
-        // 2. 3+ chars: 홍길동 -> 홍**, 남궁민수 -> 남** (성 + ** 형태)
-        if (len >= 3) {
-            return originalName[0] + "**";
-        }
-
-        return originalName;
+        // Always show ONLY the first character (Surname) and mask the rest
+        // 홍길동 -> 홍**, 김철 -> 김*, A -> A*
+        return originalName[0] + "*".repeat(Math.max(1, len - 1));
     };
 
     const displayName = isOwner ? (review.userName || '익명') : getMaskedName(review.userName);

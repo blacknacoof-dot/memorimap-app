@@ -146,40 +146,11 @@ const App: React.FC = () => {
   // Auth State
   const { isSignedIn, user, isLoaded } = useUser();
   const { signOut } = useClerk();
+  const { session } = useSession();
 
   const [initialChatIntent, setInitialChatIntent] = useState<'funeral_home' | 'memorial_facility' | 'pet_funeral' | 'general' | null>(null);
   const [handoverContext, setHandoverContext] = useState<any>(null);
 
-  // --- Clerk -> Supabase Token Injection ---
-  const { session } = useSession();
-
-  useEffect(() => {
-    const syncSupabaseAuth = async () => {
-      if (!session) {
-        // [Fix] Clear Supabase session on logout
-        // setSupabaseAuth(null); // Deprecated local helper
-        await supabase.auth.signOut();
-        return;
-      }
-      try {
-        const token = await session.getToken({ template: 'supabase' });
-        if (token) {
-          // console.log("🔄 Injecting Clerk Token into Supabase Client...");
-          // [Fix] Explicitly set session on the global Supabase client
-          await supabase.auth.setSession({
-            access_token: token,
-            refresh_token: '', // Clerk manages refresh, so empty string is fine
-          });
-          // console.log('✅ Supabase Session Synced!');
-        } else {
-          console.warn("⚠️ Clerk getToken returned null. Check 'supabase' template.");
-        }
-      } catch (err) {
-        console.error("Failed to sync Supabase auth:", err);
-      }
-    };
-    syncSupabaseAuth();
-  }, [session]);
 
   // ------------------------------------------
 
