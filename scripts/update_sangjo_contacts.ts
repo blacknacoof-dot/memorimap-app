@@ -56,29 +56,43 @@ const contactMap: Record<string, string> = {
 async function run() {
     console.log("🚀 상조 회사 연락처 업데이트 시작...");
 
-    for (const [name, contact] of Object.entries(contactMap)) {
-        // Find company ID by name partial match to be safe, or exact match
-        const { data: company } = await supabase
-            .from('memorial_spaces')
-            .select('id, name')
-            .ilike('name', `%${name}%`)
-            .maybeSingle();
+    const tables = ['funeral_companies', 'memorial_spaces'];
 
-        if (!company) {
-            console.log(`⚠️ PASS: ${name} (DB 미발견)`);
+    for (const tableName of tables) {
+        console.log(`\n--- ${tableName} 테이블 업데이트 시도 ---`);
+
+        // First check if table exists by doing a simple select
+        const { error: tableError } = await supabase.from(tableName).select('id').limit(1);
+        if (tableError) {
+            console.log(`⚠️ ${tableName} 테이블 접근 실패 또는 존재하지 않음: ${tableError.message}`);
             continue;
         }
 
-        // Update phone
-        const { error } = await supabase
-            .from('memorial_spaces')
-            .update({ phone: contact })
-            .eq('id', company.id);
+        for (const [name, contact] of Object.entries(contactMap)) {
+            const { data: companies, error: fetchError } = await supabase
+                .from(tableName)
+                .select('id, name')
+                .ilike('name', `%${name}%`);
 
-        if (error) {
-            console.error(`❌ ${company.name} 업데이트 실패:`, error.message);
-        } else {
-            console.log(`✅ ${company.name} 연락처 업데이트: ${contact}`);
+            if (fetchError) {
+                console.error(`❌ ${tableName} 데이터 조회 실패:`, fetchError.message);
+                break;
+            }
+
+            if (!companies || companies.length === 0) continue;
+
+            for (const company of companies) {
+                const { error: updateError } = await supabase
+                    .from(tableName)
+                    .update({ phone: contact })
+                    .eq('id', company.id);
+
+                if (updateError) {
+                    console.error(`❌ ${company.name} (${tableName}) 업데이트 실패:`, updateError.message);
+                } else {
+                    console.log(`✅ ${company.name} (${tableName}) 연락처 업데이트: ${contact}`);
+                }
+            }
         }
     }
 }

@@ -1,45 +1,43 @@
-
 import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import fs from 'fs';
+import * as dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
 
-// ES Module dirname workaround
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const supabase = createClient(
+    process.env.VITE_SUPABASE_URL!,
+    process.env.VITE_SUPABASE_SERVICE_ROLE_KEY!
+);
 
-// Load .env.local
-const envPath = path.resolve(__dirname, '../.env.local');
-if (fs.existsSync(envPath)) {
-    dotenv.config({ path: envPath });
-}
+async function main() {
+    const tables = [
+        'broken_images_backup_20260119',
+        'columbarium_backup_20260119',
+        'facilities_backup_20260119',
+        'facilities_backup_20260122',
+        'facility_subscriptions_backup',
+        'funeral_company_legacy_mapping',
+        'sangjo_hq_admins'
+    ];
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+    for (const table of tables) {
+        const { data, error } = await supabase
+            .from('information_schema_columns') // This won't work directly via .from() because it's a different schema
+            .select('column_name, data_type')
+            .eq('table_name', table)
+            .eq('table_schema', 'public');
 
-const supabase = createClient(supabaseUrl!, supabaseAnonKey!);
+        // Actually, I'll use the execute_sql RPC since it's cleaner for raw queries if it exists,
+        // but PGRST202 earlier showed it might not be available or named differently.
+        // Wait, earlier I found that execute_sql was NOT found.
 
-async function checkColumns() {
-    console.log('--- 🔍 Column Check ---');
+        // I will try to fetch one row from each table to see columns if I can't query information_schema.
+        const { data: row, error: rowError } = await supabase.from(table).select('*').limit(1);
 
-    // We can't access information_schema easily via client usually, so we'll select * limit 1 and check keys
-    const { data, error } = await supabase
-        .from('facilities')
-        .select('*')
-        .limit(1);
-
-    if (error) {
-        console.error('Error selecting facility:', error);
-    } else if (data && data.length > 0) {
-        const sample = data[0];
-        console.log('Available keys:', Object.keys(sample));
-
-        if ('images' in sample) console.log('✅ Has "images" column');
-        if ('image_url' in sample) console.log('✅ Has "image_url" column');
-    } else {
-        console.log('No facilities found to check columns.');
+        if (rowError) {
+            console.log(`Table ${table} Error:`, rowError.message);
+        } else {
+            console.log(`Table ${table} Columns:`, Object.keys(row[0] || {}).join(', '));
+        }
     }
 }
 
-checkColumns();
+main();
