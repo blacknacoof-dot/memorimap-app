@@ -7,6 +7,7 @@ import { getFacilityFaqs } from '../../lib/queries';
 
 import { FuneralCompany } from '../../types';
 import { FUNERAL_COMPANIES } from '../../constants';
+import { ScenarioBot } from '../AI/ScenarioBot';
 
 interface Props {
     onClose: () => void;
@@ -129,16 +130,14 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
     }
 
     // Existing prop-based redirect for Human companies
+    // Use the new Genius ScenarioBot for individual companies
     if (company && !company.id.startsWith('pet_')) {
         return (
-            <div className="fixed inset-0 bg-black/50 z-[300] flex items-center justify-center p-4">
-                <div className="bg-white rounded-2xl w-full h-[85vh] sm:h-[700px] max-w-md flex flex-col shadow-2xl overflow-hidden relative">
-                    <BrandChatInterface
-                        company={company}
-                        onClose={onClose}
-                        onBack={onClose}
-                    />
-                </div>
+            <div className="fixed inset-0 z-[500] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+                <ScenarioBot
+                    partnerId={company.id}
+                    onClose={onClose}
+                />
             </div>
         );
     }
@@ -321,6 +320,7 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
 
                             const { saveSangjoContract } = await import('../../lib/sangjoQueries');
                             await saveSangjoContract({
+                                id: `db-${Date.now()}`, // Generated ID for contract
                                 contract_number: contractNumber,
                                 sangjo_id: activeCompany?.id || 'unknown',
                                 customer_name: d.name || '익명 고객',
@@ -329,7 +329,7 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
                                 status: isConsult ? '상담신청' : '예약대기',
                                 application_type: isConsult ? 'CONSULTATION' : 'CONTRACT',
                                 preferred_call_time: d.callTime || '',
-                                total_price: d.price || 0, // 필수로 추가
+                                total_price: d.price || 0,
                                 created_at: new Date().toISOString()
                             });
 

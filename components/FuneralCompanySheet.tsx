@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FuneralCompany } from '../types';
 import { supabase } from '../lib/supabaseClient';
-import { X, Star, Phone, MessageCircleQuestion, Heart, Share2, CheckCircle2, ShieldCheck, CreditCard, Gift, Bot, ChevronRight, Camera, User, ClipboardCheck } from 'lucide-react';
+import { X, Star, Phone, MessageCircleQuestion, Heart, Share2, CheckCircle2, ShieldCheck, CreditCard, Gift, Bot, ChevronRight, Camera, User, ClipboardCheck, Trash2 } from 'lucide-react';
 import { ReviewCard } from './ReviewCard';
 import { useSangjoFavoriteStore } from '../stores/useSangjoFavoriteStore';
 import { sangjoFavoriteService } from '../services/sangjoFavoriteService';
@@ -485,8 +485,18 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                                         <ReviewCard
                                             key={review.id}
                                             review={review}
-                                            isOwner={currentUser && review.userId === currentUser.id}
-                                            onDelete={() => { }}
+                                            isOwner={currentUser && (review.userId === currentUser.id || review.user_id === currentUser.id)}
+                                            onDelete={async (reviewId) => {
+                                                try {
+                                                    const { deleteReview } = await import('../lib/queries');
+                                                    await deleteReview(reviewId);
+                                                    alert('리뷰가 삭제되었습니다.');
+                                                    window.location.reload();
+                                                } catch (error) {
+                                                    console.error('Failed to delete review:', error);
+                                                    alert('리뷰 삭제에 실패했습니다.');
+                                                }
+                                            }}
                                         />
                                     ));
                                 } else {
