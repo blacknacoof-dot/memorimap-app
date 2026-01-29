@@ -25,59 +25,20 @@ let currentClient = createClient(
   }
 );
 
-// 2. Export a Proxy that always delegates to the 'currentClient'
-// This allows us to swap the underlying client (to add auth headers) without breaking imports.
-export const supabase = new Proxy({} as SupabaseClient, {
-  get: (_, prop) => {
-    // @ts-ignore
-    const value = currentClient[prop];
-    if (typeof value === 'function') {
-      return value.bind(currentClient);
-    }
-    return value;
+// 2. Export the single client instance
+export const supabase = currentClient;
+
+// 3. Helper to inject Clerk Token manually (Deprecated: use supabase.auth.setSession instead)
+export const setSupabaseAuth = async (token: string | null) => {
+  if (!token) {
+    await supabase.auth.signOut();
+    return;
   }
-});
 
-// 3. Helper to inject Clerk Token manually
-// This bypasses 'supabase.auth.setSession' which forces UUID validation.
-let currentToken: string | null = null;
-
-export const setSupabaseAuth = (token: string | null) => {
-  if (token === currentToken) return; // Avoid recreating if token hasn't changed
-
-  currentToken = token;
-
-  if (token) {
-    // console.log("🔄 Re-creating Supabase Client with Clerk Token...");
-    currentClient = createClient(
-      supabaseUrl || 'https://placeholder.supabase.co',
-      supabaseAnonKey || 'placeholder-key',
-      {
-        auth: {
-          persistSession: false, // Disable Supabase auth persistence (Clerk handles it)
-          autoRefreshToken: false,
-          detectSessionInUrl: false,
-          storageKey: `clerk-${Date.now()}` // Dynamic key to ensure uniqueness per instance so Supabase doesn't warn about collisions
-        },
-        global: {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      }
-    );
-  } else {
-    // Revert to anon
-    currentClient = createClient(
-      supabaseUrl || 'https://placeholder.supabase.co',
-      supabaseAnonKey || 'placeholder-key',
-      {
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false,
-          detectSessionInUrl: false
-        }
-      }
-    );
-  }
+  await supabase.auth.setSession({
+    access_token: token,
+    refresh_token: '',
+  });
 };
 
 export const isSupabaseConfigured = () => {

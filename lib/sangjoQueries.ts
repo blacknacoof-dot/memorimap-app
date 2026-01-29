@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient';
 
-import { SangjoContract } from '../types';
+import { SangjoContract, Partner, PartnerConversation, PartnerOperation, PlatformNotice } from '../types';
 
 export interface SangjoTimelineEvent {
     id: string;
@@ -97,4 +97,79 @@ export const getSangjoUser = async (userId: string) => {
         return null;
     }
     return data;
+};
+
+// --- Partners ---
+export const getPartners = async () => {
+    const { data, error } = await supabase
+        .from('partners')
+        .select('*')
+        .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data as Partner[];
+};
+
+export const updatePartnerStatus = async (partnerId: string, status: Partner['status'], approvedBy?: string) => {
+    const updateData: any = { status };
+    if (status === 'approved') {
+        updateData.approved_at = new Date().toISOString();
+        updateData.approved_by = approvedBy;
+    }
+    const { data, error } = await supabase
+        .from('partners')
+        .update(updateData)
+        .eq('id', partnerId);
+    if (error) throw error;
+    return data;
+};
+
+// --- Conversations ---
+export const getPartnerConversations = async (partnerId: string) => {
+    const { data, error } = await supabase
+        .from('partner_conversations')
+        .select('*')
+        .eq('partner_id', partnerId)
+        .order('last_message_at', { ascending: false });
+    if (error) throw error;
+    return data as PartnerConversation[];
+};
+
+export const savePartnerConversation = async (conversation: Partial<PartnerConversation>) => {
+    const { data, error } = await supabase
+        .from('partner_conversations')
+        .upsert([conversation]);
+    if (error) throw error;
+    return data;
+};
+
+// --- Operations ---
+export const getPartnerOperations = async (partnerId: string) => {
+    const { data, error } = await supabase
+        .from('partner_operations')
+        .select('*')
+        .eq('partner_id', partnerId)
+        .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data as PartnerOperation[];
+};
+
+export const updateOperationStage = async (operationId: string, stage: PartnerOperation['operation_stage']) => {
+    const { data, error } = await supabase
+        .from('partner_operations')
+        .update({ operation_stage: stage })
+        .eq('id', operationId);
+    if (error) throw error;
+    return data;
+};
+
+// --- Notices ---
+export const getPlatformNotices = async (partnerId?: string) => {
+    let query = supabase.from('platform_notices').select('*').eq('is_active', true);
+    if (partnerId) {
+        // 특정 파트너 대상 또는 전체 대상 공지
+        query = query.or(`target_partner_ids.is.null,target_partner_ids.cs.{${partnerId}}`);
+    }
+    const { data, error } = await query.order('created_at', { ascending: false });
+    if (error) throw error;
+    return data as PlatformNotice[];
 };
