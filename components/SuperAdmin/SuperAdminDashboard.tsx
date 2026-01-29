@@ -7,13 +7,15 @@ import {
     FileText, UserCog, Settings, ShieldCheck,
     Lock, BellRing, MonitorStop, Percent, History
 } from 'lucide-react';
-import { PartnerAdmissions } from './PartnerAdmissions';
+import { PartnerManagement } from './PartnerManagement';
+import { ContractMonitoring } from './ContractMonitoring';
+import { RevenueManagement } from './RevenueManagement';
+import { NoticeManagement } from './NoticeManagement';
 import { useLeads } from '../../hooks/useLeads';
-import { useSubscriptions, useRevenue } from '../../hooks/useFinancials';
+import { useSubscriptions } from '../../hooks/useFinancials';
 import { useSuperAdmin } from '../../hooks/useSuperAdmin';
 import { UserManagement } from './UserManagement';
 import { FacilityManagement } from './FacilityManagement';
-import { NoticeManager } from '../dashboard/super-admin/NoticeManager';
 import { ConfirmModal } from '../../src/components/common/ConfirmModal';
 import { NotificationCenter } from '../NotificationCenter';
 import { AdminLogsView } from './AdminLogsView';
@@ -50,7 +52,8 @@ const SideMenuDrawer = ({ isOpen, onClose, onNavigate }: { isOpen: boolean; onCl
                     <div className="px-4 mb-2 text-xs font-semibold text-slate-400 uppercase">운영 관리</div>
                     <nav className="space-y-1 px-2">
                         {[
-                            { icon: ShieldCheck, label: '입점 승인 관리', id: 'admissions', testId: 'admissions-tab' },
+                            { icon: ShieldCheck, label: '상조 파트너 관리', id: 'admissions' },
+                            { icon: MonitorStop, label: '실시간 통합 관제', id: 'monitoring' },
                             { icon: Building2, label: '시설 통합 관리', id: 'facilities' },
                             { icon: Users, label: '회원/권한 관리', id: 'users' },
                             { icon: FileText, label: '공지사항 관리', id: 'notices' },
@@ -59,7 +62,6 @@ const SideMenuDrawer = ({ isOpen, onClose, onNavigate }: { isOpen: boolean; onCl
                             <button
                                 key={item.id}
                                 onClick={() => handleNavigation(item.id)}
-                                data-testid={item.testId}
                                 className="w-full flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg transition-colors"
                             >
                                 <item.icon className="w-5 h-5" />
@@ -390,142 +392,7 @@ const SubscriptionManager = ({ onManage }: { onManage: (facilityName: string) =>
     );
 };
 
-/** [Component] Trend Bar Chart (Genius Visualization) */
-const TrendChart = ({ data }: { data: { label: string, value: number, color: string }[] }) => {
-    const max = Math.max(...data.map(d => d.value), 1);
-    return (
-        <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-            <h4 className="text-[10px] font-bold text-slate-400 uppercase mb-4 tracking-widest">매출 트렌드 (최근)</h4>
-            <div className="flex items-end justify-between h-32 gap-2">
-                {data.map((item, i) => (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
-                        <div className="relative w-full flex justify-center items-end h-full">
-                            <div
-                                className={`w-full max-w-[20px] rounded-t-sm transition-all duration-700 ease-out border-t-2 ${item.color}`}
-                                style={{
-                                    height: `${(item.value / max) * 100}%`,
-                                    opacity: 0.8
-                                }}
-                            >
-                                <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-[9px] px-1.5 py-0.5 rounded whitespace-nowrap z-10">
-                                    ₩{(item.value / 10000).toFixed(0)}만
-                                </div>
-                            </div>
-                        </div>
-                        <span className="text-[9px] text-slate-400 font-medium">{item.label}</span>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-};
-
-/** [Tab B] Revenue Analytics */
-const RevenueAnalytics = () => {
-    const { payments, totalRevenue, loading } = useRevenue();
-
-    if (loading) return <div className="p-10 text-center">로딩 중...</div>;
-
-    const subRevenue = payments
-        .filter(p => p.description && p.description.includes('구독'))
-        .reduce((acc, curr) => acc + curr.amount, 0);
-    const commRevenue = totalRevenue - subRevenue;
-
-    // Sample data for TrendChart (In a real app, this would be grouped by date)
-    const trendData = [
-        { label: '월', value: totalRevenue * 0.1, color: 'bg-blue-400 border-blue-500' },
-        { label: '화', value: totalRevenue * 0.15, color: 'bg-indigo-400 border-indigo-500' },
-        { label: '수', value: totalRevenue * 0.08, color: 'bg-blue-400 border-blue-500' },
-        { label: '목', value: totalRevenue * 0.22, color: 'bg-indigo-400 border-indigo-500' },
-        { label: '금', value: totalRevenue * 0.3, color: 'bg-blue-500 border-blue-600' },
-        { label: '토', value: totalRevenue * 0.12, color: 'bg-indigo-400 border-indigo-500' },
-        { label: '일', value: totalRevenue * 0.03, color: 'bg-blue-400 border-blue-500' },
-    ];
-
-    return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-                {/* Total Revenue Card */}
-                <div className="lg:col-span-2 w-full bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 rounded-2xl p-5 md:p-6 text-white shadow-xl flex justify-between items-center relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-3xl group-hover:bg-white/20 transition-all duration-500"></div>
-
-                    <div className="relative z-10">
-                        <p className="text-blue-100 text-[10px] md:text-xs font-bold uppercase tracking-wider mb-1 opacity-80">누적 총 매출</p>
-                        <h2 className="text-3xl md:text-4xl font-black tracking-tight flex items-baseline gap-1">
-                            <span className="text-lg md:text-xl font-normal opacity-70">₩</span>
-                            {totalRevenue.toLocaleString()}
-                        </h2>
-                        <div className="flex items-center gap-2 mt-4">
-                            <span className="bg-white/20 px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[9px] md:text-[11px] font-bold flex items-center backdrop-blur-md border border-white/10">
-                                <TrendingUp className="w-3 h-3 md:w-4 md:h-4 mr-1" /> 실시간 매출 분석 중
-                            </span>
-                        </div>
-                    </div>
-                    <div className="bg-white/10 p-3 md:p-4 rounded-2xl border border-white/20 backdrop-blur-sm relative z-10 hidden sm:block shadow-inner">
-                        <Wallet className="w-8 h-8 md:w-10 md:h-10 text-white" />
-                    </div>
-                </div>
-
-                {/* Sub Stats Cards */}
-                <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 md:gap-4">
-                    <div className="bg-white border border-slate-200 p-4 md:p-5 rounded-2xl shadow-sm flex flex-col md:flex-row items-center md:items-center gap-2 md:gap-4">
-                        <div className="p-2 md:p-3 bg-indigo-50 rounded-xl">
-                            <Users className="w-5 h-5 md:w-6 md:h-6 text-indigo-600" />
-                        </div>
-                        <div className="text-center md:text-left">
-                            <span className="text-[10px] md:text-xs text-slate-400 block mb-0.5 md:mb-1">구독료 매출</span>
-                            <p className="text-lg md:text-2xl font-bold text-slate-800">₩ {(subRevenue / 10000).toFixed(0)}만</p>
-                        </div>
-                    </div>
-
-                    <div className="bg-white border border-slate-200 p-4 md:p-5 rounded-2xl shadow-sm flex flex-col md:flex-row items-center md:items-center gap-2 md:gap-4">
-                        <div className="p-2 md:p-3 bg-emerald-50 rounded-xl">
-                            <CreditCard className="w-5 h-5 md:w-6 md:h-6 text-emerald-600" />
-                        </div>
-                        <div className="text-center md:text-left">
-                            <span className="text-[10px] md:text-xs text-slate-400 block mb-0.5 md:mb-1">기타 매출</span>
-                            <p className="text-lg md:text-2xl font-bold text-slate-800">₩ {(commRevenue / 10000).toFixed(0)}만</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* List */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
-                    <TrendChart data={trendData} />
-                </div>
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 h-full">
-                    <h3 className="text-sm font-bold text-slate-800 mb-4 uppercase tracking-wider flex items-center gap-2">
-                        <History className="w-4 h-4 text-blue-600" />
-                        최근 거래 내역
-                    </h3>
-                    <div className="space-y-4">
-                        {payments.slice(0, 6).map((tx) => (
-                            <div key={tx.id} className="flex items-center justify-between group">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
-                                        <CreditCard className="w-5 h-5" />
-                                    </div>
-                                    <div>
-                                        <p className="font-bold text-slate-800 text-sm truncate max-w-[120px]">{tx.facility_name}</p>
-                                        <p className="text-[10px] text-slate-400">{new Date(tx.paid_at).toLocaleDateString()}</p>
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                    <p className="font-bold text-slate-900 text-sm">+{tx.amount?.toLocaleString()}</p>
-                                    <p className={`text-[10px] font-medium ${tx.status === 'completed' ? 'text-green-600' : 'text-slate-400'}`}>
-                                        {tx.status === 'completed' ? '결제완료' : tx.status}
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
+// TrendChart and RevenueAnalytics removed. Using RevenueManagement component.
 
 /** [Tab C] Consultation Leads */
 const AdminLeadsView = () => {
@@ -586,7 +453,7 @@ const AdminLeadsView = () => {
 /** [Main Container] */
 export default function SuperAdminDashboard() {
     const { user } = useUser();
-    const [activeTab, setActiveTab] = useState<'subs' | 'revenue' | 'leads' | 'admissions' | 'facilities' | 'users' | 'notices' | 'logs' | 'admin_settings' | 'system_settings'>('leads');
+    const [activeTab, setActiveTab] = useState<'subs' | 'revenue' | 'leads' | 'admissions' | 'facilities' | 'users' | 'notices' | 'logs' | 'admin_settings' | 'system_settings' | 'monitoring'>('monitoring');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [facilitySearchTerm, setFacilitySearchTerm] = useState('');
 
@@ -629,8 +496,9 @@ export default function SuperAdminDashboard() {
                 <div className="max-w-5xl mx-auto px-2 md:px-4 overflow-x-auto scrollbar-hide">
                     <div className="flex items-center gap-4 md:gap-6 min-w-max">
                         {[
-                            { id: 'subs', label: '구독 관리', icon: Building2 },
-                            { id: 'revenue', label: '매출 통계', icon: TrendingUp },
+                            { id: 'monitoring', label: '통합 관제', icon: MonitorStop },
+                            { id: 'admissions', label: '파트너 관리', icon: ShieldCheck },
+                            { id: 'revenue', label: '매출 분석', icon: TrendingUp },
                             { id: 'leads', label: '상담 관리', icon: Users },
                         ].map((tab) => (
                             <button
@@ -659,11 +527,12 @@ export default function SuperAdminDashboard() {
                         }}
                     />
                 )}
-                {activeTab === 'revenue' && <RevenueAnalytics />}
+                {activeTab === 'monitoring' && <ContractMonitoring />}
+                {activeTab === 'revenue' && <RevenueManagement />}
                 {activeTab === 'leads' && <AdminLeadsView />}
 
                 {/* Render Management Components */}
-                {activeTab === 'admissions' && <PartnerAdmissions />}
+                {activeTab === 'admissions' && <PartnerManagement />}
                 {activeTab === 'facilities' && (
                     <FacilityManagement
                         initialSearch={facilitySearchTerm}
@@ -671,7 +540,7 @@ export default function SuperAdminDashboard() {
                     />
                 )}
                 {activeTab === 'users' && <UserManagement />}
-                {activeTab === 'notices' && <NoticeManager />}
+                {activeTab === 'notices' && <NoticeManagement />}
                 {activeTab === 'logs' && <AdminLogsView />}
                 {activeTab === 'admin_settings' && <AdminSettings />}
                 {activeTab === 'system_settings' && <SystemSettings />}
