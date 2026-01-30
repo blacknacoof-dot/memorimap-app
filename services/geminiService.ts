@@ -1,20 +1,6 @@
 // geminiService.ts
 
-import { Facility, FuneralCompany } from '../types';
-
-export type ActionType =
-  | 'SHOW_FORM_A'
-  | 'SHOW_FORM_B'
-  | 'RECOMMEND'
-  | 'RESERVE'
-  | 'MAP'
-  | 'CALL_MANAGER'
-  | 'SWITCH_TO_CONSULT'
-  | 'SHOW_PRODUCTS'     // [NEW]
-  | 'URGENT_DISPATCH'   // [NEW]
-  | 'URGENT_CHECK'      // [NEW]
-  | 'URGENT_RESERVATION_CONFIRM' // [NEW]
-  | 'NONE';
+import { Facility, FuneralCompany, ActionType } from '../types';
 
 export interface ChatMessage {
   role: 'user' | 'model';
@@ -30,9 +16,139 @@ export interface AIResponse {
   data?: any;
 }
 
-/**
- * 실제 AI 연결 없이, 정해진 키워드에 따라 답변하는 목(Mock) 함수입니다.
- */
+// ==========================================
+// [Simulation] Map API + AI Filter Architecture
+// ==========================================
+
+interface MapPlace {
+  place_name: string;
+  address_name: string;
+  lat: number;
+  lng: number;
+  rating: number;
+  reviewCount: number;
+  id: string; // Add ID for keying
+}
+
+// 1. Mock Map API Data Source (Simulating pure map search results)
+const MOCK_MAP_DB: Record<string, MapPlace[]> = {
+  '강남': [
+    { id: 'gn-1', place_name: "강남성모병원 장례식장", address_name: "서울 강남구 반포동", lat: 37.500, lng: 127.004, rating: 4.3, reviewCount: 380 },
+    { id: 'gn-2', place_name: "삼성서울병원 장례식장", address_name: "서울 강남구 일원동", lat: 37.488, lng: 127.085, rating: 4.6, reviewCount: 1200 },
+    { id: 'gn-3', place_name: "강남세브란스병원 장례식장", address_name: "서울 강남구 언주로", lat: 37.493, lng: 127.070, rating: 4.4, reviewCount: 900 },
+    { id: 'gn-4', place_name: "서울아산병원 장례식장", address_name: "서울 송파구 (강남 인접)", lat: 37.524, lng: 127.108, rating: 4.7, reviewCount: 1500 } // Slight out of bound but relevant
+  ],
+  '고양': [
+    { id: 'gy-1', place_name: '동국대학교 일산병원 장례식장', address_name: '경기도 고양시 일산동구 동국로 27', lat: 37.676, lng: 126.806, rating: 4.1, reviewCount: 120 },
+    { id: 'gy-2', place_name: '명지병원 장례식장', address_name: '경기도 고양시 덕양구 화수로 14번길', lat: 37.643, lng: 126.832, rating: 4.0, reviewCount: 95 },
+    { id: 'gy-3', place_name: '인제대학교 일산백병원 장례식장', address_name: '경기도 고양시 일산서구 주화로 170', lat: 37.674, lng: 126.747, rating: 4.0, reviewCount: 80 },
+    { id: 'gy-4', place_name: '원당장례식장', address_name: '경기도 고양시 덕양구 고양대로', lat: 37.656, lng: 126.835, rating: 3.5, reviewCount: 12 }
+  ]
+};
+
+// [NEW] Dynamic Mock Generator for Nationwide Support (With Radius Expansion Simulation)
+const generateMockFacilities = (region: string, isGranular: boolean = false): MapPlace[] => {
+  const facilities = [];
+  
+  // 1. Exact Match (The requested region)
+  facilities.push({ 
+    id: `gen-${region}-1`, 
+    place_name: `${region} 대학병원 장례식장`, 
+    address_name: `${region} 중심가 123`, 
+    lat: 37.5, lng: 127.0, 
+    rating: 4.6, reviewCount: 850 
+  });
+
+  if (isGranular) {
+    // 2. [Simulated Expansion] If granular (Dong), add "Nearby" results from parent/adjacent areas
+    // Simulating that the Dong itself only had 1 result, so we fetched 2 more from "Nearby"
+    facilities.push({ 
+      id: `gen-${region}-exp-1`, 
+      place_name: `인근 중앙 전문 장례식장`, // Intentionally generic 'Nearby' name
+      address_name: `${region} 인근 1.5km`, // Simulated distance indication
+      lat: 37.51, lng: 127.01, 
+      rating: 4.4, reviewCount: 320 
+    });
+    facilities.push({ 
+      id: `gen-${region}-exp-2`, 
+      place_name: `인근 VIP 장례식장`, 
+      address_name: `${region} 인근 2.3km`, 
+      lat: 37.52, lng: 127.02, 
+      rating: 4.8, reviewCount: 42 
+    });
+  } else {
+    // Standard City-level generation (Plenty of results in the city itself)
+    facilities.push({ 
+      id: `gen-${region}-2`, 
+      place_name: `${region} 중앙 전문 장례식장`, 
+      address_name: `${region} 시청로 45`, 
+      lat: 37.5, lng: 127.0, 
+      rating: 4.2, reviewCount: 320 
+    });
+    facilities.push({ 
+      id: `gen-${region}-3`, 
+      place_name: `${region} 시립 추모관`, 
+      address_name: `${region} 외곽순환로 99`, 
+      lat: 37.5, lng: 127.0, 
+      rating: 3.9, reviewCount: 150 
+    });
+    facilities.push({ 
+      id: `gen-${region}-4`, 
+      place_name: `${region} VIP 장례식장`, 
+      address_name: `${region} 터미널 인근`, 
+      lat: 37.5, lng: 127.0, 
+      rating: 4.8, reviewCount: 42 
+    });
+  }
+
+  return facilities;
+};
+
+// 2. AI Scoring Logic (Lightweight & Fast)
+const scorePlace = (p: MapPlace) => {
+  let score = 0;
+
+  // ⭐ Rating Weight
+  if (p.rating) score += p.rating * 10;
+
+  // 📝 Review Count Weight
+  if (p.reviewCount > 1000) score += 30;
+  else if (p.reviewCount > 300) score += 20;
+  else if (p.reviewCount > 100) score += 10;
+
+  // 🏥 Hospital Premium
+  if (p.place_name.includes("병원") || p.place_name.includes("의료원")) score += 15;
+
+  return score;
+};
+
+// 3. Reason Generator (Auto-Tagging)
+const buildReasonTags = (p: MapPlace) => {
+  const tags = [];
+  if (p.rating >= 4.5) tags.push("⭐ 4.5 이상");
+  else if (p.rating >= 4.0) tags.push("⭐ 평점 우수");
+
+  if (p.reviewCount >= 1000) tags.push("🏆 리뷰 1000+");
+  else if (p.reviewCount >= 300) tags.push("🔥 후기 많음");
+
+  if (p.place_name.includes("병원")) tags.push("🏥 대학병원");
+
+  return tags;
+};
+
+// 4. Main Recommendation Function
+const recommendTop3 = (places: MapPlace[]) => {
+  return places
+    .map(p => ({
+      ...p,
+      aiScore: scorePlace(p),
+      badges: buildReasonTags(p)
+    }))
+    .sort((a, b) => b.aiScore - a.aiScore)
+    .slice(0, 3);
+};
+
+
 /**
  * 실제 AI 연결 없이, 정해진 키워드에 따라 답변하는 목(Mock) 함수입니다.
  */
@@ -46,6 +162,142 @@ export const sendMessageToGemini = async (
   // 1. Mock Delay
   await new Promise((resolve) => setTimeout(resolve, 1000));
   const userMsg = message.trim();
+
+  // ==========================================
+  // [PRIORITY CHECK] Form Submissions (Before Keyword Matching)
+  // ==========================================
+
+  if (userMsg.includes("[🚨 장례식장 찾기]") || userMsg.includes("장례식장 추천") || userMsg.includes("찾아")) {
+    // 1. Detect Region from Message (Advanced Parsing for Dong/Gu)
+    let regionKey = '서울'; // Default Fallback
+    let isGranular = false; // Flag for expansion simulation
+    
+    // Regex to capture City/District/Neighborhood (e.g., 강남구, 역삼동, 일산서구, 고양시)
+    // Matches: Word ending in 시, 군, 구, 동, 읍, 면 (exclude common words if necessary)
+    const locationRegex = /([가-힣]+[시군구동읍면])/g;
+    const matches = userMsg.match(locationRegex);
+
+    if (matches && matches.length > 0) {
+      // Use the last specific match (usually the most granular, e.g., "고양시 일산동구" -> "일산동구")
+      // But for better context, we might prefer the one that sounds most like a place users search for.
+      // Let's pick the last one found as it often specifies the precise neighborhood.
+      regionKey = matches[matches.length - 1];
+      
+      // Check if it's 'Dong' or 'Myeon' or 'Eup' -> trigger expansion if needed
+      if (regionKey.endsWith('동') || regionKey.endsWith('읍') || regionKey.endsWith('면')) {
+        isGranular = true;
+      }
+
+    } else {
+      // Fallback to keyword list if no clear administrative term found
+      const commonRegions = ['강남', '서울', '부산', '대구', '인천', '광주', '대전', '울산', '세종', '경기', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주', '고양', '분당', '수원', '일산'];
+      for (const region of commonRegions) {
+        if (userMsg.includes(region)) {
+          regionKey = region;
+          break;
+        }
+      }
+    }
+
+    // 2. Fetch Map Data (Static OR Generated)
+    // If we have a specific mock DB entry (like '강남'), use it. Otherwise generate hyper-local data.
+    // For Granular (Dong), we FORCE generation to simulate expansion logic
+    const rawMapResults = (MOCK_MAP_DB[regionKey] && !isGranular) 
+      ? MOCK_MAP_DB[regionKey] 
+      : generateMockFacilities(regionKey, isGranular);
+
+    // 3. Apply AI Filtering
+    const recommended = recommendTop3(rawMapResults);
+
+    console.log(`[GeminiService] Map Search: ${regionKey} (Granular:${isGranular}) -> ${rawMapResults.length} found -> Top ${recommended.length} picked`);
+
+    let responseText = `${regionKey} 지역 지도를 분석하여 **이용 만족도가 가장 높은 3곳**을 추천해 드립니다.`;
+    
+    // [Expansion Notice]
+    if (isGranular) {
+       responseText = `**${regionKey}** 근처에는 추천 시설이 부족하여,\n**인근 지역까지 반경을 확장**해 가장 평점이 좋은 3곳을 찾아냈습니다.`;
+    }
+
+    return {
+      text: responseText,
+      action: 'RECOMMEND',
+      data: {
+        facilities: recommended.map(r => ({
+          id: r.id,
+          name: r.place_name,
+          address: r.address_name,
+          rating: r.rating,
+          reviewCount: r.reviewCount,
+          badges: r.badges,
+          imageUrl: ''
+        }))
+      }
+    };
+  }
+
+  if (userMsg.includes("[🌳 추모시설 상담 신청]")) {
+    return {
+      text: "요청하신 조건에 최적화된 추모시설들을 추천해 드립니다.\n상세한 안치 비용과 시설 정보를 확인해 보세요.",
+      action: 'RECOMMEND',
+      data: {
+        facilities: [
+          {
+            id: 'demo-mem-1',
+            name: '분당 휴(休) 추모공원',
+            address: '경기도 성남시 분당구 야탑동',
+            type: 'columbarium',
+            rating: 4.9,
+            reviewCount: 156,
+            imageUrl: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&q=80&w=400'
+          },
+          {
+            id: 'demo-mem-2',
+            name: '용인 평온의 숲',
+            address: '경기도 용인시 처인구 이동읍',
+            type: 'natural_burial',
+            rating: 4.7,
+            reviewCount: 289,
+            imageUrl: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&q=80&w=400'
+          }
+        ]
+      }
+    };
+  }
+
+  if (userMsg.includes("[🐾 반려동물 장례 신청]")) {
+    return {
+      text: "사랑하는 아이를 위해 믿고 맡길 수 있는 반려동물 전용 장례식장을 찾아드렸습니다.",
+      action: 'RECOMMEND',
+      data: {
+        facilities: [
+          {
+            id: 'demo-pet-1',
+            name: '펫포레스트 (광주)',
+            address: '경기도 광주시 오포읍',
+            type: 'pet_funeral',
+            rating: 4.9,
+            reviewCount: 567,
+            imageUrl: 'https://images.unsplash.com/photo-1530281703120-608b49910d54?auto=format&fit=crop&q=80&w=400'
+          },
+          {
+            id: 'demo-pet-2',
+            name: '21그램 반려동물 장례식장',
+            address: '경기도 광주시',
+            type: 'pet_funeral',
+            rating: 4.8,
+            reviewCount: 423
+          }
+        ]
+      }
+    };
+  }
+
+  if (userMsg.includes("[📞 일반 문의 접수]")) {
+    return {
+      text: "문의가 정상적으로 접수되었습니다. 담당자가 확인 후 신속히 연락드리겠습니다.",
+      action: 'NONE'
+    };
+  }
 
   // === [CONTEXT CHECK] Determine Type ===
   const isMemorial = facility && ['columbarium', 'natural_burial', 'cemetery', 'sea_burial', 'memorial'].includes((facility as Facility).facility_type || (facility as Facility).type as any);
@@ -254,6 +506,8 @@ export const sendMessageToGemini = async (
       action: 'SHOW_FORM_B'
     };
   }
+
+
 
   // Default Fallback
   return {
