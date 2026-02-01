@@ -11,22 +11,31 @@ interface Props {
 
 export const ReviewCard: React.FC<Props> = ({ review, isOwner, onDelete, facilityName }) => {
     // 4. Name Masking Utility (Updated: Show only family name prefix)
-    const getMaskedName = (originalName: string | null | undefined) => {
-        if (!originalName || originalName === '익명') return "익명";
+    // 4. Name Masking Utility (Updated: Show family name prefix or random for anonymous)
+    const getMaskedName = (originalName: string | null | undefined, reviewId: string) => {
+        if (!originalName || originalName === '익명' || originalName === 'Guest') {
+            // [Phase 5] Anonymous Masking: Use a stable random surname based on reviewId
+            const surnames = ['김', '이', '박', '최', '정', '강', '조', '윤', '장', '임', '한', '오', '서', '신', '권', '황', '안', '송', '전', '홍'];
+            // Simple hash of reviewId to pick a stable index
+            let hash = 0;
+            for (let i = 0; i < reviewId.length; i++) {
+                hash = ((hash << 5) - hash) + reviewId.charCodeAt(i);
+                hash |= 0;
+            }
+            const index = Math.abs(hash) % surnames.length;
+            return surnames[index] + "**";
+        }
 
-        // If already masked (contains '*'), we still want to ensure it follows the "Prefix**" style
-        // but for safety, if it already has *, we return it unless it's the generic "익명"
-        if (originalName.includes('*') && originalName !== '익명') return originalName;
+        if (originalName.includes('*')) return originalName;
 
         const len = originalName.length;
         if (len === 0) return "익명";
 
         // Always show ONLY the first character (Surname) and mask the rest
-        // 홍길동 -> 홍**, 김철 -> 김*, A -> A*
         return originalName[0] + "*".repeat(Math.max(1, len - 1));
     };
 
-    const displayName = isOwner ? (review.userName || '익명') : getMaskedName(review.userName);
+    const displayName = isOwner ? (review.userName || '회원') : getMaskedName(review.userName, review.id);
 
     // console.log('Rendering Review:', { id: review.id, userName: review.userName, displayName }); 
 

@@ -4,6 +4,12 @@
 
 # Run and deploy your AI Studio app
 
+## BKIT Integration
+
+This project uses BKIT as an AI development methodology and tooling system.
+BKIT is not bundled into the runtime application.
+It is located in `tools/bkit` as a git submodule.
+
 This contains everything you need to run your app locally.
 
 View your app in AI Studio: https://ai.studio/apps/drive/1B4P7vNrcMNxVaQTfNh4bHom3_KbHxM5f

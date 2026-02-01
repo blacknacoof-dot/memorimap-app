@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { getConsultationsByFacility, updateConsultationStatus, Consultation } from '@/lib/queries';
 import { Clock, CheckCircle, XCircle, Check, Phone, MapPin, Users, Calendar, ChevronDown, RefreshCw } from 'lucide-react';
+import { aiConsultationService } from '@/lib/api/aiConsultation';
+import { AiConsultationStatus } from '@/types';
+import { supabase } from '@/lib/supabaseClient'; // [Realtime]
+import { ConsultationActionModal } from './facility/ConsultationActionModal';
 
 interface Props {
     facilityId: string;
@@ -44,6 +48,10 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
     const [filter, setFilter] = useState<string>('all');
     const [expandedId, setExpandedId] = useState<string | null>(null);
 
+    // [Modal Logic]
+    const [selectedConsultation, setSelectedConsultation] = useState<{ id: string, name: string } | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
     const fetchConsultations = async () => {
         setIsLoading(true);
         const data = await getConsultationsByFacility(
@@ -56,14 +64,83 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
 
     useEffect(() => {
         fetchConsultations();
+
+        // [Realtime Sync] Subscribe to changes
+        const channel = supabase
+            .channel(`consultations-facility-${facilityId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: '*', // Listen to INSERT/UPDATE
+                    schema: 'public',
+                    table: 'ai_consultations',
+                    filter: `facility_id=eq.${facilityId}`
+                },
+                (payload) => {
+                    console.log('Realtime update received:', payload);
+                    fetchConsultations(); // Refresh list on change
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [facilityId, filter]);
 
     const handleStatusChange = async (consultationId: string, newStatus: 'waiting' | 'accepted' | 'cancelled' | 'completed') => {
-        const success = await updateConsultationStatus(consultationId, newStatus);
-        if (success) {
+        try {
+            // [Migration] AI Service Integration for 'accepted' (Confirm)
+            if (newStatus === 'accepted') {
+                // Open Modal instead of direct update
+                const target = consultations.find(c => c.id === consultationId);
+                if (target) {
+                    setSelectedConsultation({ id: consultationId, name: target.user_name || '익명' });
+                    setIsModalOpen(true);
+                }
+                return; // Stop here, wait for modal confirm
+            } else {
+                // Legacy or other statuses
+                await updateConsultationStatus(consultationId, newStatus);
+            }
+
+            // Update UI
             setConsultations(prev =>
                 prev.map(c => c.id === consultationId ? { ...c, status: newStatus } : c)
             );
+
+
+        } catch (error) {
+            console.error('Status Update Failed:', error);
+            alert('상태 변경에 실패했습니다. (권한이 없거나 이미 처리됨)');
+        }
+    };
+
+    // [New] Handle Modal Confirmation
+    const handleConfirmAccept = async ({ expectedTime, instruction }: { expectedTime: string; instruction: string }) => {
+        if (!selectedConsultation) return;
+
+        try {
+            await aiConsultationService.updateStatus(
+                selectedConsultation.id,
+                AiConsultationStatus.CONSULTATION_CONFIRMED,
+                {
+                    last_event: 'CONSULTATION_CONFIRMED',
+                    event_time: new Date().toISOString(),
+                    instruction: instruction,          // [New Field]
+                    expected_time: expectedTime        // [New Field]
+                }
+            );
+
+            // Optimistic UI Update
+            setConsultations(prev =>
+                prev.map(c => c.id === selectedConsultation.id ? { ...c, status: 'accepted' } : c)
+            );
+
+            alert('예약이 확정되었습니다.');
+        } catch (error) {
+            console.error('Confirm Failed:', error);
+            alert('확인 처리에 실패했습니다.');
         }
     };
 
@@ -112,8 +189,8 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
                         key={tab.id}
                         onClick={() => setFilter(tab.id)}
                         className={`flex-1 py-3 text-sm font-medium transition ${filter === tab.id
-                                ? 'text-indigo-600 border-b-2 border-indigo-600'
-                                : 'text-slate-500 hover:text-slate-700'
+                            ? 'text-indigo-600 border-b-2 border-indigo-600'
+                            : 'text-slate-500 hover:text-slate-700'
                             }`}
                     >
                         {tab.label}
@@ -227,19 +304,6 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
                                                     </button>
                                                 </>
                                             )}
-                                            {consultation.status === 'accepted' && (
-                                                <button
-                                                    onClick={() => handleStatusChange(consultation.id, 'completed')}
-                                                    className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-lg transition"
-                                                >
-                                                    ✓ 완료 처리
-                                                </button>
-                                            )}
-                                            {(consultation.status === 'completed' || consultation.status === 'cancelled') && (
-                                                <span className="text-xs text-slate-400">
-                                                    상태 변경 불가
-                                                </span>
-                                            )}
                                         </div>
                                     </div>
                                 )}
@@ -248,8 +312,14 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
                     })
                 )}
             </div>
+
+            {/* Instruction Modal */}
+            <ConsultationActionModal
+                isOpen={isModalOpen}
+                consultationName={selectedConsultation?.name || ''}
+                onClose={() => setIsModalOpen(false)}
+                onConfirm={handleConfirmAccept}
+            />
         </div>
     );
 };
-
-export default ConsultationList;

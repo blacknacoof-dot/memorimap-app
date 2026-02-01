@@ -72,7 +72,6 @@ export const MemorialConsultationForm: React.FC<Props> = ({
                 budget,
                 lighting,
                 tier,
-                status: 'pending',
             });
             // 성공 시 간단한 완료 메시지
             alert('상담 요청이 접수되었습니다. 담당자가 연락드리겠습니다.');

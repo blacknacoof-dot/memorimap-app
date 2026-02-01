@@ -45,6 +45,7 @@ const MapView: React.FC<MapViewProps> = ({ viewState, setViewState }) => {
 
         // Geo Filter
         if (currentBounds && !searchQuery) {
+            if (f.lat === undefined || f.lng === undefined) return false;
             if (!currentBounds.contains([f.lat, f.lng])) return false;
         }
 

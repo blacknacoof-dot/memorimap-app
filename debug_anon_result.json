@@ -1,0 +1,18 @@
+{
+  "success": true,
+  "count": 5,
+  "error": null,
+  "sampleKeys": [
+    "id",
+    "user_id",
+    "facility_id",
+    "rating",
+    "content",
+    "images",
+    "created_at"
+  ],
+  "env": {
+    "hasUrl": true,
+    "hasAnon": true
+  }
+}

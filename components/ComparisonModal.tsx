@@ -79,7 +79,7 @@ export const ComparisonModal: React.FC<Props> = ({ facilities, onClose, onRemove
                     <div>
                       <div className="text-xs text-gray-400 mb-1">주요 특징</div>
                       <div className="flex flex-wrap gap-1.5">
-                        {(facility.features || []).slice(0, 4).map(f => (
+                        {(Array.isArray(facility.features) ? facility.features : []).slice(0, 4).map(f => (
                           <span key={f} className="text-[10px] bg-gray-100 text-gray-600 px-2 py-1 rounded">
                             {f}
                           </span>

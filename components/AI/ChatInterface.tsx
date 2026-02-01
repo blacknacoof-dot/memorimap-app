@@ -1,11 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { sendMessageToGemini, ChatMessage } from '../../services/geminiService';
+import {
+    MEMORIAL_TIMING_OPTIONS,
+    MEMORIAL_RELIGION_OPTIONS,
+    MEMORIAL_BUDGET_OPTIONS,
+    MEMORIAL_SERVICE_OPTIONS
+} from '../../constants/maumAiConstants';
 import { getDistinctRegions, searchFacilitiesByRegion, getFacilityLatestInfo } from '../../lib/queries';
 import { MessageCircle, X, Send, MapPin, Phone, CalendarCheck, Loader2, Bot, Sparkles, ChevronLeft, Users, Star, AlertCircle, CheckCircle2, Check, Siren, Building2 } from 'lucide-react';
 import { ActionType, Message, Facility } from '../../types';
 import { createLead, getIntelligentRecommendations, createUrgentReservation, createConsultationFromLead } from '../../lib/queries';
 import { PetChatInterface } from '../Consultation/PetChatInterface';
 import { ConsultationForm } from '../Consultation/BrandChatHelpers';
+import { RecommendList } from './RecommendList';
 import FuneralSearchForm from './FuneralSearchForm';
 import PetSearchForm from './PetSearchForm';
 import GeneralInquiryForm from './GeneralInquiryForm';
@@ -45,25 +52,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({ userLocation, onGetCurrentPos
     const [services, setServices] = useState<string[]>([]);
     const [error, setError] = useState('');
 
-    const TIMING_OPTIONS = [
-        { id: 'immediate', label: '🚨 지금 안치해야 해요 (긴급)', sub: '화장 후 바로 안치 필요' },
-        { id: 'prepare', label: '📅 미리 알아보고 있어요', sub: '사전 답사 및 가격 비교' }
-    ];
-
-    const RELIGION_OPTIONS = [
-        { id: 'none', label: '무교/일반', icon: '🏛️' },
-        { id: 'christian', label: '기독교 전용', icon: '✝️' },
-        { id: 'catholic', label: '천주교 전용', icon: '⛪' },
-        { id: 'buddhist', label: '불교 전용', icon: '☸️' }
-    ];
-
-    const BUDGET_OPTIONS = [
-        { id: 'low', label: '실속형 (500만 원 미만)', sub: '합리적인 가격의 안식처' },
-        { id: 'medium', label: '표준형 (500~1,000만 원)', sub: '가장 많이 찾는 가격대' },
-        { id: 'high', label: '고급형 (1,000만 원 이상)', sub: '품격 있는 프리미엄 시설' }
-    ];
-
-    const SERVICE_OPTIONS = ['🚗 주차 편리', '🚌 셔틀버스', '☕ 카페/편의시설', '🕰️ 365일 개방', '🏞️ 자연 경관'];
+    // Options moved to maumAiConstants.ts
 
     // Autocomplete State (Reused logic could be extracted but keeping local for speed)
     const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -120,7 +109,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({ userLocation, onGetCurrentPos
             services
         };
 
-        const finalText = `[🌳 추모시설 상담 신청]\n시기: ${TIMING_OPTIONS.find(o => o.id === timing)?.label}\n지역: ${region || '내 위치 주변'}\n종교: ${RELIGION_OPTIONS.find(o => o.id === religion)?.label}\n예산: ${BUDGET_OPTIONS.find(o => o.id === budget)?.label}\n서비스: ${services.join(', ') || '없음'}`;
+        const finalText = `[🌳 추모시설 상담 신청]\n시기: ${MEMORIAL_TIMING_OPTIONS.find(o => o.id === timing)?.label}\n지역: ${region || '내 위치 주변'}\n종교: ${MEMORIAL_RELIGION_OPTIONS.find(o => o.id === religion)?.label}\n예산: ${MEMORIAL_BUDGET_OPTIONS.find(o => o.id === budget)?.label}\n서비스: ${services.join(', ') || '없음'}`;
 
         onSubmit({ text: finalText, data: searchData });
     };
@@ -146,7 +135,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({ userLocation, onGetCurrentPos
                 <div className="space-y-3">
                     <label className="text-xs font-bold text-emerald-800 flex items-center gap-1.5"><AlertCircle size={14} /> 언제 안치가 필요하신가요?</label>
                     <div className="flex flex-col gap-2">
-                        {TIMING_OPTIONS.map(opt => (
+                        {MEMORIAL_TIMING_OPTIONS.map(opt => (
                             <button key={opt.id} onClick={() => { setTiming(opt.id as any); setError(''); }} className={`text-left p-3 rounded-xl border transition-all ${timing === opt.id ? 'bg-emerald-700 border-emerald-700 text-white shadow-md' : 'bg-white border-emerald-100 text-slate-600 hover:bg-emerald-50'}`}>
                                 <div className="text-sm font-bold">{opt.label}</div>
                                 <div className={`text-[10px] mt-0.5 ${timing === opt.id ? 'text-emerald-200' : 'text-slate-400'}`}>{opt.sub}</div>
@@ -183,7 +172,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({ userLocation, onGetCurrentPos
                 <div className="space-y-3">
                     <label className="text-xs font-bold text-emerald-800 flex items-center gap-1.5"><Star size={14} /> 종교가 있으신가요?</label>
                     <div className="grid grid-cols-2 gap-2">
-                        {RELIGION_OPTIONS.map(opt => (
+                        {MEMORIAL_RELIGION_OPTIONS.map(opt => (
                             <button key={opt.id} onClick={() => { setReligion(opt.id); setError(''); }} className={`p-3 rounded-xl border text-center transition-all ${religion === opt.id ? 'bg-emerald-700 border-emerald-700 text-white' : 'bg-white border-emerald-100 text-slate-600 hover:bg-emerald-50'}`}>
                                 <div className="text-xl mb-1">{opt.icon}</div>
                                 <div className="text-xs font-bold">{opt.label}</div>
@@ -198,7 +187,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({ userLocation, onGetCurrentPos
                 <div className="space-y-3">
                     <label className="text-xs font-bold text-emerald-800 flex items-center gap-1.5"><Users size={14} /> 생각하시는 예산 범위는?</label>
                     <div className="flex flex-col gap-2">
-                        {BUDGET_OPTIONS.map(opt => (
+                        {MEMORIAL_BUDGET_OPTIONS.map(opt => (
                             <button key={opt.id} onClick={() => { setBudget(opt.id); setError(''); }} className={`text-left p-3 rounded-xl border transition-all ${budget === opt.id ? 'bg-emerald-700 border-emerald-700 text-white shadow-md' : 'bg-white border-emerald-100 text-slate-600 hover:bg-emerald-50'}`}>
                                 <div className="text-sm font-bold">{opt.label}</div>
                                 <div className={`text-[10px] mt-0.5 ${budget === opt.id ? 'text-emerald-200' : 'text-slate-400'}`}>{opt.sub}</div>
@@ -213,7 +202,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({ userLocation, onGetCurrentPos
                 <div className="space-y-3">
                     <label className="text-xs font-bold text-emerald-800 flex items-center gap-1.5"><Sparkles size={14} /> 원하시는 부대시설이 있나요?</label>
                     <div className="flex flex-wrap gap-2">
-                        {SERVICE_OPTIONS.map(opt => (
+                        {MEMORIAL_SERVICE_OPTIONS.map(opt => (
                             <button key={opt} onClick={() => toggleService(opt)} className={`py-2 px-3 text-xs rounded-full border transition-all ${services.includes(opt) ? 'bg-emerald-600 border-emerald-600 text-white font-bold' : 'bg-white border-emerald-100 text-slate-600 hover:bg-emerald-50'}`}>
                                 {opt}
                             </button>
@@ -501,7 +490,7 @@ export const ChatInterface: React.FC<Props> = ({
                 console.log("Not a JSON response:", e);
             }
 
-            const aiMsg: ChatMessage = {
+            const aiMsg: ChatMessage & { facilities?: Facility[] } = {
                 role: 'model',
                 text: displayText,
                 timestamp: new Date(),
@@ -509,10 +498,91 @@ export const ChatInterface: React.FC<Props> = ({
                 options: options // Add to ChatMessage type if needed (will do via any cast for now or extend type)
             };
 
+            // [Phase 3] RECOMMEND 액션 시 추천 데이터 처리 (Moved logic BEFORE adding to messages)
+            if (aiMsg.action === 'RECOMMEND') {
+                // [FIX] Prioritize Real DB Search over Mock Data
+                const searchData = structuredData || {
+                    category: initialIntent === 'funeral_home' ? 'funeral' :
+                        initialIntent === 'memorial_facility' ? 'memorial' : 'funeral',
+                    location: {
+                        type: userLocation?.type || 'gps',
+                        lat: userLocation?.lat || 37.5665,
+                        lng: userLocation?.lng || 126.9780,
+                        text: searchContext || '서울 전체'
+                    },
+                    urgency: 'immediate',
+                    scale: 'medium'
+                };
+
+                const searchLat = searchData.location?.lat || 37.5665;
+                const searchLng = searchData.location?.lng || 126.9780;
+                const category = searchData.category || (initialIntent === 'funeral_home' ? 'funeral' : undefined);
+                const regionText = searchData.location?.text;
+
+                if (regionText) {
+                    setSearchContext(regionText);
+                }
+
+                console.log('🔍 [Real DB Search] Start:', { searchLat, searchLng, category, regionText });
+
+                let realResults: Facility[] = [];
+                try {
+                    // Try User Query-based Search
+                    const results = await getIntelligentRecommendations(searchLat, searchLng, category, regionText);
+                    if (results && results.length > 0) {
+                        realResults = results as any; // Cast to Facility[]
+                    }
+                } catch (e) {
+                    console.error('Real DB Search failed:', e);
+                }
+
+                if (realResults.length > 0) {
+                    // 1. Use Real DB Data
+                    console.log('✅ [Real DB] Found facilities:', realResults.length);
+                    // Attach to message for rendering
+                    aiMsg.facilities = realResults;
+
+                    // Also update state (legacy support)
+                    setRecommendedCandidates(realResults);
+                } else {
+                    // 2. No results (Mock Data Disabled for 'Maum-i' logic purity, or fallback text)
+                    console.log('ℹ️ [Real DB] No results found.');
+                    // Fallback handled by logic below if no facilities attached
+                    aiMsg.action = 'NONE';
+                    aiMsg.text = '죄송합니다. 해당 조건에 맞는 시설을 찾지 못했습니다.\n다른 지역이나 조건으로 다시 검색해 주세요.';
+                }
+
+                // [Phase 5] 리드 저장 (DB 연동)
+                try {
+                    const lead = await createLead({
+                        userId: currentUser?.id,
+                        contactName: currentUser?.name || '익명 고객',
+                        contactPhone: currentUser?.phone || '010-0000-0000',
+                        category: searchData.category,
+                        urgency: searchData.urgency,
+                        scale: searchData.scale,
+                        priorities: searchData.priorities || [],
+                        contextData: {
+                            ...(searchData.location || {}),
+                            ...searchData,
+                            notes: searchData.notes || ''
+                        }
+                    });
+                    if (lead) {
+                        setCurrentLeadId(lead.id);
+                        console.log('[ChatInterface] Lead created:', lead.id);
+                    }
+                } catch (e) {
+                    console.error('Lead creation failed:', e);
+                }
+            }
+
             setMessages(prev => [...prev, aiMsg]);
 
-
-            // [Phase 5] Urgent Reservation Confirmation
+            /* REMOVED OLD RECOMMEND BLOCK as it is now integrated above */
+            /*
+                        // [Phase 5] Urgent Reservation Confirmation
+            */
             if (aiMsg.action === 'URGENT_RESERVATION_CONFIRM') {
                 try {
                     // Extract Time from User's last message (simple parsing for now)
@@ -564,79 +634,7 @@ export const ChatInterface: React.FC<Props> = ({
                 }
             }
 
-            // [Phase 3] RECOMMEND 액션 시 추천 데이터 처리
-            if (aiMsg.action === 'RECOMMEND') {
-                // [FIX] structuredData가 없어도 기본 검색 실행 (사용자 리포트 수정)
-                const searchData = structuredData || {
-                    category: initialIntent === 'funeral_home' ? 'funeral' :
-                        initialIntent === 'memorial_facility' ? 'memorial' : 'funeral',
-                    location: {
-                        type: userLocation?.type || 'gps',
-                        lat: userLocation?.lat || 37.5665,
-                        lng: userLocation?.lng || 126.9780,
-                        text: searchContext || '서울 전체'
-                    },
-                    urgency: 'immediate',
-                    scale: 'medium'
-                };
-
-                if (response.data && response.data.facilities) {
-                    // 1. Mock Data가 있으면 바로 사용
-                    setRecommendedCandidates(response.data.facilities);
-                } else {
-                    // 2. 없으면 실제 DB 검색 (Fallback)
-                    const searchLat = searchData.location?.lat || 37.5665;
-                    const searchLng = searchData.location?.lng || 126.9780;
-                    const category = searchData.category || (initialIntent === 'funeral_home' ? 'funeral' : undefined);
-                    const regionText = searchData.location?.text;
-
-                    if (regionText) {
-                        setSearchContext(regionText);
-                    }
-
-                    console.log('🔍 검색 시작:', { searchLat, searchLng, category, regionText });
-
-                    const recommendations = await getIntelligentRecommendations(searchLat, searchLng, category, regionText);
-
-                    console.log('✅ 검색 결과:', recommendations);
-
-                    if (recommendations && recommendations.length > 0) {
-                        setRecommendedCandidates(recommendations as any);
-                    } else {
-                        // [UX FIX] 검색 결과가 없을 때 사용자에게 알림
-                        setMessages(prev => [...prev, {
-                            role: 'model',
-                            text: '죄송합니다. 해당 조건에 맞는 시설을 찾지 못했습니다.\n다른 지역이나 조건으로 다시 검색해 주세요.',
-                            timestamp: new Date(),
-                            action: 'NONE'
-                        }]);
-                    }
-                }
-
-                // [Phase 5] 리드 저장 (DB 연동)
-                try {
-                    const lead = await createLead({
-                        userId: currentUser?.id,
-                        contactName: currentUser?.name || '익명 고객',
-                        contactPhone: currentUser?.phone || '010-0000-0000',
-                        category: searchData.category,
-                        urgency: searchData.urgency,
-                        scale: searchData.scale,
-                        priorities: searchData.priorities || [],
-                        contextData: {
-                            ...(searchData.location || {}),
-                            ...searchData,
-                            notes: searchData.notes || ''
-                        }
-                    });
-                    if (lead) {
-                        setCurrentLeadId(lead.id);
-                        console.log('[ChatInterface] Lead created:', lead.id);
-                    }
-                } catch (e) {
-                    console.error('Lead creation failed:', e);
-                }
-            }
+            /* REMOVED DUPLICATE RECOMMEND BLOCK */
         } catch (error) {
             console.error('[ChatInterface] ERROR:', error);
             // 🚑 Robust Fallback: Show error message to user instead of just console logging
@@ -873,79 +871,11 @@ export const ChatInterface: React.FC<Props> = ({
                                             />
                                         )}
 
-                                        {msg.action === 'RECOMMEND' && recommendedCandidates.length > 0 && (
-                                            <div className="w-full mt-3">
-                                                <div className="flex gap-2 w-full overflow-x-auto pb-2 snap-x px-1 no-scrollbar">
-                                                    {recommendedCandidates.map((cand, i) => (
-                                                        <div
-                                                            key={i}
-                                                            className="min-w-[200px] w-[200px] bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer snap-center"
-                                                            onClick={() => {
-                                                                // [FIX] Map data correctly for recommendation click
-                                                                const targetId = typeof cand.id === 'object' ? (cand.id as any).id || (cand as any).facilityId : cand.id;
-                                                                // If specific navigation handler exists, use it
-                                                                if (onNavigateToFacility) {
-                                                                    onNavigateToFacility(targetId.toString());
-                                                                } else if (onSwitchToFacility) {
-                                                                    // Fallback
-                                                                    onSwitchToFacility({
-                                                                        ...cand,
-                                                                        id: targetId,
-                                                                        category: (cand as any).category || 'funeral_home'
-                                                                    });
-                                                                }
-                                                            }}
-                                                        >
-                                                            <div className="h-32 w-full bg-slate-100 rounded-xl mb-3 overflow-hidden relative">
-                                                                {cand.imageUrl && !cand.imageUrl.includes('placeholder') ? (
-                                                                    <img src={cand.imageUrl} alt={cand.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => (e.target as HTMLImageElement).style.display = 'none'} />
-                                                                ) : (
-                                                                    <div className="flex items-center justify-center h-full text-indigo-200 bg-indigo-50/50">
-                                                                        <Building2 size={36} />
-                                                                    </div>
-                                                                )}
-                                                                <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] px-2 py-1 rounded-lg backdrop-blur-md flex items-center gap-1 font-bold">
-                                                                    <Star size={10} className="fill-amber-400 text-amber-400" /> {cand.rating || '4.5'}
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="flex-1 px-1">
-                                                                <div className="flex justify-between items-start mb-1">
-                                                                    <h4 className="font-bold text-slate-800 text-sm line-clamp-1">{cand.name}</h4>
-                                                                    {cand.type === 'funeral' && <span className="text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold shrink-0">전문장례</span>}
-                                                                </div>
-                                                                <p className="text-[11px] text-slate-500 mb-2 line-clamp-1 flex items-center gap-1"><MapPin size={10} /> {cand.address}</p>
-
-                                                                {/* Dynamic Badges */}
-                                                                {(cand as any).badges && (cand as any).badges.length > 0 ? (
-                                                                    <div className="flex flex-wrap gap-1 mb-2">
-                                                                        {(cand as any).badges.map((badge: string, i: number) => (
-                                                                            <span key={i} className="text-[9px] bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-100 font-medium">
-                                                                                {badge}
-                                                                            </span>
-                                                                        ))}
-                                                                    </div>
-                                                                ) : (
-                                                                    <div className="flex items-center gap-2 mb-3">
-                                                                        <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">후기 {cand.reviewCount || 0}</span>
-                                                                        <span className="text-[10px] text-indigo-600 font-bold">인기시설</span>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-
-                                                            <button className="w-full bg-indigo-600 text-white text-xs font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5 hover:bg-indigo-700 transition-colors shadow-sm">
-                                                                <CalendarCheck size={14} /> 상담 예약하기
-                                                            </button>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                                <button
-                                                    className="w-full py-2 text-xs text-slate-400 hover:text-slate-600 underline transition mt-1 font-medium"
-                                                    onClick={() => onAction('RECOMMEND', searchContext)}
-                                                >
-                                                    전체 목록 더 보기
-                                                </button>
-                                            </div>
+                                        {msg.action === 'RECOMMEND' && ((msg as any).facilities || recommendedCandidates).length > 0 && (
+                                            <RecommendList
+                                                facilities={(msg as any).facilities || recommendedCandidates}
+                                                onViewDetail={handleReserve}
+                                            />
                                         )}
 
                                         {/* Other Actions */}

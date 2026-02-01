@@ -9,11 +9,12 @@ import { LegalModal } from './LegalModal';
 import { Info, Heart, Star } from 'lucide-react';
 import { favoriteService, Favorite } from '../services/favoriteService';
 import { sangjoFavoriteService, SangjoFavorite } from '../services/sangjoFavoriteService';
-import { FUNERAL_COMPANIES } from '../constants';
+import { FUNERAL_COMPANIES, FACILITIES } from '../constants';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { MyConsultations } from './dashboard/MyConsultations';
 import { supabase } from '../lib/supabaseClient';
+import { isClerkConfigured } from '../lib/auth';
 
 interface Props {
     isLoggedIn: boolean;
@@ -97,22 +98,39 @@ export const MyPageView: React.FC<Props> = ({
             if (missingIds.length > 0) {
                 console.log('🔄 Fetching missing favorite details:', missingIds);
 
-                const isUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-                const uuidIds = missingIds.filter(isUUID);
-                const legacyIds = missingIds.filter(id => !isUUID(id));
-
+                // 🚑 Mock Mode Fallback: Try finding in local FACILITIES constant first
                 let missingFacs: any[] = [];
+                const idsToFetchFromDB: string[] = [];
 
-                // 1. Fetch by UUID
-                if (uuidIds.length > 0) {
-                    const { data } = await supabase.from('facilities').select('*').in('id', uuidIds);
-                    if (data) missingFacs = [...missingFacs, ...data];
-                }
+                missingIds.forEach(id => {
+                    const localMatch = (FACILITIES as any[]).find(f => String(f.id) === id || String(f.legacy_id) === id);
+                    if (localMatch) {
+                        missingFacs.push(localMatch);
+                    } else {
+                        idsToFetchFromDB.push(id);
+                    }
+                });
 
-                // 2. Fetch by Legacy ID (BIGINT)
-                if (legacyIds.length > 0) {
-                    const { data } = await supabase.from('facilities').select('*').in('legacy_id', legacyIds.map(id => parseInt(id)).filter(n => !isNaN(n)));
-                    if (data) missingFacs = [...missingFacs, ...data];
+                if (idsToFetchFromDB.length > 0) {
+                    const isUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+                    const uuidIds = idsToFetchFromDB.filter(isUUID);
+                    const legacyIds = idsToFetchFromDB.filter(id => !isUUID(id));
+
+                    // 1. Fetch by UUID
+                    if (uuidIds.length > 0) {
+                        try {
+                            const { data } = await supabase.from('facilities').select('*').in('id', uuidIds);
+                            if (data) missingFacs = [...missingFacs, ...data];
+                        } catch (e) { console.error('Supabase fetch failed (UUID):', e); }
+                    }
+
+                    // 2. Fetch by Legacy ID (BIGINT)
+                    if (legacyIds.length > 0) {
+                        try {
+                            const { data } = await supabase.from('facilities').select('*').in('legacy_id', legacyIds.map(id => parseInt(id)).filter(n => !isNaN(n)));
+                            if (data) missingFacs = [...missingFacs, ...data];
+                        } catch (e) { console.error('Supabase fetch failed (Legacy):', e); }
+                    }
                 }
 
                 if (missingFacs.length > 0) {
