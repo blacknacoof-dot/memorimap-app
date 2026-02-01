@@ -1,9 +1,17 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Vite requires STATIC references to import.meta.env.VITE_* for build-time replacement
-// Dynamic access like import.meta.env[key] does NOT work!
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+// Environment-agnostic variable access
+const getEnv = (key: string): string => {
+  // @ts-ignore
+  if (typeof import.meta !== 'undefined' && import.meta.env) {
+    // @ts-ignore
+    return import.meta.env[key] || '';
+  }
+  return process.env[key] || '';
+};
+
+const supabaseUrl = getEnv('VITE_SUPABASE_URL');
+const supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY');
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Supabase URL or Key is missing. Check your environment variables.');
@@ -17,10 +25,10 @@ let currentClient = createClient(
   supabaseAnonKey || 'placeholder-key',
   {
     auth: {
-      persistSession: false,
-      autoRefreshToken: false,
+      persistSession: true,       // ✅ Session persists across page refresh
+      autoRefreshToken: true,     // ✅ Token auto-refresh enabled
       detectSessionInUrl: false,
-      storageKey: 'sb-anon-client'
+      storageKey: 'sb-memorimap-auth'  // Unique storage key
     }
   }
 );
@@ -32,6 +40,13 @@ export const supabase = currentClient;
 export const setSupabaseAuth = async (token: string | null) => {
   if (!token) {
     await supabase.auth.signOut();
+    return;
+  }
+
+  // 🚑 Hotfix: If it's a mock token (e.g., in development/preview), 
+  // skip updating the session to avoid 401 errors from PostgREST.
+  if (token.startsWith('mock-')) {
+    console.log('[SupabaseAuth] Skipping mock token session update.');
     return;
   }
 

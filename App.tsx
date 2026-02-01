@@ -181,6 +181,32 @@ const App: React.FC = () => {
     }
   }, [isSignedIn, userInfo]);
 
+  // 🔑 [CRITICAL] Clerk → Supabase Session Sync
+  // This ensures RLS policies can correctly identify the user
+  useEffect(() => {
+    const syncSupabaseSession = async () => {
+      if (!session) {
+        // No session = sign out from Supabase too
+        await setSupabaseAuth(null);
+        return;
+      }
+
+      try {
+        const token = await session.getToken({ template: 'supabase' });
+        if (token) {
+          await setSupabaseAuth(token);
+          console.log('✅ [Session Sync] Supabase session synced with Clerk');
+        } else {
+          console.warn('⚠️ [Session Sync] Clerk returned null token for Supabase template');
+        }
+      } catch (error) {
+        console.error('❌ [Session Sync] Failed to sync session:', error);
+      }
+    };
+
+    syncSupabaseSession();
+  }, [session, isSignedIn]);
+
   // Route Handling (Pathname & Hash)
   useEffect(() => {
     const checkRoute = () => {
@@ -222,9 +248,15 @@ const App: React.FC = () => {
     };
 
     checkRoute();
+
+    // [NEW] Handle Login Modal Request from deep components (e.g., ScenarioBot)
+    const handleOpenLogin = () => setShowLoginModal(true);
+    window.addEventListener('open-login-modal', handleOpenLogin);
+
     window.addEventListener('hashchange', checkRoute);
-    window.addEventListener('popstate', checkRoute); // Handle browser back/forward buttons
+    window.addEventListener('popstate', checkRoute);
     return () => {
+      window.removeEventListener('open-login-modal', handleOpenLogin);
       window.removeEventListener('hashchange', checkRoute);
       window.removeEventListener('popstate', checkRoute);
     };
