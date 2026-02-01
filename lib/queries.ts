@@ -175,7 +175,10 @@ export const getIntelligentRecommendations = async (
         if (!normalizedCategory) return items;
 
         if (normalizedCategory === 'funeral') {
-            return items.filter((i: any) => i.category === 'funeral_home' || i.category === 'funeral' || i.category === '장례식장');
+            return items.filter((i: any) =>
+                (i.category === 'funeral_home' || i.category === 'funeral' || i.category === '장례식장')
+                && i.category !== 'sangjo' && i.category !== '상조' // [FIX] Strictly exclude Sangjo
+            );
         }
 
         if (normalizedCategory === 'pet') {
@@ -294,9 +297,37 @@ export const getIntelligentRecommendations = async (
         }
     }
 
-    // 3. Final Slice
-    return finalData.slice(0, 5); // Increased to 5 to show more options
+    // 3. Final Filter & Sort & Map
+    let results = filterByCategory(finalData);
+
+    // Remove duplicates based on ID
+    const uniqueMap = new Map();
+    results.forEach(item => {
+        if (!uniqueMap.has(item.id)) {
+            uniqueMap.set(item.id, item);
+        }
+    });
+
+    results = Array.from(uniqueMap.values());
+
+    // Sort by rating desc
+    results.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+
+    // Limit to 5
+    results = results.slice(0, 5);
+
+    // [Map] Normalize for UI (snake_case -> camelCase)
+    // [Fix] Ensure imageUrl is mapped from image_url or images[0]
+    return results.map(r => ({
+        ...r,
+        lat: r.latitude || r.lat,
+        lng: r.longitude || r.lng,
+        imageUrl: r.image_url || ((r.images && r.images.length > 0) ? r.images[0] : null),
+        reviewCount: r.review_count, // map for UI
+        rating: r.rating || 0
+    }));
 };
+
 
 export const searchFacilitiesByRegion = async (
     region: string,
@@ -729,16 +760,14 @@ export const deleteReview = async (reviewId: string) => {
             .eq('id', reviewId);
 
         if (error) {
-            if (error.code === '42501' || (error as any).status === 401) {
-                // If it's a mock ID we didn't catch, or RLS failure, just "success" it locally or ignore
-                return true;
-            }
-            console.error('Error deleting review:', error);
+            console.error('Error deleting review (Soft Delete):', error);
+            // If RLS denies update, try strict DELETE if user prefers standard delete
+            // But here we stick to Soft Delete.
             throw error;
         }
         return true;
     } catch (e: any) {
-        if (e.code === '42501' || e.status === 401) return true;
+        console.error('deleteReview Exception:', e);
         throw e;
     }
 };
@@ -760,7 +789,29 @@ export const updateFacility = async (id: string, updates: any) => {
 
 // --- Missing Exports Stubs (Restored mostly, keeping others as stubs if needed) ---
 // export const updateConsultation = async (id: string, data: any) => { console.log('STUB: updateConsultation'); }; // Removed in favor of full implementation
-export const updateUserProfile = async (id: string, data: any) => { console.log('STUB: updateUserProfile'); };
+
+/**
+ * 사용자 프로필 업데이트
+ */
+export const updateUserProfile = async (userId: string, data: Partial<{
+    full_name: string;
+    phone_number: string;
+    avatar_url: string;
+}>) => {
+    const { data: result, error } = await supabase
+        .from('profiles')
+        .update(data)
+        .eq('clerk_id', userId)
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error updating user profile:', error);
+        throw error;
+    }
+    return result;
+};
+
 export const getFacilityReservations = async (facilityId: string) => {
     const { data, error } = await supabase
         .from('reservations')
@@ -822,10 +873,93 @@ export const rejectReservation = async (id: string, reason?: string) => {
     }
     return data;
 };
-export const getMyReservations = async (userId: string) => { console.log('STUB: getMyReservations'); return []; };
-export const cancelReservation = async (id: string) => { console.log('STUB: cancelReservation'); };
-export const getUserPhoneNumber = async (userId: string) => { console.log('STUB: getUserPhoneNumber'); return ''; };
-export const getFacilityFaqs = async (facilityId: string) => { console.log('STUB: getFacilityFaqs'); return []; };
+
+/**
+ * 사용자 본인의 예약 목록 조회
+ */
+export const getMyReservations = async (userId: string) => {
+    const { data, error } = await supabase
+        .from('reservations')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching my reservations:', error);
+        return [];
+    }
+
+    return (data || []).map((item: any) => ({
+        id: item.id,
+        facilityId: item.facility_id,
+        facilityName: item.facility_name || '시설',
+        date: item.visit_date,
+        timeSlot: item.time_slot,
+        status: item.status,
+        visitorCount: item.visitor_count || 1,
+        message: item.message,
+        createdAt: item.created_at
+    }));
+};
+
+/**
+ * 예약 취소
+ */
+export const cancelReservation = async (id: string) => {
+    const { data, error } = await supabase
+        .from('reservations')
+        .update({ status: 'cancelled' })
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error cancelling reservation:', error);
+        throw error;
+    }
+    return data;
+};
+
+/**
+ * 사용자 전화번호 조회
+ */
+export const getUserPhoneNumber = async (userId: string): Promise<string> => {
+    const { data, error } = await supabase
+        .from('profiles')
+        .select('phone_number')
+        .eq('clerk_id', userId)
+        .single();
+
+    if (error) {
+        console.warn('Could not fetch user phone number:', error);
+        return '';
+    }
+    return data?.phone_number || '';
+};
+
+/**
+ * 시설 FAQ 조회 (실제 테이블이 없으면 빈 배열 반환)
+ */
+export const getFacilityFaqs = async (facilityId: string) => {
+    try {
+        const { data, error } = await supabase
+            .from('facility_faqs')
+            .select('*')
+            .eq('facility_id', facilityId)
+            .eq('is_active', true)
+            .order('order', { ascending: true });
+
+        if (error) {
+            // 테이블이 없거나 에러 시 빈 배열 반환
+            console.warn('getFacilityFaqs error (may not exist):', error.message);
+            return [];
+        }
+        return data || [];
+    } catch (e) {
+        console.warn('getFacilityFaqs exception:', e);
+        return [];
+    }
+};
 
 /**
  * [호환성 패치] ReviewList.tsx가 옛날 함수명을 찾아도 작동하도록 연결
@@ -1763,4 +1897,81 @@ export const fetchFacilitiesInView = async (bounds: any, token?: string) => {
         console.error('fetchFacilitiesInView error:', e);
         return [];
     }
+};
+
+// --- [Phase 1] Fix Missing Exports for AdminCommunication.tsx ---
+
+export interface Inquiry {
+    id: string;
+    companyName: string;
+    type: string;
+    createdAt: string;
+    status: 'pending' | 'resolved';
+    content?: string;
+}
+
+export const createNotice = async (title: string, content: string) => {
+    // 🚑 Check for session
+    const { data: { session } } = await supabase.auth.getSession();
+
+    // Fallback for no session or mock mode
+    if (!session) {
+        console.warn('No session found for createNotice');
+    }
+
+    const { data, error } = await supabase
+        .from('admin_notices')
+        .insert([{
+            title,
+            content,
+            author_id: session?.user?.id
+        }])
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error creating notice:', error);
+        throw error;
+    }
+    return data;
+};
+
+export const getNotices = async () => {
+    const { data, error } = await supabase
+        .from('admin_notices')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching notices:', error);
+        return [];
+    }
+
+    return data.map((n: any) => ({
+        id: n.id,
+        title: n.title,
+        content: n.content,
+        // Assuming 'created_at' exists
+        date: n.created_at ? new Date(n.created_at).toLocaleDateString() : 'Unknown date'
+    }));
+};
+
+export const getInquiries = async () => {
+    const { data, error } = await supabase
+        .from('partner_inquiries')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching inquiries:', error);
+        return [];
+    }
+
+    return data.map((i: any) => ({
+        id: i.id,
+        companyName: i.company_name,
+        type: i.business_type || i.type,
+        createdAt: i.created_at ? new Date(i.created_at).toLocaleDateString() : 'Unknown date',
+        status: (i.status === 'completed' || i.status === 'approved') ? 'resolved' : 'pending'
+    }));
 };
