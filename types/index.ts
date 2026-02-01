@@ -56,7 +56,39 @@ export interface Review {
 
 export type AiTone = 'polite' | 'warm' | 'factual';
 export type FacilityType = 'FUNERAL_HOME' | 'MEMORIAL_PARK' | 'SANGJO';
-export type AiActionType = 'NONE' | 'RESERVE' | 'MAP' | 'CALL_MANAGER' | 'RECOMMEND' | 'SWITCH_TO_CONSULT' | 'SHOW_FORM_A';
+export type ActionType = 'NONE' | 'RESERVE' | 'MAP' | 'CALL_MANAGER' | 'RECOMMEND' | 'SWITCH_TO_CONSULT' | 'SHOW_FORM_A' | 'SHOW_FORM_B' | 'SHOW_FORM_C' | 'SHOW_FORM_D' | 'SHOW_PRODUCTS' | 'URGENT_DISPATCH' | 'URGENT_CHECK' | 'URGENT_RESERVATION_CONFIRM';
+export type AiActionType = ActionType; // Backward compatibility
+
+export enum AiConsultationStatus {
+  IDLE = 'idle',
+  AI_HANDLING = 'ai_handling',
+  AGENT_REQUESTED = 'agent_requested',
+  AGENT_CONNECTED = 'agent_connected',
+  CONSULTATION_CONFIRMED = 'consultation_confirmed',
+  COMPLETED = 'completed'
+}
+
+export interface AiConsultation {
+  id: string;
+  conversation_id: string;
+  user_id: string | null;
+  facility_id: string | null;
+  facility_name: string;
+  category: 'funeral' | 'pet' | 'memorial' | 'general';
+  status: AiConsultationStatus;
+  messages: any[];
+  metadata: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Message {
+  role: 'user' | 'model' | 'system';
+  text: string | JSX.Element;
+  timestamp: Date;
+  action?: ActionType;
+  options?: { label: string; value: string }[];
+}
 
 export type { FacilityCategoryType } from './facility';
 // ============================================================

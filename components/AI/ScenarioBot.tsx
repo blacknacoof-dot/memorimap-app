@@ -6,7 +6,9 @@ import {
     Siren, ClipboardList, CreditCard, Calendar
 } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
-import { Partner } from '../../types';
+import { Partner, AiConsultationStatus, Message as DbMessage } from '../../types';
+import { aiConsultationService } from '../../lib/api/aiConsultation';
+import { useUser, useClerk } from '../../lib/auth';
 
 interface ScenarioBotProps {
     partnerId: string;
@@ -27,6 +29,10 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
     const [conversationId, setConversationId] = useState<string | null>(null);
     const [isHijacked, setIsHijacked] = useState(false);
     const [input, setInput] = useState('');
+    const [error, setError] = useState<string | null>(null);
+    const [isSyncing, setIsSyncing] = useState(false);
+    const { isSignedIn, user } = useUser();
+    const { openSignIn } = useClerk() as any; // Using any to handle both Mock and Real Clerk
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -39,47 +45,110 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
         }
     }, [messages]);
 
-    const initBot = async () => {
+    const initBot = async (retryCount = 0) => {
         setLoading(true);
-        const { data } = await supabase.from('partners').select('*').eq('id', partnerId).single();
-        if (data) {
-            setPartner(data as Partner);
-            const welcomeMsg = data.ai_context?.welcome_message || `안녕하세요, ${data.name}입니다.\n\n소중한 시간에 방문해 주셔서 감사합니다.\n무엇을 도와드릴까요?`;
-            const initialMessages: Message[] = [
-                {
-                    role: 'assistant',
-                    content: welcomeMsg,
-                    options: [
-                        { label: '긴급 상황 (임종 발생)', action: 'agent_request', icon: <Siren className="text-red-500 w-5 h-5" /> },
-                        { label: '비용 문의', action: 'show_pricing', icon: <DollarSign className="text-yellow-600 w-5 h-5" /> },
-                        { label: '서비스 안내', action: 'show_info', icon: <ClipboardList className="text-slate-500 w-5 h-5" /> },
-                        { label: '상담원 연결', action: 'agent_request', icon: <User className="text-slate-600 w-5 h-5" /> }
-                    ]
-                }
-            ];
-            setMessages(initialMessages);
+        setError(null);
+        try {
+            const { data: partnerData, error: partnerError } = await supabase.from('partners').select('*').eq('id', partnerId).single();
+            if (partnerError) throw partnerError;
 
-            // Create session in DB
-            const { data: session } = await supabase.from('partner_conversations').insert([{
-                partner_id: partnerId,
-                messages: initialMessages,
-                conversation_status: 'ai_handling',
-                last_message_at: new Date().toISOString()
-            }]).select().single();
+            setPartner(partnerData as Partner);
+
+            // 세션 복구 시도 (LocalStorage)
+            const savedSessionId = localStorage.getItem(`conv_id_${partnerId}`);
+            let session = null;
+
+            if (savedSessionId) {
+                setIsSyncing(true);
+                session = await aiConsultationService.getConsultation(savedSessionId);
+
+                // [Hardening] 소유권 검증 - 본인의 세션이 아니면 복구 거부
+                if (session && user && session.user_id !== user.id) {
+                    console.warn('[Security] Session ownership mismatch. Discarding old session.');
+                    session = null;
+                    localStorage.removeItem(`conv_id_${partnerId}`);
+                }
+                setIsSyncing(false);
+            }
 
             if (session) {
-                setConversationId(session.id);
-                listenToHijack(session.id);
+                setConversationId(session.conversation_id);
+                setMessages(session.messages as Message[]);
+                if (session.status === AiConsultationStatus.AGENT_CONNECTED) {
+                    setIsHijacked(true);
+                }
+                listenToEvents(session.conversation_id);
+            } else {
+                // [Security] 비로그인 사용자 체크 (로그인 사용자 전용)
+                if (!isSignedIn) {
+                    const authRequiredMsg: Message = {
+                        role: 'assistant',
+                        content: `안녕하세요, ${partnerData.name} AI 상담사입니다.\n\nAI 상담 서비스는 **로그인 후 이용 가능**합니다.\n로그인하시면 1:1 맞춤 상담과 혜택 안내를 받으실 수 있습니다.`,
+                        options: [
+                            { label: '로그인하고 상담 시작하기', action: 'go_login', icon: <User className="text-[#006442] w-5 h-5" /> }
+                        ]
+                    };
+                    setMessages([authRequiredMsg]);
+                    setLoading(false);
+                    return;
+                }
+
+                // 신규 세션 시작
+                const welcomeMsg = partnerData.ai_context?.welcome_message || `안녕하세요, ${partnerData.name}입니다.\n\n소중한 시간에 방문해 주셔서 감사합니다.\n무엇을 도와드릴까요?`;
+                const initialMessages: Message[] = [
+                    {
+                        role: 'assistant',
+                        content: welcomeMsg,
+                        options: [
+                            { label: '긴급 상황 (임종 발생)', action: 'agent_request', icon: <Siren className="text-red-500 w-5 h-5" /> },
+                            { label: '비용 문의', action: 'show_pricing', icon: <DollarSign className="text-yellow-600 w-5 h-5" /> },
+                            { label: '서비스 안내', action: 'show_info', icon: <ClipboardList className="text-slate-500 w-5 h-5" /> },
+                            { label: '상담원 연결', action: 'agent_request', icon: <User className="text-slate-600 w-5 h-5" /> }
+                        ]
+                    }
+                ];
+                setMessages(initialMessages);
+
+                const newSessionId = `conv_${partnerId}_${Date.now()}`;
+                const newSession = await aiConsultationService.startOrResumeConsultation({
+                    conversationId: newSessionId,
+                    userId: user?.id,
+                    facilityId: partnerId,
+                    facilityName: partnerData.name,
+                    category: 'funeral',
+                    initialMessage: initialMessages[0]
+                });
+
+                if (newSession) {
+                    setConversationId(newSession.conversation_id);
+                    localStorage.setItem(`conv_id_${partnerId}`, newSession.conversation_id);
+                    listenToEvents(newSession.conversation_id);
+                }
             }
+        } catch (err: any) {
+            console.error('Bot init failed:', err);
+            if (retryCount < 2) {
+                console.log(`Retrying init... (${retryCount + 1}/3)`);
+                setTimeout(() => initBot(retryCount + 1), 1000);
+            } else {
+                setError('상담 내역을 불러오지 못했습니다. 네트워크 상태를 확인해 주세요.');
+            }
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
-    const listenToHijack = (id: string) => {
-        supabase.channel(`conv-${id}`)
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'partner_conversations', filter: `id=eq.${id}` }, (payload) => {
+    const listenToEvents = (convId: string) => {
+        // [Decision Lock] 실시간 관제 이벤트 구독
+        supabase.channel(`ai-conv-${convId}`)
+            .on('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'ai_consultations',
+                filter: `conversation_id=eq.${convId}`
+            }, (payload) => {
                 const updated = payload.new;
-                if (updated.conversation_status === 'agent_connected') {
+                if (updated.status === AiConsultationStatus.AGENT_CONNECTED) {
                     setIsHijacked(true);
                 }
                 setMessages(updated.messages);
@@ -88,13 +157,27 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
     };
 
     const handleAction = async (action: string, label: string) => {
-        if (isHijacked) return;
+        if (isHijacked || !conversationId) return;
 
         const newUserMsg: Message = { role: 'user', content: label };
         const updatedMsgs = [...messages, newUserMsg];
         setMessages(updatedMsgs);
 
+        // 유저 메시지 먼저 저장
+        await aiConsultationService.appendMessage(conversationId, newUserMsg);
+
         let assistantMsg: Message | null = null;
+
+        if (action === 'go_login') {
+            onClose(); // Close bot first
+            if (openSignIn) {
+                openSignIn();
+            } else {
+                // Fallback: Trigger custom event for App.tsx
+                window.dispatchEvent(new CustomEvent('open-login-modal'));
+            }
+            return;
+        }
 
         switch (action) {
             case 'show_pricing':
@@ -123,13 +206,8 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
                     content: '전담 상담사에게 연결을 요청했습니다. 잠시만 기다려주시면 직접 답변해 드리겠습니다.',
                     type: 'contact'
                 };
-                // Update status in DB to alert partner
-                if (conversationId) {
-                    await supabase.from('partner_conversations').update({
-                        conversation_status: 'agent_requested',
-                        priority: 'high'
-                    }).eq('id', conversationId);
-                }
+                // [Decision Lock] 서비스 레이어를 통한 상태 변경 및 이벤트 발생
+                await aiConsultationService.updateStatus(conversationId, AiConsultationStatus.AGENT_REQUESTED, { priority: 'high' });
                 break;
             case 'restart':
                 assistantMsg = {
@@ -150,12 +228,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
         if (assistantMsg) {
             const finalMsgs = [...updatedMsgs, assistantMsg];
             setMessages(finalMsgs);
-            if (conversationId) {
-                await supabase.from('partner_conversations').update({
-                    messages: finalMsgs,
-                    last_message_at: new Date().toISOString()
-                }).eq('id', conversationId);
-            }
+            await aiConsultationService.appendMessage(conversationId, assistantMsg);
         }
     };
 
@@ -167,10 +240,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
         setMessages(updatedMsgs);
         setInput('');
 
-        await supabase.from('partner_conversations').update({
-            messages: updatedMsgs,
-            last_message_at: new Date().toISOString()
-        }).eq('id', conversationId);
+        await aiConsultationService.appendMessage(conversationId, newUserMsg);
 
         // If not hijacked, give a simple AI response
         if (!isHijacked) {
@@ -182,13 +252,11 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
                 };
                 const finalMsgs = [...updatedMsgs, aiReply];
                 setMessages(finalMsgs);
-                await supabase.from('partner_conversations').update({
-                    messages: finalMsgs,
-                    last_message_at: new Date().toISOString()
-                }).eq('id', conversationId);
+                await aiConsultationService.appendMessage(conversationId, aiReply);
             }, 1000);
         }
     };
+
 
     return (
         <div className="fixed inset-0 z-[500] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-300">
@@ -196,17 +264,23 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
                 {/* Header: Forest Green */}
                 <div className="p-4 bg-[#006442] text-white flex items-center justify-between shadow-md shrink-0">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-inner overflow-hidden">
+                        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-inner overflow-hidden relative">
                             <Bot className="text-[#006442]" size={24} />
+                            {isSyncing && (
+                                <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
+                                    <RefreshCw className="w-4 h-4 text-[#006442] animate-spin" />
+                                </div>
+                            )}
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
-                                <h3 className="font-bold text-base tracking-tight">{partner?.name || 'Loading...'}</h3>
+                                <h3 className="font-bold text-base tracking-tight text-white">{partner?.name || 'Loading...'}</h3>
                             </div>
                             <div className="flex items-center gap-1.5 opacity-90">
-                                <span className="text-[10px] font-medium tracking-wide">AI 상담 · 24시간 운영</span>
+                                <span className="text-[10px] font-medium tracking-wide text-white">AI 상담 · 24시간 운영</span>
                                 <span className="w-1 h-1 bg-white/50 rounded-full"></span>
                                 <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
+                                {isSyncing && <span className="text-[9px] text-white/70 animate-pulse ml-1">동기화 중...</span>}
                             </div>
                         </div>
                     </div>
@@ -222,6 +296,19 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
 
                 {/* Chat Messages */}
                 <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-6">
+                    {error && (
+                        <div className="bg-red-50 border border-red-100 rounded-2xl p-4 flex flex-col items-center gap-3 animate-in fade-in zoom-in-95">
+                            <AlertTriangle className="text-red-500 w-8 h-8" />
+                            <div className="text-red-800 text-sm font-bold text-center">{error}</div>
+                            <button
+                                onClick={() => initBot()}
+                                className="bg-red-500 text-white px-4 py-2 rounded-xl text-xs font-black shadow-lg shadow-red-500/20 active:scale-95 transition-all"
+                            >
+                                상담 다시 불러오기
+                            </button>
+                        </div>
+                    )}
+
                     {messages.map((msg, i) => (
                         <div key={i} className={`flex transition-all animate-in slide-in-from-bottom-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                             {msg.role === 'assistant' && (

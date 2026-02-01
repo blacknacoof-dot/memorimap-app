@@ -1,31 +1,19 @@
-import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
-import L from 'leaflet';
-import MarkerClusterGroup from 'react-leaflet-cluster';
+import React, { useEffect, useRef, useImperativeHandle, forwardRef, useState } from 'react';
 import { Facility } from '../types';
 import { useFilterStore } from '../stores/useFilterStore';
+import { getMarkerHtml, LeafletCompatibleBounds } from '../utils/naverMapHelper';
 
-// Fix for Leaflet default icons in React/Vite
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-
-// @ts-ignore
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2x,
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-});
-
-// Import markercluster styles
-import 'leaflet.markercluster/dist/MarkerCluster.css';
-import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+// Extend Window interface for Naver Maps
+declare global {
+  interface Window {
+    naver: any;
+  }
+}
 
 interface MapProps {
   facilities: Facility[];
   onFacilitySelect: (facility: Facility) => void;
-  onBoundsChange?: (bounds: L.LatLngBounds) => void;
+  onBoundsChange?: (bounds: any) => void; // Using 'any' to compat with Leaflet types
   initialCenter?: [number, number];
   initialZoom?: number;
 }
@@ -34,88 +22,19 @@ export interface MapRef {
   flyToLocation: () => void;
 }
 
-const LocationMarker = forwardRef<MapRef, {}>((props, ref) => {
-  const [position, setPosition] = useState<L.LatLng | null>(null);
-  const map = useMap();
-
-  const flyToLocation = () => {
-    map.locate().on("locationfound", function (e) {
-      setPosition(e.latlng);
-      map.flyTo(e.latlng, 15); // Zoom in closer for 'My Location'
-    });
-  };
-
-  useImperativeHandle(ref, () => ({
-    flyToLocation
-  }));
-
-  return position === null ? null : (
-    <Marker position={position}>
-      <Popup>현재 위치</Popup>
-    </Marker>
-  );
-});
-
-const MapEvents = ({ onBoundsChange }: { onBoundsChange?: (bounds: L.LatLngBounds) => void }) => {
-  const map = useMap();
-  useMapEvents({
-    moveend: () => {
-      onBoundsChange?.(map.getBounds());
-    },
-    zoomend: () => {
-      onBoundsChange?.(map.getBounds());
-    }
-  });
-
-  // Trigger initial bounds
-  useEffect(() => {
-    if (map) {
-      // Small timeout to ensure map is ready and layout is stable
-      const timer = setTimeout(() => {
-        onBoundsChange?.(map.getBounds());
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [map, onBoundsChange]);
-
-  return null;
-};
-
-const MapController = ({ center, zoom }: { center?: [number, number], zoom?: number }) => {
-  const map = useMap();
-  const prevCenter = React.useRef<[number, number] | undefined>(undefined);
-  const prevZoom = React.useRef<number | undefined>(undefined);
-
-  useEffect(() => {
-    if (center) {
-      const isCenterChanged = !prevCenter.current ||
-        prevCenter.current[0] !== center[0] ||
-        prevCenter.current[1] !== center[1];
-
-      const isZoomChanged = zoom !== undefined && prevZoom.current !== zoom;
-
-      if (isCenterChanged || isZoomChanged) {
-        prevCenter.current = center;
-        prevZoom.current = zoom;
-        map.flyTo(center, zoom || 15, { animate: true, duration: 1.5 });
-      }
-    }
-  }, [center, zoom, map]);
-  return null;
-};
-
-import { createCustomMarker } from '../utils/mapHelpers';
-
-// ... (remove createCustomIcon)
-
 const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelect, onBoundsChange, initialCenter, initialZoom }, ref) => {
-  const locationRef = React.useRef<MapRef>(null);
+  const mapElement = useRef<HTMLDivElement | null>(null);
+  const mapInstance = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
+  const [isMapReady, setIsMapReady] = useState(false); // ✅ Readiness State
+  const [myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const locationMarkerRef = useRef<any>(null);
 
-  // Store State for Filtering
+  // Store State for Filtering (Same logic as legacy)
   const searchQuery = useFilterStore(s => s.searchQuery);
   const selectedCategories = useFilterStore(s => s.selectedCategories);
 
-  // Internal Filtering Logic (Duplicate of FacilityList for now - parallel implementation)
+  // Internal Filtering Logic (Preserved from legacy)
   const filteredFacilities = React.useMemo(() => {
     return facilities.filter(facility => {
       const matchesSearch = !searchQuery ||
@@ -125,56 +44,177 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
       const matchesCategory = selectedCategories.length === 0 ||
         (facility.category && selectedCategories.includes(facility.category));
 
-      // 3. Exclude 'Sangjo'
       const isSangjo = (facility.category as string) === 'sangjo' || (facility.category as string) === '상조';
 
       return matchesSearch && matchesCategory && !isSangjo;
     });
   }, [facilities, searchQuery, selectedCategories]);
 
+  // 1. Initialize Map
+  useEffect(() => {
+    if (!mapElement.current) return;
+
+    // Define global callback for Naver Map SDK
+    (window as any).initNaverMap = () => {
+      console.log('[MapContainer] Naver Map SDK callback triggered');
+      initMap();
+    };
+
+    // Load Naver Script if not present
+    if (!window.naver || !window.naver.maps) {
+      const existingScript = document.getElementById('naver-map-script');
+      if (!existingScript) {
+        const script = document.createElement('script');
+        script.id = 'naver-map-script';
+        script.type = 'text/javascript';
+        const clientId = import.meta.env.VITE_NAVER_MAP_CLIENT_ID;
+        console.log('[MapContainer] Loading Naver SDK with Client ID:', clientId);
+
+        // BKIT Fix: Use callback to ensure SDK is authenticated before init
+        script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${clientId || 'MISSING_CLIENT_ID'}&callback=initNaverMap`;
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+      } else {
+        // Script exists but naver.maps might not be ready. 
+        // We already defined the global callback, so if the script is still loading, it will call it.
+        // If it's already there but just not initialized, we try initMap.
+        if (window.naver && window.naver.maps) {
+          initMap();
+        }
+      }
+    } else {
+      initMap();
+    }
+
+    function initMap() {
+      if (!mapElement.current) return;
+
+      // ✅ [Crash Prevention] SDK Safety Check
+      if (!window.naver || !window.naver.maps) {
+        console.warn('[MapContainer] Naver Map SDK not ready yet');
+        return;
+      }
+
+      if (mapInstance.current) return;
+
+      try {
+        const center = initialCenter ?
+          new window.naver.maps.LatLng(initialCenter[0], initialCenter[1]) :
+          new window.naver.maps.LatLng(37.3595704, 127.105399);
+
+        const mapOptions = {
+          center: center,
+          zoom: initialZoom || 15,
+          minZoom: 6,
+          scaleControl: false,
+          logoControl: false,
+          mapDataControl: false,
+          zoomControl: false,
+          mapTypeControl: false
+        };
+
+        const map = new window.naver.maps.Map(mapElement.current, mapOptions);
+        mapInstance.current = map;
+
+        // Event Listeners
+        window.naver.maps.Event.addListener(map, 'idle', () => {
+          if (onBoundsChange) {
+            const bounds = map.getBounds();
+            const ne = bounds.getNE();
+            const sw = bounds.getSW();
+            const fakeBounds = new LeafletCompatibleBounds(sw.lat(), sw.lng(), ne.lat(), ne.lng());
+            onBoundsChange(fakeBounds);
+          }
+        });
+
+        setIsMapReady(true);
+        console.log('[MapContainer] Naver Map Initialized successfully');
+      } catch (e) {
+        console.error("[MapContainer] Naver Map init failed:", e);
+      }
+    }
+
+    return () => {
+      // Clean up global callback to prevent memory leak or stale closures
+      delete (window as any).initNaverMap;
+    };
+  }, []); // Run once
+
+  // 2. Render Markers
+  useEffect(() => {
+    if (!mapInstance.current || !window.naver || !isMapReady) return; // ✅ Guard against unready map
+
+    // Clear existing
+    markersRef.current.forEach(marker => marker.setMap(null));
+    markersRef.current = [];
+
+    // Add new
+    filteredFacilities.forEach(facility => {
+      if (!facility.lat || !facility.lng) return;
+
+      const marker = new window.naver.maps.Marker({
+        position: new window.naver.maps.LatLng(facility.lat, facility.lng),
+        map: mapInstance.current,
+        title: facility.name,
+        icon: {
+          content: getMarkerHtml(facility.category as string, false),
+          size: new window.naver.maps.Size(24, 24),
+          anchor: new window.naver.maps.Point(12, 12)
+        }
+      });
+
+      // Click Event
+      window.naver.maps.Event.addListener(marker, 'click', () => {
+        onFacilitySelect(facility);
+      });
+
+      markersRef.current.push(marker);
+    });
+
+  }, [filteredFacilities]); // Re-render when list changes
+
+  // 3. Sync Center (Removed to prevent snapping back when user moves map)
+  // The map is initialized with initialCenter, and manual movement should be preserved.
+  // Full flyTo is handled by the imperative handle.
+
+  // 4. Handle Imperative Ref (FlyToLocation)
   useImperativeHandle(ref, () => ({
     flyToLocation: () => {
-      if (locationRef.current) {
-        locationRef.current.flyToLocation();
-      }
+      if (!mapInstance.current || !navigator.geolocation || !window.naver || !window.naver.maps) return;
+
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        const latLng = new window.naver.maps.LatLng(latitude, longitude);
+
+        mapInstance.current.setCenter(latLng);
+        mapInstance.current.setZoom(16);
+        setMyLocation({ lat: latitude, lng: longitude });
+
+        // Update Location Marker
+        if (locationMarkerRef.current) {
+          locationMarkerRef.current.setPosition(latLng);
+        } else {
+          locationMarkerRef.current = new window.naver.maps.Marker({
+            position: latLng,
+            map: mapInstance.current,
+            icon: {
+              content: '<div style="width:12px;height:12px;background:#3B82F6;border:2px solid white;border-radius:50%;box-shadow:0 0 5px rgba(0,0,0,0.5);"></div>',
+              anchor: new window.naver.maps.Point(6, 6)
+            }
+          });
+        }
+      }, (err) => {
+        console.error("Geolocation error", err);
+        alert("위 위치를 가져올 수 없습니다.");
+      });
     }
   }));
 
+  // Render
   return (
     <div className="w-full h-full relative z-0">
-      <MapContainer
-        center={initialCenter || [37.35, 127.15]}
-        zoom={initialZoom || 10}
-        style={{ height: '100%', width: '100%', transform: 'translate3d(0,0,0)' }}
-        zoomControl={false}
-      >
-        <MapController center={initialCenter} zoom={initialZoom} />
-        <MapEvents onBoundsChange={onBoundsChange} />
-        <TileLayer
-          attribution='&copy; <a href="https://www.google.com/help/terms_maps/">Google Maps</a>'
-          url="https://mt1.google.com/vt/lyrs=m&hl=ko&x={x}&y={y}&z={z}"
-        />
-        <LocationMarker ref={locationRef} />
-
-        <MarkerClusterGroup
-          chunkedLoading
-          maxClusterRadius={50}
-          spiderfyOnMaxZoom={true}
-        >
-          {filteredFacilities
-            .filter(f => f.lat && f.lng && f.lat !== 0 && f.lng !== 0)
-            .map((facility) => (
-              <Marker
-                key={facility.id}
-                position={[facility.lat as number, facility.lng as number]}
-                icon={createCustomMarker((facility.category as string) || '')}
-                eventHandlers={{
-                  click: () => onFacilitySelect(facility),
-                }}
-              />
-            ))}
-        </MarkerClusterGroup>
-      </MapContainer>
+      <div ref={mapElement} style={{ width: '100%', height: '100%' }} />
     </div>
   );
 });

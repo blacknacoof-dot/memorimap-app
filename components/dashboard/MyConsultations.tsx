@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { getConsultationsByUser, updateConsultationStatus, Consultation } from '@/lib/queries';
-import { Clock, CheckCircle, XCircle, Check, MapPin, Building2, Calendar, ChevronRight, RefreshCw } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, Check, MapPin, Building2, Calendar, ChevronRight, RefreshCw, MessageSquare } from 'lucide-react';
+import { aiConsultationService } from '@/lib/api/aiConsultation';
+import { AiConsultationStatus } from '@/types';
+import { supabase } from '@/lib/supabaseClient'; // [Realtime]
 
 interface Props {
     userId: string;
@@ -38,14 +41,70 @@ export const MyConsultations: React.FC<Props> = ({ userId }) => {
 
     const fetchConsultations = async () => {
         setIsLoading(true);
-        const data = await getConsultationsByUser(userId);
-        setConsultations(data);
+        // 1. Fetch Legacy Consultations
+        const legacyData = await getConsultationsByUser(userId);
+
+        // 2. Fetch AI Consultations
+        const aiData = await aiConsultationService.getUserConsultations(userId);
+
+        // 3. Merge & Adapt
+        const aiAdapted = aiData.map(ai => ({
+            id: ai.conversation_id, // Use conversation_id as ID
+            facility_id: ai.facility_id || '',
+            user_id: ai.user_id || userId,
+            status: mapAiStatusToLegacy(ai.status),
+            created_at: ai.created_at || new Date().toISOString(),
+            facility_name: ai.facility_name,
+            scale: 'small', // Default
+            religion: 'none', // Default
+            schedule: '3day', // Default
+            urgency: 'inquiry',
+            // Custom field to identify AI
+            isAi: true,
+            conversation_id: ai.conversation_id,
+            originStatus: ai.status
+        })) as any[];
+
+        setConsultations([...aiAdapted, ...legacyData].sort((a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        ));
         setIsLoading(false);
+    };
+
+    const mapAiStatusToLegacy = (status: AiConsultationStatus): string => {
+        switch (status) {
+            case AiConsultationStatus.COMPLETED: return 'completed';
+            case AiConsultationStatus.AGENT_CONNECTED: return 'accepted';
+            case AiConsultationStatus.AGENT_REQUESTED: return 'waiting';
+            default: return 'waiting'; // AI_HANDLING -> waiting
+        }
     };
 
     useEffect(() => {
         if (userId) {
             fetchConsultations();
+
+            // [Realtime Sync]
+            const channel = supabase
+                .channel(`consultations-user-${userId}`)
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*', // Listen for updates (status change)
+                        schema: 'public',
+                        table: 'ai_consultations',
+                        filter: `user_id=eq.${userId}`
+                    },
+                    (payload) => {
+                        console.log('User Realtime update:', payload);
+                        fetchConsultations(); // Refresh to see new status and instructions
+                    }
+                )
+                .subscribe();
+
+            return () => {
+                supabase.removeChannel(channel);
+            };
         }
     }, [userId]);
 
@@ -173,6 +232,32 @@ export const MyConsultations: React.FC<Props> = ({ userId }) => {
                                 </div>
                             </div>
 
+                            {/* Facility Instruction Box */}
+                            {consultation.status === 'accepted' && (consultation as any).metadata && (
+                                <div className="mt-3 p-4 bg-indigo-50 border border-indigo-100 rounded-xl relative overflow-hidden">
+                                    <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
+                                    <h4 className="flex items-center gap-2 text-indigo-900 font-bold mb-2 text-sm">
+                                        <MessageSquare size={16} /> 장례식장 안내 메시지
+                                    </h4>
+
+                                    {(consultation as any).metadata.expected_time && (
+                                        <p className="text-sm text-indigo-800 font-bold mb-1">
+                                            ⏰ {(consultation as any).metadata.expected_time}
+                                        </p>
+                                    )}
+
+                                    {(consultation as any).metadata.instruction && (
+                                        <p className="text-sm text-indigo-700 whitespace-pre-wrap">
+                                            {(consultation as any).metadata.instruction}
+                                        </p>
+                                    )}
+
+                                    <p className="text-xs text-indigo-400 mt-2">
+                                        * 위 안내사항을 꼭 확인하고 방문해주세요.
+                                    </p>
+                                </div>
+                            )}
+
                             {/* Answer Section */}
                             {consultation.answer && (
                                 <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-3">
@@ -190,6 +275,17 @@ export const MyConsultations: React.FC<Props> = ({ userId }) => {
                             )}
 
                             {/* Actions */}
+                            {/* [AI] Resume Chat Button */}
+                            {(consultation as any).isAi && (consultation as any).originStatus !== AiConsultationStatus.COMPLETED && (
+                                <button
+                                    onClick={() => alert(`[상담 이어하기] 채팅창을 엽니다.\nID: ${consultation.id}`)}
+                                    className="w-full py-2 mb-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition font-bold flex items-center justify-center gap-2"
+                                >
+                                    <MessageSquare size={16} />
+                                    상담 이어하기
+                                </button>
+                            )}
+
                             {consultation.status === 'waiting' && (
                                 <button
                                     onClick={() => handleCancel(consultation.id)}

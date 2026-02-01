@@ -286,7 +286,7 @@ export const AdminView: React.FC<Props> = ({ facilities, reservations, onUpdateR
                       </h3>
                       <div className="space-y-4">
                         {(selectedFacility.reviews || []).length > 0 ? (
-                          selectedFacility.reviews.map(review => (
+                          (selectedFacility.reviews || []).map(review => (
                             <div key={review.id} className="border p-4 rounded-lg flex gap-4 items-start">
                               <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center font-bold text-gray-500">
                                 {review.userName[0]}

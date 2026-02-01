@@ -49,72 +49,67 @@ const MOCK_MAP_DB: Record<string, MapPlace[]> = {
 // [NEW] Dynamic Mock Generator for Nationwide Support (With Radius Expansion Simulation)
 const generateMockFacilities = (region: string, isGranular: boolean = false): MapPlace[] => {
   const facilities = [];
-  
+
   // 1. Exact Match (The requested region)
-  facilities.push({ 
-    id: `gen-${region}-1`, 
-    place_name: `${region} 대학병원 장례식장`, 
-    address_name: `${region} 중심가 123`, 
-    lat: 37.5, lng: 127.0, 
-    rating: 4.6, reviewCount: 850 
+  facilities.push({
+    id: `gen-${region}-1`,
+    place_name: `${region} 대학병원 장례식장`,
+    address_name: `${region} 중심가 123`,
+    lat: 37.5, lng: 127.0,
+    rating: 4.6, reviewCount: 850
   });
 
   if (isGranular) {
-    // 2. [Simulated Expansion] If granular (Dong), add "Nearby" results from parent/adjacent areas
-    // Simulating that the Dong itself only had 1 result, so we fetched 2 more from "Nearby"
-    facilities.push({ 
-      id: `gen-${region}-exp-1`, 
-      place_name: `인근 중앙 전문 장례식장`, // Intentionally generic 'Nearby' name
-      address_name: `${region} 인근 1.5km`, // Simulated distance indication
-      lat: 37.51, lng: 127.01, 
-      rating: 4.4, reviewCount: 320 
-    });
-    facilities.push({ 
-      id: `gen-${region}-exp-2`, 
-      place_name: `인근 VIP 장례식장`, 
-      address_name: `${region} 인근 2.3km`, 
-      lat: 37.52, lng: 127.02, 
-      rating: 4.8, reviewCount: 42 
+    // 2. [Strict Mode] Granular (Dong) Search
+    // We simulated having fewer results locally (only strict matches).
+    // Logic: Do NOT add "Nearby" (Expansion) results.
+
+    // Simulating a second local facility ONLY if it exists strictly in that Dong
+    facilities.push({
+      id: `gen-${region}-2`,
+      place_name: `${region} 전문 장례식장`,
+      address_name: `${region} 2번길 45`,
+      lat: 37.51, lng: 127.01,
+      rating: 4.2, reviewCount: 65 // Adjusted to > 50 for realistic "High Review" testing
     });
   } else {
     // Standard City-level generation (Plenty of results in the city itself)
-    facilities.push({ 
-      id: `gen-${region}-2`, 
-      place_name: `${region} 중앙 전문 장례식장`, 
-      address_name: `${region} 시청로 45`, 
-      lat: 37.5, lng: 127.0, 
-      rating: 4.2, reviewCount: 320 
+    facilities.push({
+      id: `gen-${region}-2`,
+      place_name: `${region} 중앙 전문 장례식장`,
+      address_name: `${region} 시청로 45`,
+      lat: 37.5, lng: 127.0,
+      rating: 4.2, reviewCount: 320
     });
-    facilities.push({ 
-      id: `gen-${region}-3`, 
-      place_name: `${region} 시립 추모관`, 
-      address_name: `${region} 외곽순환로 99`, 
-      lat: 37.5, lng: 127.0, 
-      rating: 3.9, reviewCount: 150 
+    facilities.push({
+      id: `gen-${region}-3`,
+      place_name: `${region} 시립 추모관`,
+      address_name: `${region} 외곽순환로 99`,
+      lat: 37.5, lng: 127.0,
+      rating: 3.9, reviewCount: 150
     });
-    facilities.push({ 
-      id: `gen-${region}-4`, 
-      place_name: `${region} VIP 장례식장`, 
-      address_name: `${region} 터미널 인근`, 
-      lat: 37.5, lng: 127.0, 
-      rating: 4.8, reviewCount: 42 
+    facilities.push({
+      id: `gen-${region}-4`,
+      place_name: `${region} VIP 장례식장`,
+      address_name: `${region} 터미널 인근`,
+      lat: 37.5, lng: 127.0,
+      rating: 4.8, reviewCount: 42
     });
   }
 
   return facilities;
 };
 
-// 2. AI Scoring Logic (Lightweight & Fast)
+// 2. AI Scoring Logic (Matched to User Request)
 const scorePlace = (p: MapPlace) => {
   let score = 0;
 
   // ⭐ Rating Weight
   if (p.rating) score += p.rating * 10;
 
-  // 📝 Review Count Weight
-  if (p.reviewCount > 1000) score += 30;
-  else if (p.reviewCount > 300) score += 20;
-  else if (p.reviewCount > 100) score += 10;
+  // 📝 Review Count Weight (Adjusted for initial phase: 50/10)
+  if (p.reviewCount > 50) score += 20;
+  else if (p.reviewCount > 10) score += 10;
 
   // 🏥 Hospital Premium
   if (p.place_name.includes("병원") || p.place_name.includes("의료원")) score += 15;
@@ -122,18 +117,28 @@ const scorePlace = (p: MapPlace) => {
   return score;
 };
 
-// 3. Reason Generator (Auto-Tagging)
+// 3. Badge Generator (For UI Tags)
 const buildReasonTags = (p: MapPlace) => {
   const tags = [];
   if (p.rating >= 4.5) tags.push("⭐ 4.5 이상");
   else if (p.rating >= 4.0) tags.push("⭐ 평점 우수");
 
-  if (p.reviewCount >= 1000) tags.push("🏆 리뷰 1000+");
-  else if (p.reviewCount >= 300) tags.push("🔥 후기 많음");
+  if (p.reviewCount >= 50) tags.push("🔥 후기 많음");
+  else if (p.reviewCount >= 10) tags.push("📝 리뷰 다수");
 
-  if (p.place_name.includes("병원")) tags.push("🏥 대학병원");
+  if (p.place_name.includes("병원")) tags.push("🏥 병원 연계");
 
   return tags;
+};
+
+// [NEW] Reason Sentence Generator (For Data Payload)
+const buildReasonSentence = (p: MapPlace) => {
+  const reasons = [];
+  if (p.rating >= 4.3) reasons.push("이용자 평점이 높고");
+  if (p.reviewCount > 50) reasons.push("후기 수가 많으며");
+  if (p.place_name.includes("병원")) reasons.push("대형 병원과 연계된");
+
+  return reasons.join(" ") + " 장례식장입니다.";
 };
 
 // 4. Main Recommendation Function
@@ -142,7 +147,8 @@ const recommendTop3 = (places: MapPlace[]) => {
     .map(p => ({
       ...p,
       aiScore: scorePlace(p),
-      badges: buildReasonTags(p)
+      badges: buildReasonTags(p),
+      reasonSentence: buildReasonSentence(p)
     }))
     .sort((a, b) => b.aiScore - a.aiScore)
     .slice(0, 3);
@@ -171,26 +177,24 @@ export const sendMessageToGemini = async (
     // 1. Detect Region from Message (Advanced Parsing for Dong/Gu)
     let regionKey = '서울'; // Default Fallback
     let isGranular = false; // Flag for expansion simulation
-    
+
     // Regex to capture City/District/Neighborhood (e.g., 강남구, 역삼동, 일산서구, 고양시)
-    // Matches: Word ending in 시, 군, 구, 동, 읍, 면 (exclude common words if necessary)
+    // Now supports no-space patterns like '분당장례식장' via aggressive matching
     const locationRegex = /([가-힣]+[시군구동읍면])/g;
     const matches = userMsg.match(locationRegex);
 
     if (matches && matches.length > 0) {
       // Use the last specific match (usually the most granular, e.g., "고양시 일산동구" -> "일산동구")
-      // But for better context, we might prefer the one that sounds most like a place users search for.
-      // Let's pick the last one found as it often specifies the precise neighborhood.
       regionKey = matches[matches.length - 1];
-      
+
       // Check if it's 'Dong' or 'Myeon' or 'Eup' -> trigger expansion if needed
       if (regionKey.endsWith('동') || regionKey.endsWith('읍') || regionKey.endsWith('면')) {
         isGranular = true;
       }
-
     } else {
-      // Fallback to keyword list if no clear administrative term found
-      const commonRegions = ['강남', '서울', '부산', '대구', '인천', '광주', '대전', '울산', '세종', '경기', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주', '고양', '분당', '수원', '일산'];
+      // [NLP Fix] Check for known regions explicitly even if attached to other words (e.g. 분당장례식장)
+      const commonRegions = ['강남', '서울', '부산', '대구', '인천', '광주', '대전', '울산', '세종', '경기', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주', '고양', '분당', '수원', '일산', '성남', '용인', '부천', '안양', '안산', '남양주', '화성', '평택', '의정부', '파주', '시흥', '김포', '광명', '군포', '하남', '오산', '이천', '안성', '의왕', '양주', '여주', '과천'];
+
       for (const region of commonRegions) {
         if (userMsg.includes(region)) {
           regionKey = region;
@@ -199,38 +203,18 @@ export const sendMessageToGemini = async (
       }
     }
 
-    // 2. Fetch Map Data (Static OR Generated)
-    // If we have a specific mock DB entry (like '강남'), use it. Otherwise generate hyper-local data.
-    // For Granular (Dong), we FORCE generation to simulate expansion logic
-    const rawMapResults = (MOCK_MAP_DB[regionKey] && !isGranular) 
-      ? MOCK_MAP_DB[regionKey] 
-      : generateMockFacilities(regionKey, isGranular);
+    // [Bkit Fix] Disable Internal Mock Generation for Map Search
+    // Instead of generating "Budae-si" data here, we simply acknowledge the region 
+    // and let ChatInterface perform the Real DB Search.
 
-    // 3. Apply AI Filtering
-    const recommended = recommendTop3(rawMapResults);
-
-    console.log(`[GeminiService] Map Search: ${regionKey} (Granular:${isGranular}) -> ${rawMapResults.length} found -> Top ${recommended.length} picked`);
-
-    let responseText = `${regionKey} 지역 지도를 분석하여 **이용 만족도가 가장 높은 3곳**을 추천해 드립니다.`;
-    
-    // [Expansion Notice]
-    if (isGranular) {
-       responseText = `**${regionKey}** 근처에는 추천 시설이 부족하여,\n**인근 지역까지 반경을 확장**해 가장 평점이 좋은 3곳을 찾아냈습니다.`;
-    }
+    // We strictly DO NOT return 'data.facilities' here if we want to enforce Real DB priority.
+    // The previous logic was generating MOCK_MAP_DB results which caused the "4 found -> Top 3 picked" log.
 
     return {
-      text: responseText,
+      text: ``, // [NLP Fix] Empty text as user requested "메시지창 없어도 될듯" - ChatInterface creates the UI container
       action: 'RECOMMEND',
       data: {
-        facilities: recommended.map(r => ({
-          id: r.id,
-          name: r.place_name,
-          address: r.address_name,
-          rating: r.rating,
-          reviewCount: r.reviewCount,
-          badges: r.badges,
-          imageUrl: ''
-        }))
+        facilities: []
       }
     };
   }

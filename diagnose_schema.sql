@@ -1,11 +1,17 @@
--- DIAGNOSIS: Check Column Types
--- Purpose: Find out why '7' is causing "invalid input syntax for type uuid"
-
 SELECT 
     table_name, 
     column_name, 
     data_type, 
-    udt_name 
-FROM information_schema.columns 
-WHERE table_schema = 'public' 
-AND table_name IN ('memorial_spaces', 'favorites', 'user_likes', 'users');
+    is_nullable
+FROM 
+    information_schema.columns
+WHERE 
+    table_schema = 'public' 
+    AND table_name IN ('partner_conversations', 'partner_inquiries', 'subscription_payments', 'user_notifications')
+ORDER BY 
+    table_name, ordinal_position;
+
+SELECT * FROM pg_extension WHERE extname = 'postgis';
+
+SELECT * FROM pg_policies 
+WHERE tablename IN ('partner_conversations', 'partner_inquiries', 'subscription_payments', 'user_notifications');

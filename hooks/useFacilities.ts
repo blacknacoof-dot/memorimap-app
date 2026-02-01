@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import {
     Facility,
     FacilityCategoryType,
+    StandardFacilityCategoryType,
     FacilityFilter,
     normalizeCategoryValue
 } from '../types/facility';
@@ -284,7 +285,7 @@ export function useFacility(id: string | null) {
  * Hook to get facility statistics by category
  */
 export function useFacilityStats() {
-    const [stats, setStats] = useState<Record<FacilityCategoryType, number>>({
+    const [stats, setStats] = useState<Record<StandardFacilityCategoryType, number>>({
         funeral_home: 0,
         columbarium: 0,
         natural_burial: 0,

@@ -12,6 +12,13 @@ import {
     Loader2
 } from 'lucide-react';
 import { createFuneralConsultation, getDistinctRegions, getIntelligentRecommendations } from '@/lib/queries';
+import {
+    FUNERAL_URGENCY_OPTIONS,
+    FUNERAL_SCALE_OPTIONS,
+    FUNERAL_RELIGION_OPTIONS,
+    FUNERAL_SCHEDULE_OPTIONS,
+    FUNERAL_SERVICE_OPTIONS
+} from '@/constants/maumAiConstants';
 
 interface FormProps {
     userLocation?: { lat: number; lng: number };
@@ -91,33 +98,6 @@ const FuneralSearchForm: React.FC<FormProps> = ({
         setServices(prev => prev.includes(opt) ? prev.filter(p => p !== opt) : [...prev, opt]);
     };
 
-    const URGENCY_OPTIONS = [
-        { id: 'deceased', label: '⚫ 임종(운명)하셨습니다', sub: '장례 접수 진행' },
-        { id: 'imminent', label: '🔵 임종이 임박하여 미리 상담', sub: '사전 상담 및 예약 준비' },
-        { id: 'inquiry', label: '⚪ 시설 이용 안내 및 단순 문의', sub: '시설 정보 확인' }
-    ];
-
-    const SCALE_OPTIONS = [
-        { id: 'small', label: '약 50명 미만', sub: '가족장, 30~40평형' },
-        { id: 'medium', label: '약 100~200명', sub: '일반적인 규모, 50~60평형' },
-        { id: 'large', label: '300명 이상', sub: '대규모, 80평형 이상' }
-    ];
-
-    const RELIGION_OPTIONS = [
-        { id: 'buddhist', label: '☸️ 불교', sub: '전통식, 분향' },
-        { id: 'christian', label: '✝️ 기독교', sub: '예배 중심, 헌화' },
-        { id: 'catholic', label: '⛪ 천주교', sub: '연도회, 미사' },
-        { id: 'none', label: '🕊️ 무교/기타', sub: '일반 장례' }
-    ];
-
-    const SCHEDULE_OPTIONS = [
-        { id: '3day', label: '3일장 (일반적)', sub: '오늘 입실 → 내일 입관 → 모레 발인' },
-        { id: '2day', label: '2일장 (간소화)', sub: '오늘 입실 → 내일 입관 후 바로 발인' },
-        { id: 'other', label: '기타 (상담 필요)', sub: '상담원과 일정 협의' }
-    ];
-
-    const SERVICE_OPTIONS = ['🅿️ 주자창 완비', '🛁 샤워실 구비', '🥣 식사 제공', '🦼 장례용품 제공', '🚑 운구차 지원'];
-
     const handleNext = () => {
         if (step === 1) {
             if (!urgency) return;
@@ -166,10 +146,10 @@ const FuneralSearchForm: React.FC<FormProps> = ({
             notes: `운구차필요: ${needsAmbulance ? '예' : '아니오'}, 고인위치: ${deceasedLocation}`
         };
 
-        const urgencyLabel = URGENCY_OPTIONS.find(o => o.id === urgency)?.label || urgency;
-        const scaleLabel = SCALE_OPTIONS.find(o => o.id === scale)?.label || scale;
-        const religionLabel = RELIGION_OPTIONS.find(o => o.id === religion)?.label || religion;
-        const scheduleLabel = SCHEDULE_OPTIONS.find(o => o.id === schedule)?.label || schedule;
+        const urgencyLabel = FUNERAL_URGENCY_OPTIONS.find(o => o.id === urgency)?.label || urgency;
+        const scaleLabel = FUNERAL_SCALE_OPTIONS.find(o => o.id === scale)?.label || scale;
+        const religionLabel = FUNERAL_RELIGION_OPTIONS.find(o => o.id === religion)?.label || religion;
+        const scheduleLabel = FUNERAL_SCHEDULE_OPTIONS.find(o => o.id === schedule)?.label || schedule;
 
         const finalText = `[🚨 장례식장 찾기]\n` +
             `| 구분 | 선택 내용 |\n` +
@@ -389,7 +369,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                     </QuestionBubble>
                     {step === 1 && (
                         <div className="pl-10">
-                            {URGENCY_OPTIONS.map(opt => (
+                            {FUNERAL_URGENCY_OPTIONS.map(opt => (
                                 <SelectButton
                                     key={opt.id}
                                     selected={urgency === opt.id}
@@ -403,7 +383,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                     {step > 1 && urgency && (
                         <div className="flex justify-end mb-3">
                             <div className="bg-indigo-600 text-white px-4 py-2 rounded-2xl rounded-br-sm text-sm shadow-sm">
-                                {URGENCY_OPTIONS.find(o => o.id === urgency)?.label}
+                                {FUNERAL_URGENCY_OPTIONS.find(o => o.id === urgency)?.label}
                             </div>
                         </div>
                     )}
@@ -482,7 +462,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                         <div className="pl-10 space-y-3">
                             {/* Region Chips */}
                             <div className="flex flex-wrap gap-2 mb-2">
-                                {['서울', '경기', '인천', '부산', '대구', '광주', '대전', '울산', '세종'].map(reg => (
+                                {['서울', '경기', '인천', '부산', '대구', '광주', '대전', '울산', '세종', '강원', '제주'].map(reg => (
                                     <button
                                         key={reg}
                                         onClick={() => { setLocation(reg); setShowSuggestions(false); }}
@@ -516,261 +496,280 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                                 )}
                             </div>
                         </div>
-                    )}
-                    {step > 3 && location && (
-                        <div className="flex justify-end mb-3">
-                            <div className="bg-indigo-600 text-white px-4 py-2 rounded-2xl rounded-br-sm text-sm shadow-sm">
-                                📍 추천 지역: {location}
+                    )
+                    }
+                    {
+                        step > 3 && location && (
+                            <div className="flex justify-end mb-3">
+                                <div className="bg-indigo-600 text-white px-4 py-2 rounded-2xl rounded-br-sm text-sm shadow-sm">
+                                    📍 추천 지역: {location}
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )
+                    }
                 </>
             )}
 
             {/* Step 4: Scale */}
-            {step >= 4 && (
-                <>
-                    <QuestionBubble>
-                        <strong>4. 규모 선택:</strong> 원활한 조문객 맞이를 위해 <strong>빈소 규모</strong>를 선택해 주세요.
-                    </QuestionBubble>
-                    {step === 4 && (
-                        <div className="pl-10">
-                            {SCALE_OPTIONS.map(opt => (
-                                <SelectButton
-                                    key={opt.id}
-                                    selected={scale === opt.id}
-                                    onClick={() => { setScale(opt.id); }}
-                                    label={opt.label}
-                                    sub={opt.sub}
-                                />
-                            ))}
-                        </div>
-                    )}
-                    {step > 4 && scale && (
-                        <div className="flex justify-end mb-3">
-                            <div className="bg-indigo-600 text-white px-4 py-2 rounded-2xl rounded-br-sm text-sm shadow-sm">
-                                {SCALE_OPTIONS.find(o => o.id === scale)?.label}
-                            </div>
-                        </div>
-                    )}
-                </>
-            )}
-
-            {/* Step 5: Religion */}
-            {step >= 5 && (
-                <>
-                    <QuestionBubble>
-                        <strong>5. 종교 선택:</strong> 장례 절차를 진행할 <strong>종교</strong>를 선택해 주세요.
-                    </QuestionBubble>
-                    {step === 5 && (
-                        <div className="pl-10 grid grid-cols-2 gap-2">
-                            {RELIGION_OPTIONS.map(opt => (
-                                <SelectButton
-                                    key={opt.id}
-                                    selected={religion === opt.id}
-                                    onClick={() => { setReligion(opt.id); }}
-                                    label={opt.label}
-                                    sub={opt.sub}
-                                />
-                            ))}
-                        </div>
-                    )}
-                    {step > 5 && religion && (
-                        <div className="flex justify-end mb-3">
-                            <div className="bg-indigo-600 text-white px-4 py-2 rounded-2xl rounded-br-sm text-sm shadow-sm">
-                                {RELIGION_OPTIONS.find(o => o.id === religion)?.label}
-                            </div>
-                        </div>
-                    )}
-                </>
-            )}
-
-            {/* Step 6: Schedule */}
-            {step >= 6 && (
-                <>
-                    <QuestionBubble>
-                        <strong>6. 일정 확인:</strong> <strong>장례 일정</strong>은 어떻게 계획하고 계신가요?
-                    </QuestionBubble>
-                    {step === 6 && (
-                        <div className="pl-10">
-                            {SCHEDULE_OPTIONS.map(opt => (
-                                <SelectButton
-                                    key={opt.id}
-                                    selected={schedule === opt.id}
-                                    onClick={() => { setSchedule(opt.id); }}
-                                    label={opt.label}
-                                    sub={opt.sub}
-                                />
-                            ))}
-                        </div>
-                    )}
-                    {step > 6 && schedule && (
-                        <div className="flex justify-end mb-3">
-                            <div className="bg-indigo-600 text-white px-4 py-2 rounded-2xl rounded-br-sm text-sm shadow-sm">
-                                {SCHEDULE_OPTIONS.find(o => o.id === schedule)?.label}
-                            </div>
-                        </div>
-                    )}
-                </>
-            )}
-
-            {/* Step 7: Services */}
-            {step >= 7 && (
-                <>
-                    <QuestionBubble>
-                        <strong>7. 추가 서비스:</strong> 추가적으로 필요한 서비스가 있으신가요?
-                    </QuestionBubble>
-                    {step === 7 && (
-                        <div className="pl-10">
-                            <div className="flex flex-wrap gap-2">
-                                {SERVICE_OPTIONS.map(opt => (
-                                    <button key={opt} onClick={() => toggleService(opt)} className={`py-2 px-3 text-xs rounded-full border transition-all ${services.includes(opt) ? 'bg-indigo-600 border-indigo-600 text-white font-bold' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
-                                        {opt}
-                                    </button>
+            {
+                step >= 4 && (
+                    <>
+                        <QuestionBubble>
+                            <strong>4. 규모 선택:</strong> 원활한 조문객 맞이를 위해 <strong>빈소 규모</strong>를 선택해 주세요.
+                        </QuestionBubble>
+                        {step === 4 && (
+                            <div className="pl-10">
+                                {FUNERAL_SCALE_OPTIONS.map(opt => (
+                                    <SelectButton
+                                        key={opt.id}
+                                        selected={scale === opt.id}
+                                        onClick={() => { setScale(opt.id); }}
+                                        label={opt.label}
+                                        sub={opt.sub}
+                                    />
                                 ))}
                             </div>
-                        </div>
-                    )}
-                    {step > 7 && services.length > 0 && (
-                        <div className="flex justify-end mb-3">
-                            <div className="bg-indigo-600 text-white px-4 py-2 rounded-2xl rounded-br-sm text-sm shadow-sm max-w-[80%] text-right">
-                                {services.join(', ')}
+                        )}
+                        {step > 4 && scale && (
+                            <div className="flex justify-end mb-3">
+                                <div className="bg-indigo-600 text-white px-4 py-2 rounded-2xl rounded-br-sm text-sm shadow-sm">
+                                    {FUNERAL_SCALE_OPTIONS.find(o => o.id === scale)?.label}
+                                </div>
                             </div>
-                        </div>
-                    )}
-                </>
-            )}
+                        )}
+                    </>
+                )
+            }
+
+            {/* Step 5: Religion */}
+            {
+                step >= 5 && (
+                    <>
+                        <QuestionBubble>
+                            <strong>5. 종교 선택:</strong> 장례 절차를 진행할 <strong>종교</strong>를 선택해 주세요.
+                        </QuestionBubble>
+                        {step === 5 && (
+                            <div className="pl-10 grid grid-cols-2 gap-2">
+                                {FUNERAL_RELIGION_OPTIONS.map(opt => (
+                                    <SelectButton
+                                        key={opt.id}
+                                        selected={religion === opt.id}
+                                        onClick={() => { setReligion(opt.id); }}
+                                        label={opt.label}
+                                        sub={opt.sub}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                        {step > 5 && religion && (
+                            <div className="flex justify-end mb-3">
+                                <div className="bg-indigo-600 text-white px-4 py-2 rounded-2xl rounded-br-sm text-sm shadow-sm">
+                                    {FUNERAL_RELIGION_OPTIONS.find(o => o.id === religion)?.label}
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )
+            }
+
+            {/* Step 6: Schedule */}
+            {
+                step >= 6 && (
+                    <>
+                        <QuestionBubble>
+                            <strong>6. 일정 확인:</strong> <strong>장례 일정</strong>은 어떻게 계획하고 계신가요?
+                        </QuestionBubble>
+                        {step === 6 && (
+                            <div className="pl-10">
+                                {FUNERAL_SCHEDULE_OPTIONS.map(opt => (
+                                    <SelectButton
+                                        key={opt.id}
+                                        selected={schedule === opt.id}
+                                        onClick={() => { setSchedule(opt.id); }}
+                                        label={opt.label}
+                                        sub={opt.sub}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                        {step > 6 && schedule && (
+                            <div className="flex justify-end mb-3">
+                                <div className="bg-indigo-600 text-white px-4 py-2 rounded-2xl rounded-br-sm text-sm shadow-sm">
+                                    {FUNERAL_SCHEDULE_OPTIONS.find(o => o.id === schedule)?.label}
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )
+            }
+
+            {/* Step 7: Services */}
+            {
+                step >= 7 && (
+                    <>
+                        <QuestionBubble>
+                            <strong>7. 추가 서비스:</strong> 추가적으로 필요한 서비스가 있으신가요?
+                        </QuestionBubble>
+                        {step === 7 && (
+                            <div className="pl-10">
+                                <div className="flex flex-wrap gap-2">
+                                    {FUNERAL_SERVICE_OPTIONS.map(opt => (
+                                        <button key={opt} onClick={() => toggleService(opt)} className={`py-2 px-3 text-xs rounded-full border transition-all ${services.includes(opt) ? 'bg-indigo-600 border-indigo-600 text-white font-bold' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+                                            {opt}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        {step > 7 && services.length > 0 && (
+                            <div className="flex justify-end mb-3">
+                                <div className="bg-indigo-600 text-white px-4 py-2 rounded-2xl rounded-br-sm text-sm shadow-sm max-w-[80%] text-right">
+                                    {services.join(', ')}
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )
+            }
 
             {/* Step 8: Summary */}
-            {step === 8 && (
-                <>
-                    <QuestionBubble>
-                        <strong>8. 최종 확인:</strong> 입력하신 내용을 확인해 주세요. 아래 내용이 맞으시면 <strong>상담 접수</strong> 버튼을 눌러주세요.
-                    </QuestionBubble>
-                    <div className="pl-10">
-                        <div className="bg-white border-2 border-indigo-200 rounded-xl p-4 space-y-2">
-                            <div className="flex justify-between text-sm border-b border-slate-100 pb-2">
-                                <span className="text-slate-500">현재 상황</span>
-                                <span className="font-bold text-slate-800">{URGENCY_OPTIONS.find(o => o.id === urgency)?.label}</span>
-                            </div>
-                            {deceasedLocation && (
+            {
+                step === 8 && (
+                    <>
+                        <QuestionBubble>
+                            <strong>8. 최종 확인:</strong> 입력하신 내용을 확인해 주세요. 아래 내용이 맞으시면 <strong>상담 접수</strong> 버튼을 눌러주세요.
+                        </QuestionBubble>
+                        <div className="pl-10">
+                            <div className="bg-white border-2 border-indigo-200 rounded-xl p-4 space-y-2">
                                 <div className="flex justify-between text-sm border-b border-slate-100 pb-2">
-                                    <span className="text-slate-500">고인 위치</span>
-                                    <span className="font-bold text-slate-800">{deceasedLocation} {needsAmbulance ? '(🚑 운구 필요)' : ''}</span>
+                                    <span className="text-slate-500">현재 상황</span>
+                                    <span className="font-bold text-slate-800">{FUNERAL_URGENCY_OPTIONS.find(o => o.id === urgency)?.label}</span>
                                 </div>
-                            )}
-                            <div className="flex justify-between text-sm border-b border-slate-100 pb-2">
-                                <span className="text-slate-500">추천 지역</span>
-                                <span className="font-bold text-slate-800">{location}</span>
-                            </div>
-                            <div className="flex justify-between text-sm border-b border-slate-100 pb-2">
-                                <span className="text-slate-500">희망 규모</span>
-                                <span className="font-bold text-slate-800">{SCALE_OPTIONS.find(o => o.id === scale)?.label}</span>
-                            </div>
-                            <div className="flex justify-between text-sm border-b border-slate-100 pb-2">
-                                <span className="text-slate-500">종교</span>
-                                <span className="font-bold text-slate-800">{RELIGION_OPTIONS.find(o => o.id === religion)?.label}</span>
-                            </div>
-                            <div className="flex justify-between text-sm border-b border-slate-100 pb-2">
-                                <span className="text-slate-500">장례 일정</span>
-                                <span className="font-bold text-slate-800">{SCHEDULE_OPTIONS.find(o => o.id === schedule)?.label}</span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                                <span className="text-slate-500">부대시설</span>
-                                <span className="font-bold text-slate-800">{services.join(', ') || '선택 없음'}</span>
+                                {deceasedLocation && (
+                                    <div className="flex justify-between text-sm border-b border-slate-100 pb-2">
+                                        <span className="text-slate-500">고인 위치</span>
+                                        <span className="font-bold text-slate-800">{deceasedLocation} {needsAmbulance ? '(🚑 운구 필요)' : ''}</span>
+                                    </div>
+                                )}
+                                <div className="flex justify-between text-sm border-b border-slate-100 pb-2">
+                                    <span className="text-slate-500">추천 지역</span>
+                                    <span className="font-bold text-slate-800">{location}</span>
+                                </div>
+                                <div className="flex justify-between text-sm border-b border-slate-100 pb-2">
+                                    <span className="text-slate-500">희망 규모</span>
+                                    <span className="font-bold text-slate-800">{FUNERAL_SCALE_OPTIONS.find(o => o.id === scale)?.label}</span>
+                                </div>
+                                <div className="flex justify-between text-sm border-b border-slate-100 pb-2">
+                                    <span className="text-slate-500">종교</span>
+                                    <span className="font-bold text-slate-800">{FUNERAL_RELIGION_OPTIONS.find(o => o.id === religion)?.label}</span>
+                                </div>
+                                <div className="flex justify-between text-sm border-b border-slate-100 pb-2">
+                                    <span className="text-slate-500">장례 일정</span>
+                                    <span className="font-bold text-slate-800">{FUNERAL_SCHEDULE_OPTIONS.find(o => o.id === schedule)?.label}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-slate-500">부대시설</span>
+                                    <span className="font-bold text-slate-800">{services.join(', ') || '선택 없음'}</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </>
-            )}
+                    </>
+                )
+            }
 
             {/* Step 8: Final Summary & Submit */}
-            {step === 8 && (
-                <div className="pl-10 space-y-4">
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm space-y-2">
-                        <h4 className="font-bold text-slate-800 mb-2 border-b border-slate-200 pb-2">입력하신 정보를 확인해주세요</h4>
-                        <div className="grid grid-cols-[80px_1fr] gap-y-1">
-                            <span className="text-slate-500">상황:</span>
-                            <span className="font-medium text-slate-800">
-                                {urgency === 'deceased' ? '임종 발생 (긴급)' :
-                                    urgency === 'imminent' ? '임종 임박 (준비)' : '단순 문의'}
-                            </span>
+            {
+                step === 8 && (
+                    <div className="pl-10 space-y-4">
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm space-y-2">
+                            <h4 className="font-bold text-slate-800 mb-2 border-b border-slate-200 pb-2">입력하신 정보를 확인해주세요</h4>
+                            <div className="grid grid-cols-[80px_1fr] gap-y-1">
+                                <span className="text-slate-500">상황:</span>
+                                <span className="font-medium text-slate-800">
+                                    {urgency === 'deceased' ? '임종 발생 (긴급)' :
+                                        urgency === 'imminent' ? '임종 임박 (준비)' : '단순 문의'}
+                                </span>
 
-                            {deceasedLocation && (
-                                <>
-                                    <span className="text-slate-500">고인 위치:</span>
-                                    <span className="font-medium text-slate-800">{deceasedLocation}</span>
-                                </>
-                            )}
+                                {deceasedLocation && (
+                                    <>
+                                        <span className="text-slate-500">고인 위치:</span>
+                                        <span className="font-medium text-slate-800">{deceasedLocation}</span>
+                                    </>
+                                )}
 
-                            <span className="text-slate-500">희망 지역:</span>
-                            <span className="font-medium text-slate-800">{location}</span>
+                                <span className="text-slate-500">희망 지역:</span>
+                                <span className="font-medium text-slate-800">{location}</span>
 
-                            <span className="text-slate-500">예상 조문:</span>
-                            <span className="font-medium text-slate-800">{scale}</span>
+                                <span className="text-slate-500">예상 조문:</span>
+                                <span className="font-medium text-slate-800">{scale}</span>
 
-                            <span className="text-slate-500">종교:</span>
-                            <span className="font-medium text-slate-800">{religion}</span>
+                                <span className="text-slate-500">종교:</span>
+                                <span className="font-medium text-slate-800">{religion}</span>
 
-                            <span className="text-slate-500">장례 일정:</span>
-                            <span className="font-medium text-slate-800">{schedule}</span>
+                                <span className="text-slate-500">장례 일정:</span>
+                                <span className="font-medium text-slate-800">{schedule}</span>
 
-                            <span className="text-slate-500">필요 서비스:</span>
-                            <span className="font-medium text-slate-800">
-                                {services.length > 0 ? services.join(', ') : '선택 없음'}
-                            </span>
+                                <span className="text-slate-500">필요 서비스:</span>
+                                <span className="font-medium text-slate-800">
+                                    {services.length > 0 ? services.join(', ') : '선택 없음'}
+                                </span>
+                            </div>
                         </div>
+                        <p className="text-xs text-slate-500 text-center">
+                            위 내용으로 상담을 접수하고<br />
+                            맞춤 장례식장 추천을 받으시겠습니까?
+                        </p>
                     </div>
-                    <p className="text-xs text-slate-500 text-center">
-                        위 내용으로 상담을 접수하고<br />
-                        맞춤 장례식장 추천을 받으시겠습니까?
-                    </p>
-                </div>
-            )}
+                )
+            }
 
             {/* Navigation */}
-            {step < 8 && (
-                <div className="pl-10 pt-2 flex gap-2">
-                    {step > 1 && <button onClick={() => {
-                        // [FIX] Previous button logic
-                        if (step === 3 && (urgency !== 'deceased' && urgency !== 'imminent')) {
-                            // If simple inquiry, go back to Step 1 (skip Step 2)
-                            setStep(1);
-                        } else {
-                            setStep(prev => prev - 1);
-                        }
-                    }} className="px-3 py-3 text-slate-500 text-xs hover:bg-slate-100 rounded-xl border border-slate-200 transition">이전</button>}
-                    <button
-                        onClick={handleNext}
-                        disabled={
-                            (step === 1 && !urgency) ||
-                            (step === 2 && !deceasedLocation) ||
-                            (step === 3 && !location) ||
-                            (step === 4 && !scale) ||
-                            (step === 5 && !religion) ||
-                            (step === 6 && !schedule)
-                        }
-                        className="flex-1 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-bold py-3 rounded-xl shadow-md transition-all"
-                    >
-                        {step === 7 ? '마지막 확인 →' : '다음 질문으로 →'}
-                    </button>
-                </div>
-            )}
+            {
+                step < 8 && (
+                    <div className="pl-10 pt-2 flex gap-2">
+                        {step > 1 && <button onClick={() => {
+                            // [FIX] Previous button logic
+                            if (step === 3 && (urgency !== 'deceased' && urgency !== 'imminent')) {
+                                // If simple inquiry, go back to Step 1 (skip Step 2)
+                                setStep(1);
+                            } else {
+                                setStep(prev => prev - 1);
+                            }
+                        }} className="px-3 py-3 text-slate-500 text-xs hover:bg-slate-100 rounded-xl border border-slate-200 transition">이전</button>}
+                        <button
+                            onClick={handleNext}
+                            disabled={
+                                (step === 1 && !urgency) ||
+                                (step === 2 && !deceasedLocation) ||
+                                (step === 3 && !location) ||
+                                (step === 4 && !scale) ||
+                                (step === 5 && !religion) ||
+                                (step === 6 && !schedule)
+                            }
+                            className="flex-1 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-bold py-3 rounded-xl shadow-md transition-all"
+                        >
+                            {step === 7 ? '마지막 확인 →' : '다음 질문으로 →'}
+                        </button>
+                    </div>
+                )
+            }
 
             {/* Submit button on summary step */}
-            {step === 8 && (
-                <div className="pl-10 pt-2 flex gap-2">
-                    <button onClick={() => setStep(7)} className="px-3 py-3 text-slate-500 text-xs hover:bg-slate-100 rounded-xl border border-slate-200 transition">수정하기</button>
-                    <button
-                        onClick={handleSubmit}
-                        disabled={isSaving}
-                        className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
-                    >
-                        {isSaving ? <Loader2 size={18} className="animate-spin" /> : <><Check size={18} /> 상담 접수하기</>}
-                    </button>
-                </div>
-            )}
-        </div>
+            {
+                step === 8 && (
+                    <div className="pl-10 pt-2 flex gap-2">
+                        <button onClick={() => setStep(7)} className="px-3 py-3 text-slate-500 text-xs hover:bg-slate-100 rounded-xl border border-slate-200 transition">수정하기</button>
+                        <button
+                            onClick={handleSubmit}
+                            disabled={isSaving}
+                            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+                        >
+                            {isSaving ? <Loader2 size={18} className="animate-spin" /> : <><Check size={18} /> 상담 접수하기</>}
+                        </button>
+                    </div>
+                )
+            }
+        </div >
     );
 };
 
