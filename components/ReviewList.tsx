@@ -4,6 +4,7 @@ import { getReviewsBySpace, deleteReview } from '../lib/queries';
 import { Review } from '../types';
 import { Loader2 } from 'lucide-react';
 import { useUser } from '../lib/auth';
+import { toast } from 'sonner'; // [NEW]
 
 interface Props {
     spaceId: string;
@@ -44,8 +45,9 @@ export const ReviewList: React.FC<Props> = ({ spaceId, refreshTrigger }) => {
         try {
             await deleteReview(id); // Fixed: deleteReview only takes id
             setReviews(prev => prev.filter(r => r.id !== id));
+            toast.success('리뷰가 삭제되었습니다.');
         } catch (err) {
-            alert('리뷰 삭제 중 오류가 발생했습니다.');
+            toast.error('리뷰 삭제 중 오류가 발생했습니다.');
         }
     };
 

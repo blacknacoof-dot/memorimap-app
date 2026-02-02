@@ -170,8 +170,40 @@ export const sendMessageToGemini = async (
   const userMsg = message.trim();
 
   // ==========================================
-  // [PRIORITY CHECK] Form Submissions (Before Keyword Matching)
+  // [SANGJO BUTTON ACTIONS]
   // ==========================================
+
+  // 1. 상품 안내 (Product Info)
+  if (userMsg.includes("상품 종류") || userMsg.includes("상품 안내")) {
+    return {
+      text: "저희 상조의 대표 상품들을 안내해 드립니다.\n원하시는 상품을 선택하시면 상세 정보를 확인하실 수 있습니다.",
+      action: 'SHOW_PRODUCTS'
+    };
+  }
+
+  // 2. 긴급 접수 (Urgent Dispatch)
+  if (userMsg.includes("긴급 장례 접수") || userMsg.includes("긴급 접수")) {
+    return {
+      text: "🚨 긴급 장례 접수가 필요하시군요.\n\n가장 가까운 의전 팀을 즉시 배정하기 위해 **현재 계신 위치와 연락처**를 확인해 주세요.\n(24시간 긴급 콜센터가 즉시 연락드립니다)",
+      action: 'URGENT_DISPATCH'
+    };
+  }
+
+  // 3. 장례 절차 (Process Guide)
+  if (userMsg.includes("장례 절차")) {
+    return {
+      text: "일반적인 3일장 절차에 대해 안내해 드리겠습니다.\n\n임종 직후부터 발인까지, 상주님께서 준비하셔야 할 사항들을 정리했습니다.",
+      action: 'SHOW_PROCESS' as any
+    };
+  }
+
+  // 4. 상담 예약 (Consultation)
+  if (userMsg.includes("상담원 연결") || userMsg.includes("상담 예약")) {
+    return {
+      text: "전문 장례지도사와 상담을 연결해 드리겠습니다.\n\n**원하시는 상담 방식**을 선택해 주세요.\n(전화 상담은 10분 내로 연락드리며, 채팅 상담은 실시간으로 진행됩니다.)",
+      action: 'RESERVE'
+    };
+  }
 
   if (userMsg.includes("[🚨 장례식장 찾기]") || userMsg.includes("장례식장 추천") || userMsg.includes("찾아")) {
     // 1. Detect Region from Message (Advanced Parsing for Dong/Gu)

@@ -5,6 +5,7 @@ import { X, Star, Phone, MessageCircleQuestion, Heart, Share2, CheckCircle2, Shi
 import { ReviewCard } from './ReviewCard';
 import { useSangjoFavoriteStore } from '../stores/useSangjoFavoriteStore';
 import { sangjoFavoriteService } from '../services/sangjoFavoriteService';
+import { toast } from 'sonner'; // [NEW] Use sonner for toasts
 
 interface Props {
     company: FuneralCompany;
@@ -18,6 +19,13 @@ interface Props {
 
 export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenAIConsult, onOpenContract, currentUser, isLoggedIn = false, onOpenLogin }) => {
     const [activeTab, setActiveTab] = useState<'info' | 'gallery' | 'reviews' | 'benefits' | 'price'>('info');
+
+    // [NEW] Local state for reviews to avoid page reload
+    const [localReviews, setLocalReviews] = useState(company.reviews || []);
+
+    useEffect(() => {
+        setLocalReviews(company.reviews || []);
+    }, [company.reviews]);
 
     // [Change] Using global store for favorite state
     const { favoritedIds, toggleFavorite: storeToggleFavorite } = useSangjoFavoriteStore();
@@ -58,7 +66,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                 content: reviewContent
             });
 
-            await createReview(
+            const newReview = await createReview(
                 company.id,
                 currentUser.id,
                 reviewRating,
@@ -67,13 +75,27 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                 [] // images array
             );
 
-            alert('소중한 후기가 등록되었습니다!');
+            // [FIX] Instant UI update + Toast
+            toast.success('소중한 후기가 등록되었습니다!');
+
+            // Optimistic Update (Use returned data if possible, or construct mock)
+            const createdReview = newReview || {
+                id: `temp-${Date.now()}`,
+                userId: currentUser.id,
+                userName: currentUser.fullName || currentUser.firstName || '익명',
+                rating: reviewRating,
+                content: reviewContent,
+                date: new Date().toISOString().split('T')[0],
+                images: []
+            };
+
+            setLocalReviews(prev => [createdReview, ...prev]);
+
             setIsWritingReview(false);
             setReviewContent('');
-            window.location.reload();
         } catch (error) {
             console.error('Review submission failed:', error);
-            alert('후기 등록 중 오류가 발생했습니다.');
+            toast.error('후기 등록 중 오류가 발생했습니다.');
         } finally {
             setIsSubmittingReview(false);
         }
@@ -480,8 +502,8 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                                 // console.log('[FuneralCompanySheet] Review count:', company.reviewCount);
                                 // console.log('[FuneralCompanySheet] Company ID:', company.id);
 
-                                if (company.reviews && company.reviews.length > 0) {
-                                    return company.reviews.map(review => (
+                                if (localReviews && localReviews.length > 0) {
+                                    return localReviews.map(review => (
                                         <ReviewCard
                                             key={review.id}
                                             review={review}
@@ -490,11 +512,13 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                                                 try {
                                                     const { deleteReview } = await import('../lib/queries');
                                                     await deleteReview(reviewId);
-                                                    alert('리뷰가 삭제되었습니다.');
-                                                    window.location.reload();
+
+                                                    // [FIX] Instant UI update + Toast
+                                                    toast.success('리뷰가 삭제되었습니다.');
+                                                    setLocalReviews(prev => prev.filter(r => r.id !== reviewId));
                                                 } catch (error) {
                                                     console.error('Failed to delete review:', error);
-                                                    alert('리뷰 삭제에 실패했습니다.');
+                                                    toast.error('리뷰 삭제에 실패했습니다.');
                                                 }
                                             }}
                                         />
