@@ -77,6 +77,13 @@ const FuneralSearchForm: React.FC<FormProps> = ({
     const [showSuggestions, setShowSuggestions] = useState(false);
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
+    // [FIX] Auto-fill location context if facility context exists
+    useEffect(() => {
+        if (facilityName && (!location || location === '')) {
+            setLocation(facilityName);
+        }
+    }, [facilityName]);
+
     useEffect(() => {
         const queryText = step === 2 ? deceasedLocation : location;
         if (!queryText || queryText.length < 2) {
@@ -101,16 +108,27 @@ const FuneralSearchForm: React.FC<FormProps> = ({
     const handleNext = () => {
         if (step === 1) {
             if (!urgency) return;
-            // [FIX] 'inquiry'일 때도 Step 3에서 멈추도록 step 상태만 변경 (UI 조건문은 JSX에서 처리)
             if (urgency === 'deceased' || urgency === 'imminent') {
                 setStep(2);
             } else {
-                setStep(3); // Skip deceased location for simple inquiry
+                // [FIX] Skip Step 2 & 3 if facilityId is present (Simple Inquiry)
+                if (facilityId) {
+                    setStep(4);
+                } else {
+                    setStep(3);
+                }
             }
             return;
         }
         if (step === 2) {
             if (!deceasedLocation) return;
+
+            // [FIX] Skip Region Step if Facility is Pre-selected
+            if (facilityId) {
+                setStep(4);
+                return;
+            }
+
             setStep(3);
             return;
         }
@@ -143,7 +161,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
             religion,
             schedule,
             services,
-            notes: `운구차필요: ${needsAmbulance ? '예' : '아니오'}, 고인위치: ${deceasedLocation}`
+            notes: `운구차필요: ${needsAmbulance ? '예' : '아니오'}, 고인위치: ${deceasedLocation}, 접수시설: ${facilityName || '미지정'}`
         };
 
         const urgencyLabel = FUNERAL_URGENCY_OPTIONS.find(o => o.id === urgency)?.label || urgency;
@@ -156,7 +174,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
             `|---|---|\n` +
             `| 상황 | ${urgencyLabel} |\n` +
             `${deceasedLocation ? `| 고인 위치 | ${deceasedLocation} |\n` : ''}` +
-            `| 지역 설정 | ${location} |\n` +
+            `| 지역 설정 | ${location} (해당시설 접수) |\n` +
             `| 희망 규모 | ${scaleLabel} |\n` +
             `| 종교 | ${religionLabel} |\n` +
             `| 일정 | ${scheduleLabel} |\n` +
@@ -167,38 +185,60 @@ const FuneralSearchForm: React.FC<FormProps> = ({
         setIsSaving(false);
         setIsSubmitted(true); // Show success view
 
+        // [FIX] For facility-specific consultations, save directly to DB
+        if (facilityId && currentUser) {
+            try {
+                // Direct INSERT into consultations table
+                const { createClient } = await import('@supabase/supabase-js');
+                const supabase = createClient(
+                    import.meta.env.VITE_SUPABASE_URL,
+                    import.meta.env.VITE_SUPABASE_ANON_KEY
+                );
+
+                const consultationData = {
+                    user_id: currentUser.id, // Clerk ID
+                    facility_id: facilityId, // UUID
+                    user_name: currentUser.firstName || 'Unknown',
+                    user_phone: currentUser.phoneNumbers?.[0]?.phoneNumber || 'N/A',
+                    status: 'pending',
+                    notes: finalText // Store full consultation details
+                };
+
+                const { error: dbError } = await supabase
+                    .from('consultations')
+                    .insert([consultationData]);
+
+                if (dbError) {
+                    console.error('[FuneralSearchForm] Failed to save consultation:', dbError);
+                } else {
+                    console.log('[FuneralSearchForm] Consultation saved successfully to facility:', facilityId);
+                }
+            } catch (e) {
+                console.error('[FuneralSearchForm] Exception saving consultation:', e);
+            }
+        }
+
         // [FIX] Fetch recommendations inside the form instead of auto-closing
         setIsLoadingRecommendations(true);
         try {
-            // Use getIntelligentRecommendations for better results
-            // Adjust arguments as needed: lat, lng, category, regionText
-            // Assuming we have location text, let's try to get coordinates or just use region text if API supports it
-            // For now, falling back to a region-based search or similar if intelligent search needs coordinates
-            // NOTE: getIntelligentRecommendations needs lat/lng. If we don't have them, we might need a geocoding step or use a simpler query.
-            // Let's assume we can use the region text for a simple search or if we have userLocation (which we don't in props yet, maybe need to add).
-            // For this implementation, let's assume we use the region text to find facilities.
-            // If getIntelligentRecommendations requires lat/lng, we might need to fetch them.
-            // Let's use getFuneralFacilities (which seems to exist or we can use a similar one).
-            // Actually, querying by region text directly might be best if available.
-            // Let's use `getFuneralFacilitiesByRegion` if available, or fetch all and filter (inefficient).
-            // Better: use `getDistinctRegions` to get list, but we need facilities.
-
-            // Let's import getIntelligentRecommendations from lib/queries
-            // We need lat/lng. If not available, maybe skip or use defaults?
-            // Let's try to pass 0,0 and region text if the API supports filtering by region text logic inside.
-            // Wait, getIntelligentRecommendations implementation in queries.ts:
-            // "export const getIntelligentRecommendations = async (lat: number, lng: number, category?: string, regionText?: string)"
-            // It seems it CAN take regionText.
-            const recs = await getIntelligentRecommendations(0, 0, 'funeral_home', location);
-            setRecommendedFacilities(recs.slice(0, 3));
+            if (facilityId && facilityName) {
+                // Direct Recommendation (The facility itself)
+                setRecommendedFacilities([{
+                    id: facilityId || 'current',
+                    name: facilityName,
+                    address: '현재 상담 중인 시설',
+                    phone: '010-0000-0000', // Placeholder
+                    facilityId: facilityId
+                }]);
+            } else {
+                const recs = await getIntelligentRecommendations(0, 0, 'funeral_home', location);
+                setRecommendedFacilities(recs.slice(0, 3));
+            }
         } catch (e) {
             console.error("Failed to fetch recommendations", e);
         } finally {
             setIsLoadingRecommendations(false);
         }
-
-        // [REMOVED] Auto-close timeout
-        // setTimeout(() => { onClose?.(); }, 1500);
     };
 
     const handleReset = () => {
@@ -207,12 +247,13 @@ const FuneralSearchForm: React.FC<FormProps> = ({
         setUrgency('');
         setDeceasedLocation('');
         setNeedsAmbulance(null);
-        setLocation('');
+        // Reset location only if NO facilityId
+        if (!facilityId) setLocation('');
         setScale('');
         setReligion('');
         setSchedule('');
         setServices([]);
-        setRecommendedFacilities([]); // Clear recommendations on reset
+        setRecommendedFacilities([]);
     };
 
     // Chat bubble style for AI question
@@ -280,8 +321,63 @@ const FuneralSearchForm: React.FC<FormProps> = ({
     }
 
     // Step 6: Completion Screen (fallback if onClose not provided)
-    // [FIX] Render In-Form Recommendations on Success
+    // [FIX] Different UI for facility-specific vs general consultations
     if (isSubmitted) {
+        // [CASE 1] Facility-specific consultation: Show completion only
+        if (facilityId && facilityName) {
+            return (
+                <div className="space-y-4 animate-in fade-in zoom-in duration-300">
+                    <QuestionBubble>
+                        ✅ <strong>상담 접수 완료!</strong><br />
+                        <strong>{facilityName}</strong>에 상담 요청이 전달되었습니다.<br />
+                        담당자가 확인 후 연락드리겠습니다.
+                    </QuestionBubble>
+
+                    <div className="pl-10">
+                        <div className="bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-200 rounded-xl p-5 space-y-3">
+                            <div className="flex items-center gap-2 text-indigo-900 font-bold text-sm">
+                                <Check size={18} className="text-indigo-600" />
+                                접수 내역
+                            </div>
+                            <div className="space-y-1.5 text-xs">
+                                <div className="flex justify-between">
+                                    <span className="text-slate-600">시설명</span>
+                                    <span className="font-bold text-slate-900">{facilityName}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-slate-600">상황</span>
+                                    <span className="font-medium text-slate-800">{FUNERAL_URGENCY_OPTIONS.find(o => o.id === urgency)?.label}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-slate-600">희망 규모</span>
+                                    <span className="font-medium text-slate-800">{FUNERAL_SCALE_OPTIONS.find(o => o.id === scale)?.label}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-slate-600">종교</span>
+                                    <span className="font-medium text-slate-800">{FUNERAL_RELIGION_OPTIONS.find(o => o.id === religion)?.label}</span>
+                                </div>
+                            </div>
+                            <div className="pt-2 border-t border-indigo-200">
+                                <p className="text-[10px] text-slate-500 text-center">
+                                    💼 시설 대시보드 및 마이페이지에서 확인 가능합니다
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="pl-10 pt-2">
+                        <button
+                            onClick={onClose}
+                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-3.5 rounded-xl shadow-lg transition-all"
+                        >
+                            확인
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // [CASE 2] General search: Show recommendations
         return (
             <div className="space-y-4 animate-in fade-in zoom-in duration-300">
                 <QuestionBubble>
