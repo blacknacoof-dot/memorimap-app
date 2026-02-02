@@ -1,6 +1,7 @@
 import React from 'react';
-import { Check, Scale, Award, Bot, Database } from 'lucide-react';
+import { Check, Scale, Award, Bot } from 'lucide-react';
 import { Facility } from '../types';
+import { OptimizedImage } from './ui/OptimizedImage';
 
 interface FacilityItemProps {
     facility: Facility;
@@ -18,12 +19,15 @@ export const FacilityItem = React.memo(({ facility, onClick, isCompared, onToggl
                 className="bg-white p-4 rounded-xl shadow-sm border flex gap-4 cursor-pointer hover:bg-gray-50 transition-colors group h-full"
             >
                 {facility.imageUrl && !facility.imageUrl.includes('placeholder') && !facility.imageUrl.includes('via.placeholder') ? (
-                    <img
+                    <OptimizedImage
                         src={facility.imageUrl}
-                        className="w-20 h-20 object-cover rounded-lg bg-gray-200 shrink-0"
                         alt={facility.name}
+                        width={80}
+                        height={80}
+                        className="rounded-lg shrink-0"
+                        objectFit="cover"
                         loading="lazy"
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        fallbackSrc="/images/defaults/funeral/funeral_1.jpg"
                     />
                 ) : (
                     <div className="w-20 h-20 rounded-lg bg-gray-100 shrink-0 flex items-center justify-center text-gray-400 text-[10px] text-center px-1">
