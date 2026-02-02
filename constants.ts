@@ -42,7 +42,7 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     name: '더케이예다함',
     rating: 4.9,
     reviewCount: 960,
-    imageUrl: '/images/logos/예다함상조.JPG',
+    imageUrl: 'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/sangjo/18f5fd6b-d5e4-45a1-9707-302ae85cefd7.JPG?t=1770005248213',
     description: '한국교직원공제회가 연대보증하는 정직한 상조 서비스',
     features: ["전국 의전망", "24시간 상담", "페이백 시스템"],
     phone: '1566-6644',
@@ -54,7 +54,7 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     name: '보람상조개발',
     rating: 4.9,
     reviewCount: 950,
-    imageUrl: '/images/logos/보람상조.JPG',
+    imageUrl: 'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/sangjo/22d3f507-e92e-425a-ac31-bf89a546ad22.JPG?t=1770005248966',
     description: '국가대표 상조기업, 30년 전통의 품격 있는 장례 서비스',
     features: ["전국 의전망", "24시간 상담", "사이버추모관"],
     phone: '1588-7979',
@@ -63,10 +63,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
   },
   {
     id: 'fc_post_1',
-    name: '바른후불상조',
+    name: '바른라이프',
     rating: 4.9,
     reviewCount: 150,
-    imageUrl: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=800',
+    imageUrl: 'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/sangjo/bareun_life.JPG?t=1770006464299',
     description: '가입비 없는 정직한 후불제 상조',
     features: ["후불제", "즉시 출동", "무가입"],
     phone: '1666-0000',
@@ -78,7 +78,7 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     name: '3일의약속',
     rating: 4.8,
     reviewCount: 320,
-    imageUrl: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=800',
+    imageUrl: 'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/sangjo/promise_3days.JPG?t=1770006705845',
     description: '조선미디어그룹이 보증하는 후불 상조',
     features: ["후불제", "대기업 보증", "투명한 정산"],
     phone: '1668-0000',
@@ -90,7 +90,7 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     name: '착한상조',
     rating: 4.8,
     reviewCount: 89,
-    imageUrl: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=800',
+    imageUrl: 'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/sangjo/good_sangjo_1770009186749.jpg',
     description: '거품 뺀 실속형 후불제 상조',
     features: ["후불제", "최저가 보장", "24시간 대기"],
     phone: '1566-0000',
@@ -230,18 +230,7 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     priceRange: '문의',
     benefits: ["회원 전용 혜택"]
   },
-  {
-    id: 'fc_new_17',
-    name: '에이치디투어존',
-    rating: 4.7,
-    reviewCount: 830,
-    imageUrl: '/images/logos/fc_new_17.png',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
-    benefits: ["회원 전용 혜택"]
-  },
+
   {
     id: 'fc_new_18',
     name: '휴먼라이프',
@@ -557,16 +546,16 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     benefits: ["회원 전용 혜택"]
   },
   {
-    id: 'fc_new_46',
-    name: '새부산상조',
-    rating: 4.1,
-    reviewCount: 540,
-    imageUrl: '/images/logos/fc_new_46.png',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
+    id: 'fc_new_47',
+    name: '상조114',
+    rating: 4.6,
+    reviewCount: 450,
+    imageUrl: 'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/sangjo/sangjo_114.JPG?t=1770006464561',
+    description: '합리적인 가격과 실속 있는 상품 구성을 자랑하는 상조 서비스',
+    features: ["합리적 가격", "실속 구성", "24시간 상담"],
     phone: '1588-0000',
     priceRange: '문의',
-    benefits: ["회원 전용 혜택"]
+    benefits: ["온라인 가입 추가 할인"]
   }
 ];
 

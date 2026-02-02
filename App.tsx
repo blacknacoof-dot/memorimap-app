@@ -12,6 +12,7 @@ import { RecommendationStarter } from './components/RecommendationStarter';
 import { Consultation } from './types/consultation';
 import { Map as MapIcon, List, User, Settings, Menu, X, Plus, Search, ChevronRight, Star, Share2, Navigation, Phone, Calendar, Clock, Info, Check, AlertCircle, Loader2, ArrowLeft, Building2, ExternalLink, MessageCircle, Heart, Filter, Shield, AlertTriangle, ShieldAlert, Ticket, Crosshair, Award, Scale, Database, Bell } from 'lucide-react';
 import { NotificationCenter } from './components/NotificationCenter';
+import { Toaster, toast as sonnerToast } from 'sonner'; // [NEW] Global Toaster
 import { FACILITIES } from './constants';
 import { useUser, useClerk, useSession } from './lib/auth';
 import { supabase, isSupabaseConfigured, setSupabaseAuth } from './lib/supabaseClient';
@@ -1680,6 +1681,12 @@ const App: React.FC = () => {
           }
 
           {/* Overlays */}
+          {/* Global Toaster */}
+          <Toaster richColors position="top-center" closeButton />
+
+          {/* Notification Center (Overlay) */}
+          <NotificationCenter isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+
           <SideMenu
             isOpen={isMenuOpen}
             onClose={() => setIsMenuOpen(false)}
