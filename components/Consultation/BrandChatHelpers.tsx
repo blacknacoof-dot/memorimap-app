@@ -79,9 +79,9 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
 
     return (
         <div className="absolute inset-0 z-50 flex items-end justify-center sm:items-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
-            <div className={`bg-white w-full max-w-sm rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden animate-slideUp ${isUrgent ? 'border-2 border-red-500' : ''}`}>
+            <div className={`bg-white w-full max-w-sm rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden animate-slideUp flex flex-col max-h-[85vh] ${isUrgent ? 'border-2 border-red-500' : ''}`}>
                 {/* Modal Header */}
-                <div className={`${headerColor} text-white p-5 pt-6 shadow-md shrink-0 flex justify-between items-center relative overflow-hidden`}>
+                <div className={`${headerColor} text-white p-5 pt-6 shadow-md shrink-0 flex justify-between items-center relative overflow-hidden z-10`}>
                     {isUrgent && (
                         <div className="absolute top-0 right-0 p-4 opacity-10">
                             <Smartphone size={64} />
@@ -97,13 +97,13 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
                         </h3>
                         {isUrgent && <p className="text-xs text-white/80 mt-1">가장 가까운 의전 팀이 즉시 출동합니다.</p>}
                     </div>
-                    <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-full transition-colors z-10">
-                        <X size={24} className="text-white/80 hover:text-white" />
+                    <button onClick={onClose} type="button" className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-white/10 rounded-full transition-colors z-50">
+                        <X size={24} className="text-white" />
                     </button>
                 </div>
 
                 {/* Modal Body */}
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200">
                     {!isUrgent && (
                         <p className="text-sm text-gray-500 mb-4 bg-gray-50 p-3 rounded-lg flex gap-2">
                             <Info className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />

@@ -34,33 +34,50 @@ export const ChatMessage: React.FC<Props> = ({ message, isStreaming }) => {
                     )}
                 </div>
                 {message.recommendation && (
-                    <div className="mt-3 flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x scrollbar-hide">
+                    <div className="mt-3 flex gap-3 overflow-x-auto pb-4 -mx-1 px-1 snap-x scrollbar-hide">
                         {message.recommendation.map((company: FuneralCompany) => (
-                            <div key={company.id} className="snap-center min-w-[220px] bg-white rounded-xl border border-gray-200 shadow-sm flex-shrink-0 overflow-hidden">
-                                <div className="h-12 bg-gray-50 px-3 flex items-center justify-between border-b border-gray-100">
-                                    <div className="flex items-center gap-2">
-                                        <h3 className="font-bold text-gray-800 text-sm truncate max-w-[120px]">{company.name}</h3>
-                                    </div>
-                                    <div className="flex items-center text-yellow-500 text-xs font-bold">
-                                        <Star size={10} fill="currentColor" className="mr-0.5" />
-                                        {company.rating}
+                            <div key={company.id} className="snap-center min-w-[260px] w-[260px] bg-white rounded-xl border border-gray-200 shadow-lg flex-shrink-0 overflow-hidden flex flex-col">
+                                {/* Representative Image */}
+                                <div className="relative h-32 bg-gray-100">
+                                    <img
+                                        src={company.imageUrl || '/images/defaults/sangjo_default.jpg'}
+                                        alt={company.name}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).src = 'https://placehold.co/400x200?text=No+Image';
+                                        }}
+                                    />
+                                    <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-md flex items-center gap-1">
+                                        <Star size={10} className="text-yellow-400 fill-current" />
+                                        <span className="text-xs font-bold text-white">{company.rating}</span>
                                     </div>
                                 </div>
-                                <div className="p-3">
-                                    <p className="text-xs text-gray-500 mb-2 line-clamp-2 h-8">{company.description}</p>
-                                    <div className="flex items-baseline gap-1 mb-3">
-                                        <span className="font-bold text-primary">{company.priceRange}</span>
+
+                                <div className="p-4 flex flex-col flex-1">
+                                    <h3 className="font-bold text-gray-900 text-base mb-1 truncate">{company.name}</h3>
+
+                                    <p className="text-xs text-gray-500 mb-3 line-clamp-2 min-h-[2.5em]">
+                                        {company.description}
+                                    </p>
+
+                                    <div className="mt-auto pt-3 border-t border-gray-100">
+                                        {/* Tagline or Price Range */}
+                                        <div className="mb-3">
+                                            <span className="inline-block px-2 py-1 bg-amber-50 text-amber-700 text-[10px] font-bold rounded-sm">
+                                                {company.priceRange}
+                                            </span>
+                                        </div>
+
+                                        <button
+                                            onClick={() => {
+                                                const event = new CustomEvent('connectToPartner', { detail: company });
+                                                window.dispatchEvent(event);
+                                            }}
+                                            className="w-full bg-gray-900 hover:bg-black text-white py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] shadow-sm"
+                                        >
+                                            상담 연결 <ChevronRight size={14} />
+                                        </button>
                                     </div>
-                                    <button
-                                        onClick={() => {
-                                            // Dispatch native event to parent
-                                            const event = new CustomEvent('connectToPartner', { detail: company });
-                                            window.dispatchEvent(event);
-                                        }}
-                                        className="w-full bg-gray-900 text-white py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1 hover:bg-black transition-colors"
-                                    >
-                                        상담 연결 <ChevronRight size={12} />
-                                    </button>
                                 </div>
                             </div>
                         ))}

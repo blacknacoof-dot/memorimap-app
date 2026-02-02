@@ -131,13 +131,18 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
 
     // Existing prop-based redirect for Human companies
     // Use the new Genius ScenarioBot for individual companies
+    // Existing prop-based redirect for Human companies
+    // Use BrandChatInterface (Button Form Style) instead of ScenarioBot
     if (company && !company.id.startsWith('pet_')) {
         return (
-            <div className="fixed inset-0 z-[500] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-                <ScenarioBot
-                    partnerId={company.id}
-                    onClose={onClose}
-                />
+            <div className="fixed inset-0 bg-black/50 z-[300] flex items-center justify-center p-4">
+                <div className="bg-white rounded-2xl w-full h-[85vh] sm:h-[700px] max-w-md flex flex-col shadow-2xl overflow-hidden relative">
+                    <BrandChatInterface
+                        company={company}
+                        onClose={onClose}
+                        onBack={onClose}
+                    />
+                </div>
             </div>
         );
     }

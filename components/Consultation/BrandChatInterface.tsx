@@ -4,6 +4,23 @@ import { FuneralCompany } from '../../types';
 import { ConsultationForm, QuickMenuBtn } from './BrandChatHelpers';
 import { PetChatInterface } from './PetChatInterface';
 import { sendMessageToGemini, ChatMessage as GeminiMessage } from '../../services/geminiService';
+import { supabase } from '../../lib/supabaseClient'; // [NEW] DB Connection
+
+// [NEW] Chat Activity Logger
+const logChatEvent = async (companyId: string, eventType: string, payload: any = {}) => {
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        const { error } = await supabase.from('chat_events').insert({
+            partner_id: companyId,
+            event_type: eventType,
+            user_id: user?.id || null,
+            payload
+        });
+        if (error) console.error("Event Log Error:", error);
+    } catch (e) {
+        console.error("Event Log Failed:", e);
+    }
+};
 
 interface Props {
     company: FuneralCompany;
@@ -172,6 +189,15 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
                         data: BRAND_CONFIG.products // Use the company's products
                     }]);
                 }, 500);
+            } else if (response.action === 'SHOW_PROCESS') { // [NEW] Process Guide
+                setTimeout(() => {
+                    setMessages(prev => [...prev, {
+                        id: Date.now() + 1,
+                        sender: 'ai',
+                        text: response.text, // Use the text from AI servie
+                        type: 'process_guide'
+                    }]);
+                }, 500);
             } else if (response.action === 'MAP') {
                 // Simple Map Action Feedback
                 // Assuming map view is handled externally or just text info
@@ -203,6 +229,19 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
         const textToSend = msgText || input;
         if (!textToSend.trim()) return;
 
+        // [DB LOGGING] Track User Intent
+        if (textToSend.includes("상품 종류") || textToSend.includes("상품 안내")) {
+            logChatEvent(company.id, 'VIEW_PRODUCT', { type: 'quick_menu' });
+        } else if (textToSend.includes("긴급 장례 접수") || textToSend.includes("긴급 접수")) {
+            logChatEvent(company.id, 'EMERGENCY_REQUEST', { type: 'quick_menu' });
+        } else if (textToSend.includes("장례 절차")) {
+            logChatEvent(company.id, 'VIEW_PROCESS', { type: 'quick_menu' });
+        } else if (textToSend.includes("상담원 연결")) {
+            logChatEvent(company.id, 'CLICK_CONSULTATION', { type: 'quick_menu' });
+        } else {
+            // General Chat Log could be here
+        }
+
         setMessages(prev => [...prev, {
             id: Date.now(),
             sender: 'user',
@@ -220,8 +259,37 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
         }
     };
 
-    const handleFormSubmit = (formData: any) => {
+    const handleFormSubmit = async (formData: any) => {
         setIsFormOpen(false);
+        const { data: { user } } = await supabase.auth.getUser();
+
+        // [DB INSERT] Save to Dashboard Tables
+        try {
+            if (formMode === 'urgent' as any) {
+                const { error } = await supabase.from('emergency_requests').insert({
+                    partner_id: company.id,
+                    customer_name: formData.name,
+                    customer_phone: formData.phone,
+                    location: formData.deceasedLocation || formData.location || '위치 미지정',
+                    status: 'NEW'
+                });
+                if (error) console.error("Emergency DB Error:", error);
+            } else {
+                const { error } = await supabase.from('consultations').insert({
+                    partner_id: company.id,
+                    user_id: user?.id || null,
+                    customer_name: formData.name,
+                    customer_phone: formData.phone,
+                    reservation_type: formMode === 'phone' ? 'CALL' : 'CHAT',
+                    preferred_time: formData.time,
+                    status: 'PENDING',
+                    is_emergency: false
+                });
+                if (error) console.error("Consultation DB Error:", error);
+            }
+        } catch (err) {
+            console.error("DB Submission Failed:", err);
+        }
 
         if (formMode === 'phone') {
             setMessages(prev => [...prev, {
@@ -246,7 +314,7 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
             setMessages(prev => [...prev, {
                 id: Date.now(),
                 sender: 'system',
-                text: `🚨 [긴급 출동 접수] ${formData.name}님, ${formData.location}으로 즉시 출동합니다.`,
+                text: `🚨 [긴급 출동 접수] ${formData.name}님, ${formData.deceasedLocation || formData.location}으로 즉시 출동합니다.`,
                 type: 'text'
             }]);
 
@@ -496,24 +564,8 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
                     <QuickMenuBtn icon={<Clock className="w-5 h-5" />} label="상담 예약" onClick={() => handleSend("상담원 연결해줘")} active />
                 </div>
 
-                {/* Input */}
-                <div className="flex items-center gap-2 bg-gray-50 px-4 py-2.5 rounded-full border border-gray-200 focus-within:ring-2 focus-within:ring-[#005B50]/30 focus-within:border-[#005B50] transition-all">
-                    <input
-                        type="text"
-                        className="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400"
-                        placeholder="궁금한 내용을 입력하세요..."
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                    />
-                    <button
-                        onClick={() => handleSend()}
-                        disabled={!input.trim()}
-                        className={`p-2 rounded-full transition-colors ${input.trim() ? `${BRAND_CONFIG.themeColor} text-white` : 'bg-gray-200 text-gray-400'}`}
-                    >
-                        <Send className="w-4 h-4" />
-                    </button>
-                </div>
+                {/* Input Area Removed for Button-Only Interface */}
+                {/* <div className="flex items-center gap-2 bg-gray-50 px-4 py-2.5 rounded-full border border-gray-200 ..."> ... </div> */}
             </div>
 
             {/* Form Modal */}
