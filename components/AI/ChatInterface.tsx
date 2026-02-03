@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { sendMessageToGemini, ChatMessage } from '../../services/geminiService';
+import { supabase } from '../../lib/supabaseClient';
 import {
     MEMORIAL_TIMING_OPTIONS,
     MEMORIAL_RELIGION_OPTIONS,
@@ -266,6 +267,25 @@ export const ChatInterface: React.FC<Props> = ({
     const [formMode, setFormMode] = useState<'chat' | 'phone'>('chat');
     // [PDCA VERIFICATION] Trace ID Generator
     const generateTraceId = () => Math.random().toString(36).substring(2, 11).toUpperCase();
+
+    // [PDCA] System Logging Helper
+    const logToSystem = async (level: 'INFO' | 'WARN' | 'ERROR', message: string, traceId?: string, meta: any = {}) => {
+        try {
+            // Fire and forget - don't await execution to avoid blocking UI
+            supabase.from('system_logs').insert({
+                level,
+                message,
+                trace_id: traceId || 'UNKNOWN_TRACE',
+                meta,
+                source: 'client:ChatInterface'
+            }).then(({ error }) => {
+                if (error) console.error('Failed to log to system:', error);
+            });
+        } catch (e) {
+            console.error('Exception logging to system:', e);
+        }
+    };
+
     // [NEW] Track Urgent Booking Context (Date, Type)
     const [urgentBookingContext, setUrgentBookingContext] = useState<{ date?: string; type?: string }>({});
 
@@ -445,7 +465,7 @@ export const ChatInterface: React.FC<Props> = ({
 
     const handleSend = async (textOverride?: string | { text: string, data: any }) => {
         const traceId = generateTraceId(); // [PDCA] Generate Trace ID for this transaction
-        console.log(`[TRACE_ID:${traceId}] Action Started`);
+        logToSystem('INFO', 'Action Started', traceId, { intent: initialIntent, facilityId: facility.id }); // Replaced console.log
 
         const textToSend = typeof textOverride === 'object' ? textOverride.text : (textOverride || input);
         const structuredData = typeof textOverride === 'object' ? textOverride.data : null;
@@ -528,11 +548,11 @@ export const ChatInterface: React.FC<Props> = ({
                     setSearchContext(regionText);
                 }
 
-                console.log(`[TRACE_ID:${traceId}] 🔍 [Real DB Search] Start:`, { category, regionText });
+                logToSystem('INFO', 'Real DB Search Start', traceId, { category, regionText }); // Replaced console.log
 
                 // [PDCA HIGH] Strict Location Check (Global)
                 if (!regionText && !userLocation?.lat) {
-                    console.log(`[TRACE_ID:${traceId}] 🛑 Blocked: No Location Context`);
+                    logToSystem('WARN', 'Blocked: No Location Context', traceId); // Replaced console.log
                     aiMsg.action = 'NONE';
                     aiMsg.text = "원활한 추천을 위해 지역 정보가 필요합니다. \n\n어느 지역을 찾으시나요? (예: 일산, 강남구)";
                     setMessages(prev => [...prev, aiMsg]);
@@ -548,7 +568,7 @@ export const ChatInterface: React.FC<Props> = ({
                         realResults = results as any; // Cast to Facility[]
                     }
                 } catch (e) {
-                    console.error(`[TRACE_ID:${traceId}] [ERROR_DB_CONN] Real DB Search failed:`, e);
+                    logToSystem('ERROR', 'Real DB Search failed', traceId, { error: e }); // Replaced console.error
                 }
 
                 if (activeScenario === 'general') {
@@ -559,7 +579,7 @@ export const ChatInterface: React.FC<Props> = ({
                 }
                 else if (realResults.length > 0) {
                     // 1. Use Real DB Data
-                    console.log(`[TRACE_ID:${traceId}] ✅ [Real DB] Found facilities:`, realResults.length);
+                    logToSystem('INFO', `Real DB Found facilities: ${realResults.length}`, traceId, { count: realResults.length }); // Replaced console.log
                     // Attach to message for rendering
                     aiMsg.facilities = realResults;
 
@@ -666,7 +686,7 @@ export const ChatInterface: React.FC<Props> = ({
 
             /* REMOVED DUPLICATE RECOMMEND BLOCK */
         } catch (error) {
-            console.error(`[TRACE_ID:${traceId || 'UNKNOWN'}] [ERROR_UNKNOWN] Unhandled Exception:`, error);
+            logToSystem('ERROR', 'Unhandled Exception', traceId || 'UNKNOWN', { error }); // Replaced console.error
             // 🚑 Robust Fallback: Show error message to user instead of just console logging
             const errorMsg: ChatMessage = {
                 role: 'model',
@@ -767,16 +787,60 @@ export const ChatInterface: React.FC<Props> = ({
                     company={facility as any} // Cast to match type
                     mode={formMode}
                     onClose={() => setIsFormOpen(false)}
-                    onSubmit={(data) => {
-                        console.log('Form Submitted:', data);
-                        setIsFormOpen(false);
-                        // Add system message confirming submission
-                        setMessages(prev => [...prev, {
-                            role: 'model',
-                            text: `✅ [${data.type}] ${data.name}님의 접수가 완료되었습니다.\n담당자가 확인 후 ${data.phone}으로 신속히 연락드리겠습니다.`,
-                            timestamp: new Date(),
-                            action: 'NONE'
-                        }]);
+                    onSubmit={async (data) => {
+                        console.log('Form Submitted (Urgent/Consult):', data);
+                        const traceId = generateTraceId();
+
+                        try {
+                            // [PDCA] 1. Persistent Log
+                            logToSystem('INFO', `Urgent Form Submission: ${data.formattedType || data.type}`, traceId, {
+                                facilityId: facility.id,
+                                type: data.type,
+                                phone: data.phone
+                            });
+
+                            // [PDCA] 2. Save to DB (Leads)
+                            const lead = await createLead({
+                                userId: currentUser?.id,
+                                facilityId: facility.id.toString(), // Ensure string
+                                contactName: data.name,
+                                contactPhone: data.phone,
+                                category: facility.type === 'pet_funeral' ? 'pet' : (facility.type === 'funeral' ? 'funeral' : 'memorial'),
+                                urgency: formMode === 'urgent' ? 'immediate' : 'high',
+                                scale: data.scale,
+                                priorities: data.requests ? [data.requests] : [],
+                                contextData: {
+                                    ...data,
+                                    traceId,
+                                    source: 'ConsultationForm'
+                                },
+                                notes: `[${data.type}] ${data.requests || ''} (Relation: ${data.relation || 'N/A'})`
+                            });
+
+                            if (lead) {
+                                console.log('[ChatInterface] Lead Saved:', lead.id);
+
+                                // [PDCA] 3. Sync to System Log (Success)
+                                logToSystem('INFO', 'Lead Created Successfully', traceId, { leadId: lead.id });
+                            }
+
+                            setIsFormOpen(false);
+
+                            // 4. User Feedback
+                            setMessages(prev => [...prev, {
+                                role: 'model',
+                                text: `✅ **[접수 완료]**\n담당자가 내용을 확인하고 있습니다.\n\n📞 **${data.phone}** 번호로 10분 내에 연락드리겠습니다.\n(발신번호: 02-1234-5678)`,
+                                timestamp: new Date(),
+                                action: 'NONE'
+                            }]);
+
+                        } catch (error) {
+                            console.error('Urgent Form Submission Failed:', error);
+                            logToSystem('ERROR', 'Urgent Form Submission Failed', traceId, { error });
+
+                            // Error Feedback
+                            alert('접수 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+                        }
                     }}
                 />
             )}
