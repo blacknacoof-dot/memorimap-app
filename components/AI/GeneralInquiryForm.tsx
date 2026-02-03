@@ -1,70 +1,35 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MessageSquare, Check, AlertCircle } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
 
 interface FormProps {
     onSubmit: (data: { text: string, data: any }) => void;
     onClose?: () => void;
-    currentUser?: any;
 }
 
-const GeneralInquiryForm: React.FC<FormProps> = ({ onSubmit, onClose, currentUser }) => {
+const GeneralInquiryForm: React.FC<FormProps> = ({ onSubmit, onClose }) => {
     const [category, setCategory] = useState<'consult' | 'partnership' | 'error' | ''>('');
     const [content, setContent] = useState('');
     const [error, setError] = useState('');
-    const [isSaving, setIsSaving] = useState(false);
 
-    const handleSubmit = async () => {
+    const handleSubmit = () => {
         if (!category) return setError('문의 유형을 선택해 주세요.');
         if (!content.trim()) return setError('문의 내용을 입력해 주세요.');
 
-        setIsSaving(true);
+        const categoryLabel = {
+            consult: '일반 상담',
+            partnership: '제휴 문의',
+            error: '오류 신고'
+        }[category];
 
-        try {
-            const categoryLabel = {
-                consult: '일반 상담',
-                partnership: '제휴 문의',
-                error: '오류 신고'
-            }[category];
+        const finalText = `[📞 일반 문의 접수]\n유형: ${categoryLabel}\n내용: ${content}`;
+        const searchData = {
+            category: 'general',
+            inquiry_type: category,
+            inquiry_text: content,
+            urgency: 'inquiry'
+        };
 
-            const finalText = `[📞 일반 문의 접수]\n유형: ${categoryLabel}\n내용: ${content}`;
-            const searchData = {
-                category: 'general',
-                inquiry_type: category,
-                inquiry_text: content,
-                urgency: 'inquiry'
-            };
-
-            // 1. AI 채팅에 메시지 전송 (기존)
-            onSubmit({ text: finalText, data: searchData });
-
-            // 2. 슈퍼관리자에게 저장 (신규) - AI 분석 없음
-            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-            const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-            if (supabaseUrl && supabaseKey) {
-                const supabase = createClient(supabaseUrl, supabaseKey);
-
-                const { error: dbError } = await supabase
-                    .from('admin_notifications')
-                    .insert([{
-                        type: 'general_inquiry',
-                        user_id: currentUser?.id || null,
-                        inquiry_type: category,
-                        inquiry_text: content,
-                        status: 'pending',
-                        created_at: new Date().toISOString()
-                    }]);
-
-                if (dbError) {
-                    console.error('Failed to save notification:', dbError);
-                }
-            }
-        } catch (err) {
-            console.error('Submit error:', err);
-        } finally {
-            setIsSaving(false);
-        }
+        onSubmit({ text: finalText, data: searchData });
     };
 
     return (
@@ -125,10 +90,9 @@ const GeneralInquiryForm: React.FC<FormProps> = ({ onSubmit, onClose, currentUse
 
                 <button
                     onClick={handleSubmit}
-                    disabled={isSaving}
-                    className="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white text-sm font-bold py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+                    className="w-full bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
                 >
-                    <Check size={16} /> {isSaving ? '전송 중...' : '문의 접수하기'}
+                    <Check size={16} /> 문의 접수하기
                 </button>
             </div>
         </div>
