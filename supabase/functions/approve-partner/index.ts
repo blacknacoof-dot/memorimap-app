@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { z } from 'https://esm.sh/zod@3.22.4'
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*', // allow all for compatibility, but can be targeted for production
@@ -9,13 +10,26 @@ const corsHeaders = {
     'Access-Control-Allow-Credentials': 'true',
 }
 
-interface ApproveRequest {
-    inquiryId: string
-    action: 'approve' | 'reject'
-    rejectionReason?: string
-}
+const ApproveRequestSchema = z.object({
+    inquiryId: z.union([z.string(), z.number()]).transform(val => Number(val)),
+    action: z.enum(['approve', 'reject']),
+    rejectionReason: z.string().optional()
+});
 
 const RESEND_API_URL = 'https://api.resend.com/emails';
+
+async function logToDB(supabase: any, level: 'INFO' | 'WARN' | 'ERROR', message: string, meta: any = {}) {
+    try {
+        await supabase.from('system_logs').insert({
+            level,
+            message,
+            meta,
+            source: 'edge-function:approve-partner'
+        });
+    } catch (e) {
+        console.error('Failed to write to system_logs', e);
+    }
+}
 
 async function sendEmail({ to, subject, html }: { to: string, subject: string, html: string }) {
     const apiKey = Deno.env.get('RESEND_API_KEY');
@@ -32,7 +46,7 @@ async function sendEmail({ to, subject, html }: { to: string, subject: string, h
                 'Authorization': `Bearer ${apiKey}`,
             },
             body: JSON.stringify({
-                from: '추모맵 <onboarding@resend.dev>', // Resend testing address
+                from: '추모맵 <onboarding@resend.dev>',
                 to: [to],
                 subject,
                 html,
@@ -89,13 +103,19 @@ serve(async (req) => {
             email: userEmail
         };
 
-        // Parse Request
-        const { inquiryId: rawInquiryId, action, rejectionReason }: ApproveRequest = await req.json()
-        const inquiryId = parseInt(rawInquiryId, 10)
+        // Parse and Validate Request with Zod
+        const body = await req.json();
+        const validationResult = ApproveRequestSchema.safeParse(body);
 
-        if (isNaN(inquiryId)) {
-            throw new Error(`Invalid inquiry ID: ${rawInquiryId}`)
+        if (!validationResult.success) {
+            const errorMsg = `Validation failed: ${validationResult.error.errors.map(e => e.path + ': ' + e.message).join(', ')}`;
+            await logToDB(supabaseAdmin, 'WARN', errorMsg, { body });
+            throw new Error(errorMsg);
         }
+
+        const { inquiryId, action, rejectionReason } = validationResult.data;
+
+        await logToDB(supabaseAdmin, 'INFO', `Processing partner request: ${action}`, { inquiryId, admin: user.email });
 
         // Fetch Inquiry Details for notifications
         const { data: v_inquiry, error: fetchError } = await supabaseAdmin
@@ -235,6 +255,22 @@ serve(async (req) => {
         return new Response(JSON.stringify({ success: true, action: 'approved', result: rpcResult }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 
     } catch (error: any) {
+        console.error('Edge Function Error:', error);
+        // We can't log to DB here easily if supabaseAdmin was created inside try block, 
+        // but we can try to re-create it or just rely on console logs for fatal setup errors.
+        // If we want accurate DB logging for errors, we should broaden the scope of supabaseAdmin or create a fresh client.
+
+        try {
+            const supabaseErrorClient = createClient(
+                Deno.env.get('SUPABASE_URL') ?? '',
+                Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+                { auth: { persistSession: false } }
+            );
+            await logToDB(supabaseErrorClient, 'ERROR', `Edge Function Exception: ${error.message}`, { stack: error.stack });
+        } catch (logErr) {
+            console.error('Failed to log error to DB', logErr);
+        }
+
         return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 })
