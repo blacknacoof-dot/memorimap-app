@@ -4,6 +4,13 @@
 <head>
   <meta charset="UTF-8" />
 
+  <!-- [KakaoTalk Optimization] Meta Tags -->
+  <meta property="og:title" content="추모맵 - 전국 추모시설 간편 검색">
+  <meta property="og:description" content="장례식장, 납골당, 수목장 등 내 주변, 조건별 추모시설을 쉽고 빠르게 찾아보세요.">
+  <meta property="og:image" content="/og-image.png">
+  <meta property="og:url" content="https://memorimap-app.vercel.app">
+  <meta property="og:type" content="website">
+
   <!-- Viewport: 인앱 브라우저 및 iOS Safe Area 대응 -->
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
@@ -28,14 +35,10 @@
   <!-- Naver Maps loaded dynamically via MapContainer.tsx -->
   <script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
   <script>
-    // Shim for process.env to work with the existing code logic without build steps
+    // Shim for process.env
     window.process = {
       env: {
-        NODE_ENV: 'development',
-        // 로컬 개발 시 아래 키들을 .env 파일이나 여기에 직접 입력해서 테스트하세요.
-        // REACT_APP_SUPABASE_URL: '',
-        // REACT_APP_SUPABASE_ANON_KEY: '',
-        // REACT_APP_CLERK_PUBLISHABLE_KEY: '' 
+        NODE_ENV: 'development'
       }
     };
   </script>
@@ -72,9 +75,44 @@
 </head>
 
 <body>
+  <!-- [KakaoTalk Optimization] Warning Banner -->
+  <div id="kakao-browser-notice" style="display:none;">
+    <div
+      style="position:fixed; top:0; left:0; width:100%; background:#FEE500; padding:12px; text-align:center; z-index:10000; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+      <p style="margin:0; font-size:14px; color:#000; font-weight:600;">
+        🔍 원활한 이용을 위해 외부 브라우저에서 열어주세요
+      </p>
+      <p style="margin:5px 0 0 0; font-size:12px; color:#666;">
+        우측 상단 [...] → Safari/Chrome에서 열기
+      </p>
+    </div>
+  </div>
+
   <div id="root"></div>
+
   <!-- Vite Entry Point -->
   <script type="module" src="/index.tsx"></script>
+
+  <!-- [KakaoTalk Optimization] Detection Script -->
+  <script>
+    function isKakaoInAppBrowser() {
+      // Check for KAKAOTALK in User Agent
+      const ua = navigator.userAgent.toLowerCase();
+      // Also check specific pattern if needed, but 'kakaotalk' is standard
+      return ua.includes('kakaotalk');
+    }
+
+    // Run on load
+    if (isKakaoInAppBrowser()) {
+      const banner = document.getElementById('kakao-browser-notice');
+      if (banner) {
+        banner.style.display = 'block';
+        // Add padding to body so the banner doesn't hide content
+        // Adjust 70px if needed based on real device testing
+        document.body.style.paddingTop = '70px';
+      }
+    }
+  </script>
 </body>
 
 </html>
