@@ -12,7 +12,7 @@ export const ReservationSchema = z.object({
     visit_time: z.string().min(1, "방문 시간을 선택해주세요"),
     visitor_name: z.string().min(2, "신청자 성함은 2글자 이상이어야 합니다"),
     visitor_count: z.number().min(1, "최소 1명 이상이어야 합니다"),
-    contact_number: z.string().regex(/^010-\d{4}-\d{4}$/, "휴대폰 번호 형식이 올바르지 않습니다 (010-XXXX-XXXX)"),
+    contact_number: z.string().regex(/^010-?(\d{4})-?(\d{4})$/, "휴대폰 번호 형식이 올바르지 않습니다 (010-0000-0000)"),
 
     // Metadata
     purpose: z.string().min(1, "방문 목적을 선택해주세요"),
@@ -33,7 +33,7 @@ export const ReservationSchema = z.object({
 
     religion: z.string().optional(),
     burial_method: z.string().optional(), // 'cremation', 'burial'
-    emergency_contact: z.string().regex(/^010-\d{4}-\d{4}$/, "휴대폰 번호 형식이 올바르지 않습니다").optional().or(z.literal('')),
+    emergency_contact: z.string().regex(/^010-?(\d{4})-?(\d{4})$/, "휴대폰 번호 형식이 올바르지 않습니다").optional().or(z.literal('')),
 });
 
 // [Step 2] Facility Edit Schema
@@ -55,7 +55,7 @@ export const PartnerInquirySchema = z.object({
     company_name: z.string().min(1, "업체명을 입력해주세요"),
     business_type: z.enum(['funeral_home', 'sangjo', 'memorial_park', 'pet_funeral']),
     contact_person: z.string().min(1, "담당자명을 입력해주세요"), // Renamed
-    contact_number: z.string().regex(/^010-\d{4}-\d{4}$/, "휴대폰 번호 형식이 올바르지 않습니다"),
+    contact_number: z.string().regex(/^010-?(\d{4})-?(\d{4})$/, "휴대폰 번호 형식이 올바르지 않습니다"),
     email: z.string().email("이메일 형식이 아닙니다").optional(),
     message: z.string().optional(), // New
     status: z.enum(['pending', 'approved', 'rejected']),

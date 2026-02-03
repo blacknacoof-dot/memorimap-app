@@ -37,6 +37,8 @@ const ConsultationView = React.lazy(() => import('./components/Consultation/Cons
 const ConsultationHistoryView = React.lazy(() => import('./components/Consultation/ConsultationHistoryView').then(m => ({ default: m.ConsultationHistoryView })));
 const SuperAdminDashboard = React.lazy(() => import('./components/SuperAdmin/SuperAdminDashboard'));
 const SubscriptionPlans = React.lazy(() => import('./components/SubscriptionPlans').then(m => ({ default: m.default })));
+import { ExternalBrowserGuidePage } from './src/pages/ExternalBrowserGuidePage';
+import { redirectToExternalBrowserIfNeeded, isInAppBrowser } from './src/utils/browserDetection';
 const SangjoConsultationModal = React.lazy(() => import('./components/Consultation/SangjoConsultationModal').then(m => ({ default: m.SangjoConsultationModal })));
 const SangjoContractModal = React.lazy(() => import('./components/Consultation/SangjoContractModal').then(m => ({ default: m.SangjoContractModal })));
 const SangjoComparisonModal = React.lazy(() => import('./components/SangjoComparisonModal').then(m => ({ default: m.SangjoComparisonModal })));
@@ -1490,6 +1492,15 @@ const App: React.FC = () => {
 
 
 
+  // 🚀 [CRITICAL] 인앱 브라우저 감지 (Clerk 로딩 전 우선 처리)
+  // 인앱 브라우저에서는 Clerk 로딩이 중단되거나 403 에러가 날 수 있으므로, 최상단에서 먼저 체크합니다.
+  const isInApp = isInAppBrowser();
+  const isGuidePage = window.location.hash.includes('external-browser-guide');
+
+  if (isInApp && !isGuidePage) {
+    return <ExternalBrowserGuidePage />;
+  }
+
   if (!isLoaded) {
     return (
       <div className="h-full w-full flex items-center justify-center bg-gray-100">
@@ -1685,7 +1696,10 @@ const App: React.FC = () => {
           <Toaster richColors position="top-center" closeButton />
 
           {/* Notification Center (Overlay) */}
-          <NotificationCenter isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+          {/* Notification Center (Overlay) - Now properly placed as a floating or header element if needed, but for now removing invalid props */}
+          <div className="fixed top-4 right-16 z-50">
+            <NotificationCenter />
+          </div>
 
           <SideMenu
             isOpen={isMenuOpen}

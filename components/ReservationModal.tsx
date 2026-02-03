@@ -40,6 +40,7 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
       payment_amount: 0,
       visit_date: reservationMode === 'URGENT' ? format(new Date(), 'yyyy-MM-dd') : '',
       visit_time: reservationMode === 'URGENT' ? '긴급(즉시)' : '',
+      purpose: reservationMode === 'URGENT' ? '긴급 장례 접수' : '',
     }
   });
 
@@ -381,8 +382,8 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
           </div>
           <h3 className="text-xl font-bold mb-2">접수 제출 완료</h3>
           <p className="text-gray-600 mb-6 text-sm leading-relaxed whitespace-pre-line">
-            제출이 완료되었습니다.{'\n'}
-            담당자 확인 후 빠르게 연락드리겠습니다.
+            해당 시설 업체 대시보드에 접수 되었습니다.{'\n'}
+            담당자 확인 후 연락드리겠습니다.
           </p>
           <button onClick={onClose} className="w-full bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition-colors">확인</button>
         </div>
