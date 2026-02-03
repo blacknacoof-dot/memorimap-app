@@ -1,20 +1,41 @@
 import React from 'react';
 import { MessageSquare, RefreshCw, ChevronRight, Phone, Clock, User } from 'lucide-react';
 
-// MOCK DATA - Leads
-const MOCK_LEADS = [
-    { id: 1, name: '김철수', phone: '010-1234-5678', facility: '하늘공원 추모관', time: '10 min ago', status: 'new', message: '장례 비용 견적 문의드립니다.' },
-    { id: 2, name: '이영희', phone: '010-9876-5432', facility: '평화의 숲', time: '1 hour ago', status: 'read', message: '방문 예약 가능한가요?' },
-    { id: 3, name: '박민수', phone: '010-5555-7777', facility: '부산 추모 공원', time: '3 hours ago', status: 'read', message: '안치단 가격 문의' },
-    { id: 4, name: '정수진', phone: '010-3333-2222', facility: '분당 메모리얼', time: 'Yesterday', status: 'read', message: '상담 요청합니다.' },
-    { id: 5, name: '최동욱', phone: '010-1111-9999', facility: '인천 가족 공원', time: '2 days ago', status: 'read', message: '주말 방문 예약' },
-];
+
 
 import { useRealtimeSubscription } from '@/hooks/useRealtimeSubscription';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { fetchLeads } from '@/lib/api/superAdmin';
 
 export const AdminLeadsView: React.FC = () => {
-    const [leads, setLeads] = useState(MOCK_LEADS);
+    const [leads, setLeads] = useState<any[]>([]); // [FIX] Start with empty array
+    const [isLoading, setIsLoading] = useState(true);
+
+    // [New] Fetch Initial Data
+    useEffect(() => {
+        const loadLeads = async () => {
+            try {
+                const data = await fetchLeads();
+                // Map the API Response to UI expected format if needed, but fetchLeads already does some mapping.
+                // We'll trust fetchLeads mapping mostly, but ensure fields match MOCK structure
+                const mapped = data.map((l: any) => ({
+                    id: l.id,
+                    name: l.user_name || '익명',
+                    phone: l.phone_number || '',
+                    facility: l.facility_name || '상담 요청', // fetchLeads might need update for facility_name if missing
+                    time: new Date(l.created_at).toLocaleString(), // Simple format
+                    status: l.status,
+                    message: l.notes || l.type || '상담 요청',
+                }));
+                setLeads(mapped);
+            } catch (e) {
+                console.error('Failed to load leads:', e);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        loadLeads();
+    }, []);
 
     // [New] Realtime Integration mimicking the plan
     useRealtimeSubscription({
@@ -59,7 +80,7 @@ export const AdminLeadsView: React.FC = () => {
 
             {/* Compact Rows - High Density */}
             <div className="divide-y divide-slate-100">
-                {MOCK_LEADS.map((lead) => (
+                {leads.map((lead) => (
                     <div key={lead.id} className="px-3 py-2.5 flex items-start hover:bg-slate-50 transition-colors group cursor-pointer gap-3">
                         {/* Time & Indicator (Fixed Width, Tighter) */}
                         <div className="w-24 shrink-0 flex flex-col gap-1 mt-0.5">
