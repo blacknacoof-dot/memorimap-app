@@ -68,9 +68,14 @@ const AppRouter: React.FC = () => {
     // Sync URL hash with viewState
     useEffect(() => {
         // Handle direct access to /admin or /admin/ which might be served by SPA fallback
+        // Handle direct access to /admin or /admin/ which might be served by SPA fallback
+        // If we want to serve static admin/index.html, we should let the server handle it or redirect explicitly to index.html
+        // For now, removing the forced redirect to facility-admin which is blocking access to the real admin panel.
         if (window.location.pathname === '/admin' || window.location.pathname === '/admin/') {
-            window.location.replace('/#/facility-admin');
-            return;
+            // If the intention is to load the static file, and we are here, it means SPA loaded.
+            // We can force a reload to /admin/index.html if needed, but let's first stop the wrong redirect.
+            // window.location.href = '/admin/index.html'; 
+            // Leaving empty to see if it renders AdminView placeholder or if user can access file manually.
         }
 
         const syncRoute = () => {
