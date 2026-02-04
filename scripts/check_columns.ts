@@ -1,43 +1,28 @@
 import { createClient } from '@supabase/supabase-js';
 import * as dotenv from 'dotenv';
-dotenv.config({ path: '.env.local' });
+import { resolve } from 'path';
 
-const supabase = createClient(
-    process.env.VITE_SUPABASE_URL!,
-    process.env.VITE_SUPABASE_SERVICE_ROLE_KEY!
-);
+dotenv.config({ path: resolve(process.cwd(), '.env.local') });
 
-async function main() {
-    const tables = [
-        'broken_images_backup_20260119',
-        'columbarium_backup_20260119',
-        'facilities_backup_20260119',
-        'facilities_backup_20260122',
-        'facility_subscriptions_backup',
-        'funeral_company_legacy_mapping',
-        'sangjo_hq_admins'
-    ];
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
-    for (const table of tables) {
-        const { data, error } = await supabase
-            .from('information_schema_columns') // This won't work directly via .from() because it's a different schema
-            .select('column_name, data_type')
-            .eq('table_name', table)
-            .eq('table_schema', 'public');
+const supabase = createClient(supabaseUrl!, supabaseKey!);
 
-        // Actually, I'll use the execute_sql RPC since it's cleaner for raw queries if it exists,
-        // but PGRST202 earlier showed it might not be available or named differently.
-        // Wait, earlier I found that execute_sql was NOT found.
+async function checkColumns() {
+    console.log('--- favorites 및 user_favorites 컬럼 정보 조회 ---');
 
-        // I will try to fetch one row from each table to see columns if I can't query information_schema.
-        const { data: row, error: rowError } = await supabase.from(table).select('*').limit(1);
+    // 정보를 가져올 수 있는 RPC가 없으므로 정교한 에러 메시지를 유도하여 타입을 유추하거나 
+    // 데이터를 직접 조회하여 값의 형태를 봅니다.
 
-        if (rowError) {
-            console.log(`Table ${table} Error:`, rowError.message);
-        } else {
-            console.log(`Table ${table} Columns:`, Object.keys(row[0] || {}).join(', '));
-        }
-    }
+    const { data: favs } = await supabase.from('favorites').select('*').limit(1);
+    console.log('favorites 예시 데이터:', favs?.[0]);
+
+    const { data: userFavs } = await supabase.from('user_favorites').select('*').limit(1);
+    console.log('user_favorites 예시 데이터:', userFavs?.[0]);
+
+    // 테이블 구조 파악을 위한 꼼수 (존재하지 않는 컬럼으로 에러 유도 시 가끔 정보 노출)
+    // 여기서는 그냥 값의 타입으로 판단합니다.
 }
 
-main();
+checkColumns();
