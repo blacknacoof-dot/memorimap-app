@@ -21,7 +21,7 @@ const SubscriptionPlans = React.lazy(() => import('../components/SubscriptionPla
 
 // Placeholders for views that need more work
 const AdminView = () => <Placeholder name="AdminView" />;
-const MyPageView = () => <Placeholder name="MyPageView" />;
+const MyPageView = React.lazy(() => import('../components/MyPageView').then(m => ({ default: m.MyPageView })));
 const FuneralCompanyView = () => <Placeholder name="FuneralCompanyView" />;
 const GuideView = () => <Placeholder name="GuideView" />;
 const NoticesView = () => <Placeholder name="NoticesView" />;
@@ -58,6 +58,38 @@ const PartnerInquiryWrapper: React.FC = () => {
     const navigate = useNavigate();
     return <PartnerInquiryViewComponent onBack={() => navigate('/')} />;
 };
+
+/** Wrapper for MyPageView - provides required props */
+const MyPageWrapper: React.FC = () => {
+    const { user, isSignedIn } = useUser();
+    const { facilities } = useFacilities();
+    const navigate = useNavigate();
+
+    const handleLoginClick = () => {
+        window.dispatchEvent(new CustomEvent('open-login-modal'));
+    };
+
+    const handleNavigate = (view: any) => {
+        if (view === ViewState.MAP) navigate('/');
+    };
+
+    return (
+        <MyPageView
+            isLoggedIn={!!isSignedIn}
+            user={user}
+            facilities={facilities}
+            onLoginClick={handleLoginClick}
+            onNavigate={handleNavigate}
+            onSelectFacility={(f) => {
+                navigate('/');
+            }}
+            onSelectCompany={(c) => {
+                navigate('/funeral-company');
+            }}
+        />
+    );
+};
+
 
 /**
  * AppRouter handles hash‑based routing and maps ViewState values to routes.
@@ -119,7 +151,9 @@ const AppRouter: React.FC = () => {
                     <Route path="/funeral-company" element={<FuneralCompanyView />} />
 
                     {/* User Views */}
-                    <Route path="/my-page" element={<MyPageView />} />
+
+                    <Route path="/my-page" element={<MyPageWrapper />} />
+
                     <Route path="/partner-inquiry" element={<PartnerInquiryWrapper />} />
                     <Route path="/subscription-plans" element={<SubscriptionPlans />} />
 

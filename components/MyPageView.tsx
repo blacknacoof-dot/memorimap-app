@@ -15,12 +15,13 @@ import { toast } from 'sonner';
 import { MyConsultations } from './dashboard/MyConsultations';
 import { supabase } from '../lib/supabaseClient';
 import { isClerkConfigured } from '../lib/auth';
+import IntegratedJourneyView from './IntegratedJourneyView';
 
 interface Props {
     isLoggedIn: boolean;
     user: any;
     userRole?: string;
-    reservations: Reservation[];
+    reservations?: Reservation[];
     facilities: Facility[];
     onLoginClick: () => void;
     onNavigate?: (view: any) => void;
@@ -33,7 +34,7 @@ export const MyPageView: React.FC<Props> = ({
     isLoggedIn,
     user,
     userRole,
-    reservations: propReservations,
+    reservations: propReservations = [],
     facilities,
     onLoginClick,
     onNavigate,
@@ -75,7 +76,7 @@ export const MyPageView: React.FC<Props> = ({
         setIsLoadingReservations(true);
         try {
             const data = await getMyReservations(user.id);
-            setMyReservations(data);
+            setMyReservations(data as unknown as Reservation[]);
         } catch (err) {
             console.error(err);
         } finally {
@@ -421,7 +422,7 @@ export const MyPageView: React.FC<Props> = ({
                 </button>
             </div>
 
-            <div className="mb-8">
+            <div className="mb-10">
                 {activeTab === 'favorites' ? (
                     isLoadingFavorites ? (
                         <div className="text-center py-10">
@@ -559,6 +560,11 @@ export const MyPageView: React.FC<Props> = ({
                         </div>
                     )
                 ) : null}
+            </div>
+
+            {/* My Journey (My Story) Integrated View */}
+            <div className="mb-12">
+                <IntegratedJourneyView />
             </div>
 
             {/* Service Info Section */}
