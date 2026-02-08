@@ -45,7 +45,10 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
                 loadOperations(); // Simple reload for Kanban
             })
             .subscribe();
-        return () => { supabase.removeChannel(channel); };
+        return () => {
+            channel.unsubscribe();
+            supabase.removeChannel(channel);
+        };
     };
 
     const handleMove = async (id: string, nextStage: PartnerOperation['operation_stage']) => {

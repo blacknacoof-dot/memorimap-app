@@ -70,7 +70,10 @@ export const ContractMonitoring: React.FC = () => {
             })
             .subscribe();
 
-        return () => channel.unsubscribe();
+        return () => {
+            channel.unsubscribe();
+            supabase.removeChannel(channel);
+        };
     };
 
     const setupAiRealtime = () => {
@@ -101,7 +104,10 @@ export const ContractMonitoring: React.FC = () => {
             })
             .subscribe();
 
-        return () => channel.unsubscribe();
+        return () => {
+            channel.unsubscribe();
+            supabase.removeChannel(channel);
+        };
     };
 
     const playEmergencySound = () => {
