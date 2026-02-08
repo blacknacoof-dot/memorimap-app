@@ -20,7 +20,7 @@ export const AdminView: React.FC<Props> = ({ facilities, reservations, onUpdateR
   const confirmedReservations = reservations.filter(r => r.status === 'confirmed').length;
   const totalRevenue = reservations
     .filter(r => r.status !== 'cancelled')
-    .reduce((acc, curr) => acc + curr.paymentAmount, 0);
+    .reduce((acc, curr) => acc + (curr.payment_amount || 0), 0);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -31,9 +31,9 @@ export const AdminView: React.FC<Props> = ({ facilities, reservations, onUpdateR
   };
 
   const filteredReservations = reservations.filter(r =>
-    r.visitorName.includes(searchTerm) ||
-    r.facilityName.includes(searchTerm) ||
-    r.id.includes(searchTerm)
+    r.visitor_name.includes(searchTerm) ||
+    (r.facility_name || '').includes(searchTerm) ||
+    (r.id || '').includes(searchTerm)
   );
 
   return (
@@ -122,8 +122,8 @@ export const AdminView: React.FC<Props> = ({ facilities, reservations, onUpdateR
                   {reservations.slice(0, 5).map(r => (
                     <div key={r.id} className="p-4 flex items-center justify-between hover:bg-gray-50">
                       <div>
-                        <div className="font-bold text-sm">{r.visitorName} <span className="text-gray-400 font-normal">| {r.facilityName}</span></div>
-                        <div className="text-xs text-gray-500">{r.date.toLocaleDateString()} {r.timeSlot}</div>
+                        <div className="font-bold text-sm">{r.visitor_name} <span className="text-gray-400 font-normal">| {r.facility_name}</span></div>
+                        <div className="text-xs text-gray-500">{new Date(r.visit_date).toLocaleDateString()} {r.time_slot}</div>
                       </div>
                       {getStatusBadge(r.status)}
                     </div>
@@ -170,15 +170,15 @@ export const AdminView: React.FC<Props> = ({ facilities, reservations, onUpdateR
                         <tr key={r.id} className="hover:bg-gray-50">
                           <td className="p-4">
                             <div className="font-bold text-gray-900">{r.id}</div>
-                            <div className="text-xs text-gray-500">{r.date.toLocaleDateString()} {r.timeSlot}</div>
+                            <div className="text-xs text-gray-500">{new Date(r.visit_date).toLocaleDateString()} {r.time_slot}</div>
                           </td>
                           <td className="p-4">
-                            <div className="font-medium text-gray-800">{r.facilityName}</div>
+                            <div className="font-medium text-gray-800">{r.facility_name}</div>
                             <span className="inline-block bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.5 rounded mt-1">{r.purpose}</span>
                           </td>
                           <td className="p-4">
-                            <div>{r.visitorName}</div>
-                            <div className="text-xs text-gray-500">{r.visitorCount}명</div>
+                            <div>{r.visitor_name}</div>
+                            <div className="text-xs text-gray-500">{r.visitor_count}명</div>
                           </td>
                           <td className="p-4">
                             {getStatusBadge(r.status)}
@@ -187,13 +187,13 @@ export const AdminView: React.FC<Props> = ({ facilities, reservations, onUpdateR
                             {r.status === 'pending' && (
                               <div className="flex justify-end gap-2">
                                 <button
-                                  onClick={() => onUpdateReservationStatus(r.id, 'confirmed')}
+                                  onClick={() => r.id && onUpdateReservationStatus(r.id, 'confirmed')}
                                   className="p-1.5 bg-green-50 text-green-600 rounded hover:bg-green-100 border border-green-200" title="승인"
                                 >
                                   <Check size={16} />
                                 </button>
                                 <button
-                                  onClick={() => onUpdateReservationStatus(r.id, 'cancelled')}
+                                  onClick={() => r.id && onUpdateReservationStatus(r.id, 'cancelled')}
                                   className="p-1.5 bg-red-50 text-red-600 rounded hover:bg-red-100 border border-red-200" title="거절"
                                 >
                                   <X size={16} />

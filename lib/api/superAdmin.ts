@@ -271,7 +271,11 @@ export const fetchLeads = async () => {
     // Error hint suggests 'consultations' table exists.
     const { data: leads, error } = await supabase
         .from('consultations')
-        .select('*')
+        .select(`
+            *,
+            facilities (name, category),
+            profiles:user_id (full_name, phone)
+        `)
         .order('created_at', { ascending: false });
 
     if (error) {
@@ -281,14 +285,16 @@ export const fetchLeads = async () => {
 
     return leads.map((lead: any) => ({
         id: lead.id,
-        user_name: lead.user_name || lead.visitor_name || '익명 고객',
-        phone_number: lead.phone_number || lead.contact_number,
+        user_name: lead.user_name || lead.visitor_name || lead.profiles?.full_name || '익명 고객',
+        phone_number: lead.phone_number || lead.contact_number || lead.profiles?.phone,
         type: lead.consultation_type || lead.type || 'consultation',
         status: lead.status || 'new',
         created_at: lead.created_at,
         // Map to frontend expected props if needed
-        customer_name: lead.user_name || lead.visitor_name || '익명 고객',
-        customer_phone: lead.phone_number || lead.contact_number,
+        customer_name: lead.user_name || lead.visitor_name || lead.profiles?.full_name || '익명 고객',
+        customer_phone: lead.phone_number || lead.contact_number || lead.profiles?.phone,
+        facility_name: lead.facilities?.name || '(삭제된 시설)',
+        category: lead.facilities?.category || '기타'
     }));
 };
 

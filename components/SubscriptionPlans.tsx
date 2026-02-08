@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Check, X, Sparkles, Crown, Zap, ChevronDown, ChevronUp, MessageCircle, Mail, BarChart3, Star, ShieldCheck } from 'lucide-react';
 import { requestPayment, PORTONE_CONFIG } from '../lib/portone';
+import { toast } from 'sonner'; // [Phase 2] Error Handler
 
 interface Plan {
     id: string;
@@ -180,12 +181,12 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
         if (plan.id === 'free') {
             setSelectedPlan(plan.id);
             onSelectPlan?.(plan.id);
-            alert('무료 플랜으로 설정되었습니다.');
+            toast.success('무료 플랜으로 설정되었습니다.');
             return;
         }
 
         if (!window.PortOne) {
-            alert('결제 모듈을 불러오지 못했습니다.');
+            toast.error('결제 모듈을 불러오지 못했습니다.');
             return;
         }
 
@@ -206,16 +207,16 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
             });
 
             if (response.code !== undefined) {
-                alert(`결제 실패: ${response.message}`);
+                toast.error(`결제 실패: ${response.message}`);
                 return;
             }
 
             setSelectedPlan(plan.id);
             onSelectPlan?.(plan.id);
-            alert(`${plan.name} 구독이 시작되었습니다!`);
+            toast.success(`${plan.name} 구독이 시작되었습니다!`);
         } catch (error) {
             console.error('Payment error:', error);
-            alert('결제 중 오류가 발생했습니다.');
+            toast.error('결제 중 오류가 발생했습니다.');
         }
     };
 

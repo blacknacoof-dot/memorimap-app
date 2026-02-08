@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, Settings2, Heart, Calendar, Star, Info, Edit, MoreHorizontal, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+import { toast } from 'sonner'; // [Phase 2] Error Handler
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
@@ -78,18 +78,20 @@ export const MyPageV2: React.FC<Props> = ({
             // Fix: Map raw data to satisfy Reservation interface
             const safeReservations: Reservation[] = (data as any[]).map(r => ({
                 id: r.id,
-                facilityId: r.facilityId,
-                facilityName: r.facilityName,
-                date: r.date,
-                timeSlot: r.timeSlot,
+                facility_id: r.facility_id || r.facilityId, // Handle both for safety
+                facility_name: r.facility_name || r.facilityName,
+                visit_date: r.visit_date || r.date,
+                time_slot: r.time_slot || r.timeSlot,
                 status: r.status,
-                visitorCount: r.visitorCount,
-                message: r.message,
-                createdAt: r.createdAt,
-                visitorName: r.visitorName || user.name, // Default or fetch
+                visitor_count: r.visitor_count || r.visitorCount,
+                // message: r.message, // removed as it is not in Reservation type
+                created_at: r.created_at || r.createdAt,
+                user_id: r.user_id || user.id, // Ensure user_id is present
+                visitor_name: r.visitor_name || r.visitorName || user.name,
+                contact_number: r.contact_number || r.userPhone || '',
                 purpose: r.purpose || '일반 방문',
-                paymentAmount: r.paymentAmount || 0,
-                paidAt: r.paidAt || undefined
+                payment_amount: r.payment_amount || r.paymentAmount || 0,
+                paid_at: r.paid_at || r.paidAt || undefined
             }));
             setMyReservations(safeReservations);
         } catch (err) {
@@ -105,9 +107,9 @@ export const MyPageV2: React.FC<Props> = ({
             await cancelReservation(reservationId);
             setMyReservations(prev => prev.map(r => r.id === reservationId ? { ...r, status: 'cancelled' as const } : r));
             setSelectedReservation(null);
-            alert('예약이 취소되었습니다.');
+            toast.success('예약이 취소되었습니다.');
         } catch (err) {
-            alert('예약 취소 중 오류가 발생했습니다.');
+            toast.error('예약 취소 중 오류가 발생했습니다.');
         }
     };
 
@@ -401,9 +403,9 @@ export const MyPageV2: React.FC<Props> = ({
             {selectedReservation && (
                 <ReservationDetailModal
                     reservation={selectedReservation}
-                    facility={facilities.find(f => f.id === selectedReservation.facilityId)}
+                    facility={facilities.find(f => f.id === selectedReservation.facility_id)}
                     onClose={() => setSelectedReservation(null)}
-                    onCancel={(selectedReservation.status === 'pending' || selectedReservation.status === 'urgent') ? () => handleCancelReservation(selectedReservation.id) : undefined}
+                    onCancel={(selectedReservation.status === 'pending' || selectedReservation.status === 'urgent') ? () => selectedReservation.id && handleCancelReservation(selectedReservation.id) : undefined}
                 />
             )}
         </div>

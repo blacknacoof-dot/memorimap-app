@@ -38,22 +38,22 @@ export const ReservationCard: React.FC<Props> = ({
     return (
         <div className="bg-white border rounded-xl p-4 hover:shadow-md transition-shadow">
             <div className="flex justify-between items-start mb-3">
-                <h3 className="font-bold text-gray-900">{reservation.facilityName}</h3>
+                <h3 className="font-bold text-gray-900">{reservation.facility_name}</h3>
                 {getStatusBadge(reservation.status)}
             </div>
 
             <div className="space-y-2 text-sm text-gray-600">
                 <div className="flex items-center gap-2">
                     <Calendar size={16} className="text-primary" />
-                    <span>{reservation.date.toLocaleDateString('ko-KR')}</span>
+                    <span>{new Date(reservation.visit_date).toLocaleDateString('ko-KR')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <Clock size={16} className="text-primary" />
-                    <span>{reservation.timeSlot}</span>
+                    <span>{reservation.time_slot}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <Users size={16} className="text-primary" />
-                    <span>{reservation.visitorCount}명</span>
+                    <span>{reservation.visitor_count}명</span>
                 </div>
             </div>
 
@@ -67,7 +67,7 @@ export const ReservationCard: React.FC<Props> = ({
 
                 {(reservation.status === 'pending' || reservation.status === 'urgent') && onCancel && (
                     <button
-                        onClick={() => onCancel(reservation.id)}
+                        onClick={() => reservation.id && onCancel(reservation.id)}
                         className="py-2 px-4 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-medium transition-colors"
                     >
                         취소하기
@@ -76,7 +76,7 @@ export const ReservationCard: React.FC<Props> = ({
 
                 {reservation.status === 'confirmed' && onWriteReview && (
                     <button
-                        onClick={() => onWriteReview(String(reservation.facilityId))}
+                        onClick={() => onWriteReview(String(reservation.facility_id))}
                         className="py-2 px-4 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg text-sm font-medium transition-colors"
                     >
                         리뷰 작성

@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import {
     Settings2, MessageSquare, DollarSign,
     Sparkles, Save, ShieldCheck,
-    Type, Globe, Plus, Trash2
+    Type, Globe, Plus, Trash2, Bot
 } from 'lucide-react';
+import { toast } from 'sonner'; // [Phase 2] Error Handler
 import { supabase } from '../../lib/supabaseClient';
 import { Partner } from '../../types';
 
@@ -38,7 +39,7 @@ export const AIConfiguration: React.FC<AIConfigurationProps> = ({ partnerId }) =
             .update({ ai_context: partner.ai_context })
             .eq('id', partnerId);
 
-        if (!error) alert('AI 설정이 저장되었습니다.');
+        if (!error) toast.success('AI 설정이 저장되었습니다.');
         setSaving(false);
     };
 

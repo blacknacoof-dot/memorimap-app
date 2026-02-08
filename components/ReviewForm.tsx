@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Star, Send, Loader2, Image as ImageIcon, X } from 'lucide-react';
 import { createReview } from '../lib/queries';
 import { useUser } from '../lib/auth';
+import { toast } from 'sonner'; // [Phase 2] Error Handler
 
 import { Reservation } from '../types';
 
@@ -22,7 +23,7 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
 
     // Check for confirmed reservation
     const hasConfirmedReservation = reservations.some(
-        r => r.facilityId === spaceId && r.status === 'confirmed'
+        r => r.facility_id === spaceId && r.status === 'confirmed'
     );
 
     const [hasExistingReview, setHasExistingReview] = useState(false);
@@ -81,7 +82,7 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
 
     const handleSubmit = async () => {
         if (!content.trim() || content.trim().length < 10) {
-            alert('10자 이상 성의 있는 리뷰 부탁드립니다.');
+            toast.warning('10자 이상 성의 있는 리뷰 부탁드립니다.');
             return;
         }
 
@@ -114,7 +115,7 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
             onSuccess();
         } catch (err) {
             console.error(err);
-            alert('리뷰 작성 중 오류가 발생했습니다.');
+            toast.error('리뷰 작성 중 오류가 발생했습니다.');
         } finally {
             setIsSubmitting(false);
         }
@@ -126,7 +127,7 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
 
             // Total image limit check (Max 3)
             if (images.length + newFiles.length > 3) {
-                alert('이미지는 최대 3장까지 업로드 가능합니다.');
+                toast.warning('이미지는 최대 3장까지 업로드 가능합니다.');
                 return;
             }
             setImages(prev => [...prev, ...newFiles]);

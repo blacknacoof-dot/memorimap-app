@@ -5,6 +5,7 @@ import { CheckCircle, XCircle, Search, FileText, Phone, MapPin, Building2, User,
 import { PartnerInquiry } from '../../types/db';
 import { useConfirmModal } from '../../src/components/common/ConfirmModal';
 import { useIsSuperAdmin } from '../../hooks/useIsSuperAdmin';
+import { toast } from 'sonner'; // [Phase 2] Error Handler
 
 export const PartnerAdmissions: React.FC = () => {
     const { isSuperAdmin } = useIsSuperAdmin();
@@ -36,11 +37,11 @@ export const PartnerAdmissions: React.FC = () => {
             onConfirm: async () => {
                 try {
                     await approvePartner({ inquiryId: inquiry.id, action: 'approve' });
-                    alert('승인되었습니다.');
+                    toast.success('승인되었습니다.');
                     refetch();
                 } catch (error: any) {
                     console.error('Approve failed:', error);
-                    alert('승인 처리 중 오류가 발생했습니다: ' + error.message);
+                    toast.error('승인 처리 중 오류가 발생했습니다: ' + error.message);
                 }
             }
         });
@@ -53,11 +54,11 @@ export const PartnerAdmissions: React.FC = () => {
             onConfirm: async () => {
                 try {
                     await approvePartner({ inquiryId: id, action: 'reject', rejectionReason: '운영팀 문의 요망' });
-                    alert('거절되었습니다.');
+                    toast.success('거절되었습니다.');
                     refetch();
                 } catch (error: any) {
                     console.error('Reject failed:', error);
-                    alert('거절 처리 중 오류가 발생했습니다: ' + error.message);
+                    toast.error('거절 처리 중 오류가 발생했습니다: ' + error.message);
                 }
             }
         });
@@ -118,8 +119,8 @@ export const PartnerAdmissions: React.FC = () => {
                                                         f.business_type === 'pet_funeral' ? '동물장묘' : f.business_type}
                                         </span>
                                         <span className={`px-2 py-0.5 text-xs rounded border font-bold flex items-center gap-1 whitespace-nowrap ${f.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                                                f.status === 'rejected' ? 'bg-red-50 text-red-600 border-red-100' :
-                                                    'bg-green-50 text-green-600 border-green-100'
+                                            f.status === 'rejected' ? 'bg-red-50 text-red-600 border-red-100' :
+                                                'bg-green-50 text-green-600 border-green-100'
                                             }`}>
                                             <FileText size={10} />
                                             {f.status === 'pending' ? '승인 대기' :

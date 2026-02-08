@@ -30,7 +30,7 @@ import { logger } from './utils/logger';
 // Lazy Load Components
 const AdminView = React.lazy(() => import('./components/AdminView').then(m => ({ default: m.AdminView })));
 const MyPageView = React.lazy(() => import('./components/MyPageView').then(m => ({ default: m.MyPageView })));
-const FacilityAdminView = React.lazy(() => import('./components/FacilityAdminView').then(m => ({ default: m.FacilityAdminView })));
+const FacilityAdminView = React.lazy(() => import('./components/dashboard/FacilityAdminDashboard').then(m => ({ default: m.FacilityAdminDashboard })));
 const FuneralCompanyView = React.lazy(() => import('./components/FuneralCompanyView').then(m => ({ default: m.FuneralCompanyView })));
 const FuneralCompanySheet = React.lazy(() => import('./components/FuneralCompanySheet').then(m => ({ default: m.FuneralCompanySheet })));
 const ConsultationView = React.lazy(() => import('./components/Consultation/ConsultationView').then(m => ({ default: m.ConsultationView })));
@@ -873,16 +873,16 @@ const App: React.FC = () => {
         .from('reservations')
         .insert({
           user_id: user?.id,
-          facility_id: reservation.facilityId,
-          facility_name: reservation.facilityName,
-          visit_date: reservation.date.toISOString(),
-          time_slot: reservation.timeSlot,
-          visitor_name: reservation.visitorName,
-          visitor_count: reservation.visitorCount,
+          facility_id: reservation.facility_id,
+          facility_name: reservation.facility_name,
+          visit_date: reservation.visit_date,
+          time_slot: reservation.time_slot,
+          visitor_name: reservation.visitor_name,
+          visitor_count: reservation.visitor_count,
           purpose: reservation.purpose,
-          special_requests: reservation.specialRequests,
+          special_requests: reservation.special_requests,
           status: reservation.status,
-          payment_amount: reservation.paymentAmount
+          payment_amount: reservation.payment_amount
         })
         .select()
         .single();
@@ -1862,19 +1862,20 @@ const App: React.FC = () => {
                     // Create a pseudo-reservation for the contract
                     const contractReservation: Reservation = {
                       id: `CONT-${Date.now()}`,
-                      facilityId: data.companyId,
-                      facilityName: data.companyName,
-                      date: new Date(),
-                      timeSlot: data.callTime,
-                      visitorName: data.name,
-                      visitorCount: 1,
+                      facility_id: data.companyId,
+                      facility_name: data.companyName,
+                      visit_date: new Date().toISOString(),
+                      time_slot: data.callTime,
+                      visitor_name: data.name,
+                      visitor_count: 1,
+                      contact_number: data.phone,
                       purpose: '상조 가입 상담',
-                      specialRequests: `연락처: ${data.phone}`,
+                      special_requests: `연락처: ${data.phone}`,
                       status: 'pending',
-                      paymentAmount: 0,
-                      paidAt: new Date(),
-                      funeralCompanyId: data.companyId,
-                      funeralCompanyName: data.companyName
+                      payment_amount: 0,
+                      user_id: user?.id || '',
+                      funeral_company_id: data.companyId,
+                      funeral_company_name: data.companyName
                     };
                     handleBookingConfirm(contractReservation);
                   }}

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     MessageSquare, User, Bot, Zap,
-    CheckCircle, AlertCircle, Send,
-    MoreHorizontal, Smartphone, Hash
+    CheckCircle, Send,
+    MoreHorizontal, Smartphone, Hash, MonitorDot, XCircle
 } from 'lucide-react';
+import { toast } from 'sonner'; // [Phase 2] Error Handler
 import { supabase } from '../../lib/supabaseClient';
 import { PartnerConversation } from '../../types';
 
@@ -68,7 +69,7 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
             .from('partner_conversations')
             .update({ conversation_status: 'agent_connected', priority: 'high' })
             .eq('id', selectedId);
-        if (error) alert('개입 실패');
+        if (error) toast.error('개입 실패');
     };
 
     const handleSend = async () => {

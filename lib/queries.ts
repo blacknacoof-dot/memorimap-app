@@ -1,8 +1,10 @@
 import { Facility, Review, Reservation } from '../types';
 import { FUNERAL_COMPANIES } from '../constants';
 import { supabase, setSupabaseAuth } from './supabaseClient';
-import { isClerkConfigured } from './auth';
+
 import { logger } from '../utils/logger';
+import { validateImageFile } from './security/fileValidation';
+import { sanitizeSearchInput } from './security/sqlSanitize';
 
 // Partner Inquiry Category Configuration
 export const PARTNER_CATEGORIES = {
@@ -40,6 +42,12 @@ export const checkExistingReview = async (userId: string, facilityId: string) =>
  * [추가] 리뷰 이미지 업로드
  */
 export const uploadReviewImage = async (userId: string, file: File) => {
+    // [Security] 파일 검증
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+        throw new Error(validation.error || '파일 검증 실패');
+    }
+
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
     const filePath = `review-images/${userId}/${fileName}`;
@@ -296,8 +304,9 @@ export const searchFacilitiesByRegion = async (
     region: string,
     category?: string
 ) => {
-    // If category is null/undefined, it returns all types
-    const optimizedRegion = region.trim().replace(/\s+/g, '%');
+    // [Security] Sanitize input to prevent SQL injection
+    const sanitized = sanitizeSearchInput(region);
+    const optimizedRegion = sanitized.trim().replace(/\s+/g, '%');
 
     const { data, error } = await supabase.rpc('search_facilities_by_text', {
         p_text: optimizedRegion,
@@ -315,8 +324,11 @@ export const searchFacilitiesByRegion = async (
  * [NEW] Region Autocomplete RPC usage
  */
 export const getDistinctRegions = async (searchText: string) => {
+    // [Security] Sanitize input to prevent SQL injection
+    const sanitized = sanitizeSearchInput(searchText);
+
     const { data, error } = await supabase.rpc('get_distinct_regions', {
-        search_text: searchText
+        search_text: sanitized
     });
 
     if (error) {
@@ -553,24 +565,12 @@ export const deleteConsultation = async (id: string) => {
     return true;
 };
 
-const MOCK_REVIEWS_STORAGE_KEY = 'memorimap_mock_reviews';
 
-const getLocalReviews = (): any[] => {
-    if (typeof window === 'undefined') return [];
-    const stored = localStorage.getItem(MOCK_REVIEWS_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
-};
 
 // --- [리뷰 기능] ---
 export const getReviews = async (facilityId: string) => {
     try {
         let reviews: any[] = [];
-
-        // 🚑 Mock Mode Fallback: Merge local reviews
-        if (!isClerkConfigured()) {
-            const localReviews = getLocalReviews();
-            reviews = localReviews.filter(r => r.facility_id === facilityId && r.is_active);
-        }
 
         // [통합] facility_reviews 테이블 사용, facility_id가 TEXT이므로 ID 매핑 로직 단순화
         const { data, error } = await supabase
@@ -605,11 +605,7 @@ export const getReviews = async (facilityId: string) => {
 export const getUserReviews = async (userId: string) => {
     let reviews: any[] = [];
 
-    // 🚑 Mock Mode Fallback
-    if (!isClerkConfigured()) {
-        const localReviews = getLocalReviews();
-        reviews = localReviews.filter(r => r.user_id === userId && r.is_active);
-    }
+
 
     const { data, error } = await supabase
         .from('facility_reviews')
@@ -659,18 +655,7 @@ export const createReview = async (
     // 🚑 [Direct Attack] Check session before Supabase call
     const { data: { session } } = await supabase.auth.getSession();
 
-    // 🚑 Mock Mode Fallback (Explicit)
-    if (!session || !isClerkConfigured() || userId.startsWith('mock-')) {
-        const localReviews = getLocalReviews();
-        const newReview = {
-            id: `mock-rev-${Date.now()}`,
-            ...insertData,
-            userName: insertData.author_name // Compatibility
-        };
-        localReviews.push(newReview);
-        localStorage.setItem(MOCK_REVIEWS_STORAGE_KEY, JSON.stringify(localReviews));
-        return newReview;
-    }
+
 
     try {
         const { data, error } = await supabase
@@ -680,18 +665,13 @@ export const createReview = async (
             .single();
 
         if (error) {
-            if (error.code === '42501' || (error as any).status === 401) {
-                console.warn('[createReview] Supabase error, falling back to localStorage');
-                return createReview(facilityId, `mock-${userId}`, rating, content, userName, images);
-            }
+
             console.error('Error creating facility review:', error);
             throw error;
         }
         return data;
     } catch (e: any) {
-        if (e.code === '42501' || e.status === 401) {
-            return createReview(facilityId, `mock-${userId}`, rating, content, userName, images);
-        }
+
         throw e;
     }
 };
@@ -700,18 +680,7 @@ export const deleteReview = async (reviewId: string) => {
     // 🚑 [Direct Attack] Check session before Supabase call
     const { data: { session } } = await supabase.auth.getSession();
 
-    // 🚑 Mock Mode Fallback (Explicit)
-    if (!session || (!isClerkConfigured() && reviewId.startsWith('mock-')) || reviewId.startsWith('mock-')) {
-        const localReviews = getLocalReviews();
-        const index = localReviews.findIndex(r => r.id === reviewId);
-        if (index !== -1) {
-            localReviews[index].is_active = false;
-            localReviews[index].deleted_at = new Date().toISOString();
-            localStorage.setItem(MOCK_REVIEWS_STORAGE_KEY, JSON.stringify(localReviews));
-            return true;
-        }
-        if (reviewId.startsWith('mock-')) return true; // Already "deleted" or not found
-    }
+
 
     try {
         const { error } = await supabase

@@ -13,6 +13,7 @@ import { RevenueManagement } from './RevenueManagement';
 import { NoticeManagement } from './NoticeManagement';
 import { useLeads } from '../../hooks/useLeads';
 import { useSubscriptions } from '../../hooks/useFinancials';
+import { toast } from 'sonner'; // [Phase 2] Error Handler
 import { useSuperAdmin } from '../../hooks/useSuperAdmin';
 import { UserManagement } from './UserManagement';
 import { FacilityManagement } from './FacilityManagement';
@@ -103,11 +104,11 @@ import { Calendar } from 'lucide-react';
 
 const AdminSettings = () => {
     const handleSaveProfile = () => {
-        alert('프로필 정보가 저장되었습니다. (Internal)');
+        toast.success('프로필 정보가 저장되었습니다. (Internal)');
     };
 
     const handleChangePassword = () => {
-        alert('비밀번호 변경 기능은 Clerk 대시보드에서 관리 가능합니다.');
+        toast.info('비밀번호 변경 기능은 Clerk 대시보드에서 관리 가능합니다.');
     };
 
     return (
@@ -196,10 +197,10 @@ const SystemSettings = () => {
     const handleSaveSystemSettings = async () => {
         try {
             await updateSystemSetting('commission_rate', commission);
-            alert('시스템 설정이 저장되었습니다.');
+            toast.success('시스템 설정이 저장되었습니다.');
         } catch (e) {
             console.error(e);
-            alert('설정 저장 중 오류가 발생했습니다.');
+            toast.error('설정 저장 중 오류가 발생했습니다.');
         }
     };
 
@@ -219,7 +220,7 @@ const SystemSettings = () => {
                     <label className="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" className="sr-only peer" onChange={(e) => {
                             updateSystemSetting('maintenance_mode', e.target.checked);
-                            alert(`점검 모드가 ${e.target.checked ? '활성화' : '비활성화'} 되었습니다.`);
+                            toast.success(`점검 모드가 ${e.target.checked ? '활성화' : '비활성화'} 되었습니다.`);
                         }} />
                         <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
                     </label>
@@ -271,7 +272,7 @@ const SystemSettings = () => {
                 <button
                     onClick={async () => {
                         if (confirm('데이터베이스를 스캔하여 누락된 매출 기록을 생성하시겠습니까?')) {
-                            alert('SQL 패치(fix_revenue_and_billing_date.sql)를 데이터베이스에서 실행해주세요.');
+                            toast.warning('SQL 패치(fix_revenue_and_billing_date.sql)를 데이터베이스에서 실행해주세요.', { duration: 8000 });
                         }
                     }}
                     className="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
@@ -296,10 +297,10 @@ const SubscriptionManager = ({ onManage }: { onManage: (facilityName: string) =>
                 // Ensure valid ISO string
                 const isoDate = new Date(newDate).toISOString();
                 await updateSubscriptionBillingDate(facilityId, isoDate);
-                alert('재결제 예정일이 업데이트되었습니다.');
+                toast.success('재결제 예정일이 업데이트되었습니다.');
                 window.location.reload();
             } catch (e) {
-                alert('날짜 형식이 올바르지 않거나 업데이트에 실패했습니다.');
+                toast.error('날짜 형식이 올바르지 않거나 업데이트에 실패했습니다.');
             }
         }
     };

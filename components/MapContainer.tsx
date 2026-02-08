@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useImperativeHandle, forwardRef, useState } f
 import { Facility } from '../types';
 import { useFilterStore } from '../stores/useFilterStore';
 import { getMarkerHtml, LeafletCompatibleBounds } from '../utils/naverMapHelper';
+import { toast } from 'sonner'; // [Phase 2] Error Handler
 
 // Extend Window interface for Naver Maps
 declare global {
@@ -75,7 +76,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
 
       // 스크립트가 이미 존재하는지 확인
       const existingScript = document.getElementById('naver-map-script');
-      
+
       if (!existingScript) {
         // 스크립트 로드
         const script = document.createElement('script');
@@ -235,7 +236,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
         }
       }, (err) => {
         console.error("Geolocation error", err);
-        alert("위 위치를 가져올 수 없습니다.");
+        toast.error("위치를 가져올 수 없습니다.");
       });
     }
   }));

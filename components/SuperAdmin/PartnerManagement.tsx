@@ -4,6 +4,7 @@ import {
     XCircle, AlertCircle, MoreVertical,
     Building2, Mail, Phone, Calendar, ExternalLink
 } from 'lucide-react';
+import { toast } from 'sonner'; // [Phase 2] Error Handler
 import { getPartners, updatePartnerStatus } from '../../lib/sangjoQueries';
 import { Partner } from '../../types';
 
@@ -34,10 +35,10 @@ export const PartnerManagement: React.FC = () => {
 
         try {
             await updatePartnerStatus(id, status);
-            alert('상태가 업데이트되었습니다.');
+            toast.success('상태가 업데이트되었습니다.');
             loadPartners();
         } catch (err) {
-            alert('업데이트 중 오류가 발생했습니다.');
+            toast.error('업데이트 중 오류가 발생했습니다.');
         }
     };
 

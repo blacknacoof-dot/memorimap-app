@@ -34,3 +34,5 @@ full_price_update.json
 .env.*.local
 .env
 !.env.template
+
+types_schema.ts  # Invalid file - ignore

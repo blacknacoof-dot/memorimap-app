@@ -15,7 +15,7 @@ const Placeholder: React.FC<{ name: string }> = ({ name }) => (
 // Real View Components - Lazy loaded
 const MapView = React.lazy(() => import('../components/views/MapView'));
 const SuperAdminDashboard = React.lazy(() => import('../components/SuperAdmin/SuperAdminDashboard'));
-const FacilityAdminViewComponent = React.lazy(() => import('../components/FacilityAdminView').then(m => ({ default: m.FacilityAdminView })));
+const FacilityAdminViewComponent = React.lazy(() => import('../components/dashboard/FacilityAdminDashboard').then(m => ({ default: m.FacilityAdminDashboard })));
 const PartnerInquiryViewComponent = React.lazy(() => import('../components/PartnerInquiryView').then(m => ({ default: m.PartnerInquiryView })));
 const SubscriptionPlans = React.lazy(() => import('../components/SubscriptionPlans'));
 
