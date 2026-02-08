@@ -20,6 +20,19 @@ import {
     FUNERAL_SERVICE_OPTIONS
 } from '@/constants/maumAiConstants';
 
+// Safe Highlighting Component
+const SafeHighlight = ({ text, highlight }: { text: string, highlight: string }) => {
+    if (!highlight.trim()) return <span>{text}</span>;
+    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+    return (
+        <span>
+            {parts.map((part, i) =>
+                part.toLowerCase() === highlight.toLowerCase() ? <b key={i}>{part}</b> : part
+            )}
+        </span>
+    );
+};
+
 interface FormProps {
     userLocation?: { lat: number; lng: number };
     onGetCurrentPosition?: () => void;
@@ -75,7 +88,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
     // Autocomplete State
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+    const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
         const queryText = step === 2 ? deceasedLocation : location;
@@ -411,7 +424,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                                     <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
                                         {suggestions.map((s, i) => (
                                             <button key={i} onClick={() => { setDeceasedLocation(s); setShowSuggestions(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 border-b border-slate-50 last:border-none">
-                                                <span dangerouslySetInnerHTML={{ __html: s.replace(new RegExp(deceasedLocation, 'gi'), (match) => `<b>${match}</b>`) }} />
+                                                <SafeHighlight text={s} highlight={deceasedLocation} />
                                             </button>
                                         ))}
                                     </div>
@@ -489,7 +502,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                                     <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
                                         {suggestions.map((s, i) => (
                                             <button key={i} onClick={() => { setLocation(s); setShowSuggestions(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 border-b border-slate-50 last:border-none">
-                                                <span dangerouslySetInnerHTML={{ __html: s.replace(new RegExp(location, 'gi'), (match) => `<b>${match}</b>`) }} />
+                                                <SafeHighlight text={s} highlight={location} />
                                             </button>
                                         ))}
                                     </div>

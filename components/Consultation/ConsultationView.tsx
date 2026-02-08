@@ -66,7 +66,7 @@ export const ConsultationView: React.FC<Props> = ({
                 facility.id,
                 topic || "일반 상담",
                 facility.name,
-                newMessages
+                newMessages[newMessages.length - 1]?.text || "상담 시작" // Pass latest text as initial message string if required by API, or JSON.stringify if it takes JSON. Validating based on error context likely String. 
             );
             if (newId) setConsultationId(newId);
         } else {

@@ -19,14 +19,20 @@ const FacilityAdminViewComponent = React.lazy(() => import('../components/Facili
 const PartnerInquiryViewComponent = React.lazy(() => import('../components/PartnerInquiryView').then(m => ({ default: m.PartnerInquiryView })));
 const SubscriptionPlans = React.lazy(() => import('../components/SubscriptionPlans'));
 
+// Static Views
+import { GuideView, NoticesView, SupportView, SettingsView } from '../components/StaticViews';
+
 // Placeholders for views that need more work
 const AdminView = () => <Placeholder name="AdminView" />;
 const MyPageView = React.lazy(() => import('../components/MyPageView').then(m => ({ default: m.MyPageView })));
 const FuneralCompanyView = () => <Placeholder name="FuneralCompanyView" />;
-const GuideView = () => <Placeholder name="GuideView" />;
-const NoticesView = () => <Placeholder name="NoticesView" />;
-const SupportView = () => <Placeholder name="SupportView" />;
-const SettingsView = () => <Placeholder name="SettingsView" />;
+
+/** Wrapper for Static Views to provide onBack and user props */
+const StaticViewWrapper: React.FC<{ Component: React.FC<any> }> = ({ Component }) => {
+    const navigate = useNavigate();
+    const { user } = useUser();
+    return <Component onBack={() => navigate('/')} user={user} />;
+};
 
 /** Wrapper for FacilityAdminView - provides required props from hooks */
 const FacilityAdminWrapper: React.FC = () => {
@@ -158,10 +164,10 @@ const AppRouter: React.FC = () => {
                     <Route path="/subscription-plans" element={<SubscriptionPlans />} />
 
                     {/* Static Pages */}
-                    <Route path="/guide" element={<GuideView />} />
-                    <Route path="/notices" element={<NoticesView />} />
-                    <Route path="/support" element={<SupportView />} />
-                    <Route path="/settings" element={<SettingsView />} />
+                    <Route path="/guide" element={<StaticViewWrapper Component={GuideView} />} />
+                    <Route path="/notices" element={<StaticViewWrapper Component={NoticesView} />} />
+                    <Route path="/support" element={<StaticViewWrapper Component={SupportView} />} />
+                    <Route path="/settings" element={<StaticViewWrapper Component={SettingsView} />} />
 
                     {/* Fallback */}
                     <Route path="*" element={<Navigate to="/" replace />} />

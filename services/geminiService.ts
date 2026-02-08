@@ -8,6 +8,7 @@ export interface ChatMessage {
   timestamp: Date;
   action?: ActionType;
   options?: { label: string; value: string }[]; // [NEW] For button options
+  facilities?: Facility[]; // [NEW] For recommendation results
 }
 
 export interface AIResponse {

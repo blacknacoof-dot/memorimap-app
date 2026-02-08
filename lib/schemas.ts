@@ -2,10 +2,10 @@ import { z } from 'zod';
 
 // [Step 1] Validation Logic matching types/db.ts
 export const ReservationSchema = z.object({
-    // System fields (Optional in form, required in DB)
+    // Core Info
     id: z.string().uuid().optional(),
     user_id: z.string().uuid().optional(),
-    facility_id: z.string().uuid().optional(),
+    facility_id: z.union([z.string(), z.number()]).optional(),
 
     // Core Info
     visit_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "날짜 형식이 올바르지 않습니다 (YYYY-MM-DD)"),

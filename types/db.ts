@@ -19,7 +19,7 @@ export type TargetAudience = 'all' | 'facility_admin' | 'user';
 export interface Favorite {
     id: string;
     user_id: string;
-    facility_id: string;
+    facility_id: number | string;
     created_at: string;
 }
 
@@ -47,7 +47,7 @@ export interface Reservation {
     special_requests?: string; // DB Column (was request_note)
     request_note?: string; // Alias/Legacy
     purpose?: string;
-    facility_id: string;
+    facility_id: number | string;
     user_id: string;
     status: ReservationStatus;
     rejection_reason?: string | null;
@@ -70,6 +70,7 @@ export interface MemorialSpace {
     ai_features?: string[]; // Kept for logic
     is_verified: boolean;
     subscription_tier?: SubscriptionPlan; // Updated type
+    facilities_id?: string | null; // [Added] Link to facilities table (UUID)
 }
 
 export interface PartnerInquiry {
@@ -97,7 +98,7 @@ export interface PartnerInquiry {
  */
 export interface Subscription {
     id: string;
-    facility_id: string;
+    facility_id: number | string;
     facility?: { name: string }; // Joined property
     plan_name: 'Basic' | 'Premium' | 'Enterprise';
     status: 'active' | 'expired' | 'cancelled';

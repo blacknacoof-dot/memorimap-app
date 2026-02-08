@@ -43,7 +43,7 @@ export const EditProfileModal: React.FC<Props> = ({ user, onClose, onUpdate }) =
         setIsSubmitting(true);
         try {
             await updateUserProfile(user.id, {
-                name,
+                full_name: name, // Mapped to correct DB column
                 phone_number: phone
             });
             onUpdate(); // Refresh parent data

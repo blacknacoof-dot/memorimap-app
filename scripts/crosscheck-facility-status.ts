@@ -100,9 +100,9 @@ typeStats.forEach((count, type) => {
 // DB 데이터와 매칭
 async function matchWithDB() {
     const { data: dbData, error } = await supabase
-        .from('memorial_spaces')
+        .from('facilities')
         .select('id, name, address, type')
-        .eq('type', 'funeral');
+        .eq('type', 'funeral_home');
 
     if (error) {
         console.error('DB Error:', error);

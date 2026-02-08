@@ -54,16 +54,30 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
   useEffect(() => {
     if (!mapElement.current) return;
 
+    let isMounted = true;
+    let checkInterval: NodeJS.Timeout | null = null;
+
     // Define global callback for Naver Map SDK
     (window as any).initNaverMap = () => {
       console.log('[MapContainer] Naver Map SDK callback triggered');
-      initMap();
+      if (isMounted) {
+        initMap();
+      }
     };
 
-    // Load Naver Script if not present
-    if (!window.naver || !window.naver.maps) {
+    // SDK 로드 및 초기화 함수
+    const loadAndInitMap = () => {
+      // 이미 로드되어 있으면 바로 초기화
+      if (window.naver && window.naver.maps && window.naver.maps.Map) {
+        initMap();
+        return;
+      }
+
+      // 스크립트가 이미 존재하는지 확인
       const existingScript = document.getElementById('naver-map-script');
+      
       if (!existingScript) {
+        // 스크립트 로드
         const script = document.createElement('script');
         script.id = 'naver-map-script';
         script.type = 'text/javascript';
@@ -76,22 +90,32 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
         script.defer = true;
         document.head.appendChild(script);
       } else {
-        // Script exists but naver.maps might not be ready. 
-        // We already defined the global callback, so if the script is still loading, it will call it.
-        // If it's already there but just not initialized, we try initMap.
-        if (window.naver && window.naver.maps) {
-          initMap();
-        }
+        // 스크립트는 존재하지만 SDK가 아직 준비되지 않음 - 폴링으로 체크
+        console.log('[MapContainer] Script exists, waiting for SDK...');
+        checkInterval = setInterval(() => {
+          if (window.naver && window.naver.maps && window.naver.maps.Map) {
+            if (checkInterval) clearInterval(checkInterval);
+            if (isMounted) {
+              initMap();
+            }
+          }
+        }, 100);
+
+        // 10초 후 타임아웃
+        setTimeout(() => {
+          if (checkInterval) {
+            clearInterval(checkInterval);
+            console.error('[MapContainer] SDK load timeout');
+          }
+        }, 10000);
       }
-    } else {
-      initMap();
-    }
+    };
 
     function initMap() {
-      if (!mapElement.current) return;
+      if (!mapElement.current || !isMounted) return;
 
       // ✅ [Crash Prevention] SDK Safety Check
-      if (!window.naver || !window.naver.maps) {
+      if (!window.naver || !window.naver.maps || !window.naver.maps.Map) {
         console.warn('[MapContainer] Naver Map SDK not ready yet');
         return;
       }
@@ -135,7 +159,12 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
       }
     }
 
+    // 지도 로드 시작
+    loadAndInitMap();
+
     return () => {
+      isMounted = false;
+      if (checkInterval) clearInterval(checkInterval);
       // Clean up global callback to prevent memory leak or stale closures
       delete (window as any).initNaverMap;
     };

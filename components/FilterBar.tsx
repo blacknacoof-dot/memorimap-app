@@ -27,6 +27,8 @@ export const FilterBar = () => {
                 <div className="flex items-center px-4 h-12 bg-white">
                     <Search size={18} className="text-gray-400 mr-2 shrink-0" />
                     <input
+                        id="search-input"
+                        name="search"
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -56,8 +58,8 @@ export const FilterBar = () => {
                                     }
                                 }}
                                 className={`px-3 py-1.5 rounded-full text-[11px] font-medium shadow-sm border whitespace-nowrap transition-colors flex-shrink-0 ${isSelected
-                                        ? 'bg-primary text-white border-primary'
-                                        : 'bg-white/90 backdrop-blur text-gray-900 hover:bg-white border-white/50'
+                                    ? 'bg-primary text-white border-primary'
+                                    : 'bg-white/90 backdrop-blur text-gray-900 hover:bg-white border-white/50'
                                     }`}
                             >
                                 {cat.label}

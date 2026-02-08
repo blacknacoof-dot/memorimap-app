@@ -9,7 +9,7 @@ import { useMyFavorites, useToggleFavorite, useRemoveFavorite, useMyEndingNote, 
 import { useMyJourney } from '@/hooks/useMyJourney';
 import { generateRuleBasedInsight } from '@/lib/generateJourneyInsight';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
-import { ImagePresets } from '@/utils/imageOptimization'; // Assuming this exists or I'll use simple string
+// Fixed: Removed missing import and standardized Types
 import { EditProfileModal } from './EditProfileModal';
 import { ReservationList } from './ReservationList';
 import { LegalModal } from './LegalModal';
@@ -75,7 +75,23 @@ export const MyPageV2: React.FC<Props> = ({
         setIsLoadingReservations(true);
         try {
             const data = await getMyReservations(user.id);
-            setMyReservations(data);
+            // Fix: Map raw data to satisfy Reservation interface
+            const safeReservations: Reservation[] = (data as any[]).map(r => ({
+                id: r.id,
+                facilityId: r.facilityId,
+                facilityName: r.facilityName,
+                date: r.date,
+                timeSlot: r.timeSlot,
+                status: r.status,
+                visitorCount: r.visitorCount,
+                message: r.message,
+                createdAt: r.createdAt,
+                visitorName: r.visitorName || user.name, // Default or fetch
+                purpose: r.purpose || '일반 방문',
+                paymentAmount: r.paymentAmount || 0,
+                paidAt: r.paidAt || undefined
+            }));
+            setMyReservations(safeReservations);
         } catch (err) {
             console.error(err);
         } finally {

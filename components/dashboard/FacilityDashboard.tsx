@@ -103,8 +103,10 @@ export default function FacilityDashboard() {
                         </h2>
                     </header>
 
-                    {activeTab === 'consultations' ? (
-                        <ConsultationList facilityId={facility.id.toString()} />
+{activeTab === 'consultations' ? (
+                        <ConsultationList 
+                            facilityId={facility.facilities_id || facility.id.toString()} 
+                        />
                     ) : activeTab === 'reservations' ? (
                         <ReservationManager
                             reservations={reservations}

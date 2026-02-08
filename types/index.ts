@@ -1,3 +1,5 @@
+import React from 'react';
+
 export interface ServiceDetail {
   category: string;
   items: string[];
@@ -45,7 +47,7 @@ export interface Review {
   user_id?: string; // Keeps compatibility with DB snake_case if used raw
   userName: string;
   userImage?: string;
-  facility_id?: string;
+  facility_id?: number | string;
   space_id?: string; // Legacy compatibility
   rating: number;
   content: string;
@@ -72,7 +74,7 @@ export interface AiConsultation {
   id: string;
   conversation_id: string;
   user_id: string | null;
-  facility_id: string | null;
+  facility_id: number | string | null;
   facility_name: string;
   category: 'funeral' | 'pet' | 'memorial' | 'general';
   status: AiConsultationStatus;
@@ -84,7 +86,7 @@ export interface AiConsultation {
 
 export interface Message {
   role: 'user' | 'model' | 'system';
-  text: string | JSX.Element;
+  text: string | React.JSX.Element;
   timestamp: Date;
   action?: ActionType;
   options?: { label: string; value: string }[];
@@ -114,7 +116,7 @@ export {
 
 export interface Reservation {
   id: string;
-  facilityId: string;
+  facilityId: number | string;
   facilityName: string;
   date: Date;
   timeSlot: string;

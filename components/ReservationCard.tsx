@@ -76,7 +76,7 @@ export const ReservationCard: React.FC<Props> = ({
 
                 {reservation.status === 'confirmed' && onWriteReview && (
                     <button
-                        onClick={() => onWriteReview(reservation.facilityId)}
+                        onClick={() => onWriteReview(String(reservation.facilityId))}
                         className="py-2 px-4 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg text-sm font-medium transition-colors"
                     >
                         리뷰 작성

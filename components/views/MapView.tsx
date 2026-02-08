@@ -76,11 +76,11 @@ const MapView: React.FC<MapViewProps> = ({ viewState, setViewState }) => {
     };
 
     const handleLogin = () => {
-        console.log("Login requested");
+        // console.log("Login requested");
     };
 
     const handleLogout = () => {
-        console.log("Logout requested");
+        // console.log("Logout requested");
     };
 
     // Chat Handler
@@ -163,16 +163,16 @@ const MapView: React.FC<MapViewProps> = ({ viewState, setViewState }) => {
                 <FacilitySheet
                     facility={selectedFacility}
                     onClose={() => setSelectedFacility(null)}
-                    onBook={() => console.log("Booking clicked")}
-                    onToggleCompare={() => console.log("Compare clicked")}
+                    onBook={() => { }}
+                    onToggleCompare={() => { }}
                     onViewMap={() => {
                         setSelectedFacility(null);
                         mapRef.current?.flyToLocation(); // Ideally fly to facility loc, but keeping simple
                     }}
                     isLoggedIn={!!isSignedIn}
                     currentUser={user ? { id: user.id, name: user.firstName || 'User' } : null}
-                    onAddReview={(id, content, rating) => console.log("Add review", id, content, rating)}
-                    onLoginRequired={() => console.log("Login required")}
+                    onAddReview={(id, content, rating) => { }}
+                    onLoginRequired={() => { }}
                     isInCompareList={false}
                     onOpenAiChat={() => {
                         setSelectedFacility(null);
@@ -190,7 +190,7 @@ const MapView: React.FC<MapViewProps> = ({ viewState, setViewState }) => {
                         <ChatInterface
                             facility={selectedFacility || { id: 'maum-i', name: 'AI 마음이', type: 'assistant', lat: 37.5, lng: 127, address: '서울', rating: 5, reviewCount: 999 } as Facility}
                             allFacilities={facilities}
-                            onAction={(action, data) => console.log("AI Action", action, data)}
+                            onAction={(action, data) => { }}
                             onClose={() => setIsChatOpen(false)}
                             currentUser={user ? { id: user.id, name: user.firstName || 'User' } : null}
                             initialIntent={chatIntent}

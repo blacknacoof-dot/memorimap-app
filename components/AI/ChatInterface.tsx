@@ -37,6 +37,19 @@ interface Props {
 
 
 
+// Safe Highlighting Component
+const SafeHighlight = ({ text, highlight }: { text: string, highlight: string }) => {
+    if (!highlight.trim()) return <span>{text}</span>;
+    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+    return (
+        <span>
+            {parts.map((part, i) =>
+                part.toLowerCase() === highlight.toLowerCase() ? <b key={i}>{part}</b> : part
+            )}
+        </span>
+    );
+};
+
 interface FormProps {
     userLocation?: { lat: number, lng: number, type: string };
     onGetCurrentPosition?: () => void;
@@ -58,7 +71,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({ userLocation, onGetCurrentPos
     // Autocomplete State (Reused logic could be extracted but keeping local for speed)
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+    const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
         if (!region || region.length < 2) {
@@ -85,7 +98,9 @@ const MemorialSearchForm: React.FC<FormProps> = ({ userLocation, onGetCurrentPos
                 try {
                     const check = await searchFacilitiesByRegion(region); // Generic check
                     if (!check || check.length === 0) return setError('해당 지역에는 등록된 추모시설이 없습니다.');
-                } catch (e) { }
+                } catch (e) {
+                    console.error('Facility search error:', e);
+                }
             }
         }
         if (step === 3 && !religion) return setError('종교 유형을 선택해 주세요.');
@@ -156,10 +171,10 @@ const MemorialSearchForm: React.FC<FormProps> = ({ userLocation, onGetCurrentPos
                     <div className="relative">
                         <input type="text" value={region} onChange={(e) => { setRegion(e.target.value); setError(''); }} onFocus={() => suggestions.length > 0 && setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} placeholder="예: 경기 용인, 분당" className="w-full bg-white border border-emerald-200 rounded-xl px-3 py-3 text-sm focus:border-emerald-600 focus:outline-none" />
                         {showSuggestions && (
-                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-emerald-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
                                 {suggestions.map((s, i) => (
-                                    <button key={i} onClick={() => { setRegion(s); setShowSuggestions(false); setError(''); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 border-b border-slate-50 last:border-none">
-                                        <span dangerouslySetInnerHTML={{ __html: s.replace(new RegExp(region, 'gi'), (match) => `<b>${match}</b>`) }} />
+                                    <button key={i} onClick={() => { setRegion(s); setShowSuggestions(false); setError(''); }} className="w-full text-left px-4 py-2 text-sm hover:bg-emerald-50 border-b border-emerald-50 last:border-none">
+                                        <SafeHighlight text={s} highlight={region} />
                                     </button>
                                 ))}
                             </div>
@@ -806,8 +821,7 @@ export const ChatInterface: React.FC<Props> = ({
                                 contactName: data.name,
                                 contactPhone: data.phone,
                                 category: facility.type === 'pet_funeral' ? 'pet' : (facility.type === 'funeral' ? 'funeral' : 'memorial'),
-                                urgency: formMode === 'urgent' ? 'immediate' : 'high',
-                                scale: data.scale,
+                                urgency: (formMode as string) === 'urgent' ? 'immediate' : 'high',
                                 priorities: data.requests ? [data.requests] : [],
                                 contextData: {
                                     ...data,
@@ -949,7 +963,6 @@ export const ChatInterface: React.FC<Props> = ({
                                                 userLocation={userLocation}
                                                 onGetCurrentPosition={onGetCurrentPosition}
                                                 onSubmit={(payload) => handleSend(payload)}
-                                                initialCategory="memorial"
                                             />
                                         )}
 
@@ -960,6 +973,7 @@ export const ChatInterface: React.FC<Props> = ({
                                                 onSubmit={(payload) => handleSend(payload)}
                                                 initialCategory="pet_funeral"
                                                 currentUser={currentUser}
+                                                onSwitchToFacility={onSwitchToFacility}
                                             />
                                         )}
 
@@ -969,9 +983,9 @@ export const ChatInterface: React.FC<Props> = ({
                                             />
                                         )}
 
-                                        {msg.action === 'RECOMMEND' && (msg as any).facilities && (msg as any).facilities.length > 0 && (
+                                        {msg.action === 'RECOMMEND' && msg.facilities && msg.facilities.length > 0 && (
                                             <RecommendList
-                                                facilities={(msg as any).facilities}
+                                                facilities={msg.facilities}
                                                 onViewDetail={handleReserve}
                                             />
                                         )}

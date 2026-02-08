@@ -19,7 +19,7 @@ export const AdminCommunication: React.FC = () => {
             setNotices(data);
         } else {
             const data = await getInquiries();
-            setInquiries(data);
+            setInquiries(data as unknown as Inquiry[]);
         }
         setIsLoading(false);
     };
