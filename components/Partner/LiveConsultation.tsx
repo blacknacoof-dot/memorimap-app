@@ -60,7 +60,10 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
                 });
             })
             .subscribe();
-        return () => { supabase.removeChannel(channel); };
+        return () => {
+            channel.unsubscribe();
+            supabase.removeChannel(channel);
+        };
     };
 
     const handleHijack = async () => {
