@@ -1,5 +1,6 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import MapComponent, { MapRef } from './components/MapContainer';
 import { FacilitySheet } from './components/FacilitySheet';
 import { ReservationModal } from './components/ReservationModal';
@@ -1492,6 +1493,7 @@ const App: React.FC = () => {
 
   return (
     <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <ErrorBoundary>
       <div className="h-full w-full relative bg-gray-100 flex justify-center overflow-hidden">
         {/* Mobile Container Limit */}
         <div className="w-full h-full md:max-w-md bg-white relative shadow-2xl flex flex-col">
@@ -2015,6 +2017,7 @@ const App: React.FC = () => {
           </div>
         )}
       </div>
+      </ErrorBoundary>
     </HashRouter>
   );
 };
