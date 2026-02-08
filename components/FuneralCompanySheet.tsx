@@ -42,13 +42,13 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
         // console.log('🔍 [DEBUG] company 객체:', company);
 
         if (!isLoggedIn || !currentUser) {
-            alert('로그인이 필요한 기능입니다.');
+            toast.error('로그인이 필요한 기능입니다.');
             if (onOpenLogin) onOpenLogin();
             return;
         }
 
         if (!reviewContent.trim() || reviewContent.trim().length < 10) {
-            alert('10자 이상 성의 있는 리뷰 부탁드립니다.');
+            toast.error('10자 이상 성의 있는 리뷰 부탁드립니다.');
             return;
         }
 
@@ -114,7 +114,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                 await navigator.share(shareData);
             } else {
                 await navigator.clipboard.writeText(window.location.href);
-                alert('주소가 복사되었습니다!');
+                toast.success('주소가 복사되었습니다!');
             }
         } catch (err) {
             console.error('Share failed:', err);
@@ -124,7 +124,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
     // 3. Like Handler
     const handleToggleLike = async () => {
         if (!isLoggedIn || !currentUser) {
-            alert('로그인이 필요한 기능입니다.');
+            toast.error('로그인이 필요한 기능입니다.');
             if (onOpenLogin) onOpenLogin(); // Redirect to login
             return;
         }
@@ -445,7 +445,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                             <button
                                 onClick={() => {
                                     if (!isLoggedIn || !currentUser) {
-                                        alert('로그인이 필요한 기능입니다.');
+                                        toast.error('로그인이 필요한 기능입니다.');
                                         if (onOpenLogin) onOpenLogin();
                                         return;
                                     }
