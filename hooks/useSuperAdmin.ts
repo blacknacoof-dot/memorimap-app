@@ -14,25 +14,27 @@ export function useSuperAdmin() {
             return;
         }
 
-        async function checkSuperAdmin() {
+        const checkAdmin = async () => {
             try {
-                const { data, error } = await supabase
-                    .from('super_admins')
-                    .select('user_id, is_active')
-                    .eq('user_id', userId)
-                    .eq('is_active', true)
-                    .single();
-
-                setIsSuperAdmin(!!data && !error);
-            } catch {
+                // ✅ [Security Fix] RPC 기반 서버 측 검증 (기존: 직접 테이블 SELECT)
+                const { data, error } = await supabase.rpc('is_super_admin', { p_user_id: userId });
+                if (error) {
+                    console.error('[useSuperAdmin] RPC check failed:', error);
+                    setIsSuperAdmin(false);
+                } else {
+                    setIsSuperAdmin(data === true);
+                }
+            } catch (err) {
+                console.error('[useSuperAdmin] Unexpected error:', err);
                 setIsSuperAdmin(false);
             } finally {
                 setLoading(false);
             }
-        }
+        };
 
-        checkSuperAdmin();
+        checkAdmin();
     }, [userId]);
 
     return { isSuperAdmin, loading };
 }
+

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import {
     Facility,
@@ -59,10 +59,20 @@ export function useFacilities(options: UseFacilitiesOptions = {}): UseFacilities
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
 
+    // Keep track of the abort controller
+    const abortControllerRef = useRef<AbortController | null>(null);
+
     /**
      * Fetch facilities from Supabase
      */
     const fetchFacilities = useCallback(async () => {
+        // Cancel previous request
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
+
         try {
             setLoading(true);
             setError(null);
@@ -79,17 +89,16 @@ export function useFacilities(options: UseFacilitiesOptions = {}): UseFacilities
                 .not('lat', 'is', null)
                 .not('lng', 'is', null);
 
+            // Apply abort signal if supported by Supabase client (v2+)
+            // If not supported, the error will be caught, or we act on controller.signal.aborted before setting state.
+            // if (query.abortSignal) {
+            //     query = query.abortSignal(controller.signal);
+            // }
+
             // Apply category filter
             if (filter?.category && filter.category !== 'all') {
-                console.log('━━━━━━━━━━━━━━━━━━━━━━━━');
-                console.log('🔍 Filter Debug:');
-                console.log('  Input:', filter.category);
-
+                // Debug logging removed for production
                 const categoryCode = normalizeCategoryValue(filter.category);
-
-                console.log('  Normalized:', categoryCode);
-                console.log('  Query:', `category=eq.${categoryCode}`);
-                console.log('━━━━━━━━━━━━━━━━━━━━━━━━');
 
                 // Normal filtering
                 query = query.eq('category', categoryCode);
@@ -114,9 +123,11 @@ export function useFacilities(options: UseFacilitiesOptions = {}): UseFacilities
             // Execute query
             const { data, error: fetchError } = await query;
 
-            if (data) {
-                console.log(`📊 Filter Result: Got ${data.length} items for ${filter?.category || 'all'}`);
-            }
+            // if (data) {
+            //    console.log(`📊 Filter Result: Got ${data.length} items for ${filter?.category || 'all'}`);
+            // }
+
+            if (controller.signal.aborted) return; // Cleanup check
 
             if (fetchError) throw fetchError;
 
@@ -144,21 +155,18 @@ export function useFacilities(options: UseFacilitiesOptions = {}): UseFacilities
 
             setFacilities(normalizedData);
 
-            console.log(`✅ Fetched ${normalizedData.length} facilities`, {
-                filter,
-                sample: normalizedData.slice(0, 3).map(f => ({
-                    name: f.name,
-                    type: f.facility_type,
-                    coords: [f.latitude, f.longitude]
-                }))
-            });
+            // console.log(`✅ Fetched ${normalizedData.length} facilities`);
 
         } catch (err) {
+            if (controller.signal.aborted) return; // Ignore abort errors
+
             const errorMessage = err instanceof Error ? err.message : 'Failed to fetch facilities';
             setError(new Error(errorMessage));
             console.error('❌ Error fetching facilities:', err);
         } finally {
-            setLoading(false);
+            if (!controller.signal.aborted) {
+                setLoading(false);
+            }
         }
     }, [filter]); // Dependency on filter
 
@@ -209,7 +217,7 @@ export function useFacilities(options: UseFacilitiesOptions = {}): UseFacilities
         // I will leave it empty or minimal for now as the user didn't provide strict replacement for it,
         // but MapView calls it.
         // To prevent errors, I'll implement a basic fetch using useFacility logic essentially.
-        console.log("loadFacilityDetails called for", facilityId);
+        // console.log("loadFacilityDetails called for", facilityId);
         // Implementation omitted to keep it simple as per user request scope, 
         // but return promise to satisfy interface.
         return Promise.resolve();
@@ -241,16 +249,26 @@ export function useFacility(id: string | null) {
             return;
         }
 
+        const controller = new AbortController();
+
         const fetchFacility = async () => {
             try {
                 setLoading(true);
                 setError(null);
 
-                const { data, error: fetchError } = await supabase
+                let query = supabase
                     .from('facilities')
                     .select('*, latitude:lat, longitude:lng')
                     .eq('id', id)
                     .single();
+
+                // if (query.abortSignal) {
+                //     query = query.abortSignal(controller.signal);
+                // }
+
+                const { data, error: fetchError } = await query;
+
+                if (controller.signal.aborted) return;
 
                 if (fetchError) throw fetchError;
 
@@ -268,14 +286,21 @@ export function useFacility(id: string | null) {
 
                 setFacility(normalizedFacility);
             } catch (err) {
+                if (controller.signal.aborted) return;
                 setError(err instanceof Error ? err : new Error('Failed to fetch facility'));
                 console.error('❌ Error fetching facility:', err);
             } finally {
-                setLoading(false);
+                if (!controller.signal.aborted) {
+                    setLoading(false);
+                }
             }
         };
 
         fetchFacility();
+
+        return () => {
+            controller.abort();
+        };
     }, [id]);
 
     return { facility, loading, error };
@@ -297,11 +322,21 @@ export function useFacilityStats() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        const controller = new AbortController();
+
         const fetchStats = async () => {
             try {
-                const { data } = await supabase
+                let query = supabase
                     .from('facilities')
                     .select('facility_type, category'); // Select both to be safe
+
+                // if (query.abortSignal) {
+                //     query = query.abortSignal(controller.signal);
+                // }
+
+                const { data } = await query;
+
+                if (controller.signal.aborted) return;
 
                 if (data) {
                     const counts = data.reduce((acc, facility) => {
@@ -321,13 +356,20 @@ export function useFacilityStats() {
                     });
                 }
             } catch (err) {
+                if (controller.signal.aborted) return;
                 console.error('Error fetching stats:', err);
             } finally {
-                setLoading(false);
+                if (!controller.signal.aborted) {
+                    setLoading(false);
+                }
             }
         };
 
         fetchStats();
+
+        return () => {
+            controller.abort();
+        };
     }, []);
 
     return { stats, loading };

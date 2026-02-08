@@ -1,4 +1,4 @@
-﻿import { Facility, Review, Reservation } from '../types';
+import { Facility, Review, Reservation } from '../types';
 import { FUNERAL_COMPANIES } from '../constants';
 import { supabase, setSupabaseAuth } from './supabaseClient';
 import { isClerkConfigured } from './auth';
@@ -1148,22 +1148,36 @@ export const submitPartnerApplication = async (data: any) => {
     // 1. 파일 업로드
     let licenseUrl = '';
     if (data.businessLicenseImage) {
-        // ... (existing upload logic kept same but skipping for brevity in replacement if possible, but replace tool needs full logic)
-        // Wait, replace tool needs exact match. I should be careful.
-        // Re-reading lines 486-533 from previous view_file of queries.ts (Step 545)
-        const fileExt = data.businessLicenseImage.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random()}.${fileExt}`;
-        const filePath = `licenses/${fileName}`;
+        try {
+            const fileExt = data.businessLicenseImage.name.split('.').pop();
+            const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+            const filePath = `licenses/${fileName}`;
 
-        const { error: uploadError } = await supabase.storage
-            .from('partner_docs')
-            .upload(filePath, data.businessLicenseImage);
+            console.log('[PartnerUpload] Uploading file:', fileName, 'Size:', data.businessLicenseImage.size);
 
-        if (!uploadError) {
+            const { error: uploadError, data: uploadData } = await supabase.storage
+                .from('partner_docs')
+                .upload(filePath, data.businessLicenseImage, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
+
+            if (uploadError) {
+                console.error('[PartnerUpload] Upload error:', uploadError);
+                throw new Error(`파일 업로드 실패: ${uploadError.message}`);
+            }
+
+            console.log('[PartnerUpload] Upload successful:', uploadData);
+
             const { data: urlData } = supabase.storage
                 .from('partner_docs')
                 .getPublicUrl(filePath);
             licenseUrl = urlData.publicUrl;
+            console.log('[PartnerUpload] Public URL:', licenseUrl);
+        } catch (uploadErr: any) {
+            console.error('[PartnerUpload] Upload exception:', uploadErr);
+            // 파일 업로드 실패핏�도 계속 진행 (licenseUrl 없이)
+            // 또는 throw uploadErr; // 파일 업로드 필수시 에러 발생
         }
     }
 

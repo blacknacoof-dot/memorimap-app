@@ -66,7 +66,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
     // Autocomplete State
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+    const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Auto-fill location if facility context exists
     useEffect(() => {

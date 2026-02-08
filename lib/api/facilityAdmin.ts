@@ -1,19 +1,19 @@
 import { supabase } from '@/lib/supabaseClient';
 import { MemorialSpace, Reservation } from '@/types/db';
 
-// 1. 내 시설 정보 가져오기
+// 1. 내 시설 정보 가져오기 (facilities_id 포함)
 export const fetchMyFacility = async (userId: string) => {
     const { data, error } = await supabase
         .from('memorial_spaces')
-        .select('*')
-        .eq('owner_user_id', userId) // Changed from manager_id to owner_user_id
+        .select('*, facilities_id')
+        .eq('owner_user_id', userId)
         .single();
 
-    if (error && error.code !== 'PGRST116') { // PGRST116: 결과 없음 에러
+    if (error && error.code !== 'PGRST116') {
         throw error;
     }
 
-    return data as MemorialSpace | null;
+    return data as (MemorialSpace & { facilities_id?: string }) | null;
 };
 
 // 2. 내 시설의 예약 목록 가져오기

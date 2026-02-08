@@ -5,7 +5,9 @@ export const logger = {
         }
     },
     info: (...args: any[]) => {
-        console.log('ℹ️ [INFO]', ...args);
+        if (import.meta.env.DEV) {
+            console.log('ℹ️ [INFO]', ...args);
+        }
     },
     warn: (...args: any[]) => {
         console.warn('⚠️ [WARN]', ...args);

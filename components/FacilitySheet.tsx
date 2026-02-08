@@ -449,7 +449,7 @@ export const FacilitySheet: React.FC<Props> = ({
                   방문자 리뷰 <span className="text-gray-400 text-sm font-normal">({facility.reviews?.length || 0})</span>
                 </h3>
                 <div className="text-yellow-500 font-bold text-lg">
-                  ★ {Math.round(facility.rating)}
+                  ★ {Math.round(facility.rating || 0)}
                 </div>
               </div>
 

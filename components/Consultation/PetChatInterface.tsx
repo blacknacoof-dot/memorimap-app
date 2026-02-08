@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, Send, MapPin, Phone, CalendarCheck, Loader2, Bot, Heart, Sparkles, ChevronLeft, Dog, CheckCircle } from 'lucide-react';
 import { FuneralCompany } from '../../types';
 import { sendMessageToGemini, ChatMessage as GeminiMessage } from '../../services/geminiService';
+import DOMPurify from 'dompurify';
 
 /**
  * ------------------------------------------------------------------
@@ -494,9 +495,13 @@ export const PetChatInterface: React.FC<ComponentProps> = ({ company, onClose, o
                             ? 'bg-amber-800 text-white rounded-2xl rounded-tr-sm'
                             : 'bg-white text-stone-800 border border-stone-200 rounded-2xl rounded-tl-sm'
                             }`}>
+                            import DOMPurify from 'dompurify';
+
+                            // ... (inside the component)
+
                             <div
                                 className="whitespace-pre-wrap"
-                                dangerouslySetInnerHTML={{ __html: msg.text }}
+                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(msg.text) }}
                             />
 
                             {msg.sender === 'ai' && msg.action !== 'NONE' && (

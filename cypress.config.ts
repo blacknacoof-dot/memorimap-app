@@ -14,9 +14,9 @@ export default defineConfig({
         // Environment variables (can be overridden via cypress.env.json)
         env: {
             ADMIN_EMAIL: 'admin@test.com',
-            ADMIN_PASSWORD: 'testpassword123',
+            ADMIN_PASSWORD: process.env.CYPRESS_ADMIN_PASSWORD || 'testpassword123',
             SUPER_ADMIN_EMAIL: 'superadmin@test.com',
-            SUPER_ADMIN_PASSWORD: 'superadmin123',
+            SUPER_ADMIN_PASSWORD: process.env.CYPRESS_SUPER_ADMIN_PASSWORD || 'superadmin123',
         },
 
         setupNodeEvents(on, config) {

@@ -27,3 +27,10 @@ dist-ssr
 fuzzy_matches.json
 full_price_update.json
 .vercel
+
+# Environment variables
+.env.local
+.env.local.temp
+.env.*.local
+.env
+!.env.template

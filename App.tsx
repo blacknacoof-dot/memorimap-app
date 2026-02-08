@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Suspense } from 'react';
-import { HashRouter } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import MapComponent, { MapRef } from './components/MapContainer';
 import { FacilitySheet } from './components/FacilitySheet';
 import { ReservationModal } from './components/ReservationModal';
@@ -39,6 +39,7 @@ const SuperAdminDashboard = React.lazy(() => import('./components/SuperAdmin/Sup
 const SubscriptionPlans = React.lazy(() => import('./components/SubscriptionPlans').then(m => ({ default: m.default })));
 import { ExternalBrowserGuidePage } from './src/pages/ExternalBrowserGuidePage';
 import { redirectToExternalBrowserIfNeeded, isInAppBrowser } from './src/utils/browserDetection';
+import ShareJourneyView from './pages/ShareJourneyView';
 const SangjoConsultationModal = React.lazy(() => import('./components/Consultation/SangjoConsultationModal').then(m => ({ default: m.SangjoConsultationModal })));
 const SangjoContractModal = React.lazy(() => import('./components/Consultation/SangjoContractModal').then(m => ({ default: m.SangjoContractModal })));
 const SangjoComparisonModal = React.lazy(() => import('./components/SangjoComparisonModal').then(m => ({ default: m.SangjoComparisonModal })));
@@ -185,29 +186,11 @@ const App: React.FC = () => {
   }, [isSignedIn, userInfo]);
 
   // 🔑 [CRITICAL] Clerk → Supabase Session Sync
-  // This ensures RLS policies can correctly identify the user
+  // useAuthSync() hook이 이미 세션 동기화를 처리하므로 여기서는 로그만 남김
   useEffect(() => {
-    const syncSupabaseSession = async () => {
-      if (!session) {
-        // No session = sign out from Supabase too
-        await setSupabaseAuth(null);
-        return;
-      }
-
-      try {
-        const token = await session.getToken({ template: 'supabase' });
-        if (token) {
-          await setSupabaseAuth(token);
-          console.log('✅ [Session Sync] Supabase session synced with Clerk');
-        } else {
-          console.warn('⚠️ [Session Sync] Clerk returned null token for Supabase template');
-        }
-      } catch (error) {
-        console.error('❌ [Session Sync] Failed to sync session:', error);
-      }
-    };
-
-    syncSupabaseSession();
+    if (session) {
+      console.log('✅ [Session Sync] Clerk session active (handled by useAuthSync)');
+    }
   }, [session, isSignedIn]);
 
   // Route Handling (Pathname & Hash)
@@ -233,6 +216,12 @@ const App: React.FC = () => {
       }
       if (path === '/funeral-company') {
         setViewState(ViewState.FUNERAL_COMPANIES);
+        return;
+      }
+
+      // Share route handling (path based)
+      if (path.startsWith('/share/')) {
+        // ShareJourneyView는 별도로 렌더링
         return;
       }
 
@@ -349,6 +338,7 @@ const App: React.FC = () => {
             else if (resolvedCategory === 'park_cemetery' || resolvedCategory === 'park' || resolvedCategory === 'complex' || resolvedCategory === 'cemetery') type = 'park';
             else if (resolvedCategory === 'pet_funeral' || resolvedCategory === 'pet' || resolvedCategory === 'pet_memorial') type = 'pet';
             else if (resolvedCategory === 'sea_burial' || resolvedCategory === 'sea') type = 'sea';
+            else if (resolvedCategory === 'sangjo') type = 'sangjo'; // [FIX] Add Sangjo Type Check
 
             const categoryMap: Record<string, any> = {
               'funeral': 'funeral_home',
@@ -361,22 +351,9 @@ const App: React.FC = () => {
             };
             const mappedCategory = categoryMap[type] || 'columbarium';
 
-            // Improved Randomization Logic (DJB2 Hash with Salt)
-            // Use ID suffix for better entropy if available
-            const idSuffix = item.id ? item.id.toString().slice(-8) : '';
-            const seedString = (item.name || '') + idSuffix + 'salt_v2';
-
-            let hash = 5381;
-            for (let i = 0; i < seedString.length; i++) {
-              hash = ((hash << 5) + hash) + seedString.charCodeAt(i); /* hash * 33 + c */
-            }
-            // Add extra mix to ensure good distribution for small result sets
-            hash = Math.abs(hash ^ (hash >> 16));
-            const idNum = hash;
-
-            const pseudoRandom = (idNum % 10);
-            const simulatedRating = pseudoRandom < 2 ? 3 : (pseudoRandom < 6 ? 4 : 5);
-            const simulatedReviewCount = 3 + (idNum % 6);
+            // 🛡️ [RESTORATION] Use real ratings and review counts from DB
+            const ratingValue = item.rating ? Number(item.rating) : 0;
+            const reviewCountValue = item.review_count ? Number(item.review_count) : 0;
 
             // 🖼️ Image Logic Refinement (User suggestion #1 & #3)
             // Prioritize high-quality URLs and filter out known bad ones (guitar placeholders, etc.)
@@ -387,10 +364,10 @@ const App: React.FC = () => {
               if (!url) return true;
               const badPatterns = [
                 'placeholder', 'placehold.it', 'placehold.co',
-                'unsplash',
+                // 'unsplash', // [RESTORED]
                 'mediahub.seoul.go.kr',
                 'noimage', 'no-image', 'guitar',
-                '_random', '/defaults/' // [FIX] These are our placeholders, not real facility photos
+                '_random', '/defaults/'
               ];
               return badPatterns.some(pattern => url.toLowerCase().includes(pattern));
             };
@@ -497,7 +474,8 @@ const App: React.FC = () => {
 
               const options = defaultMap[type] || defaultMap['funeral'];
               // Use ID or name to pick a stable variation
-              const variantIndex = (idNum || 0) % options.length;
+              const idHash = item.id ? String(item.id).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) : 0;
+              const variantIndex = idHash % options.length;
               selectedImage = options[variantIndex];
             }
 
@@ -513,8 +491,8 @@ const App: React.FC = () => {
               lat: Number(item.lat || item.latitude || 0),
               lng: Number(item.lng || item.longitude || 0),
               priceRange: '가격 정보 상담',
-              rating: simulatedRating,
-              reviewCount: simulatedReviewCount,
+              rating: ratingValue,
+              reviewCount: reviewCountValue,
               imageUrl: selectedImage,
               description: '',
               features: [],
@@ -1509,11 +1487,21 @@ const App: React.FC = () => {
     );
   }
 
+  // 공유 페이지 라우팅 (HashRouter 남부에서 처리)
+  const isShareRoute = window.location.hash.startsWith('#/share/');
+
   return (
     <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <div className="h-full w-full relative bg-gray-100 flex justify-center overflow-hidden">
         {/* Mobile Container Limit */}
         <div className="w-full h-full md:max-w-md bg-white relative shadow-2xl flex flex-col">
+
+          {/* Share Route - 별도 렌더링 */}
+          {isShareRoute && (
+            <Routes>
+              <Route path="/share/:token" element={<ShareJourneyView />} />
+            </Routes>
+          )}
           {/* Role Loading Overlay Removed to prevent blocking users */}
 
           {/* Role Error Alert */}{/* ... */}

@@ -31,14 +31,14 @@ export function useRealtimeSubscription<T = any>({
             channel = supabase
                 .channel(channelName)
                 .on(
-                    'postgres_changes',
+                    'postgres_changes' as any, // Cast to any to avoid type mismatch with library definition
                     {
                         event,
                         schema: 'public',
                         table,
                         filter
                     },
-                    (payload) => {
+                    (payload: any) => { // Explicitly type payload as any
                         // console.log(`[Realtime] ${table} ${event} received:`, payload);
                         if (payload.new) {
                             callback(payload.new as T);

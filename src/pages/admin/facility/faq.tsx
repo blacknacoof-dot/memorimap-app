@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../../../lib/supabaseClient';
-import { useConfirmModal } from '../../../../components/common/ConfirmModal';
+import { useConfirmModal } from '@/src/components/common/ConfirmModal';
 
 interface FAQItem {
     id: number;

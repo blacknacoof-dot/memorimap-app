@@ -53,11 +53,16 @@ export const aiConsultationService = {
      */
     async appendMessage(conversationId: string, message: any) {
         // 1. 기존 메시지 로드
-        const { data: current } = await supabase
+        const { data: current, error: fetchError } = await supabase
             .from('ai_consultations')
             .select('messages')
             .eq('conversation_id', conversationId)
             .single();
+
+        if (fetchError) {
+            logger.error('Failed to fetch current messages:', fetchError);
+            throw new Error(`Conversation not found: ${conversationId}`);
+        }
 
         const updatedMessages = [...(current?.messages || []), message];
 

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { AlertCircle, MapPin, Check, Heart, Dog, Cat, Fish } from 'lucide-react';
-import { createLead, getDistinctRegions, searchFacilitiesByRegion } from '../../lib/queries';
+import { AlertCircle, MapPin, Check, Heart, Dog, Cat, Fish, ArrowRight, Phone, Loader2 } from 'lucide-react';
+import { createLead, getDistinctRegions, getIntelligentRecommendations } from '../../lib/queries';
 
 interface FormProps {
     userLocation?: { lat: number, lng: number, type: string };
@@ -9,6 +9,7 @@ interface FormProps {
     onClose?: () => void;
     initialCategory?: string;
     currentUser?: any;
+    onSwitchToFacility?: (facility: any) => void;
 }
 
 const PetSearchForm: React.FC<FormProps> = ({
@@ -16,7 +17,9 @@ const PetSearchForm: React.FC<FormProps> = ({
     onGetCurrentPosition,
     onSubmit,
     initialCategory = 'pet_funeral',
-    currentUser
+    currentUser,
+    onClose,
+    onSwitchToFacility
 }) => {
     const [step, setStep] = useState(1);
     const [timing, setTiming] = useState<'immediate' | 'prepare' | ''>('');
@@ -25,6 +28,11 @@ const PetSearchForm: React.FC<FormProps> = ({
     const [region, setRegion] = useState('');
     const [services, setServices] = useState<string[]>([]);
     const [error, setError] = useState('');
+
+    // [ADD] State for recommendations
+    const [isSubmitted, setIsSubmitted] = useState(false);
+    const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
+    const [recommendedFacilities, setRecommendedFacilities] = useState<any[]>([]);
 
     // Autocomplete State
     const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -101,6 +109,24 @@ const PetSearchForm: React.FC<FormProps> = ({
         const finalText = `[🐾 반려동물 장례 상담]\n상황: ${timingLabel}\n아이: ${petLabel} (${weightLabel})\n지역: ${region || '내 위치 주변'}\n추가 요청: ${services.join(', ') || '없음'}`;
 
         onSubmit({ text: finalText, data: searchData });
+
+        // [ADD] Fetch Recommendations
+        setIsSubmitted(true);
+        setIsLoadingRecommendations(true);
+
+        try {
+            // Use user location GPS if available, otherwise 0,0
+            const lat = userLocation?.lat || 0;
+            const lng = userLocation?.lng || 0;
+            const searchRegion = region || (userLocation?.type === 'gps' ? '' : ''); // Priority to text region
+
+            const results = await getIntelligentRecommendations(lat, lng, 'pet', searchRegion);
+            setRecommendedFacilities(results.slice(0, 3));
+        } catch (e) {
+            console.error("Failed to fetch pet recommendations", e);
+        } finally {
+            setIsLoadingRecommendations(false);
+        }
     };
 
     const toggleService = (opt: string) => {
@@ -132,6 +158,83 @@ const PetSearchForm: React.FC<FormProps> = ({
             </div>
         </button>
     );
+
+    // [ADD] Render Success / Recommendations View
+    if (isSubmitted) {
+        return (
+            <div className="space-y-4 animate-in fade-in zoom-in duration-300">
+                <QuestionBubble>
+                    ✅ <strong>상담 접수 완료!</strong><br />
+                    아이가 편안히 쉴 수 있는<br />
+                    <strong>추천 반려동물 장례식장</strong>을 안내해 드립니다.
+                </QuestionBubble>
+
+                <div className="pl-10">
+                    {isLoadingRecommendations ? (
+                        <div className="flex flex-col items-center justify-center py-8 space-y-3 bg-white border border-slate-200 rounded-xl">
+                            <Loader2 className="animate-spin text-indigo-600" size={32} />
+                            <span className="text-xs text-slate-500 font-medium">맞춤 시설을 찾고 있습니다...</span>
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            {recommendedFacilities.length > 0 ? (
+                                <div className="max-h-[320px] overflow-y-auto space-y-3 pr-1 custom-scrollbar">
+                                    {recommendedFacilities.map((f, idx) => (
+                                        <div
+                                            key={idx}
+                                            className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer group"
+                                            onClick={() => {
+                                                if (onSwitchToFacility) {
+                                                    const targetId = typeof f.id === 'object' ? (f.id as any).id || (f as any).facilityId : f.id;
+                                                    onSwitchToFacility({
+                                                        ...f,
+                                                        id: targetId,
+                                                        category: 'pet_funeral'
+                                                    });
+                                                }
+                                            }}
+                                        >
+                                            <div className="flex justify-between items-start mb-1">
+                                                <div className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                                                    {f.name}
+                                                </div>
+                                                <span className="bg-slate-100 text-slate-600 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                                                    추천 {idx + 1}
+                                                </span>
+                                            </div>
+                                            <div className="text-xs text-slate-500 mb-1 flex items-center gap-1">
+                                                <MapPin size={12} /> {f.address || f.jibun_address || '주소 정보 없음'}
+                                            </div>
+                                            <div className="text-xs text-slate-500 flex items-center gap-1">
+                                                <Phone size={12} /> {f.phone || '연락처 정보 없음'}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center">
+                                    <p className="text-sm text-slate-600 font-medium mb-1">추천 가능한 시설이 없습니다.</p>
+                                    <p className="text-xs text-slate-500">
+                                        선택하신 지역({region})에 등록된 시설이 없거나<br />
+                                        운영 중인 시설을 찾지 못했습니다.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                <div className="pl-10 pt-2">
+                    <button
+                        onClick={onClose}
+                        className="w-full bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold py-3.5 rounded-xl shadow-lg transition-all"
+                    >
+                        닫기
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-3 w-full">

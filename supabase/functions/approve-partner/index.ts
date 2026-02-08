@@ -3,12 +3,25 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { z } from 'https://esm.sh/zod@3.22.4'
 
-const corsHeaders = {
-    'Access-Control-Allow-Origin': '*', // allow all for compatibility, but can be targeted for production
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE, PATCH',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-clerk-auth, X-Clerk-Auth',
-    'Access-Control-Allow-Credentials': 'true',
-}
+const ALLOWED_ORIGINS = [
+    'https://memorimap-app.vercel.app',
+    'https://memorimap.com',
+    'https://www.memorimap.com'
+    // 'http://localhost:5173',
+    // 'http://localhost:3000'
+];
+
+const getCorsHeaders = (req: Request) => {
+    const origin = req.headers.get('origin');
+    const allowedOrigin = ALLOWED_ORIGINS.includes(origin || '') ? origin : ALLOWED_ORIGINS[0];
+
+    return {
+        'Access-Control-Allow-Origin': allowedOrigin,
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-clerk-auth, X-Clerk-Auth',
+        'Access-Control-Allow-Credentials': 'true',
+    };
+};
 
 const ApproveRequestSchema = z.object({
     inquiryId: z.union([z.string(), z.number()]).transform(val => Number(val)),
@@ -65,6 +78,8 @@ async function sendEmail({ to, subject, html }: { to: string, subject: string, h
 }
 
 serve(async (req) => {
+    const corsHeaders = getCorsHeaders(req);
+
     if (req.method === 'OPTIONS') {
         return new Response(null, { status: 204, headers: corsHeaders })
     }
@@ -93,9 +108,9 @@ serve(async (req) => {
         if (!userEmail) throw new Error('No email in token');
 
         // [Security] Super Admin Email Check
-        const SUPER_ADMIN_EMAIL = 'blacknacoof@gmail.com';
+        const SUPER_ADMIN_EMAIL = Deno.env.get('SUPER_ADMIN_EMAIL') || 'blacknacoof@gmail.com';
         if (userEmail !== SUPER_ADMIN_EMAIL) {
-            return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 403, headers: corsHeaders })
+            return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 403, headers: getCorsHeaders(req) })
         }
 
         const user = {

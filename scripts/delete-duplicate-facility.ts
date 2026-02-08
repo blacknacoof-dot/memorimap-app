@@ -3,13 +3,15 @@ import { createClient } from '@supabase/supabase-js';
 import * as dotenv from 'dotenv';
 import path from 'path';
 
-dotenv.config();
+// ✅ [Security Fix] .env.local 명시적 로드
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://xvmpvzldezpoxxsarizm.supabase.co';
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2bXB2emxkZXpwb3h4c2FyaXptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4NTEwMTksImV4cCI6MjA4MTQyNzAxOX0.TC-SJKzTRANjoLiRi2yg_EHu6xLer2wr-RaJ4AWIv04';
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
+// ✅ [Security Fix] 하드코딩된 키 제거, 환경변수 필수
 if (!supabaseUrl || !supabaseKey) {
-    console.error('Missing Supabase credentials');
+    console.error('❌ Missing Supabase credentials. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env.local');
     process.exit(1);
 }
 

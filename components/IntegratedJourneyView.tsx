@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
-import { useUser } from '../lib/auth'; // Clerk 연동 지원을 위한 훅 임포트
+import { supabase, createAuthenticatedClient, setSupabaseAuth } from '../lib/supabaseClient';
+import { useUser, useSession } from '../lib/auth'; // Clerk 연동 지원을 위한 훅 임포트
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { toast } from 'sonner';
-import { ChevronRight, Edit2, Share2 } from 'lucide-react';
+import { ChevronRight, Edit2, Share2, Lock, Copy, X } from 'lucide-react';
 import EndingNoteEditModal from './EndingNoteEditModal'; // 신규 에디터 모달 임포트
 
 interface JourneyLog {
@@ -22,10 +22,17 @@ interface EndingNote {
 
 export default function IntegratedJourneyView() {
     const { isLoaded, isSignedIn, user } = useUser();
+    const { session } = useSession();
     const [logs, setLogs] = useState<JourneyLog[]>([]);
     const [note, setNote] = useState<EndingNote | null>(null);
     const [loading, setLoading] = useState(true);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+    // 공유 모달 상태
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [sharePassword, setSharePassword] = useState('');
+    const [shareUrl, setShareUrl] = useState('');
+    const [isCreatingShare, setIsCreatingShare] = useState(false);
 
     useEffect(() => {
         // Clerk 인증 정보가 로드되었고 로그인 상태일 때만 데이터 요청
@@ -38,83 +45,160 @@ export default function IntegratedJourneyView() {
 
     const loadData = async () => {
         setLoading(true);
-        // 🚑 세션 동기화 시간차(Race Condition)를 고려하여 잠시 대기
-        const { data: { session } } = await supabase.auth.getSession();
 
-        if (!session) {
-            await new Promise(resolve => setTimeout(resolve, 500));
+        try {
+            let authClient = supabase;
+            // Clerk JWT 토큰을 명시적으로 가져와서 Supabase에 설정
+            if (session) {
+                const token = await session.getToken({ template: 'supabase' });
+                if (token) {
+                    // [Fix] createAuthenticatedClient를 사용하여 확실한 인증 보장
+                    authClient = createAuthenticatedClient(token);
+                    console.log('[Journey] Authenticated client created for data loading');
+                }
+            }
+
+            // authClient를 사용하여 RPC 호출
+            const { data, error } = await authClient.rpc('get_my_journey_full');
+            if (error) {
+                console.error('여정 데이터 로드 실패:', error);
+            } else if (data) {
+                setLogs(data.timeline || []);
+                setNote(data.ending_note || null);
+            }
+        } catch (err) {
+            console.error('데이터 로드 중 오류:', err);
         }
 
-        const { data, error } = await supabase.rpc('get_my_journey_full');
-        if (error) {
-            console.error('여정 데이터 로드 실패:', error);
-        } else if (data) {
-            setLogs(data.timeline || []);
-            setNote(data.ending_note || null);
-        }
         setLoading(false);
     };
 
     // 엔딩 노트 저장 핸들러
     const handleSaveEndingNote = async (updates: Partial<EndingNote>) => {
-        if (!user) {
+        if (!user || !session) {
             toast.error('로그인이 필요합니다.');
             return;
         }
 
-        // 🚑 세션 최종 확인 (Race Condition & 401/42501 방어)
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-            await new Promise(resolve => setTimeout(resolve, 300));
-        }
+        try {
+            // Clerk JWT 토큰을 명시적으로 가져와서 Supabase에 설정
+            console.log('[Journey] Getting Clerk token...');
+            const token = await session.getToken({ template: 'supabase' });
 
-        const { error } = await supabase
-            .from('user_ending_notes')
-            .upsert({
-                user_id: user.id,
-                preferred_types: updates.preferences,
-                emergency_contact: updates.contact,
-                final_memo: updates.memo,
-                progress_percent: updates.percent,
-                updated_at: new Date().toISOString()
-            });
-
-        if (error) {
-            console.error('저장 실패:', error);
-            if (error.code === '42501') {
-                toast.error('권한이 일시적으로 제한되었습니다. 잠시 후 다시 시도해 주세요.');
-            } else {
-                throw error;
+            if (!token) {
+                console.error('[Journey] Failed to get Clerk token');
+                toast.error('인증 토큰을 가져올 수 없습니다. 다시 로그인해주세요.');
+                return;
             }
+
+            // [Fix] createAuthenticatedClient 사용
+            const authClient = createAuthenticatedClient(token);
+            console.log('[Journey] Authenticated client ready, saving for user:', user.id);
+
+            const { error } = await authClient
+                .from('user_ending_notes')
+                .upsert({
+                    user_id: user.id,
+                    preferred_types: updates.preferences,
+                    emergency_contact: updates.contact,
+                    final_memo: updates.memo,
+                    progress_percent: updates.percent,
+                    updated_at: new Date().toISOString()
+                });
+
+            if (error) {
+                console.error('저장 실패:', error);
+                if (error.code === '42501') {
+                    toast.error('보안 정책에 의해 저장이 거부되었습니다. 다시 로그인해주세요.');
+                } else {
+                    toast.error(`저장 중 오류가 발생했습니다: ${error.message}`);
+                }
+                return;
+            }
+
+            toast.success('엔딩 노트가 안전하게 저장되었습니다.');
+            loadData(); // UI 즉시 갱신
+        } catch (err: any) {
+            console.error('저장 중 예외 발생:', err);
+            toast.error('저장 중 문제가 발생했습니다. 다시 시도해주세요.');
+        }
+    };
+
+    // 공유 모달 열기
+    const openShareModal = () => {
+        setSharePassword('');
+        setShareUrl('');
+        setIsShareModalOpen(true);
+    };
+
+    // 공유 생성 핸들러
+    const createShare = async () => {
+        if (!user || !note || !session) {
+            toast.error('공유할 내용이 없습니다.');
             return;
         }
 
-        toast.success('엔딩 노트가 안전하게 저장되었습니다.');
-        loadData(); // UI 즉시 갱신
-    };
+        if (sharePassword.length !== 4 || !/^\d{4}$/.test(sharePassword)) {
+            toast.error('4자리 숫자 비밀번호를 입력해주세요.');
+            return;
+        }
 
-    // 공유하기 핸들러
-    const handleShare = async () => {
-        const userName = (user as any)?.fullName || (user as any)?.user_metadata?.name || user?.primaryEmailAddress?.emailAddress?.split('@')[0] || '사용자';
-        const percent = note?.percent || 0;
-
-        const shareData = {
-            title: '메모리맵: 나의 마지막 여정 기록',
-            text: `${userName} 님의 추모 여정이 ${percent}% 준비되었습니다. 소중한 기록을 확인해 보세요.`,
-            url: window.location.origin + '/mypage', // 마이페이지 링크
-        };
+        setIsCreatingShare(true);
 
         try {
-            if (navigator.share) {
-                await navigator.share(shareData);
-                toast.success('공유 창이 열렸습니다.');
-            } else {
-                await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
-                toast.success('링크가 복사되었습니다. 가족들에게 전달해 보세요!');
+            // Clerk JWT 토큰을 명시적으로 가져와서 Supabase에 설정
+            const token = await session.getToken({ template: 'supabase' });
+            let authClient = supabase;
+
+            if (token) {
+                authClient = createAuthenticatedClient(token);
+            }
+
+            const { data, error } = await authClient.rpc('create_journey_share', {
+                p_preferences: note.preferences || [],
+                p_contact: note.contact || '',
+                p_memo: note.memo || '',
+                p_percent: note.percent || 0,
+                p_password: sharePassword
+            });
+
+            if (error) {
+                console.error('공유 생성 오류:', error);
+                toast.error('공유 생성 중 오류가 발생했습니다.');
+                return;
+            }
+
+            if (data?.error) {
+                toast.error(data.error);
+                return;
+            }
+
+            if (data?.success && data?.share_token) {
+                const url = `${window.location.origin}/#/share/${data.share_token}`;
+                setShareUrl(url);
+                toast.success('공유 링크가 생성되었습니다!');
             }
         } catch (err) {
-            console.warn('Share error:', err);
+            console.error('공유 생성 실패:', err);
+            toast.error('공유 생성 중 오류가 발생했습니다.');
+        } finally {
+            setIsCreatingShare(false);
         }
+    };
+
+    // 클립보드 복사
+    const copyToClipboard = async () => {
+        try {
+            await navigator.clipboard.writeText(shareUrl);
+            toast.success('링크가 복사되었습니다!');
+        } catch (err) {
+            toast.error('복사 실패. 수동으로 복사해주세요.');
+        }
+    };
+
+    // 기존 공유하기 핸들러 (fallback)
+    const handleShare = async () => {
+        openShareModal();
     };
 
     // 인증 정보 로딩 중에는 스켈레톤 표시
@@ -281,6 +365,90 @@ export default function IntegratedJourneyView() {
                 currentNote={note}
                 onSave={handleSaveEndingNote}
             />
+
+            {/* 공유 모달 */}
+            {isShareModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px]">
+                    <div className="bg-white w-full max-w-sm rounded-[24px] shadow-xl overflow-hidden">
+                        {/* 헤더 */}
+                        <div className="p-5 border-b border-gray-50 flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-4 bg-pink-500 rounded-full" />
+                                <h2 className="text-sm font-bold text-gray-900">여정 기록 공유</h2>
+                            </div>
+                            <button
+                                onClick={() => setIsShareModalOpen(false)}
+                                className="p-1.5 hover:bg-gray-50 rounded-full transition-colors text-gray-400"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        <div className="p-5">
+                            {!shareUrl ? (
+                                /* 비밀번호 입력 화면 */
+                                <>
+                                    <div className="text-center mb-5">
+                                        <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                            <Lock size={20} className="text-pink-500" />
+                                        </div>
+                                        <p className="text-xs text-gray-500">
+                                            4자리 숫자 비밀번호를 설정해주세요.<br />
+                                            상대방은 비밀번호를 입력해야 내용을 볼 수 있습니다.
+                                        </p>
+                                    </div>
+
+                                    <div className="mb-5">
+                                        <input
+                                            type="password"
+                                            value={sharePassword}
+                                            onChange={(e) => setSharePassword(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                                            placeholder="0000"
+                                            className="w-full px-4 py-3 text-center text-2xl tracking-[0.5em] font-bold bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-300"
+                                            maxLength={4}
+                                        />
+                                    </div>
+
+                                    <button
+                                        onClick={createShare}
+                                        disabled={isCreatingShare || sharePassword.length !== 4}
+                                        className="w-full py-3 bg-gradient-to-r from-pink-400 to-purple-400 text-white rounded-xl text-xs font-bold shadow-sm active:scale-[0.98] transition-all disabled:opacity-50"
+                                    >
+                                        {isCreatingShare ? '생성 중...' : '공유 링크 생성하기'}
+                                    </button>
+                                </>
+                            ) : (
+                                /* 링크 복사 화면 */
+                                <>
+                                    <div className="text-center mb-5">
+                                        <div className="text-4xl mb-3">🔗</div>
+                                        <p className="text-sm font-bold text-gray-900 mb-1">공유 링크가 생성되었습니다!</p>
+                                        <p className="text-xs text-gray-500">
+                                            비밀번호: <span className="font-bold text-pink-600">{sharePassword}</span>
+                                        </p>
+                                    </div>
+
+                                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 mb-4">
+                                        <p className="text-xs text-gray-600 break-all">{shareUrl}</p>
+                                    </div>
+
+                                    <button
+                                        onClick={copyToClipboard}
+                                        className="w-full py-3 bg-gradient-to-r from-pink-400 to-purple-400 text-white rounded-xl text-xs font-bold shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <Copy size={14} />
+                                        링크 복사하기
+                                    </button>
+
+                                    <p className="text-[10px] text-gray-400 text-center mt-4">
+                                        비밀번호를 꼭 기억하거나 함께 전달해주세요.
+                                    </p>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </section>
     );
 }

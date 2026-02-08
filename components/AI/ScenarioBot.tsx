@@ -54,8 +54,8 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
 
             setPartner(partnerData as Partner);
 
-            // 세션 복구 시도 (LocalStorage)
-            const savedSessionId = localStorage.getItem(`conv_id_${partnerId}`);
+            // 세션 복구 시도 (SessionStorage for security)
+            const savedSessionId = sessionStorage.getItem(`conv_id_${partnerId}`);
             let session = null;
 
             if (savedSessionId) {
@@ -66,7 +66,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
                 if (session && user && session.user_id !== user.id) {
                     console.warn('[Security] Session ownership mismatch. Discarding old session.');
                     session = null;
-                    localStorage.removeItem(`conv_id_${partnerId}`);
+                    sessionStorage.removeItem(`conv_id_${partnerId}`);
                 }
                 setIsSyncing(false);
             }
@@ -121,7 +121,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
 
                 if (newSession) {
                     setConversationId(newSession.conversation_id);
-                    localStorage.setItem(`conv_id_${partnerId}`, newSession.conversation_id);
+                    sessionStorage.setItem(`conv_id_${partnerId}`, newSession.conversation_id);
                     listenToEvents(newSession.conversation_id);
                 }
             }

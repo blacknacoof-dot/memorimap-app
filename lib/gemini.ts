@@ -6,14 +6,16 @@ import { getMockAIResponse } from "./mockAI";
 // Initialize Gemini Client
 // NOTE: Ideally this should be server-side or via a proxy to protect the API key in production.
 // For this MVP/Demo, client-side usage is acceptable with restrictions.
-const API_KEY = import.meta.env.VITE_GOOGLE_GENAI_API_KEY || "AIzaSyDt2aQzcyigpeIZGWug1e-jE0raTxnFXUE";
-const USE_REAL_AI = false; // [Mock Mode] Set to true to enable Gemini
+const API_KEY = import.meta.env.VITE_GOOGLE_GENAI_API_KEY;
+const USE_REAL_AI = !!API_KEY; // Only enable if key is present
 
 let genAI: any = null;
 
 try {
-    if (API_KEY && USE_REAL_AI) {
+    if (API_KEY) {
         genAI = new GoogleGenerativeAI(API_KEY);
+    } else {
+        console.warn("[Gemini] VITE_GOOGLE_GENAI_API_KEY is missing. basic AI features will not work.");
     }
 } catch (e) {
     console.error("Failed to initialize Gemini Client", e);

@@ -39,9 +39,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
 
     const handleSubmitReview = async () => {
         // ⭐ 디버깅 로그 추가
-        console.log('🔍 [DEBUG] company 객체:', company);
-        console.log('🔍 [DEBUG] company.id:', company.id);
-        console.log('🔍 [DEBUG] typeof company.id:', typeof company.id);
+        // console.log('🔍 [DEBUG] company 객체:', company);
 
         if (!isLoggedIn || !currentUser) {
             alert('로그인이 필요한 기능입니다.');
@@ -59,12 +57,12 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
             const { createReview } = await import('../lib/queries');
 
             // ⭐ createReview 호출 전 로그
-            console.log('🔍 [DEBUG] createReview 호출:', {
-                facilityId: company.id,
-                userId: currentUser.id,
-                rating: reviewRating,
-                content: reviewContent
-            });
+            // console.log('🔍 [DEBUG] createReview 호출:', {
+            //     facilityId: company.id,
+            //     userId: currentUser.id,
+            //     rating: reviewRating,
+            //     content: reviewContent
+            // });
 
             const newReview = await createReview(
                 company.id,
