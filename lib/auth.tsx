@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React from 'react';
 import { ClerkProvider as RealClerkProvider, useUser as useRealUser, useClerk as useRealClerk, useSignIn as useRealSignIn, useSignUp as useRealSignUp, useSession as useRealSession } from '@clerk/clerk-react';
 import { koKR } from '@clerk/localizations';
 
@@ -30,90 +30,19 @@ const getPublishableKey = () => {
 };
 
 const PUBLISHABLE_KEY = getPublishableKey();
-// const IS_MOCK_MODE = true; // Forced Mock Mode for debugging
-const IS_MOCK_MODE = !PUBLISHABLE_KEY;
 
-// --- Mock Context & Hooks ---
-const MockAuthContext = createContext<any>({
-  mockUseUser: { isLoaded: true, isSignedIn: false, user: null },
-  mockClerk: { signOut: async () => { } },
-  mockSignIn: { isLoaded: true, signIn: { create: async () => { } }, setActive: async () => { } },
-  mockSignUp: { isLoaded: true, signUp: { create: async () => { }, prepareEmailAddressVerification: async () => { }, attemptEmailAddressVerification: async () => { } }, setActive: async () => { } }
-});
 
-const MockAuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isSignedIn, setIsSignedIn] = useState(false);
-  const [user, setUser] = useState<{ firstName: string; username: string; primaryEmailAddress: { emailAddress: string }; imageUrl: string } | null>(null);
 
-  const mockSignIn = {
-    isLoaded: true,
-    signIn: {
-      create: async ({ identifier, password }: any) => {
-        if (identifier && password) {
-          return { status: "complete", createdSessionId: "mock-session-id" };
-        }
-        throw { errors: [{ message: "Invalid credentials" }] };
-      }
-    },
-    setActive: async ({ session }: any) => {
-      setIsSignedIn(true);
-      setUser({
-        firstName: "게스트",
-        username: "Guest",
-        primaryEmailAddress: { emailAddress: "guest@example.com" },
-        imageUrl: ""
-      });
-    }
-  };
-
-  const mockSignUp = {
-    isLoaded: true,
-    signUp: {
-      create: async () => { },
-      prepareEmailAddressVerification: async () => { },
-      attemptEmailAddressVerification: async () => {
-        return { status: "complete", createdSessionId: "mock-session-id" };
-      }
-    },
-    setActive: async () => {
-      setIsSignedIn(true);
-      setUser({
-        firstName: "새회원",
-        username: "New User",
-        primaryEmailAddress: { emailAddress: "newuser@example.com" },
-        imageUrl: ""
-      });
-    }
-  };
-
-  const mockClerk = {
-    signOut: async () => {
-      setIsSignedIn(false);
-      setUser(null);
-    }
-  };
-
-  const mockUseUser = {
-    isLoaded: true,
-    isSignedIn,
-    user
-  };
-
-  return (
-    <MockAuthContext.Provider value={{ mockUseUser, mockClerk, mockSignIn, mockSignUp }}>
-      {children}
-    </MockAuthContext.Provider>
-  );
-};
+// --- Mock Context Removed for Security Hardening ---
+// Mock logic has been stripped to enforce production security.
+// Use Supabase Auth + Clerk exclusively.
 
 // --- Exported Wrapper Components & Hooks ---
 
 export const ClerkProviderWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  if (IS_MOCK_MODE) {
-    // Only log once or not at all to avoid console spam
-    // console.warn("Clerk Publishable Key missing. Running in Mock Auth Mode.");
-    return <MockAuthProvider>{children}</MockAuthProvider>;
-  }
+  // Production Security Hardening: Mock Mode Removed
+  // All auth is handled by RealClerkProvider
+
 
   return (
     <RealClerkProvider
@@ -127,51 +56,22 @@ export const ClerkProviderWrapper: React.FC<{ children: React.ReactNode }> = ({ 
 };
 
 export const useUser = () => {
-  if (IS_MOCK_MODE) {
-    const ctx = useContext(MockAuthContext);
-    return ctx ? ctx.mockUseUser : { isLoaded: true, isSignedIn: false, user: null };
-  }
   return useRealUser();
 };
 
 export const useClerk = () => {
-  if (IS_MOCK_MODE) {
-    const ctx = useContext(MockAuthContext);
-    return ctx ? ctx.mockClerk : { signOut: async () => { } };
-  }
   return useRealClerk();
 };
 
 export const useSignIn = () => {
-  if (IS_MOCK_MODE) {
-    const ctx = useContext(MockAuthContext);
-    return ctx ? ctx.mockSignIn : { isLoaded: true, signIn: {}, setActive: async () => { } };
-  }
   return useRealSignIn();
 };
 
 export const useSignUp = () => {
-  if (IS_MOCK_MODE) {
-    const ctx = useContext(MockAuthContext);
-    return ctx ? ctx.mockSignUp : { isLoaded: true, signUp: {}, setActive: async () => { } };
-  }
   return useRealSignUp();
 };
 
 export const useSession = () => {
-  if (IS_MOCK_MODE) {
-    const ctx = useContext(MockAuthContext);
-    // Mock session object structure matching Clerk
-    return {
-      isLoaded: true,
-      isSignedIn: ctx?.mockUseUser?.isSignedIn,
-      session: ctx?.mockUseUser?.isSignedIn ? {
-        getToken: async ({ template }: { template?: string }) => "mock-supabase-token",
-        user: ctx.mockUseUser.user
-      } : null
-    };
-  }
   return useRealSession();
 };
 
-export const isClerkConfigured = () => !IS_MOCK_MODE;

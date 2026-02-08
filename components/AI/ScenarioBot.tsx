@@ -45,6 +45,17 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
         }
     }, [messages]);
 
+    // [Memory Leak Fix] Realtime Subscription Cleanup
+    useEffect(() => {
+        if (!conversationId) return;
+
+        const cleanup = listenToEvents(conversationId);
+
+        return () => {
+            cleanup?.();
+        };
+    }, [conversationId]);
+
     const initBot = async (retryCount = 0) => {
         setLoading(true);
         setError(null);
@@ -77,7 +88,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
                 if (session.status === AiConsultationStatus.AGENT_CONNECTED) {
                     setIsHijacked(true);
                 }
-                listenToEvents(session.conversation_id);
+                // listenToEvents는 useEffect에서 처리
             } else {
                 // [Security] 비로그인 사용자 체크 (로그인 사용자 전용)
                 if (!isSignedIn) {
@@ -122,7 +133,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
                 if (newSession) {
                     setConversationId(newSession.conversation_id);
                     sessionStorage.setItem(`conv_id_${partnerId}`, newSession.conversation_id);
-                    listenToEvents(newSession.conversation_id);
+                    // listenToEvents는 useEffect에서 처리
                 }
             }
         } catch (err: any) {
@@ -140,7 +151,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
 
     const listenToEvents = (convId: string) => {
         // [Decision Lock] 실시간 관제 이벤트 구독
-        supabase.channel(`ai-conv-${convId}`)
+        const channel = supabase.channel(`ai-conv-${convId}`)
             .on('postgres_changes', {
                 event: 'UPDATE',
                 schema: 'public',
@@ -154,6 +165,12 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
                 setMessages(updated.messages);
             })
             .subscribe();
+
+        // [Memory Leak Fix] Cleanup 함수 반환
+        return () => {
+            channel.unsubscribe();
+            supabase.removeChannel(channel);
+        };
     };
 
     const handleAction = async (action: string, label: string) => {

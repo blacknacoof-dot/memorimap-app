@@ -122,10 +122,24 @@ let cachedAuthClient: SupabaseClient | null = null;
 let cachedToken: string | null = null;
 let clientInstanceCounter = 0;
 
+/**
+ * JWT 토큰 유효성 검증
+ * @param token - JWT 토큰
+ * @returns 토큰이 유효한지 여부
+ */
+function isTokenValid(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.exp * 1000 > Date.now();
+  } catch {
+    return false;
+  }
+}
+
 // [NEW] 토큰 기반으로 즉석에서 인증된 클라이언트 생성 (캐싱 적용)
 export const createAuthenticatedClient = (token: string): SupabaseClient => {
-  // 토큰이 동일하고 이미 클라이언트가 있다면 재사용
-  if (cachedAuthClient && cachedToken === token) {
+  // 토큰이 동일하고 유효한 경우 재사용
+  if (cachedAuthClient && cachedToken === token && isTokenValid(token)) {
     return cachedAuthClient;
   }
 
@@ -158,6 +172,15 @@ export const createAuthenticatedClient = (token: string): SupabaseClient => {
   cachedToken = token;
 
   return client;
+};
+
+/**
+ * 인증된 클라이언트 초기화 (로그아웃 시 호출)
+ */
+export const resetAuthenticatedClient = (): void => {
+  cachedAuthClient = null;
+  cachedToken = null;
+  clientInstanceCounter = 0;
 };
 
 export const isSupabaseConfigured = () => {

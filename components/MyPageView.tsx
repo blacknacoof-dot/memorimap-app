@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { MyConsultations } from './dashboard/MyConsultations';
 import { supabase } from '../lib/supabaseClient';
-import { isClerkConfigured } from '../lib/auth';
+
 import IntegratedJourneyView from './IntegratedJourneyView';
 
 interface Props {
@@ -104,7 +104,14 @@ export const MyPageView: React.FC<Props> = ({
                 const idsToFetchFromDB: string[] = [];
 
                 missingIds.forEach(id => {
-                    const localMatch = (FACILITIES as any[]).find(f => String(f.id) === id || String(f.legacy_id) === id);
+                    // Try exact ID match first
+                    let localMatch = (FACILITIES as any[]).find(f => String(f.id) === id);
+
+                    // If not found, try legacy ID match
+                    if (!localMatch) {
+                        localMatch = (FACILITIES as any[]).find(f => String(f.legacy_id) === id);
+                    }
+
                     if (localMatch) {
                         missingFacs.push(localMatch);
                     } else {
@@ -219,9 +226,9 @@ export const MyPageView: React.FC<Props> = ({
                 r.id === reservationId ? { ...r, status: 'cancelled' as const } : r
             ));
             setSelectedReservation(null);
-            alert('예약이 취소되었습니다.');
+            toast.success('예약이 취소되었습니다.');
         } catch (err) {
-            alert('예약 취소 중 오류가 발생했습니다.');
+            toast.error('예약 취소 중 오류가 발생했습니다.');
         }
     };
 
@@ -590,9 +597,9 @@ export const MyPageView: React.FC<Props> = ({
                 selectedReservation && (
                     <ReservationDetailModal
                         reservation={selectedReservation}
-                        facility={facilities.find(f => f.id === selectedReservation.facilityId)}
+                        facility={facilities.find(f => f.id === selectedReservation.facility_id)}
                         onClose={() => setSelectedReservation(null)}
-                        onCancel={(selectedReservation.status === 'pending' || selectedReservation.status === 'urgent') ? () => handleCancelReservation(selectedReservation.id) : undefined}
+                        onCancel={(selectedReservation.status === 'pending' || selectedReservation.status === 'urgent') ? () => selectedReservation.id && handleCancelReservation(selectedReservation.id) : undefined}
                     />
                 )
             }

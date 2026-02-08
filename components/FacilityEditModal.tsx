@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Save, Loader2, Building2, MapPin, Phone, FileText, DollarSign, ImagePlus, Trash2, Plus } from 'lucide-react';
 import { updateFacility, uploadFacilityImage } from '../lib/queries';
 import { Facility } from '../types';
+import { toast } from 'sonner'; // [Phase 2] Error Handler
 
 interface Props {
     facility: Facility;
@@ -53,7 +54,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
             setImageUrl(url);
         } catch (error) {
             console.error('Main image upload failed:', error);
-            alert('이미지 업로드에 실패했습니다.');
+            toast.error('이미지 업로드에 실패했습니다.');
         } finally {
             setIsUploading(false);
         }
@@ -69,7 +70,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
             setGalleryImages(prev => [...prev, url]);
         } catch (error) {
             console.error('Gallery image upload failed:', error);
-            alert('이미지 업로드에 실패했습니다.');
+            toast.error('이미지 업로드에 실패했습니다.');
         } finally {
             setIsUploading(false);
         }
@@ -94,10 +95,10 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
             });
             onSave();
             onClose();
-            alert('시설 정보가 성공적으로 수정되었습니다.');
+            toast.success('시설 정보가 성공적으로 수정되었습니다.');
         } catch (error) {
             console.error('Failed to update facility:', error);
-            alert('시설 정보 수정 중 오류가 발생했습니다.');
+            toast.error('시설 정보 수정 중 오류가 발생했습니다.');
         } finally {
             setIsSubmitting(false);
         }

@@ -35,7 +35,7 @@ export const ReservationDetailModal: React.FC<Props> = ({
                 </div>
 
                 <div className="p-6">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{reservation.facilityName}</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{reservation.facility_name}</h2>
                     {facility && (
                         <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
                             <MapPin size={16} />
@@ -49,43 +49,43 @@ export const ReservationDetailModal: React.FC<Props> = ({
                             <div className="flex items-center gap-3">
                                 <Calendar size={18} className="text-primary" />
                                 <span className="font-medium">방문 날짜:</span>
-                                <span>{reservation.date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                                <span>{new Date(reservation.visit_date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                             </div>
                             <div className="flex items-center gap-3">
                                 <Clock size={18} className="text-primary" />
                                 <span className="font-medium">방문 시간:</span>
-                                <span>{reservation.timeSlot}</span>
+                                <span>{reservation.time_slot}</span>
                             </div>
                             <div className="flex items-center gap-3">
                                 <Users size={18} className="text-primary" />
                                 <span className="font-medium">방문 인원:</span>
-                                <span>{reservation.visitorCount}명</span>
+                                <span>{reservation.visitor_count}명</span>
                             </div>
                         </div>
                     </div>
 
-                    {reservation.paymentAmount > 0 && (
+                    {(reservation.payment_amount || 0) > 0 && (
                         <div className="bg-gray-50 rounded-xl p-4 mb-4">
                             <h3 className="font-bold text-gray-900 mb-3">결제 정보</h3>
                             <div className="space-y-2 text-sm">
                                 <div className="flex items-center gap-3">
                                     <CreditCard size={18} className="text-primary" />
                                     <span className="font-medium">결제 금액:</span>
-                                    <span className="font-bold text-primary">{reservation.paymentAmount.toLocaleString()}원</span>
+                                    <span className="font-bold text-primary">{reservation.payment_amount?.toLocaleString()}원</span>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <Calendar size={18} className="text-primary" />
                                     <span className="font-medium">결제일:</span>
-                                    <span>{reservation.paidAt.toLocaleDateString('ko-KR')}</span>
+                                    <span>{reservation.paid_at ? new Date(reservation.paid_at).toLocaleDateString('ko-KR') : '-'}</span>
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    {reservation.specialRequests && (
+                    {reservation.special_requests && (
                         <div className="bg-gray-50 rounded-xl p-4 mb-4">
                             <h3 className="font-bold text-gray-900 mb-2">특별 요청사항</h3>
-                            <p className="text-sm text-gray-700">{reservation.specialRequests}</p>
+                            <p className="text-sm text-gray-700">{reservation.special_requests}</p>
                         </div>
                     )}
 

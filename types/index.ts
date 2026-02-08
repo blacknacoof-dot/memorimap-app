@@ -114,23 +114,7 @@ export {
   normalizeCategoryValue
 } from './facility';
 
-export interface Reservation {
-  id: string;
-  facilityId: number | string;
-  facilityName: string;
-  date: Date;
-  timeSlot: string;
-  visitorName: string;
-  visitorCount: number;
-  purpose: string;
-  specialRequests?: string;
-  status: 'pending' | 'confirmed' | 'cancelled' | 'urgent';
-  paymentAmount: number; // 100,000 KRW
-  paidAt: Date;
-  paymentId?: string; // PortOne Payment ID
-  funeralCompanyId?: string;
-  funeralCompanyName?: string;
-}
+export type { Reservation } from './db';
 
 export enum ViewState {
   MAP = 'MAP',

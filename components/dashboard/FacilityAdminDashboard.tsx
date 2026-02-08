@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Reservation, ViewState, Facility } from '../types';
-import { getFacilityReservations, approveReservation, rejectReservation, getUserFacility, getFacilitySubscription, getFacilityConsultations, answerConsultation, Consultation, markConsultationAsRead, supabase } from '../lib/queries';
-import { ReservationList } from './ReservationList';
-import { ConsultationList } from './ConsultationList';
-import { ReservationDetailModal } from './ReservationDetailModal';
-import { FacilityEditModal } from './FacilityEditModal';
-import { FacilityFAQManager } from './FacilityFAQManager';
-import { ConfirmModal } from '../src/components/common/ConfirmModal';
+import { Reservation, ViewState, Facility } from '../../types';
+import { getFacilityReservations, approveReservation, rejectReservation, getUserFacility, getFacilitySubscription, getFacilityConsultations, answerConsultation, Consultation, markConsultationAsRead, supabase } from '../../lib/queries';
+import { ReservationList } from '../ReservationList';
+import { ConsultationList } from '../ConsultationList';
+import { ReservationDetailModal } from '../ReservationDetailModal';
+import { FacilityEditModal } from '../FacilityEditModal';
+import { FacilityFAQManager } from '../FacilityFAQManager';
+import { ConfirmModal } from '../../src/components/common/ConfirmModal';
 import { Loader2, CheckCircle, XCircle, Clock, ArrowLeft, Home, Edit, Building2, MapPin, Phone, ArrowRight, Siren, HelpCircle, MessageSquare, Calendar } from 'lucide-react';
+import { toast } from 'sonner'; // [Phase 2] Error Handler
 
 interface Props {
     user: any;
@@ -15,7 +16,7 @@ interface Props {
     onNavigate: (view: any, context?: { facilityId?: string }) => void;
 }
 
-export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigate }) => {
+export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNavigate }) => {
     const [myFacilityId, setMyFacilityId] = useState<string | null>(null);
     const [fetchedFacility, setFetchedFacility] = useState<Facility | null>(null);
     const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -36,7 +37,7 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
         setIsLoading(true);
         try {
             // Get the single facility owned by this user
-            const { getUserFacility, getFacility } = await import('../lib/queries');
+            const { getUserFacility, getFacility } = await import('../../lib/queries');
             const facilityId = await getUserFacility(user.id);
             setMyFacilityId(facilityId);
 
@@ -53,7 +54,7 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
                 // Get reservations for this specific facility
                 const res = await getFacilityReservations(facilityId);
                 // Sort by date
-                res.sort((a, b) => b.date.getTime() - a.date.getTime());
+                res.sort((a, b) => new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime());
                 setReservations(res);
 
                 // Get subscription info
@@ -117,16 +118,18 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
                         // Map database row to UI Reservation type if needed
                         const newRes: Reservation = {
                             id: payload.new.id,
-                            facilityId: payload.new.facility_id,
-                            facilityName: payload.new.facility_name,
-                            date: new Date(payload.new.visit_date),
-                            timeSlot: payload.new.time_slot,
-                            visitorName: payload.new.user_name || payload.new.visitor_name,
-                            visitorCount: payload.new.visitor_count || 1,
+                            facility_id: payload.new.facility_id,
+                            facility_name: payload.new.facility_name,
+                            visit_date: payload.new.visit_date, // Keep as string or Date? Type says string.
+                            time_slot: payload.new.time_slot,
+                            visitor_name: payload.new.user_name || payload.new.visitor_name,
+                            visitor_count: payload.new.visitor_count || 1,
+                            contact_number: payload.new.contact_number || payload.new.user_phone, // Map phone
                             purpose: payload.new.purpose || '상담 및 방문',
                             status: payload.new.status as any,
-                            paymentAmount: payload.new.payment_amount || 0,
-                            paidAt: payload.new.paid_at ? new Date(payload.new.paid_at) : new Date(),
+                            payment_amount: payload.new.payment_amount || 0,
+                            paid_at: payload.new.paid_at, // Keep as string (ISO)
+                            user_id: payload.new.user_id, // Ensure user_id is mapped
                             ...payload.new
                         };
 
@@ -134,7 +137,7 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
 
                         // Notify user about new booking
                         if (newRes.status === 'urgent') {
-                            alert('🚨 신규 긴급 예약이 접수되었습니다!');
+                            toast.error('🚨 신규 긴급 예약이 접수되었습니다!', { duration: 6000 });
                         } else {
                             // Non-blocking notification or toast would be better, but alert is clear.
                         }
@@ -143,13 +146,13 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
                             r.id === payload.new.id ? {
                                 ...r,
                                 ...payload.new,
-                                facilityId: payload.new.facility_id,
-                                facilityName: payload.new.facility_name,
-                                date: new Date(payload.new.visit_date),
-                                timeSlot: payload.new.time_slot,
-                                visitorName: payload.new.user_name || payload.new.visitor_name,
-                                visitorCount: payload.new.visitor_count || 1,
-                                userPhone: payload.new.user_phone,
+                                facility_id: payload.new.facility_id,
+                                facility_name: payload.new.facility_name,
+                                visit_date: payload.new.visit_date,
+                                time_slot: payload.new.time_slot,
+                                visitor_name: payload.new.user_name || payload.new.visitor_name,
+                                visitor_count: payload.new.visitor_count || 1,
+                                contact_number: payload.new.contact_number || payload.new.user_phone,
                                 status: payload.new.status as any
                             } : r
                         ));
@@ -173,9 +176,9 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
                 r.id === reservationId ? { ...r, status: 'confirmed' as const } : r
             ));
             setSelectedReservation(null);
-            alert('예약이 승인되었습니다.');
+            toast.success('예약이 승인되었습니다.');
         } catch (err) {
-            alert('예약 승인 중 오류가 발생했습니다.');
+            toast.error('예약 승인 중 오류가 발생했습니다.');
         }
     };
 
@@ -188,9 +191,9 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
                 r.id === reservationId ? { ...r, status: 'cancelled' as const } : r
             ));
             setSelectedReservation(null);
-            alert('예약이 거절되었습니다.');
+            toast.success('예약이 거절되었습니다.');
         } catch (err) {
-            alert('예약 거절 중 오류가 발생했습니다.');
+            toast.error('예약 거절 중 오류가 발생했습니다.');
         }
     };
 
@@ -449,7 +452,7 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
                     <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden">
                         <ReservationDetailModal
                             reservation={selectedReservation}
-                            facility={facilities.find(f => f.id === selectedReservation.facilityId)}
+                            facility={facilities.find(f => f.id === selectedReservation.facility_id)}
                             onClose={() => setSelectedReservation(null)}
                             onCancel={undefined}
                         />
@@ -458,13 +461,13 @@ export const FacilityAdminView: React.FC<Props> = ({ user, facilities, onNavigat
                         {(selectedReservation.status === 'pending' || selectedReservation.status === 'urgent') && (
                             <div className="p-6 border-t flex gap-3">
                                 <button
-                                    onClick={() => handleReject(selectedReservation.id)}
+                                    onClick={() => selectedReservation.id && handleReject(selectedReservation.id)}
                                     className="flex-1 py-3 px-4 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors"
                                 >
                                     거절하기
                                 </button>
                                 <button
-                                    onClick={() => handleApprove(selectedReservation.id)}
+                                    onClick={() => selectedReservation.id && handleApprove(selectedReservation.id)}
                                     className="flex-1 py-3 px-4 bg-green-500 hover:bg-green-600 text-white rounded-xl font-medium transition-colors"
                                 >
                                     승인하기

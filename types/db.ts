@@ -48,11 +48,16 @@ export interface Reservation {
     request_note?: string; // Alias/Legacy
     purpose?: string;
     facility_id: number | string;
+    facility_name?: string; // Joined field (UI compatibility)
     user_id: string;
     status: ReservationStatus;
     rejection_reason?: string | null;
     manager_note?: string | null;
     payment_amount?: number; // Re-added for logic
+    payment_id?: string; // PortOne Payment ID (UI compatibility)
+    paid_at?: string; // ISO String (UI compatibility)
+    funeral_company_id?: string; // (UI compatibility)
+    funeral_company_name?: string; // (UI compatibility)
     created_at?: string;
 }
 

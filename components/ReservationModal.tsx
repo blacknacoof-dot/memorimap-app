@@ -110,18 +110,21 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
     setTimeout(() => {
       const legacyReservation: LegacyReservation = {
         id: `RES-${Date.now()}`,
-        facilityId: facility.id,
-        facilityName: facility.name,
-        date: new Date(),
-        timeSlot: '긴급(즉시)',
-        visitorName: data.visitor_name,
-        visitorCount: 1,
+        facility_id: facility.id,
+        facility_name: facility.name,
+        user_id: 'temp-user',
+        visit_date: format(new Date(), 'yyyy-MM-dd'),
+        time_slot: '긴급(즉시)',
+        visitor_name: data.visitor_name,
+        visitor_count: 1,
+        contact_number: data.contact_number,
         purpose: '긴급 장례 접수',
-        specialRequests: fullRequest,
+        special_requests: fullRequest,
         status: 'urgent',
-        paymentAmount: 0,
-        paidAt: new Date(),
-        paymentId: `URGENT-${Date.now()}`
+        payment_amount: 0,
+        paid_at: new Date().toISOString(),
+        payment_id: `URGENT-${Date.now()}`,
+        created_at: new Date().toISOString()
       };
 
       setStep(2); // Move to completion step (handled by special render logic)
@@ -137,25 +140,21 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
   const mapToLegacy = (data: ReservationFormValues, status: any, paidAmount: number, paymentId: string): LegacyReservation => {
     return {
       id: `RES-${Date.now()}`,
-      facilityId: facility.id,
-      facilityName: facility.name,
-      date: new Date(data.visit_date),
-      timeSlot: data.visit_time,
-      visitorName: data.visitor_name,
-      visitorCount: data.visitor_count,
+      facility_id: facility.id,
+      facility_name: facility.name, // Joined field
+      user_id: 'temp-user', // Needed for strict type match, will be overwritten by backend or context usually
+      visit_date: data.visit_date, // Keep as string "YYYY-MM-DD"
+      time_slot: data.visit_time,
+      visitor_name: data.visitor_name,
+      visitor_count: data.visitor_count,
+      contact_number: data.contact_number,
       purpose: data.purpose,
-      specialRequests: data.request_note || '',
+      special_requests: data.request_note || '',
       status: status,
-      paymentAmount: paidAmount,
-      paidAt: new Date(),
-      paymentId: paymentId,
-      // contact_number is lost in legacy type unless we extend it, but we satisfy DB insert if App.tsx uses it.
-      // Warning: App.tsx expects LegacyReservation. If App.tsx doesn't use contact_number, it won't be saved to DB yet 
-      // unless we update App.tsx to read it from here. 
-      // For now, we assume App.tsx will be updated or we pack it into specialRequests if necessary.
-      // Strategy: Append contact info to specialRequests for safety if App.tsx isn't updated.
-      // Actually, strict refactoring implies we should probably update App.tsx insertion logic too.
-      // But preserving specific request "UI Maximally Maintained", "Safe Refactoring".
+      payment_amount: paidAmount,
+      paid_at: new Date().toISOString(), // ISO String
+      payment_id: paymentId,
+      created_at: new Date().toISOString()
     };
   };
 
@@ -170,8 +169,8 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
         const payId = reservationType === 'CONSULTATION' ? `FREE-${Date.now()}` : `TRANSFER-${Date.now()}`;
         const legacy = mapToLegacy(data, status, depositAmount, payId);
 
-        // Hack: Append contact to specialRequests since Legacy type lacks it
-        legacy.specialRequests = `[연락처: ${data.contact_number}] ${legacy.specialRequests}`;
+        // Hack: Append contact to specialRequests since Legacy type lacks it (it has it now, but keeping for safety/redundancy or just mapping)
+        legacy.special_requests = `[연락처: ${data.contact_number}] ${legacy.special_requests}`;
 
         onConfirm(legacy);
         setStep(4);
@@ -196,7 +195,7 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
       if (response.code != null) throw new Error(response.message || 'Payment failed');
 
       const legacy = mapToLegacy(data, 'pending', depositAmount, response.paymentId || paymentId);
-      legacy.specialRequests = `[연락처: ${data.contact_number}] ${legacy.specialRequests}`;
+      legacy.special_requests = `[연락처: ${data.contact_number}] ${legacy.special_requests}`;
 
       onConfirm(legacy);
       setStep(4);

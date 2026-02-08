@@ -7,6 +7,7 @@ import {
 import { supabase } from '../../lib/supabaseClient';
 import { SangjoContract, AiConsultation, AiConsultationStatus } from '../../types';
 import { aiConsultationService } from '../../lib/api/aiConsultation';
+import { toast } from 'sonner'; // [Phase 2] Error Handler
 
 export const ContractMonitoring: React.FC = () => {
     const [contracts, setContracts] = useState<SangjoContract[]>([]);
@@ -115,7 +116,7 @@ export const ContractMonitoring: React.FC = () => {
     const handleJoinChat = async (consultation: AiConsultation) => {
         // 이미 연결된 경우 (UI 상 1차 방어)
         if (consultation.status === AiConsultationStatus.AGENT_CONNECTED) {
-            alert('이미 상담사가 연결된 세션입니다.');
+            toast.warning('이미 상담사가 연결된 세션입니다.');
             return;
         }
 
@@ -135,18 +136,18 @@ export const ContractMonitoring: React.FC = () => {
             ));
 
             // TODO: 실제 채팅창 모달 열기 또는 페이지 이동
-            alert(`[성공] ${consultation.facility_name} 상담에 개입했습니다.`);
+            toast.success(`[성공] ${consultation.facility_name} 상담에 개입했습니다.`);
 
         } catch (error: any) {
             console.error('Join Chat Error:', error);
             // 2차 방어: DB 업데이트 실패 (0 rows affecting -> .single() throws error)
             // PGRST116: The result contains 0 rows
             if (error.code === 'PGRST116' || error.message?.includes('0 rows')) {
-                alert('⚠️ 이미 다른 관리자가 상담을 시작했습니다.');
+                toast.warning('⚠️ 이미 다른 관리자가 상담을 시작했습니다.');
                 // 최신 데이터로 리프레시
                 loadAiConsultations();
             } else {
-                alert('오류가 발생했습니다. 다시 시도해주세요.');
+                toast.error('오류가 발생했습니다. 다시 시도해주세요.');
             }
         }
     };

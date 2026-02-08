@@ -38,6 +38,7 @@
     "scripts",
     "cypress",
     "backups",
-    "supabase"
+    "supabase",
+    "types_schema.ts"
   ]
 }

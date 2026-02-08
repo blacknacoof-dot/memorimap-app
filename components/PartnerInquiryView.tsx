@@ -4,6 +4,7 @@ import { useUser } from '../lib/auth';
 
 import { submitPartnerApplication, searchKnownFacilities, PARTNER_CATEGORIES, getFacilitiesByCategory } from '../lib/queries';
 import { FUNERAL_COMPANIES } from '../constants';
+import { toast } from 'sonner'; // [Phase 2] Error Handler
 
 interface Props {
     onBack: () => void;
@@ -118,7 +119,7 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack, onLoginClick }) =>
         e.preventDefault();
 
         if (!selectedFile) {
-            alert('사업자등록증 파일을 첨부해주세요.');
+            toast.warning('사업자등록증 파일을 첨부해주세요.');
             return;
         }
 
@@ -148,15 +149,15 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack, onLoginClick }) =>
 
             // 🔍 중복 이메일 에러 감지
             if (error?.code === '23505' && error?.message?.includes('partner_inquiries_company_email_idx')) {
-                alert('⚠️ 이미 등록된 회사 이메일입니다.\n\n다른 이메일로 신청하시거나, 기존 신청 상태를 확인해주세요.\n문의: 고객센터');
+                toast.error('⚠️ 이미 등록된 회사 이메일입니다.\n\n다른 이메일로 신청하시거나, 기존 신청 상태를 확인해주세요.\n문의: 고객센터', { duration: 6000 });
             }
             // 🔍 기타 DB 제약 에러
             else if (error?.code?.startsWith('23')) {
-                alert('⚠️ 입력하신 정보에 문제가 있습니다.\n\n모든 필드를 확인 후 다시 시도해주세요.');
+                toast.error('⚠️ 입력하신 정보에 문제가 있습니다.\n\n모든 필드를 확인 후 다시 시도해주세요.');
             }
             // 🔍 일반 에러
             else {
-                alert('❌ 신청 제출 중 오류가 발생했습니다.\n\n잠시 후 다시 시도해주세요.');
+                toast.error('❌ 신청 제출 중 오류가 발생했습니다.\n\n잠시 후 다시 시도해주세요.');
             }
         } finally {
             setIsSubmitting(false);
