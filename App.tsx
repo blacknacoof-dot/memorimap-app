@@ -27,6 +27,7 @@ import { SkeletonCard } from './components/ui/SkeletonCard';
 import { FilterBar } from './components/FilterBar';
 import { useFilterStore } from './stores/useFilterStore';
 import { logger } from './utils/logger';
+import { useToast } from './hooks/useToast';
 
 // Lazy Load Components
 const AdminView = React.lazy(() => import('./components/AdminView').then(m => ({ default: m.AdminView })));
@@ -133,8 +134,8 @@ const App: React.FC = () => {
   const [sangjoCompareList, setSangjoCompareList] = useState<FuneralCompany[]>([]);
   const [showSangjoComparison, setShowSangjoComparison] = useState(false);
 
-  // Toast State
-  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' | 'info' } | null>(null);
+  // Toast State - useToast hook 사용
+  const { toast, showToast } = useToast();
 
   // Facility Admin Context
   const [adminFacilityId, setAdminFacilityId] = useState<string | null>(null);
@@ -567,12 +568,6 @@ const App: React.FC = () => {
 
   const handleBoundsChange = (bounds: L.LatLngBounds) => {
     setCurrentBounds(bounds);
-  };
-
-  // Toast Helper
-  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 2500);
   };
 
   // Handlers
