@@ -28,6 +28,7 @@ import { FilterBar } from './components/FilterBar';
 import { useFilterStore } from './stores/useFilterStore';
 import { logger } from './utils/logger';
 import { useToast } from './hooks/useToast';
+import { useComparison } from './hooks/useComparison';
 
 // Lazy Load Components
 const AdminView = React.lazy(() => import('./components/AdminView').then(m => ({ default: m.AdminView })));
@@ -111,10 +112,6 @@ const App: React.FC = () => {
   const setSearchQuery = useFilterStore(state => state.setSearchQuery);
   const selectedFilter = '전체'; // For now, force pass-through since Map/List handle filtering
 
-  // Comparison State
-  const [compareList, setCompareList] = useState<Facility[]>([]);
-  const [showComparison, setShowComparison] = useState(false);
-
   // Consultation State
   const [consultingFacility, setConsultingFacility] = useState<Facility | null>(null);
   const [selectedConsultation, setSelectedConsultation] = useState<Consultation | null>(null);
@@ -131,11 +128,22 @@ const App: React.FC = () => {
   const [selectedFuneralCompany, setSelectedFuneralCompany] = useState<FuneralCompany | null>(null);
   const [showSangjoAIConsult, setShowSangjoAIConsult] = useState(false);
   const [showSangjoContract, setShowSangjoContract] = useState(false);
-  const [sangjoCompareList, setSangjoCompareList] = useState<FuneralCompany[]>([]);
-  const [showSangjoComparison, setShowSangjoComparison] = useState(false);
-
   // Toast State - useToast hook 사용
   const { toast, showToast } = useToast();
+
+  // Comparison State - useComparison hook 사용
+  const {
+    compareList,
+    showComparison,
+    setShowComparison,
+    toggleCompare,
+    removeFromCompare,
+    sangjoCompareList,
+    showSangjoComparison,
+    setShowSangjoComparison,
+    toggleSangjoCompare,
+    removeFromSangjoCompare
+  } = useComparison(showToast);
 
   // Facility Admin Context
   const [adminFacilityId, setAdminFacilityId] = useState<string | null>(null);
@@ -771,21 +779,6 @@ const App: React.FC = () => {
     setViewState(ViewState.MAP);
   };
 
-  const toggleCompare = React.useCallback((facility: Facility) => {
-    setCompareList(prev => {
-      const exists = prev.find(f => f.id === facility.id);
-      if (exists) {
-        showToast("비교함에서 제거되었습니다.", 'info');
-        return prev.filter(f => f.id !== facility.id);
-      }
-      if (prev.length >= 3) {
-        showToast("비교함에는 최대 3개까지만 담을 수 있습니다.", 'error');
-        return prev;
-      }
-      showToast("비교함에 추가되었습니다. 하단 아이콘을 눌러 비교해보세요!", 'success');
-      return [...prev, facility];
-    });
-  }, [setCompareList]);
 
   const handleAddReview = (facilityId: string, content: string, rating: number) => {
     const newReview: Review = {
@@ -1020,23 +1013,6 @@ const App: React.FC = () => {
     }
   }, [facilities]);
 
-  const toggleSangjoCompare = (company: FuneralCompany) => {
-    setSangjoCompareList(prev => {
-      const exists = prev.find(c => c.id === company.id);
-      if (exists) {
-        showToast("비교함에서 제외되었습니다.");
-        return prev.filter(c => c.id !== company.id);
-      }
-      if (prev.length >= 3) {
-        showToast("최대 3개 업체까지만 비교 가능합니다.", 'info');
-        return prev;
-      }
-      showToast("비교함에 추가되었습니다.");
-      return [...prev, company];
-    });
-  };
-
-  // Admin Actions
   const handleUpdateReservation = (id: string, status: 'confirmed' | 'cancelled') => {
     setReservations(prev => prev.map(r => r.id === id ? { ...r, status } : r));
   };
@@ -1799,7 +1775,7 @@ const App: React.FC = () => {
               <ComparisonModal
                 facilities={compareList}
                 onClose={() => setShowComparison(false)}
-                onRemove={(id) => setCompareList(prev => prev.filter(f => f.id !== id))}
+                onRemove={(id) => removeFromCompare(id)}
                 onBook={(facility) => {
                   setShowComparison(false);
                   setSelectedFacility(facility);
@@ -1887,7 +1863,7 @@ const App: React.FC = () => {
                 <SangjoComparisonModal
                   companies={sangjoCompareList}
                   onClose={() => setShowSangjoComparison(false)}
-                  onRemove={(id) => setSangjoCompareList(prev => prev.filter(c => c.id !== id))}
+                  onRemove={(id) => removeFromSangjoCompare(id)}
                   onSelect={(company) => {
                     setShowSangjoComparison(false);
                     setSelectedFuneralCompany(company);
