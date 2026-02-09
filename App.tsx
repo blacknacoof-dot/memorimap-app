@@ -29,6 +29,7 @@ import { useFilterStore } from './stores/useFilterStore';
 import { logger } from './utils/logger';
 import { useToast } from './hooks/useToast';
 import { useComparison } from './hooks/useComparison';
+import { useReservations } from './hooks/useReservations';
 
 // Lazy Load Components
 const AdminView = React.lazy(() => import('./components/AdminView').then(m => ({ default: m.AdminView })));
@@ -96,9 +97,7 @@ const App: React.FC = () => {
   const { location: userLocation, getCurrentPosition } = useLocation();
   const [facilities, setFacilities] = useState<Facility[]>(FACILITIES);
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
-  const [isBooking, setIsBooking] = useState(false);
   const [viewState, setViewState] = useState<ViewState>(ViewState.MAP);
-  const [reservations, setReservations] = useState<Reservation[]>([]);
   const [mapBounds, setMapBounds] = useState<L.LatLngBounds | null>(null);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -144,6 +143,16 @@ const App: React.FC = () => {
     toggleSangjoCompare,
     removeFromSangjoCompare
   } = useComparison(showToast);
+
+  // Reservations State - useReservations hook 사용
+  const {
+    reservations,
+    setReservations,
+    handleBookingConfirm,
+    handleUpdateReservation,
+    isBooking,
+    setIsBooking
+  } = useReservations(isSignedIn, user, showToast, setShowLoginModal, setSelectedFacility, setViewState);
 
   // Facility Admin Context
   const [adminFacilityId, setAdminFacilityId] = useState<string | null>(null);
@@ -848,46 +857,6 @@ const App: React.FC = () => {
     showToast("리뷰가 삭제되었습니다.", 'info');
   };
 
-  const handleBookingConfirm = async (reservation: Reservation) => {
-    if (!isSignedIn) {
-      showToast("예약을 위해 로그인이 필요합니다.", 'error');
-      setShowLoginModal(true);
-      setIsBooking(false);
-      return;
-    }
-
-    try {
-      // Save to Supabase
-      const { data, error } = await supabase
-        .from('reservations')
-        .insert({
-          user_id: user?.id,
-          facility_id: reservation.facility_id,
-          facility_name: reservation.facility_name,
-          visit_date: reservation.visit_date,
-          time_slot: reservation.time_slot,
-          visitor_name: reservation.visitor_name,
-          visitor_count: reservation.visitor_count,
-          purpose: reservation.purpose,
-          special_requests: reservation.special_requests,
-          status: reservation.status,
-          payment_amount: reservation.payment_amount
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setReservations(prev => [...prev, reservation]);
-      setIsBooking(false);
-      setSelectedFacility(null);
-      setViewState(ViewState.MY_PAGE);
-      showToast("예약이 확정되었습니다!");
-    } catch (err) {
-      console.error('Reservation error:', err);
-      showToast("예약 중 오류가 발생했습니다.", 'error');
-    }
-  };
 
   const handleCompanySelect = React.useCallback(async (company: FuneralCompany, startChat?: boolean) => {
     // [Fix] Fetch fresh data from DB to ensure we have products AND reviews
@@ -1013,9 +982,6 @@ const App: React.FC = () => {
     }
   }, [facilities]);
 
-  const handleUpdateReservation = (id: string, status: 'confirmed' | 'cancelled') => {
-    setReservations(prev => prev.map(r => r.id === id ? { ...r, status } : r));
-  };
 
   // If Admin View, render completely separate layout
   if (viewState === ViewState.ADMIN) {
