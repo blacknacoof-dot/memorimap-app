@@ -1,0 +1,128 @@
+const fs = require('fs');
+const path = require('path');
+const { createClient } = require('@supabase/supabase-js');
+const csv = require('csv-parse/sync');
+
+const supabaseUrl = 'https://xvmpvzldezpoxxsarizm.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2bXB2emxkZXpwb3h4c2FyaXptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4NTEwMTksImV4cCI6MjA4MTQyNzAxOX0.TC-SJKzTRANjoLiRi2yg_EHu6xLer2wr-RaJ4AWIv04';
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+const CSV_FILE = 'facility_status_final_updated.csv';
+
+// Map CSV columns to DB columns
+// Header from file check: id, type, name, address, phone, ... (inferred, need to be flexible)
+// Actually header is likely: id,type,name,address,phone,homepage,parking,operating_hours,naver_place_id,naver_status,reason,naver_url
+// But looking at previous `Get-Content` output:
+// 5,봉안당,유토피아추모관,경기도 안성시 일죽면 화곡길 130,1588-2030,X,O,O,유토피아추모관 (1673724468),미흡 (사진),"",https://map.naver.com...
+// It seems there is NO header or the header is at line 1.
+// Let's assume standard columns:
+// Index 0: id (or index?)
+// Index 1: type (Korean: 봉안당, 장례식장, etc.)
+// Index 2: name
+// Index 3: address
+// Index 4: phone
+// Index 5: homepage/etc?
+
+// Function to map Korean types to DB types
+function mapType(koreanType) {
+    if (!koreanType) return 'charnel'; // default
+    if (koreanType.includes('장례식장')) return 'funeral';
+    if (koreanType.includes('봉안') || koreanType.includes('납골')) return 'charnel';
+    if (koreanType.includes('수목') || koreanType.includes('자연')) return 'natural';
+    if (koreanType.includes('공원') || koreanType.includes('묘지')) return 'park'; // Fixed classification logic
+    if (koreanType.includes('해양')) return 'sea';
+    if (koreanType.includes('동물')) return 'pet';
+    return 'charnel'; // fallback
+}
+
+// Coordinate lookup (Mock for now, or just leave 0,0 and let client or background job fix it)
+// Ideally we need coordinates. Without them, map won't display.
+// The CSV doesn't seem to have lat/lng in the snippet.
+// Wait, the previous snippet showed: ... ,https://map.naver.com/v5/search/...
+// Maybe we can extract from URL if present, but that's hard.
+// Actually, do we have a localized geocoding csv?
+// The user just wants "2200 facilities". If I import with lat/lng=0, they might not show on map.
+// But first step is to get them in DB.
+// Let's check if the CSV has lat/lng headers. I'll read the first line specifically.
+
+async function run() {
+    const filePath = path.join(__dirname, '..', CSV_FILE);
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+    const records = csv.parse(fileContent, {
+        columns: true,
+        skip_empty_lines: true,
+        relax_column_count: true
+    });
+
+    console.log(`Found ${records.length} records in CSV.`);
+
+    let successCount = 0;
+    let failCount = 0;
+    
+    // Batch process
+    const BATCH_SIZE = 50;
+    for (let i = 0; i < records.length; i += BATCH_SIZE) {
+        const batch = records.slice(i, i + BATCH_SIZE);
+        const rowsToUpsert = batch.map(row => {
+            // Map ROW to DB Object
+            // Adjust these keys based on actual CSV header (will print header first if script fails)
+            
+            // Heuristic mapping based on common column names or indices if headerless
+            // If `columns: true` works, we use the header keys.
+            // Let's inspect first row keys to be sure.
+            if (i === 0 && row) {
+                console.log('Sample Row Keys:', Object.keys(row));
+            }
+
+            const name = row['name'] || row['시설명'] || row['업체명'] || row[2];
+            const address = row['address'] || row['주소'] || row[3];
+            const rawType = row['type'] || row['시설유형'] || row['업종'] || row[1];
+            const phone = row['phone'] || row['전화번호'] || row['연락처'] || row[4];
+            
+            // Generate a deterministic UUID-like ID if missing or use CSV ID
+            // Using name + address to generate hash if needed, or just let DB handle ID if insert.
+            // But we want to UPSERT to avoid duplicates.
+            // Let's use name+address as unique key? Or use existing ID from CSV if consistent.
+            
+            // Problem: CSV has '1', '2', etc. DB has UUID or numeric?
+            // Existing DB likely has mix.
+            // Best approach: Use `name` and `address` to find existing? NO, too slow.
+            // Let's use the CSV `id` if present.
+            
+            return {
+                name: name,
+                address: address || '주소 미상',
+                type: mapType(rawType),
+                phone: phone,
+                religion: 'none', // Default
+                lat: 37.5665, // Default Seoul (will need geocoding later)
+                lng: 126.9780,
+                is_verified: true, // Imported data is verified?
+                data_source: 'csv_import_v2'
+            };
+        }).filter(r => r.name); // basic validation
+
+        // We can't easily upsert without a unique key constraint on (name, address) or ID.
+        // `memorial_spaces` PK is `id`.
+        // If we don't provide ID, Postgres generates UUID.
+        // To avoid duplicates, we should check existence? Or trusted upsert?
+        // Given 2200 count, checking each is slow.
+        // Strategy: Insert all (ignore conflicts? no unique constraint on name).
+        // User wants "Total 2200". If duplicates exist, we might end up with more.
+        // But currently we have 893.
+        // Most safe way: Only insert if name doesn't exist?
+        // Loop is better for safety.
+        
+        // Actually, let's try to upsert based on 'name' if we can? No 'name' is not unique theoretically (but practically maybe).
+        
+        // Revised Strategy:
+        // 1. Fetch all existing names from DB (893 is small enough).
+        // 2. Filter CSV records that match existing names.
+        // 3. Insert only NEW records.
+        
+        // This avoids duplicates properly.
+    }
+}
+
+// ... wait, I'll implement the "Fetch existing" strategy in the actual script below.

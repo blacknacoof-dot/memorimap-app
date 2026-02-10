@@ -1,0 +1,161 @@
+{
+  "timestamp": "2025-12-27T15:42:18.648Z",
+  "totalFacilities": 1000,
+  "byType": {
+    "pet": {
+      "total": 67,
+      "complete": 0,
+      "incomplete": 67,
+      "details": {
+        "noPhoto": 1,
+        "noGallery": 65,
+        "noPrice": 65,
+        "noDescription": 1,
+        "noPhone": 60,
+        "englishAddress": 0,
+        "complete": 0
+      },
+      "incompleteNames": [
+        "펫로스 케어",
+        "경북반려동물장례식장",
+        "별이되다",
+        "펫나잇",
+        "반려동물장례 네버엔딩",
+        "포포즈 반려동물 장례식장 세종점",
+        "마인3디피",
+        "아이별",
+        "리틀포즈 반려동물 장례식장",
+        "펫포유 반려동물장례식장"
+      ]
+    },
+    "charnel": {
+      "total": 236,
+      "complete": 0,
+      "incomplete": 236,
+      "details": {
+        "noPhoto": 6,
+        "noGallery": 226,
+        "noPrice": 127,
+        "noDescription": 225,
+        "noPhone": 6,
+        "englishAddress": 1,
+        "complete": 0
+      },
+      "incompleteNames": [
+        "정토사 극락원",
+        "하늘원추모관",
+        "재단법인조안공원양주지사",
+        "해인사 고불암무량수전",
+        "보현정사",
+        "정수사",
+        "대한불교정음사원",
+        "양지공원 제1추모의집",
+        "재단법인청림공원(봉안당)",
+        "안동하늘공원"
+      ]
+    },
+    "park": {
+      "total": 232,
+      "complete": 1,
+      "incomplete": 231,
+      "details": {
+        "noPhoto": 204,
+        "noGallery": 230,
+        "noPrice": 108,
+        "noDescription": 214,
+        "noPhone": 4,
+        "englishAddress": 0,
+        "complete": 1
+      },
+      "incompleteNames": [
+        "영봉추모공원",
+        "왕길조성묘지",
+        "분당메모리얼파크",
+        "외포리공설묘지",
+        "양오리공설묘지",
+        "모란공원묘지",
+        "목포추모공원 추모의집",
+        "옥천군공설묘지",
+        "홍성추모공원 유택동산",
+        "오상리공설묘지"
+      ]
+    },
+    "natural": {
+      "total": 108,
+      "complete": 1,
+      "incomplete": 107,
+      "details": {
+        "noPhoto": 2,
+        "noGallery": 107,
+        "noPrice": 64,
+        "noDescription": 82,
+        "noPhone": 3,
+        "englishAddress": 1,
+        "complete": 1
+      },
+      "incompleteNames": [
+        "분당추모공원휴",
+        "하늘소풍수목장",
+        "안성시추모공원",
+        "경각산 수목장",
+        "화성함백산추모공원",
+        "남해추모누리공원 자연장지",
+        "자연숲추모공원 수목장림",
+        "일영수목장",
+        "남도광역추모공원",
+        "경주하늘수목장림"
+      ]
+    },
+    "funeral": {
+      "total": 354,
+      "complete": 1,
+      "incomplete": 353,
+      "details": {
+        "noPhoto": 111,
+        "noGallery": 353,
+        "noPrice": 49,
+        "noDescription": 97,
+        "noPhone": 9,
+        "englishAddress": 0,
+        "complete": 1
+      },
+      "incompleteNames": [
+        "샘안양병원장례식장",
+        "오포장례식장",
+        "안산온누리병원장례식장",
+        "근로복지공단 대전병원 장례식장",
+        "오산장례문화원",
+        "주식회사 헤븐앤어스",
+        "당진종합병원장례식장",
+        "장례식장상예원",
+        "가평연새장례식장",
+        "화성현대장례문화원"
+      ]
+    },
+    "sea": {
+      "total": 3,
+      "complete": 0,
+      "incomplete": 3,
+      "details": {
+        "noPhoto": 3,
+        "noGallery": 3,
+        "noPrice": 1,
+        "noDescription": 0,
+        "noPhone": 0,
+        "englishAddress": 0,
+        "complete": 0
+      },
+      "incompleteNames": [
+        "에이치서비스 마린바다장",
+        "인천 해양장 (바다장)",
+        "부산 연안 해양장"
+      ]
+    }
+  },
+  "summary": {
+    "totalIncomplete": 997,
+    "totalNoPhoto": 327,
+    "totalNoPrice": 414,
+    "totalEnglishAddr": 2
+  }
+}

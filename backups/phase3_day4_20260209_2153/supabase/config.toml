@@ -1,0 +1,2 @@
+[functions.approve-partner]
+verify_jwt = false

@@ -1,0 +1,20 @@
+{
+  "timestamp": "2025-12-27T16:36:23.518Z",
+  "totalProcessed": 2,
+  "converted": 2,
+  "failed": 0,
+  "conversions": [
+    {
+      "id": 720,
+      "name": "안동하늘공원",
+      "oldAddress": "Andong-si, South Korea",
+      "newAddress": "경북 안동시 임하면 고곡리 550-1"
+    },
+    {
+      "id": 1957837451,
+      "name": "중앙추모공원",
+      "oldAddress": "South Korea, Gyeonggi-do, Yeoncheon, Misan-myeon, Mayu-ro, 58-38 KR",
+      "newAddress": "경기도 연천군 미산면 마유로 58-38"
+    }
+  ]
+}

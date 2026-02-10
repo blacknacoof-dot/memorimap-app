@@ -1,0 +1,118 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - button [ref=e6]:
+      - img [ref=e7]
+    - button [ref=e10]:
+      - img [ref=e11]
+    - generic [ref=e15]: 내 정보
+    - button [ref=e16]:
+      - img [ref=e17]
+  - generic [ref=e21]:
+    - generic [ref=e22]:
+      - generic [ref=e23]:
+        - img "Profile" [ref=e24]
+        - generic [ref=e25]: 업체
+      - generic [ref=e26]:
+        - generic [ref=e27]:
+          - heading "태용님" [level=2] [ref=e28]
+          - button "프로필 수정" [ref=e29]:
+            - img [ref=e30]
+        - paragraph [ref=e33]: black23007@naver.com
+        - paragraph [ref=e34]: 등록된 전화번호가 없습니다
+    - heading "나의 예약 내역" [level=3] [ref=e35]
+    - generic [ref=e36]:
+      - button "상담" [ref=e37]:
+        - img [ref=e38]
+        - generic [ref=e40]: 상담
+      - button "대기 0" [ref=e41]:
+        - generic [ref=e42]: 대기 0
+      - button "확정 0" [ref=e43]:
+        - generic [ref=e44]: 확정 0
+      - button "취소 0" [ref=e45]:
+        - generic [ref=e46]: 취소 0
+    - paragraph [ref=e49]: 취소된 예약이 없습니다.
+    - heading "찜한 목록" [level=3] [ref=e50]
+    - generic [ref=e51]:
+      - button "시설 0" [ref=e52]:
+        - img [ref=e53]
+        - generic [ref=e55]: 시설 0
+      - button "상조 0" [ref=e56]:
+        - img [ref=e57]
+        - generic [ref=e59]: 상조 0
+    - generic [ref=e61]: 즐겨찾기한 시설이 없습니다.
+    - generic [ref=e62]:
+      - button "개인정보 처리방침 및 오픈소스 라이선스" [ref=e63]:
+        - img [ref=e64]
+        - generic [ref=e66]: 개인정보 처리방침 및 오픈소스 라이선스
+      - generic [ref=e67]:
+        - paragraph [ref=e68]: © 2024 (주)아톰케어
+        - paragraph [ref=e69]: Version 1.0.0
+  - generic [ref=e70]:
+    - button "지도" [ref=e71]:
+      - img [ref=e72]
+      - generic [ref=e74]: 지도
+    - button "목록" [ref=e75]:
+      - img [ref=e76]
+      - generic [ref=e77]: 목록
+    - button "상조" [ref=e78]:
+      - img [ref=e79]
+      - generic [ref=e82]: 상조
+    - button "내 정보" [ref=e83]:
+      - img [ref=e84]
+      - generic [ref=e87]: 내 정보
+  - generic [ref=e88]:
+    - generic [ref=e89]:
+      - button [ref=e90]:
+        - img [ref=e91]
+      - generic [ref=e94]:
+        - img [ref=e96]
+        - generic [ref=e99]:
+          - heading "태용 님" [level=2] [ref=e100]
+          - paragraph [ref=e101]: black23007@naver.com
+      - button "내 정보 관리" [ref=e102]:
+        - text: 내 정보 관리
+        - img [ref=e103]
+      - button "시설 관리자" [ref=e105]:
+        - text: 시설 관리자
+        - img [ref=e106]
+    - generic [ref=e109]:
+      - button "예약현황" [ref=e110]:
+        - img [ref=e112]
+        - generic [ref=e114]: 예약현황
+      - button "찜한목록" [ref=e115]:
+        - img [ref=e116]
+        - generic [ref=e118]: 찜한목록
+    - generic [ref=e119]:
+      - generic [ref=e120]: 서비스 안내
+      - button "장례/추모 가이드" [ref=e121]:
+        - img [ref=e122]
+        - generic [ref=e125]: 장례/추모 가이드
+        - img [ref=e126]
+      - button "공지사항 & 이벤트" [ref=e128]:
+        - img [ref=e129]
+        - generic [ref=e132]: 공지사항 & 이벤트
+        - img [ref=e133]
+      - generic [ref=e135]: 고객 지원
+      - button "고객센터 / 자주 묻는 질문" [ref=e136]:
+        - img [ref=e137]
+        - generic [ref=e140]: 고객센터 / 자주 묻는 질문
+        - img [ref=e141]
+      - button "앱 설정" [ref=e143]:
+        - img [ref=e144]
+        - generic [ref=e147]: 앱 설정
+        - img [ref=e148]
+      - button "업체 입점/제휴 문의" [ref=e151]:
+        - img [ref=e152]
+        - generic [ref=e156]: 업체 입점/제휴 문의
+        - img [ref=e157]
+    - generic [ref=e159]:
+      - button "로그아웃" [ref=e160]:
+        - img [ref=e161]
+        - text: 로그아웃
+      - generic [ref=e165]:
+        - generic [ref=e166]: 버전 1.0.0
+        - generic [ref=e167]: (주)아톰케어
+```

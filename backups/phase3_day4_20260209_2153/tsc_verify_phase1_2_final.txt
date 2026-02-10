@@ -1,0 +1,5 @@
+components/LoginModal.tsx(4,10): error TS2305: Module '"../lib/auth"' has no exported member 'isClerkConfigured'.
+components/LoginModal.tsx(21,28): error TS18048: 'signIn' is possibly 'undefined'.
+components/LoginModal.tsx(23,15): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+components/MyPageView.tsx(17,10): error TS2305: Module '"../lib/auth"' has no exported member 'isClerkConfigured'.
+lib/queries.ts(4,10): error TS2305: Module '"./auth"' has no exported member 'isClerkConfigured'.
