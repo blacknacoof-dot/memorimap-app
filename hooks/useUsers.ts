@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { fetchAllUsers, updateUserRole, UserProfile } from '@/lib/api/superAdmin';
 
 export function useAllUsers() {
@@ -23,7 +24,7 @@ export function useAllUsers() {
             await fetchUsers(); // Refresh the list
         } catch (error) {
             console.error('Failed to update user role:', error);
-            alert('권한 변경 중 오류가 발생했습니다.');
+            toast.error('권한 변경 중 오류가 발생했습니다.');
         }
     };
 

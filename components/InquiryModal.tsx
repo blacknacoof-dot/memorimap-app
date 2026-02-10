@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Send, CheckCircle, MessageSquare, Building2, User, Phone, Mail, Sparkles } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '../lib/supabaseClient';
 import { useUser } from '../lib/auth';
 import { FUNERAL_COMPANIES } from '../constants';
@@ -85,7 +86,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, ini
             setIsSuccess(true);
         } catch (err) {
             console.error('Inquiry error:', err);
-            alert('상담 신청 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+            toast.error('상담 신청 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
         } finally {
             setIsSubmitting(false);
         }
@@ -152,8 +153,8 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, ini
                                                 type="button"
                                                 onClick={() => setFormData(p => ({ ...p, inquiryType: t }))}
                                                 className={`py-3 px-4 rounded-xl text-xs font-bold border-2 transition-all ${formData.inquiryType === t
-                                                        ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-md shadow-blue-50'
-                                                        : 'border-gray-50 bg-gray-50/50 text-gray-400 hover:border-gray-100'
+                                                    ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-md shadow-blue-50'
+                                                    : 'border-gray-50 bg-gray-50/50 text-gray-400 hover:border-gray-100'
                                                     }`}
                                             >
                                                 {t}

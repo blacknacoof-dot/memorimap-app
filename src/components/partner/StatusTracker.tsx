@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabaseClient';
 import { CheckCircle2, Circle, Loader2 } from 'lucide-react';
 
@@ -100,7 +101,7 @@ export const StatusTracker: React.FC<StatusTrackerProps> = ({
 
             if (error) {
                 console.error('Status update error:', error);
-                alert('상태 업데이트 실패');
+                toast.error('상태 업데이트 실패');
                 return;
             }
 

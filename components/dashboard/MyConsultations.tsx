@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { getConsultationsByUser, updateConsultationStatus, Consultation } from '@/lib/queries';
 import { Clock, CheckCircle, XCircle, Check, MapPin, Building2, Calendar, ChevronRight, RefreshCw, MessageSquare } from 'lucide-react';
 import { aiConsultationService } from '@/lib/api/aiConsultation';
@@ -278,7 +279,7 @@ export const MyConsultations: React.FC<Props> = ({ userId }) => {
                             {/* [AI] Resume Chat Button */}
                             {(consultation as any).isAi && (consultation as any).originStatus !== AiConsultationStatus.COMPLETED && (
                                 <button
-                                    onClick={() => alert(`[상담 이어하기] 채팅창을 엽니다.\nID: ${consultation.id}`)}
+                                    onClick={() => toast.info(`[상담 이어하기] 채팅창을 엽니다.\nID: ${consultation.id}`)}
                                     className="w-full py-2 mb-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition font-bold flex items-center justify-center gap-2"
                                 >
                                     <MessageSquare size={16} />

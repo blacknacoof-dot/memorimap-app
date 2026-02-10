@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { useUser } from '../../lib/auth';
 import { getConsultationHistory, deleteConsultation } from '../../lib/queries';
 import { Consultation } from '../../types/consultation';
@@ -40,7 +41,7 @@ export const ConsultationHistoryView: React.FC<Props> = ({ facilities, onBack, o
             await deleteConsultation(id);
             setHistory(prev => prev.filter(c => c.id !== id));
         } catch (err) {
-            alert('삭제 중 오류가 발생했습니다.');
+            toast.error('삭제 중 오류가 발생했습니다.');
         }
     };
 

@@ -1430,529 +1430,529 @@ const App: React.FC = () => {
   return (
     <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ErrorBoundary>
-      <div className="h-full w-full relative bg-gray-100 flex justify-center overflow-hidden">
-        {/* Mobile Container Limit */}
-        <div className="w-full h-full md:max-w-md bg-white relative shadow-2xl flex flex-col">
+        <div className="h-full w-full relative bg-gray-100 flex justify-center overflow-hidden">
+          {/* Mobile Container Limit */}
+          <div className="w-full h-full md:max-w-md bg-white relative shadow-2xl flex flex-col">
 
-          {/* Share Route - 별도 렌더링 */}
-          {isShareRoute && (
-            <Routes>
-              <Route path="/share/:token" element={<ShareJourneyView />} />
-            </Routes>
-          )}
-          {/* Role Loading Overlay Removed to prevent blocking users */}
+            {/* Share Route - 별도 렌더링 */}
+            {isShareRoute && (
+              <Routes>
+                <Route path="/share/:token" element={<ShareJourneyView />} />
+              </Routes>
+            )}
+            {/* Role Loading Overlay Removed to prevent blocking users */}
 
-          {/* Role Error Alert */}{/* ... */}
+            {/* Role Error Alert */}{/* ... */}
 
-          {/* Role Error Alert */}
-          {roleError && import.meta.env.DEV && (
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[10000] w-[90%] max-w-md bg-red-50 border border-red-200 p-4 rounded-xl shadow-lg flex items-start gap-3">
-              <AlertCircle className="text-red-500 shrink-0" size={20} />
-              <div className="flex-1">
-                <h3 className="font-bold text-red-800 text-sm">역할 조회 오류</h3>
-                <p className="text-red-600 text-[10px] mt-1 break-all">{roleError}</p>
-              </div>
-              <button
-                onClick={() => setRoleError(null)}
-                className="text-red-400 hover:text-red-600"
-              >
-                <X size={16} />
-              </button>
-            </div>
-          )}
-
-          {/* Top Bar - Only on Main Views */}
-          {(viewState === ViewState.MAP || viewState === ViewState.LIST || viewState === ViewState.MY_PAGE) && (
-            <>
-              {/* 🚧 FilterBar - Hide on My Page and when Menu is Open */}
-              {viewState !== ViewState.MY_PAGE && !isMenuOpen && (
-                <div className="absolute top-20 left-0 right-0 z-40 px-4 pointer-events-none animate-in fade-in slide-in-from-top-1 duration-300">
-                  <div className="pointer-events-auto">
-                    <FilterBar />
-                  </div>
+            {/* Role Error Alert */}
+            {roleError && import.meta.env.DEV && (
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[10000] w-[90%] max-w-md bg-red-50 border border-red-200 p-4 rounded-xl shadow-lg flex items-start gap-3">
+                <AlertCircle className="text-red-500 shrink-0" size={20} />
+                <div className="flex-1">
+                  <h3 className="font-bold text-red-800 text-sm">역할 조회 오류</h3>
+                  <p className="text-red-600 text-[10px] mt-1 break-all">{roleError}</p>
                 </div>
-              )}
-
-              <div className={`absolute z-30 flex gap-2 transition-all duration-300 ${viewState === ViewState.LIST
-                ? 'top-0 left-0 right-0 p-4 bg-white/95 backdrop-blur shadow-sm'
-                : 'top-4 left-4 right-4'
-                }`}>
                 <button
-                  onClick={() => setIsMenuOpen(true)}
-                  className="bg-white p-3 rounded-xl shadow-md text-gray-700 active:scale-95 transition-transform"
+                  onClick={() => setRoleError(null)}
+                  className="text-red-400 hover:text-red-600"
                 >
-                  <Menu size={20} />
+                  <X size={16} />
                 </button>
-
-                <div className="bg-white rounded-xl shadow-md flex items-center justify-center">
-                  <NotificationCenter />
-                </div>
-
-                {viewState === ViewState.MY_PAGE ? (
-                  <div className="flex-1 bg-white rounded-xl shadow-md flex items-center justify-center h-12">
-                    <span className="font-bold text-gray-800">내 정보</span>
-                  </div>
-                ) : (
-                  <div className="flex-1 h-12" /> // Spacer
-                )}
-
-                {
-                  viewState === ViewState.LIST && (
-                    <button
-                      onClick={() => setViewState(ViewState.MAP)}
-                      className="bg-white p-3 rounded-xl shadow-md text-primary active:scale-95 transition-transform border border-primary/20"
-                      title="지도 보기"
-                    >
-                      <MapIcon size={20} />
-                    </button>
-                  )
-                }
-
-
-
-
-
-                {
-                  viewState === ViewState.MY_PAGE && (
-                    <button
-                      onClick={() => setViewState(ViewState.SETTINGS)}
-                      className="bg-white p-3 rounded-xl shadow-md text-gray-700 active:scale-95 transition-transform"
-                    >
-                      <Settings size={20} />
-                    </button>
-                  )
-                }
               </div>
+            )}
 
-              {/* Promo Banner - Persistent underneath filters */}
-              {
-                showPromo && (viewState === ViewState.MAP || viewState === ViewState.LIST) && (
-                  <div className={`absolute left-4 right-4 z-20 animate-in fade-in slide-in-from-top-2 transition-all duration-300 top-48`}>
-                    <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-amber-400 p-3 rounded-xl shadow-xl border border-amber-500/30 flex justify-between items-center">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-amber-500/20 p-1.5 rounded-lg shrink-0">
-                          <Ticket size={18} />
-                        </div>
-                        <div>
-                          <p className="text-[10px] text-gray-400 mb-0.5 leading-none">오직 추모맵에서만</p>
-                          <p className="text-sm font-bold leading-none">계약 시 5% 할인권 증정 🎁</p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => setShowPromo(false)}
-                        className="text-gray-500 hover:text-white transition-colors p-1"
-                      >
-                        <X size={16} />
-                      </button>
+            {/* Top Bar - Only on Main Views */}
+            {(viewState === ViewState.MAP || viewState === ViewState.LIST || viewState === ViewState.MY_PAGE) && (
+              <>
+                {/* 🚧 FilterBar - Hide on My Page and when Menu is Open */}
+                {viewState !== ViewState.MY_PAGE && !isMenuOpen && (
+                  <div className="absolute top-20 left-0 right-0 z-40 px-4 pointer-events-none animate-in fade-in slide-in-from-top-1 duration-300">
+                    <div className="pointer-events-auto">
+                      <FilterBar />
                     </div>
                   </div>
-                )
-              }
+                )}
 
-
-            </>
-          )}
-
-          {/* Main Content */}
-          <div className="flex-1 relative overflow-hidden">
-            <Suspense fallback={<LoadingFallback />}>
-              {renderContent()}
-            </Suspense>
-          </div>
-
-          {/* Bottom Navigation for Mobile */}
-          {/* Bottom Navigation for Mobile */}
-          {
-            (viewState === ViewState.MAP || viewState === ViewState.LIST || viewState === ViewState.MY_PAGE || viewState === ViewState.SETTINGS || viewState === ViewState.GUIDE || viewState === ViewState.FUNERAL_COMPANIES) && (
-              <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-3 flex justify-between items-center z-[200] safe-area-bottom">
-                <button
-                  onClick={() => setViewState(ViewState.MAP)}
-                  className={`flex flex-col items-center ${viewState === ViewState.MAP ? 'text-primary' : 'text-gray-400'}`}
-                >
-                  <MapIcon size={24} strokeWidth={viewState === ViewState.MAP ? 2.5 : 2} />
-                  <span className="text-[10px] mt-1 font-medium">지도</span>
-                </button>
-                <button
-                  onClick={() => setViewState(ViewState.LIST)}
-                  className={`flex flex-col items-center ${viewState === ViewState.LIST ? 'text-primary' : 'text-gray-400'}`}
-                >
-                  <List size={24} strokeWidth={viewState === ViewState.LIST ? 2.5 : 2} />
-                  <span className="text-[10px] mt-1 font-medium">목록</span>
-                </button>
-                <button
-                  onClick={() => setViewState(ViewState.FUNERAL_COMPANIES)}
-                  className={`flex flex-col items-center ${viewState === ViewState.FUNERAL_COMPANIES ? 'text-primary' : 'text-gray-400'}`}
-                >
-                  <Award size={24} strokeWidth={viewState === ViewState.FUNERAL_COMPANIES ? 2.5 : 2} />
-                  <span className="text-[10px] mt-1 font-medium">상조</span>
-                </button>
-                <button
-                  onClick={() => setViewState(ViewState.MY_PAGE)}
-                  className={`flex flex-col items-center ${viewState === ViewState.MY_PAGE ? 'text-primary' : 'text-gray-400'}`}
-                >
-                  <User size={24} strokeWidth={viewState === ViewState.MY_PAGE ? 2.5 : 2} />
-                  <span className="text-[10px] mt-1 font-medium">내 정보</span>
-                </button>
-              </div>
-            )
-          }
-
-          {/* Toast Notification */}
-          {
-            toast && (
-              <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-[100] w-full px-4 animate-in fade-in slide-in-from-bottom-2 pointer-events-none">
-                <div className={`bg-gray-900/90 text-white px-4 py-3 rounded-xl shadow-xl backdrop-blur-sm flex items-center justify-between gap-3 ${toast.type === 'error' ? 'bg-red-900/90' : toast.type === 'info' ? 'bg-blue-900/90' : 'bg-gray-900/90'
+                <div className={`absolute z-30 flex gap-2 transition-all duration-300 ${viewState === ViewState.LIST
+                  ? 'top-0 left-0 right-0 p-4 bg-white/95 backdrop-blur shadow-sm'
+                  : 'top-4 left-4 right-4'
                   }`}>
-                  <span className="text-sm font-medium">{toast.message}</span>
-                  {compareList.length > 0 && toast.message.includes('비교함') && (
-                    <button
-                      onClick={() => setShowComparison(true)}
-                      className="text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded text-white font-bold pointer-events-auto"
-                    >
-                      비교하기
-                    </button>
+                  <button
+                    onClick={() => setIsMenuOpen(true)}
+                    className="bg-white p-3 rounded-xl shadow-md text-gray-700 active:scale-95 transition-transform"
+                  >
+                    <Menu size={20} />
+                  </button>
+
+                  <div className="bg-white rounded-xl shadow-md flex items-center justify-center">
+                    <NotificationCenter />
+                  </div>
+
+                  {viewState === ViewState.MY_PAGE ? (
+                    <div className="flex-1 bg-white rounded-xl shadow-md flex items-center justify-center h-12">
+                      <span className="font-bold text-gray-800">내 정보</span>
+                    </div>
+                  ) : (
+                    <div className="flex-1 h-12" /> // Spacer
                   )}
+
+                  {
+                    viewState === ViewState.LIST && (
+                      <button
+                        onClick={() => setViewState(ViewState.MAP)}
+                        className="bg-white p-3 rounded-xl shadow-md text-primary active:scale-95 transition-transform border border-primary/20"
+                        title="지도 보기"
+                      >
+                        <MapIcon size={20} />
+                      </button>
+                    )
+                  }
+
+
+
+
+
+                  {
+                    viewState === ViewState.MY_PAGE && (
+                      <button
+                        onClick={() => setViewState(ViewState.SETTINGS)}
+                        className="bg-white p-3 rounded-xl shadow-md text-gray-700 active:scale-95 transition-transform"
+                      >
+                        <Settings size={20} />
+                      </button>
+                    )
+                  }
                 </div>
-              </div>
-            )
-          }
 
-          {/* Overlays */}
-          {/* Global Toaster */}
-          <Toaster richColors position="top-center" closeButton />
-
-          {/* Notification Center (Overlay) */}
-          {/* Notification Center (Overlay) - Now properly placed as a floating or header element if needed, but for now removing invalid props */}
-          <div className="fixed top-4 right-16 z-50">
-            <NotificationCenter />
-          </div>
-
-          <SideMenu
-            isOpen={isMenuOpen}
-            onClose={() => setIsMenuOpen(false)}
-            onNavigate={(view) => setViewState(view)}
-            reservationCount={reservations.length}
-            isLoggedIn={isSignedIn}
-            user={userInfo}
-            onLogin={handleLoginClick}
-            onLogout={handleLogout}
-            userRole={userRole}
-          />
-
-          {
-            showLoginModal && (
-              <LoginModal
-                onClose={() => setShowLoginModal(false)}
-                onLogin={() => {
-                  setShowLoginModal(false);
-                  showToast("로그인 되었습니다!");
-                }}
-                onSignUpClick={() => {
-                  setShowLoginModal(false);
-                  setShowSignUpModal(true);
-                }}
-                onAdminLogin={() => {
-                  setShowLoginModal(false);
-                  setViewState(ViewState.ADMIN);
-                  showToast("관리자 모드로 접속합니다.", 'success');
-                }}
-              />
-            )
-          }
-
-          {
-            showSignUpModal && (
-              <SignUpModal
-                onClose={() => setShowSignUpModal(false)}
-                onSignUp={() => {
-                  setShowSignUpModal(false);
-                  showToast("환영합니다! 회원가입이 완료되었습니다.");
-                }}
-                onLoginClick={() => {
-                  setShowSignUpModal(false);
-                  setShowLoginModal(true);
-                }}
-              />
-            )
-          }
-
-          {
-            selectedFacility && (
-              <FacilitySheet
-                facility={selectedFacility}
-                onClose={() => setSelectedFacility(null)}
-                onBook={() => setIsBooking(true)}
-                onViewMap={handleViewOnMap}
-                isLoggedIn={isSignedIn}
-                currentUser={userInfo}
-                onAddReview={handleAddReview}
-                onLoginRequired={() => {
-                  setSelectedFacility(null);
-                  setShowLoginModal(true);
-                }}
-                isInCompareList={compareList.some(f => f.id === selectedFacility.id)}
-                onToggleCompare={() => toggleCompare(selectedFacility)}
-                reservations={reservations}
-                onOpenConsultation={() => {
-                  // Keep legacy support or redirect to new chat
-                  setAiChatFacility(selectedFacility);
-                }}
-                onOpenAiChat={() => {
-                  setAiChatFacility(selectedFacility);
-                }}
-                onViewSangjoList={() => {
-                  setViewState(ViewState.FUNERAL_COMPANIES);
-                  setSelectedFacility(null);
-                }}
-              />
-            )
-          }
-
-          {/* AI Helper - Maum-i */}
-          {viewState === ViewState.MAP && !selectedFacility && !showComparison && !aiChatFacility && (
-            <RecommendationStarter
-              onSelectIntent={(intent) => {
-                setInitialChatIntent(intent);
-                setAiChatFacility({ name: '통합 AI 마음이', id: 'maum-i', type: 'assistant' } as any);
-              }}
-            />
-          )}
-
-          {/* Global Chat Interface (Maum-i or Specific Facility) */}
+                {/* Promo Banner - Persistent underneath filters */}
+                {
+                  showPromo && (viewState === ViewState.MAP || viewState === ViewState.LIST) && (
+                    <div className={`absolute left-4 right-4 z-20 animate-in fade-in slide-in-from-top-2 transition-all duration-300 top-48`}>
+                      <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-amber-400 p-3 rounded-xl shadow-xl border border-amber-500/30 flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-amber-500/20 p-1.5 rounded-lg shrink-0">
+                            <Ticket size={18} />
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-gray-400 mb-0.5 leading-none">오직 추모맵에서만</p>
+                            <p className="text-sm font-bold leading-none">계약 시 5% 할인권 증정 🎁</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setShowPromo(false)}
+                          className="text-gray-500 hover:text-white transition-colors p-1"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  )
+                }
 
 
-          {
-            isBooking && selectedFacility && (
-              <ReservationModal
-                facility={selectedFacility}
-                onClose={() => {
-                  setIsBooking(false);
-                  setIsUrgentBooking(false);
-                }}
-                onConfirm={handleBookingConfirm}
-                reservationMode={isUrgentBooking ? 'URGENT' : 'STANDARD'}
-              />
-            )
-          }
+              </>
+            )}
 
-          {
-            showComparison && (
-              <ComparisonModal
-                facilities={compareList}
-                onClose={() => setShowComparison(false)}
-                onRemove={(id) => removeFromCompare(id)}
-                onBook={(facility) => {
-                  setShowComparison(false);
-                  setSelectedFacility(facility);
-                  setIsBooking(true);
-                }}
-              />
-            )
-          }
-
-          {
-            selectedFuneralCompany && (
-              <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20"><div className="bg-white p-3 rounded-full shadow-lg"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div></div>}>
-                <FuneralCompanySheet
-                  company={selectedFuneralCompany}
-                  onClose={() => setSelectedFuneralCompany(null)}
-                  onOpenAIConsult={() => {
-                    setShowSangjoAIConsult(true);
-                  }}
-                  onOpenContract={() => {
-                    setShowSangjoContract(true);
-                  }}
-                  currentUser={userInfo}
-                  isLoggedIn={isSignedIn}
-                  onOpenLogin={() => {
-                    setShowLoginModal(true);
-                    setSelectedFuneralCompany(null); // Close sheet to reveal login modal
-                  }}
-                />
-              </Suspense>
-            )
-          }
-
-          {
-            showSangjoAIConsult && (
-              <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20"><div className="bg-white p-3 rounded-full shadow-lg"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div></div>}>
-                <SangjoConsultationModal
-                  company={selectedFuneralCompany}
-                  onClose={() => {
-                    setShowSangjoAIConsult(false);
-                    setSelectedFuneralCompany(null);
-                  }}
-                />
-              </Suspense>
-            )
-          }
-
-          {
-            showSangjoContract && selectedFuneralCompany && (
-              <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20"><div className="bg-white p-3 rounded-full shadow-lg"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div></div>}>
-                <SangjoContractModal
-                  company={selectedFuneralCompany}
-                  onClose={() => {
-                    setShowSangjoContract(false);
-                    setSelectedFuneralCompany(null);
-                  }}
-                  onConfirm={(data) => {
-                    // Create a pseudo-reservation for the contract
-                    const contractReservation: Reservation = {
-                      id: `CONT-${Date.now()}`,
-                      facility_id: data.companyId,
-                      facility_name: data.companyName,
-                      visit_date: new Date().toISOString(),
-                      time_slot: data.callTime,
-                      visitor_name: data.name,
-                      visitor_count: 1,
-                      contact_number: data.phone,
-                      purpose: '상조 가입 상담',
-                      special_requests: `연락처: ${data.phone}`,
-                      status: 'pending',
-                      payment_amount: 0,
-                      user_id: user?.id || '',
-                      funeral_company_id: data.companyId,
-                      funeral_company_name: data.companyName
-                    };
-                    handleBookingConfirm(contractReservation);
-                  }}
-                />
-              </Suspense>
-            )
-          }
-
-          {
-            showSangjoComparison && (
+            {/* Main Content */}
+            <div className="flex-1 relative overflow-hidden">
               <Suspense fallback={<LoadingFallback />}>
-                <SangjoComparisonModal
-                  companies={sangjoCompareList}
-                  onClose={() => setShowSangjoComparison(false)}
-                  onRemove={(id) => removeFromSangjoCompare(id)}
-                  onSelect={(company) => {
-                    setShowSangjoComparison(false);
-                    setSelectedFuneralCompany(company);
+                {renderContent()}
+              </Suspense>
+            </div>
+
+            {/* Bottom Navigation for Mobile */}
+            {/* Bottom Navigation for Mobile */}
+            {
+              (viewState === ViewState.MAP || viewState === ViewState.LIST || viewState === ViewState.MY_PAGE || viewState === ViewState.SETTINGS || viewState === ViewState.GUIDE || viewState === ViewState.FUNERAL_COMPANIES) && (
+                <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-3 flex justify-between items-center z-[200] safe-area-bottom">
+                  <button
+                    onClick={() => setViewState(ViewState.MAP)}
+                    className={`flex flex-col items-center ${viewState === ViewState.MAP ? 'text-primary' : 'text-gray-400'}`}
+                  >
+                    <MapIcon size={24} strokeWidth={viewState === ViewState.MAP ? 2.5 : 2} />
+                    <span className="text-[10px] mt-1 font-medium">지도</span>
+                  </button>
+                  <button
+                    onClick={() => setViewState(ViewState.LIST)}
+                    className={`flex flex-col items-center ${viewState === ViewState.LIST ? 'text-primary' : 'text-gray-400'}`}
+                  >
+                    <List size={24} strokeWidth={viewState === ViewState.LIST ? 2.5 : 2} />
+                    <span className="text-[10px] mt-1 font-medium">목록</span>
+                  </button>
+                  <button
+                    onClick={() => setViewState(ViewState.FUNERAL_COMPANIES)}
+                    className={`flex flex-col items-center ${viewState === ViewState.FUNERAL_COMPANIES ? 'text-primary' : 'text-gray-400'}`}
+                  >
+                    <Award size={24} strokeWidth={viewState === ViewState.FUNERAL_COMPANIES ? 2.5 : 2} />
+                    <span className="text-[10px] mt-1 font-medium">상조</span>
+                  </button>
+                  <button
+                    onClick={() => setViewState(ViewState.MY_PAGE)}
+                    className={`flex flex-col items-center ${viewState === ViewState.MY_PAGE ? 'text-primary' : 'text-gray-400'}`}
+                  >
+                    <User size={24} strokeWidth={viewState === ViewState.MY_PAGE ? 2.5 : 2} />
+                    <span className="text-[10px] mt-1 font-medium">내 정보</span>
+                  </button>
+                </div>
+              )
+            }
+
+            {/* Toast Notification */}
+            {
+              toast && (
+                <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-[100] w-full px-4 animate-in fade-in slide-in-from-bottom-2 pointer-events-none">
+                  <div className={`bg-gray-900/90 text-white px-4 py-3 rounded-xl shadow-xl backdrop-blur-sm flex items-center justify-between gap-3 ${toast.type === 'error' ? 'bg-red-900/90' : toast.type === 'info' ? 'bg-blue-900/90' : 'bg-gray-900/90'
+                    }`}>
+                    <span className="text-sm font-medium">{toast.message}</span>
+                    {compareList.length > 0 && toast.message.includes('비교함') && (
+                      <button
+                        onClick={() => setShowComparison(true)}
+                        className="text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded text-white font-bold pointer-events-auto"
+                      >
+                        비교하기
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )
+            }
+
+            {/* Overlays */}
+            {/* Global Toaster */}
+            <Toaster richColors position="top-center" closeButton />
+
+            {/* Notification Center (Overlay) */}
+            {/* Notification Center (Overlay) - Now properly placed as a floating or header element if needed, but for now removing invalid props */}
+            <div className="fixed top-4 right-16 z-50">
+              <NotificationCenter />
+            </div>
+
+            <SideMenu
+              isOpen={isMenuOpen}
+              onClose={() => setIsMenuOpen(false)}
+              onNavigate={(view) => setViewState(view)}
+              reservationCount={reservations.length}
+              isLoggedIn={isSignedIn}
+              user={userInfo}
+              onLogin={handleLoginClick}
+              onLogout={handleLogout}
+              userRole={userRole}
+            />
+
+            {
+              showLoginModal && (
+                <LoginModal
+                  onClose={() => setShowLoginModal(false)}
+                  onLogin={() => {
+                    setShowLoginModal(false);
+                    showToast("로그인 되었습니다!");
+                  }}
+                  onSignUpClick={() => {
+                    setShowLoginModal(false);
+                    setShowSignUpModal(true);
+                  }}
+                  onAdminLogin={() => {
+                    setShowLoginModal(false);
+                    setViewState(ViewState.ADMIN);
+                    showToast("관리자 모드로 접속합니다.", 'success');
                   }}
                 />
-              </Suspense>
-            )
-          }
+              )
+            }
 
-          {/* Global AI Chat Overlay */}
-          {aiChatFacility && (
-            <div className="fixed inset-0 z-[300] flex items-center justify-center p-0 md:p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-300">
-              <div className="w-full h-full md:w-[420px] md:h-[85vh] md:rounded-2xl overflow-hidden bg-white shadow-2xl relative animate-in zoom-in-95 duration-300">
-                <ChatInterface
-                  facility={aiChatFacility}
+            {
+              showSignUpModal && (
+                <SignUpModal
+                  onClose={() => setShowSignUpModal(false)}
+                  onSignUp={() => {
+                    setShowSignUpModal(false);
+                    showToast("환영합니다! 회원가입이 완료되었습니다.");
+                  }}
+                  onLoginClick={() => {
+                    setShowSignUpModal(false);
+                    setShowLoginModal(true);
+                  }}
+                />
+              )
+            }
+
+            {
+              selectedFacility && (
+                <FacilitySheet
+                  facility={selectedFacility}
+                  onClose={() => setSelectedFacility(null)}
+                  onBook={() => setIsBooking(true)}
+                  onViewMap={handleViewOnMap}
+                  isLoggedIn={isSignedIn}
                   currentUser={userInfo}
-                  initialIntent={initialChatIntent}
-                  userLocation={userLocation}
-                  onGetCurrentPosition={getCurrentPosition}
-                  handoverContext={handoverContext}
+                  onAddReview={handleAddReview}
+                  onLoginRequired={() => {
+                    setSelectedFacility(null);
+                    setShowLoginModal(true);
+                  }}
+                  isInCompareList={compareList.some(f => f.id === selectedFacility.id)}
+                  onToggleCompare={() => toggleCompare(selectedFacility)}
+                  reservations={reservations}
+                  onOpenConsultation={() => {
+                    // Keep legacy support or redirect to new chat
+                    setAiChatFacility(selectedFacility);
+                  }}
+                  onOpenAiChat={() => {
+                    setAiChatFacility(selectedFacility);
+                  }}
+                  onViewSangjoList={() => {
+                    setViewState(ViewState.FUNERAL_COMPANIES);
+                    setSelectedFacility(null);
+                  }}
+                />
+              )
+            }
+
+            {/* AI Helper - Maum-i */}
+            {viewState === ViewState.MAP && !selectedFacility && !showComparison && !aiChatFacility && (
+              <RecommendationStarter
+                onSelectIntent={(intent) => {
+                  setInitialChatIntent(intent);
+                  setAiChatFacility({ name: '통합 AI 마음이', id: 'maum-i', type: 'assistant' } as any);
+                }}
+              />
+            )}
+
+            {/* Global Chat Interface (Maum-i or Specific Facility) */}
+
+
+            {
+              isBooking && selectedFacility && (
+                <ReservationModal
+                  facility={selectedFacility}
                   onClose={() => {
-                    setAiChatFacility(null);
-                    setInitialChatIntent(null);
+                    setIsBooking(false);
+                    setIsUrgentBooking(false);
                   }}
-                  onSearchFacilities={(region: string) => {
-                    // Simple Search Logic
-                    // 1. Filter by address containing region (e.g. "신촌동")
-                    const exactMatches = facilities.filter(f => f.address.includes(region) && f.type === 'funeral'); // Recommend Funeral Homes primarily for Scenario A
+                  onConfirm={handleBookingConfirm}
+                  reservationMode={isUrgentBooking ? 'URGENT' : 'STANDARD'}
+                />
+              )
+            }
 
-                    // 2. Sort by Rating/Review
-                    const sorted = exactMatches.sort((a, b) => (b.rating || 0) - (a.rating || 0) || (b.reviewCount || 0) - (a.reviewCount || 0));
-
-                    // 3. Fallback: If no exact matches, fuzzy search or broader region?
-                    // For now, return top 3 exact matches. If empty, maybe search "Seoul" if region is "Seoul Sinchon-dong"?
-                    // Let's stick to exact match of user input segment.
-
-                    return sorted.slice(0, 3);
+            {
+              showComparison && (
+                <ComparisonModal
+                  facilities={compareList}
+                  onClose={() => setShowComparison(false)}
+                  onRemove={(id) => removeFromCompare(id)}
+                  onBook={(facility) => {
+                    setShowComparison(false);
+                    setSelectedFacility(facility);
+                    setIsBooking(true);
                   }}
-                  onSwitchToFacility={(target, context) => {
-                    // [Phase 2] Context Handoff
-                    const globalContext = useConversationStore.getState().mainBotContext;
-                    const summary = generateContextSummary(globalContext);
+                />
+              )
+            }
 
-                    setAiChatFacility(target);
-                    // Prefer direct context if passed, otherwise use global summary
-                    setHandoverContext(context || summary);
-                  }}
-                  onAction={(action, data) => {
-                    const isGlobalAI = aiChatFacility?.id === 'maum-i';
+            {
+              selectedFuneralCompany && (
+                <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20"><div className="bg-white p-3 rounded-full shadow-lg"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div></div>}>
+                  <FuneralCompanySheet
+                    company={selectedFuneralCompany}
+                    onClose={() => setSelectedFuneralCompany(null)}
+                    onOpenAIConsult={() => {
+                      setShowSangjoAIConsult(true);
+                    }}
+                    onOpenContract={() => {
+                      setShowSangjoContract(true);
+                    }}
+                    currentUser={userInfo}
+                    isLoggedIn={isSignedIn}
+                    onOpenLogin={() => {
+                      setShowLoginModal(true);
+                      setSelectedFuneralCompany(null); // Close sheet to reveal login modal
+                    }}
+                  />
+                </Suspense>
+              )
+            }
 
-                    if (action === 'RESERVE') {
-                      // [Feature] Direct booking from AI Recommendation
-                      if (data && typeof data === 'object' && 'id' in data) {
-                        if (!isSignedIn) {
-                          showToast('예약을 위해 로그인이 필요합니다.', 'error');
-                          setAiChatFacility(null);
-                          setShowLoginModal(true);
+            {
+              showSangjoAIConsult && (
+                <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20"><div className="bg-white p-3 rounded-full shadow-lg"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div></div>}>
+                  <SangjoConsultationModal
+                    company={selectedFuneralCompany}
+                    onClose={() => {
+                      setShowSangjoAIConsult(false);
+                      setSelectedFuneralCompany(null);
+                    }}
+                  />
+                </Suspense>
+              )
+            }
+
+            {
+              showSangjoContract && selectedFuneralCompany && (
+                <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20"><div className="bg-white p-3 rounded-full shadow-lg"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div></div>}>
+                  <SangjoContractModal
+                    company={selectedFuneralCompany}
+                    onClose={() => {
+                      setShowSangjoContract(false);
+                      setSelectedFuneralCompany(null);
+                    }}
+                    onConfirm={(data) => {
+                      // Create a pseudo-reservation for the contract
+                      const contractReservation: Reservation = {
+                        id: `CONT-${Date.now()}`,
+                        facility_id: data.companyId,
+                        facility_name: data.companyName,
+                        visit_date: new Date().toISOString(),
+                        time_slot: data.callTime,
+                        visitor_name: data.name,
+                        visitor_count: 1,
+                        contact_number: data.phone,
+                        purpose: '상조 가입 상담',
+                        special_requests: `연락처: ${data.phone}`,
+                        status: 'pending',
+                        payment_amount: 0,
+                        user_id: user?.id || '',
+                        funeral_company_id: data.companyId,
+                        funeral_company_name: data.companyName
+                      };
+                      handleBookingConfirm(contractReservation);
+                    }}
+                  />
+                </Suspense>
+              )
+            }
+
+            {
+              showSangjoComparison && (
+                <Suspense fallback={<LoadingFallback />}>
+                  <SangjoComparisonModal
+                    companies={sangjoCompareList}
+                    onClose={() => setShowSangjoComparison(false)}
+                    onRemove={(id) => removeFromSangjoCompare(id)}
+                    onSelect={(company) => {
+                      setShowSangjoComparison(false);
+                      setSelectedFuneralCompany(company);
+                    }}
+                  />
+                </Suspense>
+              )
+            }
+
+            {/* Global AI Chat Overlay */}
+            {aiChatFacility && (
+              <div className="fixed inset-0 z-[300] flex items-center justify-center p-0 md:p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-300">
+                <div className="w-full h-full md:w-[420px] md:h-[85vh] md:rounded-2xl overflow-hidden bg-white shadow-2xl relative animate-in zoom-in-95 duration-300">
+                  <ChatInterface
+                    facility={aiChatFacility}
+                    currentUser={userInfo}
+                    initialIntent={initialChatIntent}
+                    userLocation={userLocation}
+                    onGetCurrentPosition={getCurrentPosition}
+                    handoverContext={handoverContext}
+                    onClose={() => {
+                      setAiChatFacility(null);
+                      setInitialChatIntent(null);
+                    }}
+                    onSearchFacilities={(region: string) => {
+                      // Simple Search Logic
+                      // 1. Filter by address containing region (e.g. "신촌동")
+                      const exactMatches = facilities.filter(f => f.address.includes(region) && f.type === 'funeral'); // Recommend Funeral Homes primarily for Scenario A
+
+                      // 2. Sort by Rating/Review
+                      const sorted = exactMatches.sort((a, b) => (b.rating || 0) - (a.rating || 0) || (b.reviewCount || 0) - (a.reviewCount || 0));
+
+                      // 3. Fallback: If no exact matches, fuzzy search or broader region?
+                      // For now, return top 3 exact matches. If empty, maybe search "Seoul" if region is "Seoul Sinchon-dong"?
+                      // Let's stick to exact match of user input segment.
+
+                      return sorted.slice(0, 3);
+                    }}
+                    onSwitchToFacility={(target, context) => {
+                      // [Phase 2] Context Handoff
+                      const globalContext = useConversationStore.getState().mainBotContext;
+                      const summary = generateContextSummary(globalContext);
+
+                      setAiChatFacility(target);
+                      // Prefer direct context if passed, otherwise use global summary
+                      setHandoverContext(context || summary);
+                    }}
+                    onAction={(action, data) => {
+                      const isGlobalAI = aiChatFacility?.id === 'maum-i';
+
+                      if (action === 'RESERVE') {
+                        // [Feature] Direct booking from AI Recommendation
+                        if (data && typeof data === 'object' && 'id' in data) {
+                          if (!isSignedIn) {
+                            showToast('예약을 위해 로그인이 필요합니다.', 'error');
+                            setAiChatFacility(null);
+                            setShowLoginModal(true);
+                            return;
+                          }
+
+                          setAiChatFacility(null); // Close AI Chat
+                          setSelectedFacility(data); // Set target facility
+                          setIsUrgentBooking(true); // [Fix] Force Urgent Booking for "Book Now"
+                          setIsBooking(true); // Open Booking Modal
                           return;
                         }
 
-                        setAiChatFacility(null); // Close AI Chat
-                        setSelectedFacility(data); // Set target facility
-                        setIsUrgentBooking(true); // [Fix] Force Urgent Booking for "Book Now"
-                        setIsBooking(true); // Open Booking Modal
-                        return;
-                      }
-
-                      setAiChatFacility(null);
-                      if (isGlobalAI) {
-                        setViewState(ViewState.LIST);
-                        return;
-                      }
-                      setSelectedFacility(aiChatFacility);
-                      // [Fix] Do not force Urgent for standard 'Book Now'. Urgent is separate action.
-                      // if (aiChatFacility.type === 'funeral') {
-                      //   setIsUrgentBooking(true);
-                      // }
-                      setIsBooking(true);
-                    } else if (action === 'MAP') {
-                      setAiChatFacility(null);
-                      if (isGlobalAI) {
-                        handleViewOnMap();
-                        return;
-                      }
-                      setSelectedFacility(aiChatFacility);
-                      handleViewOnMap();
-                    } else if (action === 'CALL_MANAGER') {
-                      if (isGlobalAI) {
-                        alert('고객센터(1588-0000)로 연결합니다.');
-                        window.location.href = 'tel:1588-0000';
-                        return;
-                      }
-                      alert(`담당자(${aiChatFacility.phone})에게 연결합니다.`);
-                      window.location.href = `tel:${aiChatFacility.phone}`;
-                    } else if (action === 'RECOMMEND') {
-                      setAiChatFacility(null);
-                      if (isGlobalAI) {
-                        // If data (search context) is provided and it's not generic "My Location", use it
-                        if (data && typeof data === 'string' && !data.includes('내 위치') && !data.includes('GPS')) {
-                          setSearchQuery(data);
+                        setAiChatFacility(null);
+                        if (isGlobalAI) {
+                          setViewState(ViewState.LIST);
+                          return;
                         }
+                        setSelectedFacility(aiChatFacility);
+                        // [Fix] Do not force Urgent for standard 'Book Now'. Urgent is separate action.
+                        // if (aiChatFacility.type === 'funeral') {
+                        //   setIsUrgentBooking(true);
+                        // }
+                        setIsBooking(true);
+                      } else if (action === 'MAP') {
+                        setAiChatFacility(null);
+                        if (isGlobalAI) {
+                          handleViewOnMap();
+                          return;
+                        }
+                        setSelectedFacility(aiChatFacility);
+                        handleViewOnMap();
+                      } else if (action === 'CALL_MANAGER') {
+                        if (isGlobalAI) {
+                          sonnerToast.info('고객센터(1588-0000)로 연결합니다.');
+                          setTimeout(() => window.location.href = 'tel:1588-0000', 500);
+                          return;
+                        }
+                        sonnerToast.info(`담당자(${aiChatFacility.phone})에게 연결합니다.`);
+                        setTimeout(() => window.location.href = `tel:${aiChatFacility.phone}`, 500);
+                      } else if (action === 'RECOMMEND') {
+                        setAiChatFacility(null);
+                        if (isGlobalAI) {
+                          // If data (search context) is provided and it's not generic "My Location", use it
+                          if (data && typeof data === 'string' && !data.includes('내 위치') && !data.includes('GPS')) {
+                            setSearchQuery(data);
+                          }
+                          setViewState(ViewState.LIST);
+                          return;
+                        }
+                        // For specific facility chat, use its address
+                        setSearchQuery(aiChatFacility.address.split(' ')[0] || '');
                         setViewState(ViewState.LIST);
-                        return;
                       }
-                      // For specific facility chat, use its address
-                      setSearchQuery(aiChatFacility.address.split(' ')[0] || '');
-                      setViewState(ViewState.LIST);
-                    }
-                  }}
-                />
+                    }}
+                  />
+                </div>
               </div>
+            )}
+          </div>
+
+          {/* Toast Notification */}
+          {toast && (
+            <div className={`fixed bottom-24 left-1/2 -translate-x-1/2 z-[10001] px-6 py-3 rounded-xl shadow-2xl animate-in slide-in-from-bottom-2 ${toast.type === 'success' ? 'bg-green-500' :
+              toast.type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+              } text-white font-medium max-w-md`}>
+              {toast.message}
             </div>
           )}
         </div>
-
-        {/* Toast Notification */}
-        {toast && (
-          <div className={`fixed bottom-24 left-1/2 -translate-x-1/2 z-[10001] px-6 py-3 rounded-xl shadow-2xl animate-in slide-in-from-bottom-2 ${toast.type === 'success' ? 'bg-green-500' :
-            toast.type === 'error' ? 'bg-red-500' : 'bg-blue-500'
-            } text-white font-medium max-w-md`}>
-            {toast.message}
-          </div>
-        )}
-      </div>
       </ErrorBoundary>
     </HashRouter>
   );

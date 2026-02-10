@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { toast } from 'sonner';
 import { sendMessageToGemini, ChatMessage } from '../../services/geminiService';
 import { supabase } from '../../lib/supabaseClient';
 import {
@@ -853,7 +854,7 @@ export const ChatInterface: React.FC<Props> = ({
                             logToSystem('ERROR', 'Urgent Form Submission Failed', traceId, { error });
 
                             // Error Feedback
-                            alert('접수 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+                            toast.error('접수 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
                         }
                     }}
                 />

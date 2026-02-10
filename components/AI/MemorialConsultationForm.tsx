@@ -1,5 +1,6 @@
 // components/AI/MemorialConsultationForm.tsx
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import { createMemorialConsultation } from '@/lib/queries';
 import { Loader2, Check, X } from 'lucide-react';
 
@@ -74,7 +75,7 @@ export const MemorialConsultationForm: React.FC<Props> = ({
                 tier,
             });
             // 성공 시 간단한 완료 메시지
-            alert('상담 요청이 접수되었습니다. 담당자가 연락드리겠습니다.');
+            toast.success('상담 요청이 접수되었습니다. 담당자가 연락드리겠습니다.');
             if (onClose) onClose();
         } catch (e) {
             console.error(e);

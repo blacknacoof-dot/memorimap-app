@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/clerk-react';
+import { toast } from 'sonner';
 import * as api from '@/lib/api/facilityAdmin';
 import { MemorialSpace, Reservation } from '@/types/db';
 
@@ -46,10 +47,10 @@ export function useFacilityAdmin() {
         try {
             await api.updateReservationStatus(id, status, reason);
             await refresh(); // 목록 새로고침
-            alert(`예약이 ${status === 'confirmed' ? '승인' : status === 'rejected' ? '거절' : '처리'}되었습니다.`);
+            toast.success(`예약이 ${status === 'confirmed' ? '승인' : status === 'rejected' ? '거절' : '처리'}되었습니다.`);
         } catch (e) {
             console.error(e);
-            alert("처리 실패");
+            toast.error('처리 실패');
         }
     };
 
@@ -59,10 +60,10 @@ export function useFacilityAdmin() {
         try {
             await api.updateFacilityInfo(facility.id, updates);
             await refresh();
-            alert("시설 정보가 수정되었습니다.");
+            toast.success('시설 정보가 수정되었습니다.');
         } catch (e) {
             console.error(e);
-            alert("정보 수정 실패");
+            toast.error('정보 수정 실패');
             throw e; // Form can catch this if needed
         }
     };
