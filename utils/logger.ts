@@ -1,18 +1,3 @@
-export const logger = {
-    debug: (...args: any[]) => {
-        if (import.meta.env.DEV) {
-            console.log('🚧 [DEBUG]', ...args);
-        }
-    },
-    info: (...args: any[]) => {
-        if (import.meta.env.DEV) {
-            console.log('ℹ️ [INFO]', ...args);
-        }
-    },
-    warn: (...args: any[]) => {
-        console.warn('⚠️ [WARN]', ...args);
-    },
-    error: (...args: any[]) => {
-        console.error('🚨 [ERROR]', ...args);
-    }
-};
+// Re-export from lib/logger for backward compatibility
+export { logger, authLogger, facilityLogger, mapLogger, apiLogger, LogLevel } from '../lib/logger';
+export { default } from '../lib/logger';

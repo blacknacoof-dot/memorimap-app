@@ -39,6 +39,12 @@
     "cypress",
     "backups",
     "supabase",
+    "tools",
+    "data",
+    "dist",
+    ".venv",
+    "test-results",
+    "playwright-report",
     "types_schema.ts"
   ]
 }
