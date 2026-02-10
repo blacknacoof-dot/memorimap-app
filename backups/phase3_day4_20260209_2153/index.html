@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+
+  <!-- [KakaoTalk Optimization] Meta Tags -->
+  <meta property="og:title" content="추모맵 - 전국 추모시설 간편 검색">
+  <meta property="og:description" content="장례식장, 납골당, 수목장 등 내 주변, 조건별 추모시설을 쉽고 빠르게 찾아보세요.">
+  <meta property="og:image" content="/og-image.png">
+  <meta property="og:url" content="https://memorimap-app.vercel.app">
+  <meta property="og:type" content="website">
+
+  <!-- SEO / Standard -->
+  <meta name="description" content="전국 추모시설(장례식장, 납골당, 수목장) 가격비교 및 실시간 예약 서비스. AI 상담비서 마음이가 24시간 맞춤형 장소를 추천해 드립니다.">
+  <link rel="canonical" href="https://memorimap-app.vercel.app">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="추모맵 - 전국 추모시설 간편 검색">
+  <meta name="twitter:description" content="장례식장, 납골당, 수목장 등 내 주변, 조건별 추모시설을 쉽고 빠르게 찾아보세요.">
+  <meta name="twitter:image" content="https://memorimap-app.vercel.app/og-image.png">
+
+  <!-- Viewport: 인앱 브라우저 및 iOS Safe Area 대응 -->
+  <!-- [Fix] maximum-scale 제거, user-scalable=yes로 변경하여 인앱 브라우저에서 디자인 깨짐 방지 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=yes, viewport-fit=cover" />
+
+  <!-- iOS/Mobile Web App 설정 -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <!-- PWA (선택) -->
+  <meta name="theme-color" content="#ec4899" />
+  <link rel="manifest" href="/manifest.json" />
+
+  <!-- 아이콘 -->
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+
+  <title>추모맵 - 추모 공간 지도</title>
+  <!-- Tailwind CSS via CDN for quick setup (can be replaced with local install) -->
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <!-- Naver Maps loaded dynamically via MapContainer.tsx -->
+  <script src="https://cdn.portone.io/v2/browser-sdk.js" async></script>
+  <script>
+    // Shim for process.env
+    window.process = {
+      env: {
+        NODE_ENV: 'development'
+      }
+    };
+  </script>
+  <style>
+    /* Mobile optimization */
+    body,
+    html,
+    #root {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f3f4f6;
+    }
+
+    .leaflet-container {
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+
+  <link rel="stylesheet" href="/index.css">
+</head>
+
+<body>
+  <!-- [KakaoTalk Optimization] Warning Banner -->
+  <div id="kakao-browser-notice" style="display:none;">
+    <div
+      style="position:fixed; top:0; left:0; width:100%; background:#FEE500; padding:12px; text-align:center; z-index:10000; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+      <p style="margin:0; font-size:14px; color:#000; font-weight:600;">
+        🔍 원활한 이용을 위해 외부 브라우저에서 열어주세요
+      </p>
+      <p style="margin:5px 0 0 0; font-size:12px; color:#666;">
+        우측 상단 [...] → Safari/Chrome에서 열기
+      </p>
+      <button onclick="openInExternalBrowser()" 
+        style="margin-top:8px; padding:8px 16px; background:#000; color:#FEE500; border:none; border-radius:20px; font-size:13px; font-weight:600; cursor:pointer;">
+        👆 바로 열기
+      </button>
+    </div>
+  </div>
+
+  <div id="root"></div>
+
+  <!-- Vite Entry Point -->
+  <script type="module" src="/index.tsx"></script>
+
+  <!-- [KakaoTalk Optimization] Detection Script -->
+  <script>
+    function isKakaoInAppBrowser() {
+      const ua = navigator.userAgent.toLowerCase();
+      return ua.includes('kakaotalk');
+    }
+
+    function isInAppBrowser() {
+      const ua = navigator.userAgent.toLowerCase();
+      return ua.includes('kakaotalk') || 
+             ua.includes('instagram') || 
+             ua.includes('naver') ||
+             ua.includes('fb_iab') || // Facebook
+             ua.includes('line');
+    }
+
+    function openInExternalBrowser() {
+      const currentUrl = window.location.href;
+      
+      // iOS
+      if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+        // iOS에서는 Safari로 열기
+        window.location.href = 'x-safari-https://' + currentUrl.replace(/^https?:\/\//, '');
+      } 
+      // Android
+      else if (/Android/.test(navigator.userAgent)) {
+        // Chrome 인텐트
+        window.location.href = 'intent://' + currentUrl.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+      }
+      
+      // Fallback: 일반 URL로 리다이렉션 시도
+      setTimeout(function() {
+        window.open(currentUrl, '_blank');
+      }, 500);
+    }
+
+    // Run on load
+    if (isInAppBrowser()) {
+      const banner = document.getElementById('kakao-browser-notice');
+      if (banner) {
+        banner.style.display = 'block';
+        document.body.style.paddingTop = '70px';
+      }
+      
+      // 자동으로 외부 브라우저 열기 (선택적)
+      // openInExternalBrowser();
+    }
+  </script>
+</body>
+
+</html>

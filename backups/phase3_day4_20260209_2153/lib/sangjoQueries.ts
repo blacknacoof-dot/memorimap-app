@@ -1,0 +1,175 @@
+import { supabase } from './supabaseClient';
+
+import { SangjoContract, Partner, PartnerConversation, PartnerOperation, PlatformNotice } from '../types';
+
+export interface SangjoTimelineEvent {
+    id: string;
+    contract_number: string;
+    event: string;
+    notes?: string;
+    photo_url?: string;
+    created_at: string;
+}
+
+export const saveSangjoContract = async (contract: SangjoContract) => {
+    const { data, error } = await supabase
+        .from('sangjo_contracts')
+        .insert([contract]);
+
+    if (error) {
+        console.error('Error saving sangjo contract:', error);
+        throw error;
+    }
+    return data;
+};
+
+export const getSangjoContracts = async (sangjoId: string) => {
+    const { data, error } = await supabase
+        .from('sangjo_contracts')
+        .select('*')
+        .eq('sangjo_id', sangjoId)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching sangjo contracts:', error);
+        throw error;
+    }
+    return data;
+};
+
+export const updateContractStatus = async (contractNumber: string, status: string, additionalData: any = {}) => {
+    const { data, error } = await supabase
+        .from('sangjo_contracts')
+        .update({
+            status,
+            ...additionalData
+        })
+        .eq('contract_number', contractNumber);
+
+    if (error) {
+        console.error('Error updating contract status:', error);
+        throw error;
+    }
+    return data;
+};
+
+export const addTimelineEvent = async (contractNumber: string, event: string, notes?: string, photoUrl?: string) => {
+    const { data, error } = await supabase
+        .from('sangjo_contract_timeline')
+        .insert([{
+            contract_number: contractNumber,
+            event,
+            notes,
+            photo_url: photoUrl,
+            created_at: new Date().toISOString()
+        }]);
+
+    if (error) {
+        console.error('Error adding timeline event:', error);
+        throw error;
+    }
+    return data;
+};
+
+export const getTimelineEvents = async (contract_number: string) => {
+    const { data, error } = await supabase
+        .from('sangjo_contract_timeline')
+        .select('*')
+        .eq('contract_number', contract_number)
+        .order('created_at', { ascending: true });
+
+    if (error) {
+        console.error('Error fetching timeline events:', error);
+        throw error;
+    }
+    return data as SangjoTimelineEvent[];
+};
+
+export const getSangjoUser = async (userId: string) => {
+    const { data, error } = await supabase
+        .from('sangjo_dashboard_users')
+        .select('sangjo_id, role, name')
+        .eq('id', userId)
+        .maybeSingle();
+
+    if (error) {
+        console.error('Error fetching sangjo user:', error);
+        return null;
+    }
+    return data;
+};
+
+// --- Partners ---
+export const getPartners = async () => {
+    const { data, error } = await supabase
+        .from('partners')
+        .select('*')
+        .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data as Partner[];
+};
+
+export const updatePartnerStatus = async (partnerId: string, status: Partner['status'], approvedBy?: string) => {
+    const updateData: any = { status };
+    if (status === 'approved') {
+        updateData.approved_at = new Date().toISOString();
+        updateData.approved_by = approvedBy;
+    }
+    const { data, error } = await supabase
+        .from('partners')
+        .update(updateData)
+        .eq('id', partnerId);
+    if (error) throw error;
+    return data;
+};
+
+// --- Conversations ---
+export const getPartnerConversations = async (partnerId: string) => {
+    const { data, error } = await supabase
+        .from('partner_conversations')
+        .select('*')
+        .eq('partner_id', partnerId)
+        .order('last_message_at', { ascending: false });
+    if (error) throw error;
+    return data as PartnerConversation[];
+};
+
+export const savePartnerConversation = async (conversation: Partial<PartnerConversation>) => {
+    const { data, error } = await supabase
+        .from('partner_conversations')
+        .upsert([conversation]);
+    if (error) throw error;
+    return data;
+};
+
+// --- Operations ---
+export const getPartnerOperations = async (partnerId: string) => {
+    const { data, error } = await supabase
+        .from('partner_operations')
+        .select('*')
+        .eq('partner_id', partnerId)
+        .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data as PartnerOperation[];
+};
+
+export const updateOperationStage = async (operationId: string, stage: PartnerOperation['operation_stage']) => {
+    const { data, error } = await supabase
+        .from('partner_operations')
+        .update({ operation_stage: stage })
+        .eq('id', operationId);
+    if (error) throw error;
+    return data;
+};
+
+// --- Notices ---
+export const getPlatformNotices = async (partnerId?: string) => {
+    let query = supabase.from('platform_notices').select('*').eq('is_active', true);
+    if (partnerId) {
+        // 특정 파트너 대상 또는 전체 대상 공지
+        query = query.or(`target_partner_ids.is.null,target_partner_ids.cs.{${partnerId}}`);
+    }
+    const { data, error } = await query.order('created_at', { ascending: false });
+    if (error) throw error;
+    return data as PlatformNotice[];
+};

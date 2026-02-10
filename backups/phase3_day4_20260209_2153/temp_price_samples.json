@@ -1,0 +1,5184 @@
+{
+  "funerals": [
+    {
+      "id": 1545049594,
+      "name": "Sh수협장례식장",
+      "prices": [
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "무궁화국화",
+          "price": "기준)"
+        },
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "백합",
+          "price": "기준)"
+        },
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "목련",
+          "price": "기준)"
+        },
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "동백",
+          "price": "기준)"
+        },
+        {
+          "category": "시설임대료",
+          "item": "기타",
+          "spec": "휴면실",
+          "price": "기준)"
+        },
+        {
+          "category": "안치실이용료",
+          "item": "일반",
+          "spec": "안치료",
+          "price": "기준)"
+        },
+        {
+          "category": "염습/입관",
+          "item": "일반",
+          "spec": "염습비",
+          "price": "2인1조"
+        },
+        {
+          "category": "수시/초염",
+          "item": "인건비",
+          "spec": "1조",
+          "price": "100000"
+        },
+        {
+          "category": "관",
+          "item": "화장용",
+          "spec": "관(화장.탈관용고급)",
+          "price": "오동"
+        },
+        {
+          "category": "관",
+          "item": "화장용",
+          "spec": "관(화장탈관용)",
+          "price": "오동"
+        },
+        {
+          "category": "관",
+          "item": "화장용",
+          "spec": "관(화장탈관용)",
+          "price": "대"
+        },
+        {
+          "category": "관",
+          "item": "아동",
+          "spec": "아동관",
+          "price": "오동"
+        },
+        {
+          "category": "수의",
+          "item": "대마",
+          "spec": "반대마",
+          "price": "매장용"
+        },
+        {
+          "category": "수의",
+          "item": "기타",
+          "spec": "수의",
+          "price": "매장용"
+        },
+        {
+          "category": "수의",
+          "item": "기타",
+          "spec": "수의1호",
+          "price": "화장용"
+        },
+        {
+          "category": "수의",
+          "item": "기타",
+          "spec": "한지",
+          "price": "매장용"
+        },
+        {
+          "category": "수의",
+          "item": "기타",
+          "spec": "수의",
+          "price": "매장용"
+        },
+        {
+          "category": "수의",
+          "item": "수의",
+          "spec": "매장용",
+          "price": "2700000"
+        },
+        {
+          "category": "입관용품",
+          "item": "수시(수세)포",
+          "spec": "수시복",
+          "price": "수시용"
+        },
+        {
+          "category": "입관용품",
+          "item": "수시(수세)포",
+          "spec": "수시포",
+          "price": "수시용"
+        },
+        {
+          "category": "입관용품",
+          "item": "명정",
+          "spec": "명정",
+          "price": "인견"
+        },
+        {
+          "category": "입관용품",
+          "item": "관포(보)",
+          "spec": "관보",
+          "price": "우단"
+        },
+        {
+          "category": "입관용품",
+          "item": "습신(꽃신)",
+          "spec": "습신",
+          "price": "1족"
+        },
+        {
+          "category": "입관용품",
+          "item": "염포(보)",
+          "spec": "염보",
+          "price": "입관용"
+        },
+        {
+          "category": "입관용품",
+          "item": "결관포(보)",
+          "spec": "결관포",
+          "price": "1필"
+        },
+        {
+          "category": "입관용품",
+          "item": "결관포(보)",
+          "spec": "(면소창)",
+          "price": "1필"
+        },
+        {
+          "category": "입관용품",
+          "item": "칠성판/횡대",
+          "spec": "횡대",
+          "price": "1.5치오동"
+        },
+        {
+          "category": "입관용품",
+          "item": "칠성판/횡대",
+          "spec": "칠성판",
+          "price": "수시용"
+        },
+        {
+          "category": "입관용품",
+          "item": "탈지면",
+          "spec": "탈지면",
+          "price": "1봉"
+        },
+        {
+          "category": "입관용품",
+          "item": "베게",
+          "spec": "베게",
+          "price": "입관용"
+        },
+        {
+          "category": "입관용품",
+          "item": "안치대",
+          "spec": "셋트",
+          "price": "입관용"
+        },
+        {
+          "category": "입관용품",
+          "item": "혼백",
+          "spec": "혼백",
+          "price": "제례용"
+        },
+        {
+          "category": "입관용품",
+          "item": "보공",
+          "spec": "보공(초석)",
+          "price": "10봉"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "하대",
+          "price": "수시용"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "염지",
+          "price": "1권"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "한지",
+          "price": "1권"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "예단",
+          "price": "1조(하관용)"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "알코올",
+          "price": "1병"
+        },
+        {
+          "category": "상주용품",
+          "item": "남상복",
+          "spec": "(판매)",
+          "price": "남상주용"
+        },
+        {
+          "category": "상주용품",
+          "item": "남상복",
+          "spec": "(임대)",
+          "price": "남상주용"
+        },
+        {
+          "category": "상주용품",
+          "item": "남상복",
+          "spec": "(임대)",
+          "price": "남상주용"
+        },
+        {
+          "category": "상주용품",
+          "item": "남상복",
+          "spec": "(판매)",
+          "price": "남상주용"
+        },
+        {
+          "category": "상주용품",
+          "item": "남상복",
+          "spec": "베두루마기",
+          "price": "면폴리"
+        },
+        {
+          "category": "상주용품",
+          "item": "남상복",
+          "spec": "(남자)",
+          "price": "유족용"
+        },
+        {
+          "category": "상주용품",
+          "item": "남상복",
+          "spec": "옥두루마기",
+          "price": "면폴리"
+        },
+        {
+          "category": "상주용품",
+          "item": "남상복",
+          "spec": "(리본)",
+          "price": "남상주용"
+        },
+        {
+          "category": "상주용품",
+          "item": "남상복",
+          "spec": "베중단",
+          "price": "면폴리"
+        },
+        {
+          "category": "상주용품",
+          "item": "여상복",
+          "spec": "여상복",
+          "price": "흰색"
+        },
+        {
+          "category": "상주용품",
+          "item": "여상복",
+          "spec": "여상복",
+          "price": "검정"
+        },
+        {
+          "category": "상주용품",
+          "item": "여상복",
+          "spec": "(머리핀)",
+          "price": "여상주용"
+        },
+        {
+          "category": "상주용품",
+          "item": "여상복",
+          "spec": "(임대)",
+          "price": "여상주용"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "두건",
+          "price": "면레이온"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "행전",
+          "price": "면레이온"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "상장막대기",
+          "price": "오동나무대나무"
+        },
+        {
+          "category": "기타용품",
+          "item": "빈소용품",
+          "spec": "위패",
+          "price": "제례용"
+        },
+        {
+          "category": "기타용품",
+          "item": "빈소용품",
+          "spec": "만수향",
+          "price": "제례용"
+        },
+        {
+          "category": "기타용품",
+          "item": "빈소용품",
+          "spec": "부의록",
+          "price": "유족기재용"
+        },
+        {
+          "category": "기타용품",
+          "item": "빈소용품",
+          "spec": "양초",
+          "price": "제례용(대)"
+        },
+        {
+          "category": "기타용품",
+          "item": "리본/근조기",
+          "spec": "액자리본",
+          "price": "제례용"
+        },
+        {
+          "category": "기타용품",
+          "item": "리본/근조기",
+          "spec": "(남자)",
+          "price": "상주용"
+        },
+        {
+          "category": "기타용품",
+          "item": "일반용품",
+          "spec": "조의록",
+          "price": "조문객기재용"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "축문",
+          "price": "제례용"
+        },
+        {
+          "category": "기타용품",
+          "item": "꼬깔",
+          "spec": "입관용",
+          "price": "100000"
+        },
+        {
+          "category": "기타용품",
+          "item": "위생셋트",
+          "spec": "수시용",
+          "price": "100000"
+        },
+        {
+          "category": "기타용품",
+          "item": "공포",
+          "spec": "상여길잡이",
+          "price": "10000"
+        },
+        {
+          "category": "기타용품",
+          "item": "리본",
+          "spec": "선두차용",
+          "price": "32000"
+        },
+        {
+          "category": "기타용품",
+          "item": "결관셋트",
+          "spec": "입관용",
+          "price": "80000"
+        },
+        {
+          "category": "기타용품",
+          "item": "(여자)",
+          "spec": "여상주용",
+          "price": "4000"
+        },
+        {
+          "category": "기타용품",
+          "item": "메끈",
+          "spec": "입관용",
+          "price": "1200"
+        }
+      ]
+    },
+    {
+      "id": 11386505,
+      "name": "가남베스트장례식장",
+      "prices": [
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "빈소+접객실",
+          "price": "시간"
+        },
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "빈소+접객실",
+          "price": "시간"
+        },
+        {
+          "category": "시설임대료",
+          "item": "염습실/입관실",
+          "spec": "빈소+접객실",
+          "price": "시간"
+        },
+        {
+          "category": "시설임대료",
+          "item": "염습실/입관실",
+          "spec": "입관실사용료",
+          "price": "1회"
+        },
+        {
+          "category": "시설임대료",
+          "item": "기타",
+          "spec": "발인실",
+          "price": "1회"
+        },
+        {
+          "category": "안치실이용료",
+          "item": "일반",
+          "spec": "안치냉장",
+          "price": "시간"
+        },
+        {
+          "category": "청소/관리",
+          "item": "청소비",
+          "spec": "청소비",
+          "price": "1회"
+        },
+        {
+          "category": "청소/관리",
+          "item": "관리비",
+          "spec": "관리비",
+          "price": "1회"
+        },
+        {
+          "category": "청소/관리",
+          "item": "폐기물",
+          "spec": "처리비",
+          "price": "1회"
+        },
+        {
+          "category": "도우미",
+          "item": "도우미",
+          "spec": "도우미",
+          "price": "시간당"
+        },
+        {
+          "category": "식사",
+          "item": "밥류",
+          "spec": "밥",
+          "price": "50인분"
+        },
+        {
+          "category": "식사",
+          "item": "국/찌개",
+          "spec": "북어국",
+          "price": "50인분"
+        },
+        {
+          "category": "식사",
+          "item": "국/찌개",
+          "spec": "육개장",
+          "price": "50인분"
+        },
+        {
+          "category": "식사",
+          "item": "국/찌개",
+          "spec": "무국",
+          "price": "50인분"
+        },
+        {
+          "category": "식사",
+          "item": "반찬류",
+          "spec": "무침",
+          "price": "KG"
+        },
+        {
+          "category": "식사",
+          "item": "반찬류",
+          "spec": "무침",
+          "price": "KG"
+        },
+        {
+          "category": "식사",
+          "item": "반찬류",
+          "spec": "홍어무침",
+          "price": "KG"
+        },
+        {
+          "category": "식사",
+          "item": "반찬류",
+          "spec": "찜",
+          "price": "KG"
+        },
+        {
+          "category": "식사",
+          "item": "반찬류",
+          "spec": "김치",
+          "price": "KG"
+        },
+        {
+          "category": "식사",
+          "item": "전류",
+          "spec": "모듬전",
+          "price": "KG"
+        },
+        {
+          "category": "식사",
+          "item": "안주류",
+          "spec": "삼겹수육",
+          "price": "KG"
+        },
+        {
+          "category": "염습/입관",
+          "item": "일반",
+          "spec": "염습",
+          "price": "1회"
+        },
+        {
+          "category": "수시/초염",
+          "item": "일반",
+          "spec": "수시",
+          "price": "1회"
+        },
+        {
+          "category": "제사음식",
+          "item": "일반",
+          "spec": "기본상",
+          "price": "1회"
+        },
+        {
+          "category": "제사음식",
+          "item": "일반",
+          "spec": "성복발인평토위령반혼제",
+          "price": "1회"
+        },
+        {
+          "category": "음료",
+          "item": "콜라",
+          "spec": "콜라",
+          "price": "Box"
+        },
+        {
+          "category": "음료",
+          "item": "사이다",
+          "spec": "사이다",
+          "price": "Box"
+        },
+        {
+          "category": "음료",
+          "item": "생수",
+          "spec": "생수",
+          "price": "Box"
+        },
+        {
+          "category": "주류",
+          "item": "소주",
+          "spec": "소주",
+          "price": "병"
+        },
+        {
+          "category": "주류",
+          "item": "맥주",
+          "spec": "캔맥주",
+          "price": "Box"
+        },
+        {
+          "category": "관",
+          "item": "화장용",
+          "spec": "(특)",
+          "price": "중국"
+        },
+        {
+          "category": "관",
+          "item": "화장용",
+          "spec": "0.6(일반)",
+          "price": "중국"
+        },
+        {
+          "category": "관",
+          "item": "향나무",
+          "spec": "1.5/2단",
+          "price": "중국"
+        },
+        {
+          "category": "관",
+          "item": "소나무",
+          "spec": "1.5/2단",
+          "price": "중국"
+        },
+        {
+          "category": "수의",
+          "item": "대마",
+          "spec": "1호",
+          "price": "중국(대마수제한국봉제)"
+        },
+        {
+          "category": "수의",
+          "item": "대마",
+          "spec": "2호",
+          "price": "한국봉제)"
+        },
+        {
+          "category": "수의",
+          "item": "기타",
+          "spec": "7호",
+          "price": "중국"
+        },
+        {
+          "category": "수의",
+          "item": "기타",
+          "spec": "5호",
+          "price": "기계직)"
+        },
+        {
+          "category": "입관용품",
+          "item": "수시(수세)포",
+          "spec": "폴리",
+          "price": "일반종교"
+        },
+        {
+          "category": "입관용품",
+          "item": "명정",
+          "spec": "인견",
+          "price": "일반종교"
+        },
+        {
+          "category": "입관용품",
+          "item": "관포(보)",
+          "spec": "우단",
+          "price": "일반종교"
+        },
+        {
+          "category": "입관용품",
+          "item": "습신(꽃신)",
+          "spec": "면폴리",
+          "price": "셋트"
+        },
+        {
+          "category": "입관용품",
+          "item": "염포(보)",
+          "spec": "인견",
+          "price": "종교"
+        },
+        {
+          "category": "입관용품",
+          "item": "결관포(보)",
+          "spec": "폴리",
+          "price": "20마"
+        },
+        {
+          "category": "입관용품",
+          "item": "칠성판/횡대",
+          "spec": "칠성판",
+          "price": "오동나무"
+        },
+        {
+          "category": "입관용품",
+          "item": "탈지면",
+          "spec": "5봉/1셋트",
+          "price": "1봉/600원"
+        },
+        {
+          "category": "입관용품",
+          "item": "베게",
+          "spec": "수시베게",
+          "price": "스티로폴"
+        },
+        {
+          "category": "입관용품",
+          "item": "안치대",
+          "spec": "합지",
+          "price": "1셋트"
+        },
+        {
+          "category": "입관용품",
+          "item": "운아/예단",
+          "spec": "예단/운아/현훈",
+          "price": "1셋트"
+        },
+        {
+          "category": "입관용품",
+          "item": "혼백",
+          "spec": "면폴리",
+          "price": "1셋트"
+        },
+        {
+          "category": "입관용품",
+          "item": "보공",
+          "spec": "향나무",
+          "price": "30개/1셋트"
+        },
+        {
+          "category": "입관용품",
+          "item": "다라니경/기도문",
+          "spec": "종이",
+          "price": "종교"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "알콜3개",
+          "price": "/1병1000원"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "염습지",
+          "price": "1셋트(마면)"
+        },
+        {
+          "category": "상주용품",
+          "item": "남상복",
+          "spec": "넥타이",
+          "price": "임대"
+        },
+        {
+          "category": "상주용품",
+          "item": "여상복",
+          "spec": "개량한복",
+          "price": "1셋트"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "리본완장",
+          "price": "1셋트"
+        },
+        {
+          "category": "기타용품",
+          "item": "횡대",
+          "spec": "중국",
+          "price": "150000"
+        },
+        {
+          "category": "기타용품",
+          "item": "향나무1.5횡대",
+          "spec": "캐나다",
+          "price": "300000"
+        },
+        {
+          "category": "기타용품",
+          "item": "솔송1.5횡대",
+          "spec": "중국",
+          "price": "250000"
+        },
+        {
+          "category": "기타용품",
+          "item": "오동2.0횡대",
+          "spec": "중국",
+          "price": "200000"
+        }
+      ]
+    },
+    {
+      "id": 14650809,
+      "name": "강남병원장례식장",
+      "prices": [
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "장례식장임대료(일반실)",
+          "price": "1실/24시간기준"
+        },
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "장례식장임대료(특실-b)",
+          "price": "1실/24시간기준"
+        },
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "장례식장임대료(특실-a)",
+          "price": "1실/24시간기준"
+        },
+        {
+          "category": "시설임대료",
+          "item": "기타",
+          "spec": "사용료",
+          "price": "1회"
+        },
+        {
+          "category": "안치실이용료",
+          "item": "일반",
+          "spec": "사용료",
+          "price": "/24시간기준"
+        },
+        {
+          "category": "염습/입관",
+          "item": "일반",
+          "spec": "염습비",
+          "price": "1구당(일반)"
+        },
+        {
+          "category": "염습/입관",
+          "item": "일반",
+          "spec": "염습비",
+          "price": "1구당(중대질환.사고사)"
+        },
+        {
+          "category": "염습/입관",
+          "item": "기타",
+          "spec": "사체수습비",
+          "price": "사고사"
+        },
+        {
+          "category": "염습/입관",
+          "item": "기타",
+          "spec": "사체수습비",
+          "price": "기타불상"
+        },
+        {
+          "category": "염습/입관",
+          "item": "기타",
+          "spec": "사체수습비",
+          "price": "병사"
+        },
+        {
+          "category": "관",
+          "item": "오동나무",
+          "spec": "오동나무(0.6특관)",
+          "price": "현대기업"
+        },
+        {
+          "category": "관",
+          "item": "오동나무",
+          "spec": "오동나무(0.6일반)",
+          "price": "현대기업"
+        },
+        {
+          "category": "관",
+          "item": "오동나무",
+          "spec": "3단장식)",
+          "price": "현대기업"
+        },
+        {
+          "category": "관",
+          "item": "오동나무",
+          "spec": "부관)",
+          "price": "현대기업"
+        },
+        {
+          "category": "관",
+          "item": "오동나무",
+          "spec": "오동나무(2.0)",
+          "price": "현대기업"
+        },
+        {
+          "category": "관",
+          "item": "향나무",
+          "spec": "향나무관",
+          "price": "현대기업"
+        },
+        {
+          "category": "관",
+          "item": "향나무",
+          "spec": "충관물",
+          "price": "톱밥1통"
+        },
+        {
+          "category": "관",
+          "item": "소나무",
+          "spec": "적송관(하급)",
+          "price": "현대기업"
+        },
+        {
+          "category": "관",
+          "item": "소나무",
+          "spec": "적송관(상급)",
+          "price": "현대기업"
+        },
+        {
+          "category": "관",
+          "item": "옻나무",
+          "spec": "옻나무관",
+          "price": "현대기업"
+        },
+        {
+          "category": "관",
+          "item": "기타",
+          "spec": "관이불",
+          "price": "고급삼베"
+        },
+        {
+          "category": "수의",
+          "item": "대마",
+          "spec": "수의(안동포)",
+          "price": "기계직"
+        },
+        {
+          "category": "수의",
+          "item": "대마",
+          "spec": "수의(대마포)",
+          "price": "기계직"
+        },
+        {
+          "category": "수의",
+          "item": "대마",
+          "spec": "대마(매끼)",
+          "price": "기계직"
+        },
+        {
+          "category": "수의",
+          "item": "대마",
+          "spec": "대마(염포)",
+          "price": "기계직"
+        },
+        {
+          "category": "수의",
+          "item": "인견",
+          "spec": "수의(명주맞춤)",
+          "price": "기계직"
+        },
+        {
+          "category": "수의",
+          "item": "저마",
+          "spec": "(매끼)",
+          "price": "기계직"
+        },
+        {
+          "category": "수의",
+          "item": "저마",
+          "spec": "저마(매끼)",
+          "price": "기계직"
+        },
+        {
+          "category": "수의",
+          "item": "저마",
+          "spec": "저마(염포)",
+          "price": "기계직"
+        },
+        {
+          "category": "수의",
+          "item": "저마",
+          "spec": "(염포)",
+          "price": "기계직"
+        },
+        {
+          "category": "수의",
+          "item": "저마",
+          "spec": "수의(저마포)",
+          "price": "기계직"
+        },
+        {
+          "category": "수의",
+          "item": "명주",
+          "spec": "수의(손주맞춤)",
+          "price": "기계직"
+        },
+        {
+          "category": "수의",
+          "item": "명주",
+          "spec": "수의(특주맞춤)",
+          "price": "명주50%레이온50%한국기계직"
+        },
+        {
+          "category": "수의",
+          "item": "명주",
+          "spec": "수의(홀치기)",
+          "price": "기계직"
+        },
+        {
+          "category": "수의",
+          "item": "명주",
+          "spec": "도포/원삼",
+          "price": "기계직"
+        },
+        {
+          "category": "수의",
+          "item": "명주",
+          "spec": "수의(본주맞춤)",
+          "price": "기계직"
+        },
+        {
+          "category": "입관용품",
+          "item": "명정",
+          "spec": "명정",
+          "price": "포함"
+        },
+        {
+          "category": "입관용품",
+          "item": "관포(보)",
+          "spec": "일반관보",
+          "price": "일반관보"
+        },
+        {
+          "category": "입관용품",
+          "item": "관포(보)",
+          "spec": "고급관보",
+          "price": "우단관보"
+        },
+        {
+          "category": "입관용품",
+          "item": "습신(꽃신)",
+          "spec": "습신",
+          "price": "삼베.한지"
+        },
+        {
+          "category": "입관용품",
+          "item": "염포(보)",
+          "spec": "고급염보",
+          "price": "실크100%"
+        },
+        {
+          "category": "입관용품",
+          "item": "칠성판/횡대",
+          "spec": "칠성판",
+          "price": "오동나무"
+        },
+        {
+          "category": "입관용품",
+          "item": "탈지면",
+          "spec": "탈지면",
+          "price": "위생솜"
+        },
+        {
+          "category": "입관용품",
+          "item": "혼백",
+          "spec": "혼백",
+          "price": "한지"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "위생흡수시트",
+          "price": "수습포"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "예단",
+          "price": "1조"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "턱받이세트",
+          "price": "사체수습용"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "이피어린스",
+          "price": "사체소독용"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "한지",
+          "price": "고급2권"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "관끈",
+          "price": "광목(소창)"
+        },
+        {
+          "category": "상주용품",
+          "item": "남상복",
+          "spec": "남상복",
+          "price": "광목"
+        },
+        {
+          "category": "상주용품",
+          "item": "여상복",
+          "spec": "여상복",
+          "price": "광목"
+        },
+        {
+          "category": "상주용품",
+          "item": "치마저고리",
+          "spec": "치마저고리",
+          "price": "주름"
+        },
+        {
+          "category": "상주용품",
+          "item": "치마저고리",
+          "spec": "치마저고리",
+          "price": "주름"
+        },
+        {
+          "category": "상주용품",
+          "item": "치마저고리",
+          "spec": "치마저고리",
+          "price": "25000"
+        },
+        {
+          "category": "상주용품",
+          "item": "굴건제복",
+          "spec": "굴건제복",
+          "price": "삼베(6종)기계직"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "등기재",
+          "price": "삼베"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "수절",
+          "price": "삼베"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "넥타이",
+          "price": "상주용"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "백관두건",
+          "price": "육수"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "와이셔츠",
+          "price": "15000"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "복띠",
+          "price": "삼베"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "완장",
+          "price": "삼베"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "행전",
+          "price": "삼베"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "두루막",
+          "price": "광목"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "대나무작지",
+          "price": "1000"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "중단",
+          "price": "삼베"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "버드나무작지",
+          "price": "1000"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "요절",
+          "price": "삼베"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "검정양복",
+          "price": "대여"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "상주두건",
+          "price": "삼베"
+        },
+        {
+          "category": "기타용품",
+          "item": "빈소용품",
+          "spec": "향(민수향)",
+          "price": "1일분"
+        },
+        {
+          "category": "기타용품",
+          "item": "빈소용품",
+          "spec": "양초(연꽃양초특1호)",
+          "price": "1일분"
+        },
+        {
+          "category": "기타용품",
+          "item": "빈소용품",
+          "spec": "고급부의록",
+          "price": "우단부의.방명록"
+        },
+        {
+          "category": "기타용품",
+          "item": "빈소용품",
+          "spec": "위패",
+          "price": "향나무"
+        },
+        {
+          "category": "기타용품",
+          "item": "리본/근조기",
+          "spec": "액자리본",
+          "price": "종교별구분"
+        },
+        {
+          "category": "기타용품",
+          "item": "리본/근조기",
+          "spec": "차량리본세트",
+          "price": "선두차장식"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "축문",
+          "price": "1권"
+        }
+      ]
+    },
+    {
+      "id": 545205841,
+      "name": "강북전문장례식장",
+      "prices": [
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "빈소사용료(301호)",
+          "price": "24시간"
+        },
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "빈소사용료(특실VIP실)",
+          "price": "24시간"
+        },
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "빈소사용료(302호)",
+          "price": "24시간"
+        },
+        {
+          "category": "시설임대료",
+          "item": "염습실/입관실",
+          "spec": "염습실사용료",
+          "price": "1회"
+        },
+        {
+          "category": "시설임대료",
+          "item": "기타",
+          "spec": "발인식장료",
+          "price": "1회"
+        },
+        {
+          "category": "안치실이용료",
+          "item": "일반",
+          "spec": "안치료",
+          "price": "24시간"
+        },
+        {
+          "category": "기타",
+          "item": "기타",
+          "spec": "고인수시료",
+          "price": "1회"
+        },
+        {
+          "category": "기타",
+          "item": "기타",
+          "spec": "음식물분리수거료",
+          "price": "1일"
+        },
+        {
+          "category": "기타",
+          "item": "기타",
+          "spec": "대렴(입관2인1조)",
+          "price": "1회"
+        },
+        {
+          "category": "기타",
+          "item": "기타",
+          "spec": "감염성폐기물수수료",
+          "price": "1회"
+        },
+        {
+          "category": "주차비",
+          "item": "주차비",
+          "spec": "캐넛",
+          "price": "20000"
+        },
+        {
+          "category": "주차비",
+          "item": "주차비",
+          "spec": "아몬드",
+          "price": "20000"
+        },
+        {
+          "category": "식사",
+          "item": "기타",
+          "spec": "식사",
+          "price": "5000"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "고추마늘된장",
+          "price": "13000"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "새우젖",
+          "price": "10000"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "소주",
+          "price": "2000"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "오징어무침",
+          "price": "90000"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "송편",
+          "price": "250000"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "오징어진미",
+          "price": "25000"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "정종",
+          "price": "10000"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "김치",
+          "price": "65000"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "맥주",
+          "price": "25000"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "수육",
+          "price": "180000"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "절편",
+          "price": "230000"
+        },
+        {
+          "category": "관",
+          "item": "오동나무",
+          "spec": "오동2치",
+          "price": "오동나부"
+        },
+        {
+          "category": "관",
+          "item": "오동나무",
+          "spec": "오동1.0",
+          "price": "오동나무"
+        },
+        {
+          "category": "수의",
+          "item": "명주",
+          "spec": "본주",
+          "price": "명주"
+        },
+        {
+          "category": "수의",
+          "item": "명주",
+          "spec": "인견",
+          "price": "명주"
+        },
+        {
+          "category": "수의",
+          "item": "삼베",
+          "spec": "저마",
+          "price": "삼베"
+        },
+        {
+          "category": "수의",
+          "item": "삼베",
+          "spec": "화장용",
+          "price": "350000"
+        },
+        {
+          "category": "수의",
+          "item": "삼베",
+          "spec": "대마",
+          "price": "삼베"
+        },
+        {
+          "category": "입관용품",
+          "item": "명정",
+          "spec": "명정상",
+          "price": "매장용"
+        },
+        {
+          "category": "입관용품",
+          "item": "명정",
+          "spec": "명정(하)",
+          "price": "화장용"
+        },
+        {
+          "category": "입관용품",
+          "item": "관포(보)",
+          "spec": "관보",
+          "price": "40000"
+        },
+        {
+          "category": "입관용품",
+          "item": "습신(꽃신)",
+          "spec": "꽃신(습신)",
+          "price": "5000"
+        },
+        {
+          "category": "입관용품",
+          "item": "염포(보)",
+          "spec": "육수1필(염포염배)",
+          "price": "하/기계직"
+        },
+        {
+          "category": "입관용품",
+          "item": "염포(보)",
+          "spec": "저마1필(염포염매)",
+          "price": "중/기계직"
+        },
+        {
+          "category": "입관용품",
+          "item": "결관포(보)",
+          "spec": "결관바",
+          "price": "30000"
+        },
+        {
+          "category": "입관용품",
+          "item": "칠성판/횡대",
+          "spec": "칠성판",
+          "price": "10000"
+        },
+        {
+          "category": "입관용품",
+          "item": "혼백",
+          "spec": "혼백운아",
+          "price": "5000"
+        },
+        {
+          "category": "입관용품",
+          "item": "다라니경/기도문",
+          "spec": "한지탑다라니",
+          "price": "10000"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "한지2권",
+          "price": "20000"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "약솜알코올",
+          "price": "20000"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "턱받지2종",
+          "price": "25000"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "충관물",
+          "price": "60000"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "관이불",
+          "price": "300000"
+        },
+        {
+          "category": "상주용품",
+          "item": "남상복",
+          "spec": "남상복",
+          "price": "6000"
+        },
+        {
+          "category": "상주용품",
+          "item": "여상복",
+          "spec": "여상복",
+          "price": "6000"
+        },
+        {
+          "category": "상주용품",
+          "item": "치마저고리",
+          "spec": "삼베치마저고리",
+          "price": "20000"
+        },
+        {
+          "category": "상주용품",
+          "item": "굴건제복",
+          "spec": "굴건제복",
+          "price": "20000"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "두루막",
+          "price": "6000"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "행전",
+          "price": "1000"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "수요절",
+          "price": "2000"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "등지게",
+          "price": "3000"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "상주두건",
+          "price": "1000"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "완장복띠",
+          "price": "1000"
+        },
+        {
+          "category": "기타용품",
+          "item": "빈소용품",
+          "spec": "우단부의록",
+          "price": "20000"
+        },
+        {
+          "category": "기타용품",
+          "item": "빈소용품",
+          "spec": "향초",
+          "price": "25000"
+        },
+        {
+          "category": "기타용품",
+          "item": "리본/근조기",
+          "spec": "액자리본",
+          "price": "5000"
+        },
+        {
+          "category": "기타용품",
+          "item": "리본/근조기",
+          "spec": "차량리본",
+          "price": "30000"
+        },
+        {
+          "category": "기타용품",
+          "item": "리본/근조기",
+          "spec": "짝지(상장리본)",
+          "price": "2000"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "축문",
+          "price": "5000"
+        }
+      ]
+    },
+    {
+      "id": 8681531,
+      "name": "거창장례식장",
+      "prices": [
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "특2호실",
+          "price": "1일(60평)"
+        },
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "특실",
+          "price": "1일(80평)"
+        },
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "특실",
+          "price": "1일(80평)"
+        },
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "VIP실",
+          "price": "1일(100평)"
+        },
+        {
+          "category": "시설임대료",
+          "item": "염습실/입관실",
+          "spec": "염습료",
+          "price": "1조"
+        },
+        {
+          "category": "시설임대료",
+          "item": "염습실/입관실",
+          "spec": "이용료",
+          "price": "사용료"
+        },
+        {
+          "category": "시설임대료",
+          "item": "염습실/입관실",
+          "spec": "수시",
+          "price": "수시비"
+        },
+        {
+          "category": "안치실이용료",
+          "item": "일반",
+          "spec": "안치실",
+          "price": "1일"
+        },
+        {
+          "category": "기타",
+          "item": "기타",
+          "spec": "객실",
+          "price": "1일"
+        },
+        {
+          "category": "기타",
+          "item": "기타",
+          "spec": "처리비",
+          "price": "30리터"
+        },
+        {
+          "category": "기타",
+          "item": "기타",
+          "spec": "영결식장",
+          "price": "1일"
+        },
+        {
+          "category": "도우미",
+          "item": "도우미",
+          "spec": "도우미",
+          "price": "발인날"
+        },
+        {
+          "category": "도우미",
+          "item": "도우미",
+          "spec": "도우미",
+          "price": "시간당"
+        },
+        {
+          "category": "식사",
+          "item": "밥류",
+          "spec": "밥/국(육개장)",
+          "price": "1인분"
+        },
+        {
+          "category": "식사",
+          "item": "반찬류",
+          "spec": "김치",
+          "price": "1kg"
+        },
+        {
+          "category": "식사",
+          "item": "반찬류",
+          "spec": "마늘",
+          "price": "1kg"
+        },
+        {
+          "category": "식사",
+          "item": "반찬류",
+          "spec": "고추",
+          "price": "1kg"
+        },
+        {
+          "category": "식사",
+          "item": "반찬류",
+          "spec": "가오리무침",
+          "price": "1kg"
+        },
+        {
+          "category": "식사",
+          "item": "육류",
+          "spec": "수육(삼겹)",
+          "price": "1근(600g)/국내산"
+        },
+        {
+          "category": "식사",
+          "item": "안주류",
+          "spec": "건바나나",
+          "price": "500g"
+        },
+        {
+          "category": "식사",
+          "item": "안주류",
+          "spec": "아귀채",
+          "price": "400g"
+        },
+        {
+          "category": "식사",
+          "item": "안주류",
+          "spec": "아몬드",
+          "price": "500g"
+        },
+        {
+          "category": "제단",
+          "item": "제단장식",
+          "spec": "제단꽃3호",
+          "price": "제단장식"
+        },
+        {
+          "category": "제단",
+          "item": "제단장식",
+          "spec": "제단꽃2호",
+          "price": "제단장식"
+        },
+        {
+          "category": "제단",
+          "item": "제단장식",
+          "spec": "제단꽃1호",
+          "price": "전용"
+        },
+        {
+          "category": "제단",
+          "item": "제단장식",
+          "spec": "재단꽃4호",
+          "price": "재단장식"
+        },
+        {
+          "category": "영정사진",
+          "item": "사진",
+          "spec": "영정사진(액자포함)",
+          "price": "27"
+        },
+        {
+          "category": "영정사진",
+          "item": "액자",
+          "spec": "영정사진",
+          "price": "액자틀"
+        },
+        {
+          "category": "제사음식",
+          "item": "일반",
+          "spec": "상식",
+          "price": "1식"
+        },
+        {
+          "category": "제사음식",
+          "item": "일반",
+          "spec": "초제(기본상)",
+          "price": "제사상/기본제물"
+        },
+        {
+          "category": "제사음식",
+          "item": "일반",
+          "spec": "성복제",
+          "price": "제사상/기본제물"
+        },
+        {
+          "category": "제사음식",
+          "item": "일반",
+          "spec": "발인제",
+          "price": "제사상/기본제물"
+        },
+        {
+          "category": "제사음식",
+          "item": "기타",
+          "spec": "개토제",
+          "price": "제사상/선택제물"
+        },
+        {
+          "category": "제사음식",
+          "item": "기타",
+          "spec": "위령제(화장장)",
+          "price": "제사상/선택제물"
+        },
+        {
+          "category": "제사음식",
+          "item": "기타",
+          "spec": "봉안제(납골당)",
+          "price": "제사상/선택제물"
+        },
+        {
+          "category": "제사음식",
+          "item": "기타",
+          "spec": "노제",
+          "price": "제사상/선택제물"
+        },
+        {
+          "category": "제사음식",
+          "item": "기타",
+          "spec": "평토제",
+          "price": "제사상/선택제물"
+        },
+        {
+          "category": "제사음식",
+          "item": "기타",
+          "spec": "반혼(초우제)",
+          "price": "제사상/선택제물"
+        },
+        {
+          "category": "제사음식",
+          "item": "기타",
+          "spec": "저녁제",
+          "price": "제사상/선택제물"
+        },
+        {
+          "category": "제사음식",
+          "item": "기타",
+          "spec": "새벽제",
+          "price": "제사상/선택제물"
+        },
+        {
+          "category": "제사음식",
+          "item": "기타",
+          "spec": "산신제",
+          "price": "제사상/선택제물"
+        },
+        {
+          "category": "음료",
+          "item": "콜라",
+          "spec": "코가콜라",
+          "price": "30캔"
+        },
+        {
+          "category": "음료",
+          "item": "사이다",
+          "spec": "칠성사이다",
+          "price": "30캔"
+        },
+        {
+          "category": "음료",
+          "item": "커피",
+          "spec": "칸타타",
+          "price": "6캔"
+        },
+        {
+          "category": "음료",
+          "item": "생수",
+          "spec": "생수",
+          "price": "20pet"
+        },
+        {
+          "category": "음료",
+          "item": "기타",
+          "spec": "망고",
+          "price": "175ml*30캔"
+        },
+        {
+          "category": "음료",
+          "item": "기타",
+          "spec": "식혜",
+          "price": "30캔"
+        },
+        {
+          "category": "음료",
+          "item": "기타",
+          "spec": "원기력파워",
+          "price": "1병"
+        },
+        {
+          "category": "음료",
+          "item": "기타",
+          "spec": "비타-C",
+          "price": "1병"
+        },
+        {
+          "category": "음료",
+          "item": "기타",
+          "spec": "굿모닝",
+          "price": "1병"
+        },
+        {
+          "category": "음료",
+          "item": "기타",
+          "spec": "산삼속으로",
+          "price": "1병"
+        },
+        {
+          "category": "음료",
+          "item": "기타",
+          "spec": "옥수수수염차",
+          "price": "20pet"
+        },
+        {
+          "category": "조화/화환/헌환",
+          "item": "헌화용",
+          "spec": "헌화(기본30송이)",
+          "price": "30송이"
+        },
+        {
+          "category": "주류",
+          "item": "소주",
+          "spec": "소주",
+          "price": "360ml"
+        },
+        {
+          "category": "주류",
+          "item": "맥주",
+          "spec": "맥주",
+          "price": "500ml"
+        },
+        {
+          "category": "주류",
+          "item": "정종",
+          "spec": "정종(국화수복)",
+          "price": "1.8L"
+        },
+        {
+          "category": "기타",
+          "item": "반찬류",
+          "spec": "새우볶음",
+          "price": "1kg"
+        },
+        {
+          "category": "기타",
+          "item": "반찬류",
+          "spec": "버섯볶음",
+          "price": "1kg"
+        },
+        {
+          "category": "기타",
+          "item": "반찬류",
+          "spec": "연근조림",
+          "price": "1kg"
+        },
+        {
+          "category": "기타",
+          "item": "반찬류",
+          "spec": "새우젓",
+          "price": "1kg"
+        },
+        {
+          "category": "기타",
+          "item": "반찬류",
+          "spec": "쌈장",
+          "price": "1kg"
+        },
+        {
+          "category": "기타",
+          "item": "반찬류",
+          "spec": "코다리조림",
+          "price": "1kg"
+        },
+        {
+          "category": "기타",
+          "item": "반찬류",
+          "spec": "김무침",
+          "price": "500g"
+        },
+        {
+          "category": "기타",
+          "item": "반찬류",
+          "spec": "무말랭이",
+          "price": "1kg"
+        },
+        {
+          "category": "기타",
+          "item": "반찬류",
+          "spec": "멸치마늘쫑볶음",
+          "price": "1kg"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "종이컵",
+          "price": "1줄"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "접시(중)",
+          "price": "50개"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "컵라면",
+          "price": "30개"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "타올",
+          "price": "1장"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "국그릇(대)",
+          "price": "50개"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "소주컵",
+          "price": "1줄"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "카누",
+          "price": "30스틱"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "커피",
+          "price": "100스틱"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "컵라면",
+          "price": "30개"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "종량제봉투",
+          "price": "1장(75L)"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "백봉투",
+          "price": "1묶음(90매)"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "슬리퍼",
+          "price": "1켤레"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "둥글레차",
+          "price": "25티백"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "기본한벌",
+          "price": "등"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "수저",
+          "price": "10개"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "접시(소)",
+          "price": "50개"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "접시(대)",
+          "price": "50개"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "베개",
+          "price": "펌프1개"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "담요",
+          "price": "140*180(1장)"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "화투",
+          "price": "규격품"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "카드",
+          "price": "규격품"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "방석",
+          "price": "고무"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "식탁보",
+          "price": "100매"
+        },
+        {
+          "category": "관",
+          "item": "화장용",
+          "spec": "화장용관(1.0치)",
+          "price": "국내제작"
+        },
+        {
+          "category": "관",
+          "item": "화장용",
+          "spec": "특관",
+          "price": "국내제작"
+        },
+        {
+          "category": "관",
+          "item": "오동나무",
+          "spec": "오동관(1.5치)",
+          "price": "국내가공"
+        },
+        {
+          "category": "관",
+          "item": "향나무",
+          "spec": "향나무관(1.5치)",
+          "price": "국내제작"
+        },
+        {
+          "category": "관",
+          "item": "소나무",
+          "spec": "적송관(1.5치)",
+          "price": "국내제작"
+        },
+        {
+          "category": "수의",
+          "item": "삼베",
+          "spec": "삼베수의4호",
+          "price": "중국산(수제직)/대마100%"
+        },
+        {
+          "category": "수의",
+          "item": "삼베",
+          "spec": "삼베수의3호",
+          "price": "중국산(기계직)/마100%"
+        },
+        {
+          "category": "수의",
+          "item": "삼베",
+          "spec": "삼베수의1호",
+          "price": "중국산(국산기계직)/마50%면50%"
+        },
+        {
+          "category": "수의",
+          "item": "삼베",
+          "spec": "삼베수의",
+          "price": "중국산(국산기계직)/면100%"
+        },
+        {
+          "category": "수의",
+          "item": "기타",
+          "spec": "순면수의",
+          "price": "중국산100%"
+        },
+        {
+          "category": "수의",
+          "item": "기타",
+          "spec": "순면수의특품",
+          "price": "국내산(기계직)/순면100%"
+        },
+        {
+          "category": "수의",
+          "item": "기타",
+          "spec": "화장용수의",
+          "price": "중국산100%"
+        },
+        {
+          "category": "수의",
+          "item": "기타",
+          "spec": "보성삼베",
+          "price": "국내산(수제직)/국내직삼100%"
+        },
+        {
+          "category": "수의",
+          "item": "기타",
+          "spec": "보성삼베",
+          "price": "국내산(수제직)/마사100%"
+        },
+        {
+          "category": "수의",
+          "item": "기타",
+          "spec": "중국안동포",
+          "price": "중국산(수제직)/마100%"
+        },
+        {
+          "category": "입관용품",
+          "item": "수시(수세)포",
+          "spec": "흡수시트",
+          "price": "위생매트"
+        },
+        {
+          "category": "입관용품",
+          "item": "수시(수세)포",
+          "spec": "수세포(대)",
+          "price": "190"
+        },
+        {
+          "category": "입관용품",
+          "item": "수시(수세)포",
+          "spec": "궁중대렴",
+          "price": "중국산"
+        },
+        {
+          "category": "입관용품",
+          "item": "명정",
+          "spec": "명정특호",
+          "price": "실크100%자가드"
+        },
+        {
+          "category": "입관용품",
+          "item": "관포(보)",
+          "spec": "꽃관보",
+          "price": "종교별"
+        },
+        {
+          "category": "입관용품",
+          "item": "관포(보)",
+          "spec": "관보",
+          "price": "종교별"
+        },
+        {
+          "category": "입관용품",
+          "item": "염포(보)",
+          "spec": "멧베",
+          "price": "수제직대마100%/중국산"
+        },
+        {
+          "category": "입관용품",
+          "item": "염포(보)",
+          "spec": "염보",
+          "price": "기계직저마100%/중국산"
+        },
+        {
+          "category": "입관용품",
+          "item": "염포(보)",
+          "spec": "멧베",
+          "price": "수제직대마100%/중국산"
+        },
+        {
+          "category": "입관용품",
+          "item": "염포(보)",
+          "spec": "입관보",
+          "price": "인견+면+폴리/중국산"
+        },
+        {
+          "category": "입관용품",
+          "item": "결관포(보)",
+          "spec": "결관줄",
+          "price": "소창30m"
+        },
+        {
+          "category": "입관용품",
+          "item": "결관포(보)",
+          "spec": "결관줄(매장용)",
+          "price": "국내제작"
+        },
+        {
+          "category": "입관용품",
+          "item": "칠성판/횡대",
+          "spec": "칠성판",
+          "price": "170"
+        },
+        {
+          "category": "입관용품",
+          "item": "보공",
+          "spec": "충관(보공)",
+          "price": "30개입"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "등",
+          "price": "1set"
+        },
+        {
+          "category": "상주용품",
+          "item": "남상복",
+          "spec": "광목남상복(상하의세트)",
+          "price": "면혼합사"
+        },
+        {
+          "category": "상주용품",
+          "item": "여상복",
+          "spec": "검정여상복(상하의세트)",
+          "price": "폴리100%"
+        },
+        {
+          "category": "상주용품",
+          "item": "두루마기",
+          "spec": "두루마기",
+          "price": "면63%폴리37%"
+        },
+        {
+          "category": "상주용품",
+          "item": "치마저고리",
+          "spec": "삼베치마저고리수질요질등지개",
+          "price": "1set"
+        },
+        {
+          "category": "상주용품",
+          "item": "굴건제복",
+          "spec": "굴건제복",
+          "price": "면혼합사"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "양말",
+          "price": "섬유혼용(순면+폴리)"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "두건",
+          "price": "마40%폴리60%"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "완장",
+          "price": "면혼합사"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "수질요질",
+          "price": "면50%부직포50%"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "지팡이",
+          "price": "버드나무대나무"
+        },
+        {
+          "category": "유골함",
+          "item": "나무",
+          "spec": "유골함",
+          "price": "오동나무"
+        },
+        {
+          "category": "유골함",
+          "item": "기타",
+          "spec": "유골단지",
+          "price": "황토이중"
+        },
+        {
+          "category": "기타용품",
+          "item": "빈소용품",
+          "spec": "방명록",
+          "price": "15매이상"
+        },
+        {
+          "category": "기타용품",
+          "item": "빈소용품",
+          "spec": "양초",
+          "price": "지름4.5cm길이25cm"
+        },
+        {
+          "category": "기타용품",
+          "item": "빈소용품",
+          "spec": "부의록",
+          "price": "15매이상"
+        },
+        {
+          "category": "기타용품",
+          "item": "빈소용품",
+          "spec": "축문",
+          "price": "1set"
+        },
+        {
+          "category": "기타용품",
+          "item": "빈소용품",
+          "spec": "양초",
+          "price": "지름5.5cm길이27cm"
+        },
+        {
+          "category": "기타용품",
+          "item": "차량용품",
+          "spec": "차량리본",
+          "price": "폴리100%"
+        },
+        {
+          "category": "기타용품",
+          "item": "차량용품",
+          "spec": "차량근조기",
+          "price": "폴리100%"
+        }
+      ]
+    },
+    {
+      "id": 1887036428,
+      "name": "경산장례식장",
+      "prices": [
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "6분향실",
+          "price": "1시간"
+        },
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "추가대실(3분향실과5분향실사이)",
+          "price": "1시간"
+        },
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "5분향실",
+          "price": "1시간"
+        },
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "3분향실",
+          "price": "1시간"
+        },
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "VIP2분향실",
+          "price": "1시간"
+        },
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "분향실",
+          "price": "1시간"
+        },
+        {
+          "category": "시설임대료",
+          "item": "염습실/입관실",
+          "spec": "1회",
+          "price": "1회"
+        },
+        {
+          "category": "안치실이용료",
+          "item": "일반",
+          "spec": "1시간",
+          "price": "1시간"
+        },
+        {
+          "category": "청소/관리",
+          "item": "청소비",
+          "spec": "음식물및접객실",
+          "price": "각분향실"
+        },
+        {
+          "category": "청소/관리",
+          "item": "폐기물",
+          "spec": "감염성폐기물",
+          "price": "1회"
+        },
+        {
+          "category": "식사",
+          "item": "국/찌개",
+          "spec": "된장국",
+          "price": "1인분"
+        },
+        {
+          "category": "식사",
+          "item": "국/찌개",
+          "spec": "소고기무국",
+          "price": "1인분"
+        },
+        {
+          "category": "식사",
+          "item": "반찬류",
+          "spec": "멸치볶음",
+          "price": "1"
+        },
+        {
+          "category": "식사",
+          "item": "반찬류",
+          "spec": "어",
+          "price": "3kg"
+        },
+        {
+          "category": "식사",
+          "item": "반찬류",
+          "spec": "명태찜",
+          "price": "3kg"
+        },
+        {
+          "category": "식사",
+          "item": "반찬류",
+          "spec": "배추김치",
+          "price": "4kg"
+        },
+        {
+          "category": "식사",
+          "item": "반찬류",
+          "spec": "서대찜",
+          "price": "3kg"
+        },
+        {
+          "category": "식사",
+          "item": "반찬류",
+          "spec": "가오리회무침",
+          "price": "3kg"
+        },
+        {
+          "category": "식사",
+          "item": "전류",
+          "spec": "명태전",
+          "price": "1판"
+        },
+        {
+          "category": "식사",
+          "item": "전류",
+          "spec": "전",
+          "price": "1판"
+        },
+        {
+          "category": "식사",
+          "item": "전류",
+          "spec": "적",
+          "price": "1판"
+        },
+        {
+          "category": "운구차량",
+          "item": "버스",
+          "spec": "1회",
+          "price": "30km이내"
+        },
+        {
+          "category": "운구차량",
+          "item": "리무진",
+          "spec": "1회",
+          "price": "30km이내"
+        },
+        {
+          "category": "제사음식",
+          "item": "일반",
+          "spec": "발인제",
+          "price": "1"
+        },
+        {
+          "category": "제사음식",
+          "item": "일반",
+          "spec": "성복제",
+          "price": "1"
+        },
+        {
+          "category": "제사음식",
+          "item": "일반",
+          "spec": "제",
+          "price": "1"
+        },
+        {
+          "category": "제사음식",
+          "item": "일반",
+          "spec": "평토제",
+          "price": "1"
+        },
+        {
+          "category": "제사음식",
+          "item": "일반",
+          "spec": "기본제상",
+          "price": "1"
+        },
+        {
+          "category": "음료",
+          "item": "콜라",
+          "spec": "콜라",
+          "price": "1box"
+        },
+        {
+          "category": "음료",
+          "item": "사이다",
+          "spec": "사이다",
+          "price": "1box"
+        },
+        {
+          "category": "음료",
+          "item": "생수",
+          "spec": "생수",
+          "price": "1box"
+        },
+        {
+          "category": "음료",
+          "item": "기타",
+          "spec": "헛개굿모닝",
+          "price": "1box"
+        },
+        {
+          "category": "주류",
+          "item": "맥주",
+          "spec": "맥주",
+          "price": "1box"
+        },
+        {
+          "category": "주류",
+          "item": "맥주",
+          "spec": "소주",
+          "price": "1box"
+        },
+        {
+          "category": "관",
+          "item": "화장용",
+          "spec": "중국산",
+          "price": "1850*480/420*300*127mm"
+        },
+        {
+          "category": "관",
+          "item": "오동나무",
+          "spec": "중국산",
+          "price": "1950*510/450*300*142mm"
+        },
+        {
+          "category": "관",
+          "item": "향나무",
+          "spec": "중국산",
+          "price": "2000*580/520*290*42mm"
+        },
+        {
+          "category": "수의",
+          "item": "면",
+          "spec": "중국산",
+          "price": "화장수의"
+        },
+        {
+          "category": "수의",
+          "item": "면",
+          "spec": "중국산",
+          "price": "면"
+        },
+        {
+          "category": "수의",
+          "item": "대마",
+          "spec": "국내산",
+          "price": "대마"
+        },
+        {
+          "category": "수의",
+          "item": "대마",
+          "spec": "국내산",
+          "price": "대마"
+        },
+        {
+          "category": "수의",
+          "item": "저마",
+          "spec": "중국산",
+          "price": "저마"
+        },
+        {
+          "category": "입관용품",
+          "item": "명정",
+          "spec": "중국산",
+          "price": "인견"
+        },
+        {
+          "category": "입관용품",
+          "item": "관포(보)",
+          "spec": "중국산",
+          "price": "고급공단100%"
+        },
+        {
+          "category": "기타용품",
+          "item": "리본/근조기",
+          "spec": "중국산",
+          "price": "폴리"
+        },
+        {
+          "category": "기타용품",
+          "item": "접객용품",
+          "spec": "수건",
+          "price": "1장"
+        },
+        {
+          "category": "기타용품",
+          "item": "접객용품",
+          "spec": "(대)",
+          "price": "1봉지(10)"
+        },
+        {
+          "category": "기타용품",
+          "item": "접객용품",
+          "spec": "공기",
+          "price": "(10)"
+        },
+        {
+          "category": "기타용품",
+          "item": "접객용품",
+          "spec": "상종이",
+          "price": "1묶음"
+        },
+        {
+          "category": "기타용품",
+          "item": "접객용품",
+          "spec": "(중)",
+          "price": "1봉지(10)"
+        },
+        {
+          "category": "기타용품",
+          "item": "접객용품",
+          "spec": "(소)",
+          "price": "1봉지(10)"
+        },
+        {
+          "category": "기타용품",
+          "item": "접객용품",
+          "spec": "쌈장",
+          "price": "1개"
+        },
+        {
+          "category": "기타용품",
+          "item": "접객용품",
+          "spec": "편지봉투",
+          "price": "1묶음"
+        },
+        {
+          "category": "기타용품",
+          "item": "일반용품",
+          "spec": "화투",
+          "price": "1개"
+        },
+        {
+          "category": "기타용품",
+          "item": "일반용품",
+          "spec": "담요",
+          "price": "1장"
+        },
+        {
+          "category": "기타용품",
+          "item": "일반용품",
+          "spec": "카드방석",
+          "price": "1장"
+        },
+        {
+          "category": "기타용품",
+          "item": "일반용품",
+          "spec": "카드",
+          "price": "1개"
+        }
+      ]
+    },
+    {
+      "id": 14526271,
+      "name": "경안장례식장",
+      "prices": [
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "(A형)",
+          "price": "24시간"
+        },
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "(B형)",
+          "price": "24시간"
+        },
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "(C형)",
+          "price": "24시간"
+        },
+        {
+          "category": "시설임대료",
+          "item": "염습실/입관실",
+          "spec": "사용료)",
+          "price": "(사고사)"
+        },
+        {
+          "category": "시설임대료",
+          "item": "염습실/입관실",
+          "spec": "사용료)",
+          "price": "안치료"
+        },
+        {
+          "category": "시설임대료",
+          "item": "염습실/입관실",
+          "spec": "사용료)",
+          "price": "1일"
+        },
+        {
+          "category": "염습/입관",
+          "item": "일반",
+          "spec": "염습비",
+          "price": "사고사"
+        },
+        {
+          "category": "염습/입관",
+          "item": "일반",
+          "spec": "염습비",
+          "price": "일반"
+        },
+        {
+          "category": "염습/입관",
+          "item": "일반",
+          "spec": "염습비",
+          "price": "대인.일반"
+        },
+        {
+          "category": "염습/입관",
+          "item": "일반",
+          "spec": "염습비",
+          "price": "사고사"
+        },
+        {
+          "category": "관",
+          "item": "오동나무",
+          "spec": "장의용품",
+          "price": "중국"
+        },
+        {
+          "category": "관",
+          "item": "향나무",
+          "spec": "장의용품",
+          "price": "중국"
+        },
+        {
+          "category": "관",
+          "item": "소나무",
+          "spec": "장의용품",
+          "price": "캐나다"
+        },
+        {
+          "category": "관",
+          "item": "옻나무",
+          "spec": "장의용품",
+          "price": "말레시아"
+        },
+        {
+          "category": "수의",
+          "item": "면",
+          "spec": "수의",
+          "price": "중국"
+        },
+        {
+          "category": "수의",
+          "item": "면",
+          "spec": "수의",
+          "price": "중국"
+        },
+        {
+          "category": "수의",
+          "item": "기타",
+          "spec": "수의",
+          "price": "중국"
+        },
+        {
+          "category": "수의",
+          "item": "기타",
+          "spec": "수의",
+          "price": "중국"
+        },
+        {
+          "category": "수의",
+          "item": "기타",
+          "spec": "수의",
+          "price": "중국"
+        },
+        {
+          "category": "수의",
+          "item": "기타",
+          "spec": "수의",
+          "price": "중국"
+        },
+        {
+          "category": "수의",
+          "item": "기타",
+          "spec": "수의",
+          "price": "중국"
+        },
+        {
+          "category": "수의",
+          "item": "기타",
+          "spec": "수의",
+          "price": "중국"
+        },
+        {
+          "category": "수의",
+          "item": "기타",
+          "spec": "수의",
+          "price": "중국"
+        },
+        {
+          "category": "수의",
+          "item": "기타",
+          "spec": "수의",
+          "price": "중국"
+        },
+        {
+          "category": "수의",
+          "item": "기타",
+          "spec": "수의",
+          "price": "중국"
+        },
+        {
+          "category": "수의",
+          "item": "기타",
+          "spec": "수의",
+          "price": "중국"
+        },
+        {
+          "category": "상주용품",
+          "item": "여상복",
+          "spec": "여상복(검정)",
+          "price": "25000"
+        },
+        {
+          "category": "상주용품",
+          "item": "여상복",
+          "spec": "여상복(백)",
+          "price": "20000"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "중단",
+          "price": "30000"
+        }
+      ]
+    },
+    {
+      "id": 8690328,
+      "name": "고려장례식장",
+      "prices": [
+        {
+          "category": "시설임대료",
+          "item": "기타",
+          "spec": "기준",
+          "price": "3호실"
+        },
+        {
+          "category": "시설임대료",
+          "item": "기타",
+          "spec": "기준",
+          "price": "장례식장1층1호실"
+        },
+        {
+          "category": "시설임대료",
+          "item": "기타",
+          "spec": "기준",
+          "price": "망자1실"
+        },
+        {
+          "category": "시설임대료",
+          "item": "기타",
+          "spec": "기준",
+          "price": "5호실"
+        },
+        {
+          "category": "시설임대료",
+          "item": "기타",
+          "spec": "기준",
+          "price": "장례식장2층2호실"
+        },
+        {
+          "category": "관",
+          "item": "오동나무",
+          "spec": "고려1.0관",
+          "price": "중국산/오동나무"
+        },
+        {
+          "category": "관",
+          "item": "오동나무",
+          "spec": "고려1.0관",
+          "price": "중국산/오동나무"
+        },
+        {
+          "category": "관",
+          "item": "오동나무",
+          "spec": "고려0.6관보통",
+          "price": "중국산/오동나무"
+        },
+        {
+          "category": "관",
+          "item": "오동나무",
+          "spec": "고려0.6관",
+          "price": "중국산/오동나무"
+        },
+        {
+          "category": "관",
+          "item": "기타",
+          "spec": "상여",
+          "price": "상여"
+        },
+        {
+          "category": "수의",
+          "item": "대마",
+          "spec": "고려1품",
+          "price": "대마100%/손베/중국산"
+        },
+        {
+          "category": "수의",
+          "item": "대마",
+          "spec": "고려2품",
+          "price": "대마100%/손베/중국산"
+        },
+        {
+          "category": "수의",
+          "item": "대마",
+          "spec": "고려4품",
+          "price": "50%/손베/중국산"
+        },
+        {
+          "category": "수의",
+          "item": "대마",
+          "spec": "고려특품",
+          "price": "대마100%/손베/중국산"
+        },
+        {
+          "category": "수의",
+          "item": "저마",
+          "spec": "고려5품",
+          "price": "50%/손베/중국산"
+        },
+        {
+          "category": "수의",
+          "item": "저마",
+          "spec": "고려3품",
+          "price": "대저마50%/손베/중국산"
+        },
+        {
+          "category": "수의",
+          "item": "기타",
+          "spec": "화장수의",
+          "price": "폴리에틸렌/기베/중국산"
+        },
+        {
+          "category": "입관용품",
+          "item": "수시(수세)포",
+          "spec": "수세포",
+          "price": "수세포"
+        },
+        {
+          "category": "입관용품",
+          "item": "명정",
+          "spec": "인견명정및대필",
+          "price": "폴리에틸렌"
+        },
+        {
+          "category": "입관용품",
+          "item": "관포(보)",
+          "spec": "관보",
+          "price": "고급관보"
+        },
+        {
+          "category": "입관용품",
+          "item": "염포(보)",
+          "spec": "궁중멧베용품",
+          "price": "대마100%중국산"
+        },
+        {
+          "category": "입관용품",
+          "item": "베게",
+          "spec": "벼게",
+          "price": "폴리에틸렌"
+        },
+        {
+          "category": "입관용품",
+          "item": "안치대",
+          "spec": "안치대",
+          "price": "종이"
+        },
+        {
+          "category": "입관용품",
+          "item": "혼백",
+          "spec": "혼백함",
+          "price": "혼백함/지방포함"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "버선",
+          "price": "마100%"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "화장용품",
+          "price": "기초화장"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "아피어렌스",
+          "price": "약품"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "관줄",
+          "price": "23수"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "입관비",
+          "price": "2인2회"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "한지",
+          "price": "닥나무100%"
+        },
+        {
+          "category": "상주용품",
+          "item": "남상복",
+          "spec": "상주상복",
+          "price": "남자양복.와이셔츠.넥타이대여"
+        },
+        {
+          "category": "상주용품",
+          "item": "여상복",
+          "spec": "상주상복",
+          "price": "여자하이블"
+        },
+        {
+          "category": "상주용품",
+          "item": "여상복",
+          "spec": "상주상복",
+          "price": "여자개량한복"
+        },
+        {
+          "category": "상주용품",
+          "item": "기타",
+          "spec": "고려명품완장",
+          "price": "상주줄완장"
+        },
+        {
+          "category": "기타용품",
+          "item": "빈소용품",
+          "spec": "양초",
+          "price": "大자"
+        },
+        {
+          "category": "기타용품",
+          "item": "빈소용품",
+          "spec": "부의록",
+          "price": "부의록"
+        },
+        {
+          "category": "기타용품",
+          "item": "빈소용품",
+          "spec": "향위패",
+          "price": "향위패/지방포함"
+        },
+        {
+          "category": "기타용품",
+          "item": "빈소용품",
+          "spec": "향로",
+          "price": "금장스테인레스"
+        },
+        {
+          "category": "기타용품",
+          "item": "리본/근조기",
+          "spec": "상장리본",
+          "price": "폴리에틸렌"
+        },
+        {
+          "category": "기타용품",
+          "item": "일반용품",
+          "spec": "방명록",
+          "price": "방명록"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "절편",
+          "price": "국내산1되"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "진미채(30.000)/땅콩",
+          "price": "페루.중국산1봉지"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "맥주",
+          "price": "업소용1병"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "소주",
+          "price": "업소용1병"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "홍어",
+          "price": "아르헨티나1box"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "명태코다리",
+          "price": "러시아산명태코다리10kg"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "다슬기된장국",
+          "price": "다슬기:중국산10kg"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "생수",
+          "price": "1병"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "헛개차/산삼차",
+          "price": "1병"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "닭죽",
+          "price": "국내산50인분"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "두부북어국",
+          "price": "북어:네덜란드산:10kg"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "김치찌개",
+          "price": "국내산50인분"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "돼지수육",
+          "price": "국내산전지생육1kg"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "모듬전",
+          "price": "1kg"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "육계장",
+          "price": "소고기:호주산10kg"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "밥",
+          "price": "국내산10kg"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "김치",
+          "price": "배추국내산5kg"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "고추멸치볶음",
+          "price": "국내산멸치.고추3kg"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "버섯나물",
+          "price": "중국산버섯3kg"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "사이다",
+          "price": "1캔"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "참나물",
+          "price": "국내산참나물3kg"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "오징어무침",
+          "price": "국내산오징어4kg"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "인절미",
+          "price": "국내산1되"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "콜라",
+          "price": "1캔"
+        }
+      ]
+    },
+    {
+      "id": 10160563,
+      "name": "고령전문장례식장",
+      "prices": [
+        {
+          "category": "시설임대료",
+          "item": "빈소+접객실",
+          "spec": "특실100평=빈소+접객실+가족실1+가족실2",
+          "price": "기준"
+        },
+        {
+          "category": "안치실이용료",
+          "item": "일반",
+          "spec": "안치료",
+          "price": "기준"
+        },
+        {
+          "category": "청소/관리",
+          "item": "폐기물",
+          "spec": "위생흡수시트",
+          "price": "1회"
+        },
+        {
+          "category": "도우미",
+          "item": "도우미",
+          "spec": "상가도우미",
+          "price": "10시)/외부업체"
+        },
+        {
+          "category": "식사",
+          "item": "국/찌개",
+          "spec": "육우)",
+          "price": "리필)"
+        },
+        {
+          "category": "식사",
+          "item": "반찬류",
+          "spec": "김치(국내산)",
+          "price": "1통"
+        },
+        {
+          "category": "식사",
+          "item": "반찬류",
+          "spec": "고추(국내산)",
+          "price": "1통"
+        },
+        {
+          "category": "식사",
+          "item": "육류",
+          "spec": "돼지삼겹살(국내산)",
+          "price": "1관당(3.8KG)"
+        },
+        {
+          "category": "식사",
+          "item": "기타",
+          "spec": "무침회<초장포함>(국내산)",
+          "price": "1세트당"
+        },
+        {
+          "category": "식사",
+          "item": "기타",
+          "spec": "새우젓(국내산)",
+          "price": "1통"
+        },
+        {
+          "category": "식사",
+          "item": "기타",
+          "spec": "마늘(국내산)",
+          "price": "1통"
+        },
+        {
+          "category": "식사",
+          "item": "기타",
+          "spec": "된장(국내산)",
+          "price": "1통"
+        },
+        {
+          "category": "영정사진",
+          "item": "사진",
+          "spec": "영정사진",
+          "price": "(외부업체)"
+        },
+        {
+          "category": "운구차량",
+          "item": "버스",
+          "spec": "35인승(진주안락공원행)",
+          "price": "(외부업체)"
+        },
+        {
+          "category": "운구차량",
+          "item": "버스",
+          "spec": "35인승(대구명복공원행)",
+          "price": "(외부업체)"
+        },
+        {
+          "category": "염습/입관",
+          "item": "일반",
+          "spec": "염습료",
+          "price": "1회"
+        },
+        {
+          "category": "제사음식",
+          "item": "일반",
+          "spec": "빈소차림",
+          "price": "과일상"
+        },
+        {
+          "category": "제사음식",
+          "item": "일반",
+          "spec": "성복제",
+          "price": "제사상"
+        },
+        {
+          "category": "제사음식",
+          "item": "일반",
+          "spec": "상식",
+          "price": "1상당"
+        },
+        {
+          "category": "제사음식",
+          "item": "일반",
+          "spec": "발인제",
+          "price": "과일상"
+        },
+        {
+          "category": "음료",
+          "item": "콜라",
+          "spec": "콜라음료",
+          "price": "1캔"
+        },
+        {
+          "category": "음료",
+          "item": "사이다",
+          "spec": "사이다음료",
+          "price": "1캔"
+        },
+        {
+          "category": "음료",
+          "item": "커피",
+          "spec": "포함)",
+          "price": "1박스"
+        },
+        {
+          "category": "음료",
+          "item": "커피",
+          "spec": "원두커피음료",
+          "price": "1캔"
+        },
+        {
+          "category": "음료",
+          "item": "기타",
+          "spec": "박카스음료",
+          "price": "1병"
+        },
+        {
+          "category": "음료",
+          "item": "기타",
+          "spec": "석수물",
+          "price": "1병"
+        },
+        {
+          "category": "음료",
+          "item": "기타",
+          "spec": "식혜음료",
+          "price": "1캔"
+        },
+        {
+          "category": "음료",
+          "item": "기타",
+          "spec": "매실음료",
+          "price": "1캔"
+        },
+        {
+          "category": "음료",
+          "item": "기타",
+          "spec": "헛개차음료",
+          "price": "1캔"
+        },
+        {
+          "category": "음료",
+          "item": "기타",
+          "spec": "감귤음료",
+          "price": "1캔"
+        },
+        {
+          "category": "조화/화환/헌환",
+          "item": "헌화용",
+          "spec": "국화",
+          "price": "1송이/(외부업체)"
+        },
+        {
+          "category": "주류",
+          "item": "소주",
+          "spec": "소주주류",
+          "price": "1병"
+        },
+        {
+          "category": "주류",
+          "item": "맥주",
+          "spec": "맥주주류",
+          "price": "1병"
+        },
+        {
+          "category": "주류",
+          "item": "기타",
+          "spec": "차례주(제사주류)",
+          "price": "1병"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "(1인분당)",
+          "price": "(외부업체)"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "종이컵",
+          "price": "1봉"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "위생접시(대)",
+          "price": "1봉"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "수세미",
+          "price": "1개"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "유골함",
+          "price": "(외부업체)"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "고무장갑",
+          "price": "1개"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "(1벌당)",
+          "price": "(외부업체)"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "위생장갑",
+          "price": "1개"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "숟가락",
+          "price": "1봉"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "위생행주",
+          "price": "1개"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "국밥(1인분당)",
+          "price": "(외부업체)"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "위생접시(소)",
+          "price": "1봉"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "이쑤시게",
+          "price": "1개"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "퐁퐁",
+          "price": "1개"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "크림백",
+          "price": "1개"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "소주컵",
+          "price": "1봉"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "밥/국그릇",
+          "price": "1봉"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "운구장갑",
+          "price": "1개"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "젓가락",
+          "price": "1봉"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "상보",
+          "price": "1봉"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "봉투",
+          "price": "1봉"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "카드놀이",
+          "price": "1개"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "화투놀이",
+          "price": "1개"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "놀이방석",
+          "price": "1개"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "각티슈",
+          "price": "1개"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "위생접시(중)",
+          "price": "1봉"
+        },
+        {
+          "category": "기타",
+          "item": "기타류",
+          "spec": "(1벌당)",
+          "price": "(외부업체)"
+        },
+        {
+          "category": "관",
+          "item": "오동나무",
+          "spec": "0.6관",
+          "price": "(두께:1.8cm)"
+        },
+        {
+          "category": "관",
+          "item": "오동나무",
+          "spec": "2.0관",
+          "price": "(두께:6.0cm)"
+        },
+        {
+          "category": "수의",
+          "item": "면",
+          "spec": "수의",
+          "price": "면/기계직/원사(중국)"
+        },
+        {
+          "category": "수의",
+          "item": "저마",
+          "spec": "수의",
+          "price": "저마/기계직/원사(중국)"
+        },
+        {
+          "category": "입관용품",
+          "item": "명정",
+          "spec": "명정",
+          "price": "1매"
+        },
+        {
+          "category": "입관용품",
+          "item": "관포(보)",
+          "spec": "관보",
+          "price": "1장"
+        },
+        {
+          "category": "입관용품",
+          "item": "관포(보)",
+          "spec": "결관포",
+          "price": "2필"
+        },
+        {
+          "category": "입관용품",
+          "item": "염포(보)",
+          "spec": "염메/염포",
+          "price": "2필"
+        },
+        {
+          "category": "입관용품",
+          "item": "염포(보)",
+          "spec": "염보",
+          "price": "1장"
+        },
+        {
+          "category": "입관용품",
+          "item": "탈지면",
+          "spec": "탈지면",
+          "price": "5봉"
+        },
+        {
+          "category": "입관용품",
+          "item": "운아/예단",
+          "spec": "운아",
+          "price": "1조"
+        },
+        {
+          "category": "입관용품",
+          "item": "혼백",
+          "spec": "혼백",
+          "price": "1통"
+        },
+        {
+          "category": "입관용품",
+          "item": "보공",
+          "spec": "보공",
+          "price": "2박스"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "공포",
+          "price": "1매"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "꽃신",
+          "price": "1조"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "소취제",
+          "price": "5병"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "예단",
+          "price": "1조"
+        },
+        {
+          "category": "입관용품",
+          "item": "기타",
+          "spec": "한지",
+          "price": "3권"
+        },
+        {
+          "category": "기타용품",
+          "item": "빈소용품",
+          "spec": "부의록",
+          "price": "1권"
+        },
+        {
+          "category": "기타용품",
+          "item": "빈소용품",
+          "spec": "향/초",
+          "price": "2일"
+        },
+        {
+          "category": "기타용품",
+          "item": "차량용품",
+          "spec": "차량띠",
+          "price": "1조"
+        },
+        {
+          "category": "기타용품",
+          "item": "리본/근조기",
+          "spec": "액자리본",
+          "price": "1개"
+        },
+        {
+          "category": "기타용품",
+          "item": "기타",
+          "spec": "축문",
+          "price": "1권"
+        }
+      ]
+    },
+    {
+      "id": 18309514,
+      "name": "고성성심병원장례식장",
+      "prices": [
+        {
+          "category": "시설임대료",
+          "item": "시설임대료",
+          "spec": "1시간당",
+          "price": "15000"
+        },
+        {
+          "category": "안치실이용료",
+          "item": "안치실이용료",
+          "spec": "1일",
+          "price": "50000"
+        },
+        {
+          "category": "식사",
+          "item": "밥",
+          "spec": "1",
+          "price": "1000"
+        },
+        {
+          "category": "식사",
+          "item": "전",
+          "spec": "1kg",
+          "price": "20000"
+        },
+        {
+          "category": "식사",
+          "item": "포기김치",
+          "spec": "1kg",
+          "price": "8750"
+        },
+        {
+          "category": "식사",
+          "item": "국",
+          "spec": "1",
+          "price": "3000"
+        },
+        {
+          "category": "관",
+          "item": "오동나무",
+          "spec": "1",
+          "price": "350000"
+        },
+        {
+          "category": "관",
+          "item": "화장용",
+          "spec": "0.6",
+          "price": "200000"
+        },
+        {
+          "category": "수의",
+          "item": "저마",
+          "spec": "100",
+          "price": "250000"
+        },
+        {
+          "category": "유골함",
+          "item": "오동나무",
+          "spec": "25",
+          "price": "20000"
+        }
+      ]
+    }
+  ],
+  "others": [
+    {
+      "id": 25084082,
+      "name": "광명메모리얼파크",
+      "prices": [
+        {
+          "category": "개인단",
+          "item": "개인단(관내)",
+          "spec": "1회 15년, 2회 연장가능(총45년)",
+          "price": "500000"
+        },
+        {
+          "category": "개인단",
+          "item": "개인단(관외)",
+          "spec": "1회 15년, 2회 연장가능(총45년)",
+          "price": "1500000"
+        },
+        {
+          "category": "부부단",
+          "item": "부부단(관내)",
+          "spec": "1회 15년, 2회 연장가능(총45년)",
+          "price": "750000"
+        },
+        {
+          "category": "부부단",
+          "item": "부부단(관외)",
+          "spec": "1회 15년, 2회 연장가능(총45년)",
+          "price": "2000000"
+        }
+      ]
+    },
+    {
+      "id": 12858334,
+      "name": "예원추모관",
+      "prices": [
+        {
+          "category": "개인단",
+          "item": "일반실(목련)",
+          "spec": "30만원",
+          "price": "1600000"
+        },
+        {
+          "category": "부부단",
+          "item": "일반실(목련)",
+          "spec": "60만원",
+          "price": "3200000"
+        },
+        {
+          "category": "개인단",
+          "item": "국화실, 매화실버실",
+          "spec": "30만원",
+          "price": "2500000"
+        },
+        {
+          "category": "부부단",
+          "item": "국화실, 매화실버실",
+          "spec": "60만원",
+          "price": "5000000"
+        },
+        {
+          "category": "개인단",
+          "item": "특별실",
+          "spec": "30만원",
+          "price": "4500000"
+        },
+        {
+          "category": "부부단",
+          "item": "특별실",
+          "spec": "60만원",
+          "price": "8500000"
+        },
+        {
+          "category": "개인단",
+          "item": "골드실(VIP)",
+          "spec": "36만원",
+          "price": "3000000"
+        },
+        {
+          "category": "부부단",
+          "item": "골드실(VIP)",
+          "spec": "72만원",
+          "price": "6000000"
+        },
+        {
+          "category": "개인단",
+          "item": "일반실 (매화, 난초)",
+          "spec": "30만원",
+          "price": "2000000"
+        },
+        {
+          "category": "부부단",
+          "item": "일반실 (매화, 난초)",
+          "spec": "60만원",
+          "price": "4000000"
+        },
+        {
+          "category": "개인단",
+          "item": "미소실",
+          "spec": "30만원",
+          "price": "3000000"
+        },
+        {
+          "category": "부부단",
+          "item": "미소실",
+          "spec": "관리비:5년60만원",
+          "price": "6000000"
+        }
+      ]
+    },
+    {
+      "id": 1673724468,
+      "name": "유토피아추모관",
+      "prices": [
+        {
+          "category": "개인단",
+          "item": "1단",
+          "spec": "영구사용",
+          "price": "1800000"
+        },
+        {
+          "category": "개인단",
+          "item": "8단",
+          "spec": "영구사용",
+          "price": "2000000"
+        },
+        {
+          "category": "개인단",
+          "item": "저층 브론즈 개인단 2단,7단",
+          "spec": "영구사용",
+          "price": "2500000"
+        },
+        {
+          "category": "개인단",
+          "item": "개인단3단",
+          "spec": "영구사용",
+          "price": "3000000"
+        },
+        {
+          "category": "개인단",
+          "item": "저층 브론즈 개인단 4단,5단,6단",
+          "spec": "영구사용",
+          "price": "3500000"
+        },
+        {
+          "category": "개인단",
+          "item": "지상 브론즈 개인단 1단,8단",
+          "spec": "영구사용",
+          "price": "3500000"
+        },
+        {
+          "category": "개인단",
+          "item": "지상 브론즈 개인단 2단,7단",
+          "spec": "영구사용",
+          "price": "4000000"
+        },
+        {
+          "category": "개인단",
+          "item": "3단",
+          "spec": "영구사용",
+          "price": "4500000"
+        },
+        {
+          "category": "개인단",
+          "item": "지상 브론즈 개인단 4단,6단",
+          "spec": "영구사용",
+          "price": "5500000"
+        },
+        {
+          "category": "개인단",
+          "item": "5단",
+          "spec": "영구사용",
+          "price": "6000000"
+        },
+        {
+          "category": "부부단",
+          "item": "지상 브론즈 부부단 1단, 8단",
+          "spec": "영구사용",
+          "price": "7000000"
+        },
+        {
+          "category": "부부단",
+          "item": "지상 브론즈 부부단 2단, 7단",
+          "spec": "영구사용",
+          "price": "8000000"
+        },
+        {
+          "category": "부부단",
+          "item": "3단",
+          "spec": "영구사용",
+          "price": "9000000"
+        },
+        {
+          "category": "부부단",
+          "item": "지상 브론즈 부부단 4단,6단",
+          "spec": "영구사용",
+          "price": "11000000"
+        },
+        {
+          "category": "부부단",
+          "item": "5단",
+          "spec": "영구사용",
+          "price": "12000000"
+        },
+        {
+          "category": "개인단",
+          "item": "지상브론즈 고급실1,8단",
+          "spec": "영구사용",
+          "price": "4500000"
+        },
+        {
+          "category": "기타",
+          "item": "일반실관리비(1년60,000)",
+          "spec": "5년",
+          "price": "300000"
+        },
+        {
+          "category": "기타",
+          "item": "특별실관리비(1년80,000)",
+          "spec": "5년",
+          "price": "400000"
+        }
+      ]
+    },
+    {
+      "id": 25084116,
+      "name": "의령군납골당",
+      "prices": [
+        {
+          "category": "기타",
+          "item": "사용료",
+          "spec": "시설사용료",
+          "price": "300000"
+        },
+        {
+          "category": "기타",
+          "item": "관리비",
+          "spec": "관리비",
+          "price": "150000"
+        }
+      ]
+    },
+    {
+      "id": 1769175050,
+      "name": "추모공원",
+      "prices": [
+        {
+          "category": "개인단",
+          "item": "관내",
+          "spec": "연장가능",
+          "price": "130000"
+        },
+        {
+          "category": "개인단",
+          "item": "관외",
+          "spec": "연장가능",
+          "price": "260000"
+        },
+        {
+          "category": "개인단",
+          "item": "봉안비용",
+          "spec": "8단",
+          "price": "500000"
+        },
+        {
+          "category": "개인단",
+          "item": "봉안비용",
+          "spec": "7단",
+          "price": "1000000"
+        },
+        {
+          "category": "개인단",
+          "item": "봉안비용",
+          "spec": "6단",
+          "price": "2500000"
+        },
+        {
+          "category": "개인단",
+          "item": "봉안비용",
+          "spec": "5단,4단",
+          "price": "3500000"
+        },
+        {
+          "category": "개인단",
+          "item": "봉안비용",
+          "spec": "3단",
+          "price": "3000000"
+        },
+        {
+          "category": "개인단",
+          "item": "봉안비용",
+          "spec": "2단",
+          "price": "2000000"
+        },
+        {
+          "category": "개인단",
+          "item": "봉안비용",
+          "spec": "1단",
+          "price": "1500000"
+        },
+        {
+          "category": "부부단",
+          "item": "봉안비용",
+          "spec": "2",
+          "price": "1000000"
+        },
+        {
+          "category": "기타",
+          "item": "관리비",
+          "spec": "1년기준",
+          "price": "30000"
+        },
+        {
+          "category": "개인단",
+          "item": "1단",
+          "spec": "개인단/영구사용",
+          "price": "4000000"
+        },
+        {
+          "category": "개인단",
+          "item": "2단",
+          "spec": "개인단/영구사용",
+          "price": "4500000"
+        },
+        {
+          "category": "개인단",
+          "item": "3단",
+          "spec": "개인단/영구사용",
+          "price": "5000000"
+        },
+        {
+          "category": "개인단",
+          "item": "4단",
+          "spec": "개인단/영구사용",
+          "price": "6000000"
+        },
+        {
+          "category": "개인단",
+          "item": "5단",
+          "spec": "개인단/영구사용",
+          "price": "6000000"
+        },
+        {
+          "category": "부부단",
+          "item": "1단",
+          "spec": "부부단/영구사용",
+          "price": "8000000"
+        },
+        {
+          "category": "부부단",
+          "item": "2단",
+          "spec": "부부단/영구사용",
+          "price": "9000000"
+        },
+        {
+          "category": "부부단",
+          "item": "3단",
+          "spec": "부부단/영구사용",
+          "price": "10000000"
+        },
+        {
+          "category": "부부단",
+          "item": "4단",
+          "spec": "부부단/영구사용",
+          "price": "12000000"
+        },
+        {
+          "category": "부부단",
+          "item": "5단",
+          "spec": "부부단/영구사용",
+          "price": "12000000"
+        },
+        {
+          "category": "시신",
+          "item": "이용료",
+          "spec": "일반(대인)-일반(관내)",
+          "price": "58000"
+        },
+        {
+          "category": "시신",
+          "item": "이용료",
+          "spec": "일반(대인)-일반(관외)",
+          "price": "405000"
+        },
+        {
+          "category": "시신",
+          "item": "이용료",
+          "spec": "일반(소인)-일반(관내)",
+          "price": "45000"
+        },
+        {
+          "category": "시신",
+          "item": "이용료",
+          "spec": "일반(소인)-일반(관외)",
+          "price": "202000"
+        },
+        {
+          "category": "태아",
+          "item": "이용료",
+          "spec": "죽은태아-일반(관내)",
+          "price": "26000"
+        },
+        {
+          "category": "태아",
+          "item": "이용료",
+          "spec": "죽은태아-일반(관외)",
+          "price": "135000"
+        },
+        {
+          "category": "시신",
+          "item": "이용료",
+          "spec": "행려(대인)-일반(관내)",
+          "price": "58000"
+        },
+        {
+          "category": "시신",
+          "item": "이용료",
+          "spec": "행려(대인)-일반(관외)",
+          "price": "405000"
+        },
+        {
+          "category": "시신",
+          "item": "이용료",
+          "spec": "무연고-일반(관내)",
+          "price": "58000"
+        },
+        {
+          "category": "시신",
+          "item": "이용료",
+          "spec": "무연고-일반(관외)",
+          "price": "405000"
+        },
+        {
+          "category": "개장유골",
+          "item": "이용료",
+          "spec": "개장유골-일반(관내)",
+          "price": "32000"
+        },
+        {
+          "category": "개장유골",
+          "item": "이용료",
+          "spec": "개장유골-일반(관외)",
+          "price": "202000"
+        },
+        {
+          "category": "기타",
+          "item": "관리비",
+          "spec": "1년당",
+          "price": "30000"
+        }
+      ]
+    },
+    {
+      "id": 1797415384,
+      "name": "이담추모관",
+      "prices": [
+        {
+          "category": "개인단",
+          "item": "개인단",
+          "spec": "1단~9단(사용료:330만원,관리비:5년 25만원)",
+          "price": "3550000"
+        },
+        {
+          "category": "부부단",
+          "item": "부부단",
+          "spec": "1단~9단(사용료:660만원,관리비:5년 25만원)",
+          "price": "6250000"
+        }
+      ]
+    },
+    {
+      "id": 886284015,
+      "name": "납골당",
+      "prices": [
+        {
+          "category": "개인단",
+          "item": "1단",
+          "spec": "개인단, 관리비 32,000원/년",
+          "price": "2000000"
+        },
+        {
+          "category": "개인단",
+          "item": "2단",
+          "spec": "개인단, 관리비 32,000원/년",
+          "price": "3000000"
+        },
+        {
+          "category": "개인단",
+          "item": "3단",
+          "spec": "개인단, 관리비 32,000원/년",
+          "price": "3500000"
+        },
+        {
+          "category": "개인단",
+          "item": "4단",
+          "spec": "개인단, 관리비 32,000원/년",
+          "price": "5000000"
+        },
+        {
+          "category": "개인단",
+          "item": "5단",
+          "spec": "개인단, 관리비 32,000원/년",
+          "price": "5000000"
+        },
+        {
+          "category": "개인단",
+          "item": "6단",
+          "spec": "개인단, 관리비 32,000원/년",
+          "price": "5000000"
+        },
+        {
+          "category": "개인단",
+          "item": "7단",
+          "spec": "개인단, 관리비 32,000원/년",
+          "price": "3500000"
+        },
+        {
+          "category": "부부단",
+          "item": "1단",
+          "spec": "부부단, 관리비 64,000원/년",
+          "price": "4000000"
+        },
+        {
+          "category": "부부단",
+          "item": "2단",
+          "spec": "부부단, 관리비 64,000원/년",
+          "price": "6000000"
+        },
+        {
+          "category": "부부단",
+          "item": "3단",
+          "spec": "부부단, 관리비 64,000원/년",
+          "price": "7000000"
+        },
+        {
+          "category": "부부단",
+          "item": "4단",
+          "spec": "부부단, 관리비 64,000원/년",
+          "price": "10000000"
+        },
+        {
+          "category": "부부단",
+          "item": "5단",
+          "spec": "부부단, 관리비 64,000원/년",
+          "price": "10000000"
+        },
+        {
+          "category": "부부단",
+          "item": "6단",
+          "spec": "부부단, 관리비 64,000원/년",
+          "price": "10000000"
+        },
+        {
+          "category": "부부단",
+          "item": "7단",
+          "spec": "부부단, 관리비 64,000원/년",
+          "price": "7000000"
+        },
+        {
+          "category": "개인단",
+          "item": "8단",
+          "spec": "개인단, 관리비 32,000원/년",
+          "price": "2500000"
+        },
+        {
+          "category": "부부단",
+          "item": "8단",
+          "spec": "부부단, 관리비 64,000원/년",
+          "price": "5000000"
+        },
+        {
+          "category": "개인단",
+          "item": "1단",
+          "spec": "개인단, 관리비 32,000원/년",
+          "price": "1200000"
+        },
+        {
+          "category": "개인단",
+          "item": "2단",
+          "spec": "개인단, 관리비 32,000원/년",
+          "price": "1800000"
+        },
+        {
+          "category": "개인단",
+          "item": "3단",
+          "spec": "개인단, 관리비 32,000원/년",
+          "price": "2100000"
+        },
+        {
+          "category": "개인단",
+          "item": "4단",
+          "spec": "개인단, 관리비 32,000원/년",
+          "price": "3000000"
+        },
+        {
+          "category": "개인단",
+          "item": "5단",
+          "spec": "개인단, 관리비 32,000원/년",
+          "price": "3000000"
+        },
+        {
+          "category": "개인단",
+          "item": "6단",
+          "spec": "개인단, 관리비 32,000원/년",
+          "price": "3000000"
+        },
+        {
+          "category": "개인단",
+          "item": "7단",
+          "spec": "개인단, 관리비 32,000원/년",
+          "price": "2100000"
+        },
+        {
+          "category": "개인단",
+          "item": "1단",
+          "spec": "개인단, 관리비 32,000원/년",
+          "price": "1600000"
+        },
+        {
+          "category": "개인단",
+          "item": "2단",
+          "spec": "개인단, 관리비 32,000원/년",
+          "price": "2400000"
+        },
+        {
+          "category": "개인단",
+          "item": "3단",
+          "spec": "개인단, 관리비 32,000원/년",
+          "price": "2800000"
+        },
+        {
+          "category": "개인단",
+          "item": "4단",
+          "spec": "개인단, 관리비 32,000원/년",
+          "price": "4000000"
+        },
+        {
+          "category": "개인단",
+          "item": "5단",
+          "spec": "개인단, 관리비 32,000원/년",
+          "price": "4000000"
+        },
+        {
+          "category": "개인단",
+          "item": "6단",
+          "spec": "개인단, 관리비 32,000원/년",
+          "price": "4000000"
+        },
+        {
+          "category": "개인단",
+          "item": "7단",
+          "spec": "개인단, 관리비 32,000원/년",
+          "price": "2800000"
+        },
+        {
+          "category": "부부단",
+          "item": "1단",
+          "spec": "부부단, 관리비 64,000원/년",
+          "price": "3200000"
+        },
+        {
+          "category": "부부단",
+          "item": "2단",
+          "spec": "부부단, 관리비 64,000원/년",
+          "price": "4800000"
+        },
+        {
+          "category": "부부단",
+          "item": "3단",
+          "spec": "부부단, 관리비 64,000원/년",
+          "price": "5600000"
+        },
+        {
+          "category": "부부단",
+          "item": "4단",
+          "spec": "부부단, 관리비 64,000원/년",
+          "price": "8000000"
+        },
+        {
+          "category": "부부단",
+          "item": "5단",
+          "spec": "부부단, 관리비 64,000원/년",
+          "price": "8000000"
+        },
+        {
+          "category": "부부단",
+          "item": "6단",
+          "spec": "부부단, 관리비 64,000원/년",
+          "price": "8000000"
+        },
+        {
+          "category": "부부단",
+          "item": "7단",
+          "spec": "부부단, 관리비 64,000원/년",
+          "price": "5600000"
+        }
+      ]
+    },
+    {
+      "id": 25975701,
+      "name": "연화추모공원",
+      "prices": [
+        {
+          "category": "개인단",
+          "item": "정토실(개인단)",
+          "spec": "30만원",
+          "price": "2300000"
+        },
+        {
+          "category": "부부단",
+          "item": "정토실(부부단)",
+          "spec": "60만원",
+          "price": "4600000"
+        },
+        {
+          "category": "개인단",
+          "item": "극락실(개인단)",
+          "spec": "30만원",
+          "price": "3300000"
+        },
+        {
+          "category": "부부단",
+          "item": "극락실(부부단)",
+          "spec": "60만원",
+          "price": "6600000"
+        },
+        {
+          "category": "개인단",
+          "item": "VIP실(개인단)",
+          "spec": "30만원",
+          "price": "4300000"
+        },
+        {
+          "category": "부부단",
+          "item": "VIP실(부부단)",
+          "spec": "60만원",
+          "price": "8600000"
+        }
+      ]
+    },
+    {
+      "id": 9997495,
+      "name": "팔공산도림사추모공원",
+      "prices": [
+        {
+          "category": "개인단",
+          "item": "B1층",
+          "spec": "1단",
+          "price": "1500000"
+        },
+        {
+          "category": "개인단",
+          "item": "B1층",
+          "spec": "2단",
+          "price": "2000000"
+        },
+        {
+          "category": "개인단",
+          "item": "B1층",
+          "spec": "3단",
+          "price": "2500000"
+        },
+        {
+          "category": "개인단",
+          "item": "B1층",
+          "spec": "4단",
+          "price": "3500000"
+        },
+        {
+          "category": "개인단",
+          "item": "B1층",
+          "spec": "5단",
+          "price": "3500000"
+        },
+        {
+          "category": "개인단",
+          "item": "B1층",
+          "spec": "6단",
+          "price": "2500000"
+        },
+        {
+          "category": "개인단",
+          "item": "B1층",
+          "spec": "7단",
+          "price": "2000000"
+        },
+        {
+          "category": "개인단",
+          "item": "B1층",
+          "spec": "8단",
+          "price": "1500000"
+        },
+        {
+          "category": "개인단",
+          "item": "1층",
+          "spec": "1단",
+          "price": "2000000"
+        },
+        {
+          "category": "개인단",
+          "item": "1층",
+          "spec": "2단",
+          "price": "3000000"
+        },
+        {
+          "category": "개인단",
+          "item": "1층",
+          "spec": "3단",
+          "price": "4000000"
+        },
+        {
+          "category": "개인단",
+          "item": "1층",
+          "spec": "4단",
+          "price": "5000000"
+        },
+        {
+          "category": "개인단",
+          "item": "1층",
+          "spec": "5단",
+          "price": "5000000"
+        },
+        {
+          "category": "개인단",
+          "item": "1층",
+          "spec": "6단",
+          "price": "4000000"
+        },
+        {
+          "category": "개인단",
+          "item": "1층",
+          "spec": "7단",
+          "price": "3000000"
+        },
+        {
+          "category": "개인단",
+          "item": "1층",
+          "spec": "8단",
+          "price": "2000000"
+        },
+        {
+          "category": "개인단",
+          "item": "2층",
+          "spec": "1단",
+          "price": "2500000"
+        },
+        {
+          "category": "개인단",
+          "item": "2층",
+          "spec": "2단",
+          "price": "3500000"
+        },
+        {
+          "category": "개인단",
+          "item": "2층",
+          "spec": "3단",
+          "price": "4500000"
+        },
+        {
+          "category": "개인단",
+          "item": "2층",
+          "spec": "4단",
+          "price": "5500000"
+        },
+        {
+          "category": "개인단",
+          "item": "2층",
+          "spec": "5단",
+          "price": "5500000"
+        },
+        {
+          "category": "개인단",
+          "item": "2층",
+          "spec": "6단",
+          "price": "4500000"
+        },
+        {
+          "category": "개인단",
+          "item": "2층",
+          "spec": "7단",
+          "price": "3500000"
+        },
+        {
+          "category": "개인단",
+          "item": "3층",
+          "spec": "1단",
+          "price": "3000000"
+        },
+        {
+          "category": "개인단",
+          "item": "3층",
+          "spec": "2단",
+          "price": "4000000"
+        },
+        {
+          "category": "개인단",
+          "item": "3층",
+          "spec": "3단",
+          "price": "5000000"
+        },
+        {
+          "category": "개인단",
+          "item": "3층",
+          "spec": "4단",
+          "price": "6000000"
+        },
+        {
+          "category": "개인단",
+          "item": "3층",
+          "spec": "5단",
+          "price": "6000000"
+        },
+        {
+          "category": "개인단",
+          "item": "3층",
+          "spec": "6단",
+          "price": "5000000"
+        },
+        {
+          "category": "개인단",
+          "item": "3층",
+          "spec": "7단",
+          "price": "4000000"
+        },
+        {
+          "category": "개인단",
+          "item": "특별실",
+          "spec": "1단",
+          "price": "5500000"
+        },
+        {
+          "category": "개인단",
+          "item": "특별실",
+          "spec": "2단",
+          "price": "7000000"
+        },
+        {
+          "category": "개인단",
+          "item": "특별실",
+          "spec": "3단",
+          "price": "8500000"
+        },
+        {
+          "category": "개인단",
+          "item": "특별실",
+          "spec": "4단",
+          "price": "11000000"
+        },
+        {
+          "category": "개인단",
+          "item": "특별실",
+          "spec": "5단",
+          "price": "11000000"
+        },
+        {
+          "category": "개인단",
+          "item": "특별실",
+          "spec": "6단",
+          "price": "8500000"
+        },
+        {
+          "category": "개인단",
+          "item": "특별실",
+          "spec": "7단",
+          "price": "7000000"
+        },
+        {
+          "category": "부부단",
+          "item": "B1층",
+          "spec": "1단",
+          "price": "2900000"
+        },
+        {
+          "category": "부부단",
+          "item": "B1층",
+          "spec": "2단",
+          "price": "3800000"
+        },
+        {
+          "category": "부부단",
+          "item": "B1층",
+          "spec": "3단",
+          "price": "4800000"
+        },
+        {
+          "category": "부부단",
+          "item": "B1층",
+          "spec": "4단",
+          "price": "6700000"
+        },
+        {
+          "category": "부부단",
+          "item": "B1층",
+          "spec": "5단",
+          "price": "6700000"
+        },
+        {
+          "category": "부부단",
+          "item": "B1층",
+          "spec": "6단",
+          "price": "4800000"
+        },
+        {
+          "category": "부부단",
+          "item": "B1층",
+          "spec": "7단",
+          "price": "3800000"
+        },
+        {
+          "category": "부부단",
+          "item": "B1층",
+          "spec": "8단",
+          "price": "2900000"
+        },
+        {
+          "category": "부부단",
+          "item": "1층",
+          "spec": "1단",
+          "price": "3800000"
+        },
+        {
+          "category": "부부단",
+          "item": "1층",
+          "spec": "2단",
+          "price": "5700000"
+        },
+        {
+          "category": "부부단",
+          "item": "1층",
+          "spec": "3단",
+          "price": "7600000"
+        },
+        {
+          "category": "부부단",
+          "item": "1층",
+          "spec": "4단",
+          "price": "9500000"
+        },
+        {
+          "category": "부부단",
+          "item": "1층",
+          "spec": "5단",
+          "price": "9500000"
+        },
+        {
+          "category": "부부단",
+          "item": "1층",
+          "spec": "6단",
+          "price": "7600000"
+        },
+        {
+          "category": "부부단",
+          "item": "1층",
+          "spec": "7단",
+          "price": "5700000"
+        },
+        {
+          "category": "부부단",
+          "item": "1층",
+          "spec": "8단",
+          "price": "3800000"
+        },
+        {
+          "category": "부부단",
+          "item": "2층",
+          "spec": "1단",
+          "price": "4800000"
+        },
+        {
+          "category": "부부단",
+          "item": "2층",
+          "spec": "2단",
+          "price": "6700000"
+        },
+        {
+          "category": "부부단",
+          "item": "2층",
+          "spec": "3단",
+          "price": "8600000"
+        },
+        {
+          "category": "부부단",
+          "item": "2층",
+          "spec": "4단",
+          "price": "1050000"
+        },
+        {
+          "category": "부부단",
+          "item": "2층",
+          "spec": "5단",
+          "price": "1050000"
+        },
+        {
+          "category": "부부단",
+          "item": "2층",
+          "spec": "6단",
+          "price": "8600000"
+        },
+        {
+          "category": "부부단",
+          "item": "2층",
+          "spec": "7단",
+          "price": "6700000"
+        },
+        {
+          "category": "부부단",
+          "item": "3층",
+          "spec": "1단",
+          "price": "5700000"
+        },
+        {
+          "category": "부부단",
+          "item": "3층",
+          "spec": "2단",
+          "price": "7600000"
+        },
+        {
+          "category": "부부단",
+          "item": "3층",
+          "spec": "3단",
+          "price": "9500000"
+        },
+        {
+          "category": "부부단",
+          "item": "3층",
+          "spec": "4단",
+          "price": "11500000"
+        },
+        {
+          "category": "부부단",
+          "item": "3층",
+          "spec": "5단",
+          "price": "11500000"
+        },
+        {
+          "category": "부부단",
+          "item": "3층",
+          "spec": "6단",
+          "price": "9500000"
+        },
+        {
+          "category": "부부단",
+          "item": "3층",
+          "spec": "7단",
+          "price": "7600000"
+        },
+        {
+          "category": "부부단",
+          "item": "특별실",
+          "spec": "1단",
+          "price": "11000000"
+        },
+        {
+          "category": "부부단",
+          "item": "특별실",
+          "spec": "2단",
+          "price": "13000000"
+        },
+        {
+          "category": "부부단",
+          "item": "특별실",
+          "spec": "3단",
+          "price": "17000000"
+        },
+        {
+          "category": "부부단",
+          "item": "특별실",
+          "spec": "4단",
+          "price": "22000000"
+        },
+        {
+          "category": "부부단",
+          "item": "특별실",
+          "spec": "5단",
+          "price": "22000000"
+        },
+        {
+          "category": "부부단",
+          "item": "특별실",
+          "spec": "6단",
+          "price": "17000000"
+        },
+        {
+          "category": "부부단",
+          "item": "특별실",
+          "spec": "7단",
+          "price": "13000000"
+        }
+      ]
+    },
+    {
+      "id": 15873170,
+      "name": "크리스찬메모리얼파크",
+      "prices": [
+        {
+          "category": "개인단",
+          "item": "실내",
+          "spec": "200만원~부터",
+          "price": "2000000"
+        },
+        {
+          "category": "개인단",
+          "item": "실외",
+          "spec": "150만원~부터",
+          "price": "1500000"
+        },
+        {
+          "category": "부부단",
+          "item": "실내",
+          "spec": "300만원~부터",
+          "price": "3000000"
+        }
+      ]
+    }
+  ]
+}

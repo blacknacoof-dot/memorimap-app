@@ -1,0 +1,192 @@
+[
+  {
+    "id": "pet_fc_1",
+    "name": "포포즈",
+    "rank": 1,
+    "homepage": "https://fourpaws.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/pet_logos/pet_fc_1.png",
+    "description": "반려동물을 위한 품격 있는 이별",
+    "rating": "5.0",
+    "reviewCount": 290,
+    "features": [
+      "장례식장 직영",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "반려동물 장례 용품 할인"
+    ]
+  },
+  {
+    "id": "pet_fc_2",
+    "name": "21그램",
+    "rank": 2,
+    "homepage": "https://21gram.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/pet_logos/pet_fc_2.png",
+    "description": "반려동물을 위한 품격 있는 이별",
+    "rating": "4.9",
+    "reviewCount": 280,
+    "features": [
+      "장례식장 직영",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "반려동물 장례 용품 할인"
+    ]
+  },
+  {
+    "id": "pet_fc_3",
+    "name": "펫포레스트",
+    "rank": 3,
+    "homepage": "https://www.petforest.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/pet_logos/pet_fc_3.png",
+    "description": "반려동물을 위한 품격 있는 이별",
+    "rating": "4.8",
+    "reviewCount": 270,
+    "features": [
+      "장례식장 직영",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "반려동물 장례 용품 할인"
+    ]
+  },
+  {
+    "id": "pet_fc_4",
+    "name": "스카이펫",
+    "rank": 4,
+    "homepage": "https://skypet.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/pet_logos/pet_fc_4.png",
+    "description": "반려동물을 위한 품격 있는 이별",
+    "rating": "4.8",
+    "reviewCount": 260,
+    "features": [
+      "장례식장 직영",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "반려동물 장례 용품 할인"
+    ]
+  },
+  {
+    "id": "pet_fc_5",
+    "name": "굿바이엔젤",
+    "rank": 5,
+    "homepage": "https://goodbyeangel.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/pet_logos/pet_fc_5.png",
+    "description": "반려동물을 위한 품격 있는 이별",
+    "rating": "4.8",
+    "reviewCount": 250,
+    "features": [
+      "장례식장 직영",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "반려동물 장례 용품 할인"
+    ]
+  },
+  {
+    "id": "pet_fc_6",
+    "name": "펫바라기",
+    "rank": 6,
+    "homepage": "http://petbaragi.com",
+    "phone": "1588-0000",
+    "imageUrl": "/images/pet_logos/pet_fc_6.png",
+    "description": "반려동물을 위한 품격 있는 이별",
+    "rating": "4.7",
+    "reviewCount": 240,
+    "features": [
+      "장례식장 직영",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "반려동물 장례 용품 할인"
+    ]
+  },
+  {
+    "id": "pet_fc_7",
+    "name": "모두펫상조",
+    "rank": 7,
+    "homepage": "http://modupet.com",
+    "phone": "1588-0000",
+    "imageUrl": "/images/pet_logos/pet_fc_7.png",
+    "description": "반려동물을 위한 품격 있는 이별",
+    "rating": "4.7",
+    "reviewCount": 230,
+    "features": [
+      "장례식장 직영",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "반려동물 장례 용품 할인"
+    ]
+  },
+  {
+    "id": "pet_fc_8",
+    "name": "펫문",
+    "rank": 8,
+    "homepage": "http://petmun.com",
+    "phone": "1588-0000",
+    "imageUrl": "/images/pet_logos/pet_fc_8.png",
+    "description": "반려동물을 위한 품격 있는 이별",
+    "rating": "4.6",
+    "reviewCount": 220,
+    "features": [
+      "장례식장 직영",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "반려동물 장례 용품 할인"
+    ]
+  },
+  {
+    "id": "pet_fc_9",
+    "name": "파트라슈",
+    "rank": 9,
+    "homepage": "https://partrasue.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/pet_logos/pet_fc_9.png",
+    "description": "반려동물을 위한 품격 있는 이별",
+    "rating": "4.5",
+    "reviewCount": 210,
+    "features": [
+      "장례식장 직영",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "반려동물 장례 용품 할인"
+    ]
+  },
+  {
+    "id": "pet_fc_10",
+    "name": "해피엔딩",
+    "rank": 10,
+    "homepage": "https://happyending.co.kr",
+    "phone": "1588-0000",
+    "imageUrl": "/images/pet_logos/pet_fc_10.png",
+    "description": "반려동물을 위한 품격 있는 이별",
+    "rating": "4.5",
+    "reviewCount": 200,
+    "features": [
+      "장례식장 직영",
+      "24시간 상담"
+    ],
+    "priceRange": "문의",
+    "benefits": [
+      "반려동물 장례 용품 할인"
+    ]
+  }
+]

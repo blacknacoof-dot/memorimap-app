@@ -1,0 +1,14 @@
+{
+  "success": true,
+  "count": 16,
+  "error": null,
+  "sample": {
+    "id": "3ceed1cd-65f8-4fa5-a727-9744d1f1c2c4",
+    "user_id": "4265652b-e903-492c-898c-3b558f18a276",
+    "facility_id": "fc6",
+    "rating": 5,
+    "content": "Manual Test Review - Seeing if this appears",
+    "images": null,
+    "created_at": "2026-01-28T01:29:49.625535+00:00"
+  }
+}
