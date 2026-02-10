@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabaseClient';
 
 export interface AdminFacility {
@@ -62,10 +63,10 @@ export function useAllFacilities() {
             setFacilities(prev => prev.map(f =>
                 f.id === facilityId ? { ...f, user_id: userId || undefined } : f
             ));
-            alert('관리자가 변경되었습니다.');
+            toast.success('관리자가 변경되었습니다.');
         } catch (error: any) {
             console.error('Update manager failed:', error);
-            alert('업데이트 실패: ' + error.message);
+            toast.error('업데이트 실패: ' + error.message);
         }
     }, []);
 

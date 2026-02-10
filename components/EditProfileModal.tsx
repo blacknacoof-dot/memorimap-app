@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, User, Phone, Save, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { updateUserProfile } from '../lib/queries';
 
 interface Props {
@@ -48,10 +49,10 @@ export const EditProfileModal: React.FC<Props> = ({ user, onClose, onUpdate }) =
             });
             onUpdate(); // Refresh parent data
             onClose(); // Close modal
-            alert('프로필이 성공적으로 수정되었습니다.');
+            toast.success('프로필이 성공적으로 수정되었습니다.');
         } catch (error) {
             console.error('Failed to update profile:', error);
-            alert('프로필 수정 중 오류가 발생했습니다.');
+            toast.error('프로필 수정 중 오류가 발생했습니다.');
         } finally {
             setIsSubmitting(false);
         }

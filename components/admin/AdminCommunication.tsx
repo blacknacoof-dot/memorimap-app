@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { createNotice, getNotices, getInquiries, Inquiry } from '../../lib/queries';
 import { Loader2, Send, MessageSquare, Megaphone, CheckCircle } from 'lucide-react';
 
@@ -31,7 +32,7 @@ export const AdminCommunication: React.FC = () => {
     const handleNoticeSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         await createNotice(noticeTitle, noticeContent);
-        alert('공지사항이 등록되었습니다.');
+        toast.success('공지사항이 등록되었습니다.');
         setNoticeTitle('');
         setNoticeContent('');
         loadData();

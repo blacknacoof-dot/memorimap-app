@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { getConsultationsByFacility, updateConsultationStatus, Consultation } from '@/lib/queries';
 import { Clock, CheckCircle, XCircle, Check, Phone, MapPin, Users, Calendar, ChevronDown, RefreshCw } from 'lucide-react';
 import { aiConsultationService } from '@/lib/api/aiConsultation';
@@ -112,7 +113,7 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
 
         } catch (error) {
             console.error('Status Update Failed:', error);
-            alert('상태 변경에 실패했습니다. (권한이 없거나 이미 처리됨)');
+            toast.error('상태 변경에 실패했습니다. (권한이 없거나 이미 처리됨)');
         }
     };
 
@@ -137,10 +138,10 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
                 prev.map(c => c.id === selectedConsultation.id ? { ...c, status: 'accepted' } : c)
             );
 
-            alert('예약이 확정되었습니다.');
+            toast.success('예약이 확정되었습니다.');
         } catch (error) {
             console.error('Confirm Failed:', error);
-            alert('확인 처리에 실패했습니다.');
+            toast.error('확인 처리에 실패했습니다.');
         }
     };
 

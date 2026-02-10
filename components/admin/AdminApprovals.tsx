@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { getPendingFacilities, approveFacility, rejectFacility } from '../../lib/queries';
 import { Loader2, Check, X, FileText, Building2 } from 'lucide-react';
 import { useConfirmModal } from '../../src/components/common/ConfirmModal';
@@ -27,7 +28,7 @@ export const AdminApprovals: React.FC = () => {
             message: `${name} 업체의 입점을 승인하시겠습니까?`,
             onConfirm: async () => {
                 await approveFacility(id);
-                alert('승인되었습니다.');
+                toast.success('승인되었습니다.');
                 loadData();
             }
         });
@@ -39,7 +40,7 @@ export const AdminApprovals: React.FC = () => {
             message: `${name} 업체의 입점을 거절(삭제)하시겠습니까?`,
             onConfirm: async () => {
                 await rejectFacility(id);
-                alert('거절되었습니다.');
+                toast.success('거절되었습니다.');
                 loadData();
             }
         });

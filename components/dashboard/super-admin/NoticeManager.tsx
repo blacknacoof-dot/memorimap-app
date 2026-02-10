@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import { useNotices } from '../../../hooks/useNotices';
 import { Notice } from '../../../types/db';
 import { Megaphone, Plus, Trash2, Tag, User } from 'lucide-react';
@@ -23,7 +24,7 @@ export const NoticeManager: React.FC = () => {
                 target_audience: target,
                 is_published: isPublished,
             });
-            alert('공지사항이 등록되었습니다.');
+            toast.success('공지사항이 등록되었습니다.');
             setIsCreating(false);
             setNewTitle('');
             setNewContent('');
@@ -31,7 +32,7 @@ export const NoticeManager: React.FC = () => {
             window.location.reload();
         } catch (e) {
             console.error(e);
-            alert('공지 등록 실패');
+            toast.error('공지 등록 실패');
         }
     };
 
@@ -42,7 +43,7 @@ export const NoticeManager: React.FC = () => {
                 window.location.reload();
             } catch (e) {
                 console.error(e);
-                alert('삭제 실패');
+                toast.error('삭제 실패');
             }
         }
     };

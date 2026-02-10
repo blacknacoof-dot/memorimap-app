@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import { useSearchParams } from 'react-router-dom';
 import { openInExternalBrowser, getBrowserInfo } from '../utils/browserDetection';
 
@@ -56,7 +57,7 @@ export const ExternalBrowserGuidePage: React.FC = () => {
     const handleCopyUrl = async () => {
         try {
             await navigator.clipboard.writeText(redirectUrl);
-            alert('✅ 링크가 복사되었습니다!\n\nSafari나 Chrome을 열고 주소창에 붙여넣기(Ctrl+V) 하세요.');
+            toast.success('✅ 링크가 복사되었습니다! Safari나 Chrome을 열고 주소창에 붙여넣기하세요.');
         } catch (error) {
             // Clipboard API 실패 시 폴백
             const textarea = document.createElement('textarea');
@@ -65,7 +66,7 @@ export const ExternalBrowserGuidePage: React.FC = () => {
             textarea.select();
             document.execCommand('copy');
             document.body.removeChild(textarea);
-            alert('✅ 링크가 복사되었습니다!');
+            toast.success('✅ 링크가 복사되었습니다!');
         }
     };
 

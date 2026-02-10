@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { X, Clock, MessageSquare, CheckCircle } from 'lucide-react';
 
 interface Props {
@@ -18,7 +19,7 @@ export const ConsultationActionModal: React.FC<Props> = ({ isOpen, consultationN
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!expectedTime) {
-            alert('예상 소요 시간(또는 도착 예정 시간)을 입력해주세요.');
+            toast.warning('예상 소요 시간(또는 도착 예정 시간)을 입력해주세요.');
             return;
         }
 
@@ -28,7 +29,7 @@ export const ConsultationActionModal: React.FC<Props> = ({ isOpen, consultationN
             onClose();
         } catch (error) {
             console.error('Confirmation failed:', error);
-            alert('처리에 실패했습니다.');
+            toast.error('처리에 실패했습니다.');
         } finally {
             setIsLoading(false);
         }
