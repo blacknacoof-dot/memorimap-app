@@ -1,0 +1,6 @@
+tree 63c6ce231887e046e543700d98ceb30f0d71e859
+parent ea8b9e9553d83ab8ed88aef69aa7dc023923c7e3
+author AI Assistant <ai@assistant.com> 1767754044 +0900
+committer AI Assistant <ai@assistant.com> 1767754044 +0900
+
+feat: optimize facility list performance with react-virtuoso

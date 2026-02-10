@@ -1,0 +1,17 @@
+cc7651a4c13bc01903aee4ed19efbe0f374c1654 commit	refs/heads/backup-ai-restore-point
+711ede2a3bcfacf22e833468037015645945ae6b commit	refs/heads/backup/before-phase3
+83eab2ed453340e66ca800e6b989e7fbf365a1ac commit	refs/heads/feat/zustand-migration
+b06c85d9b649102b270af648674703870c4c0420 commit	refs/heads/feature/error-handling-safe
+3244c29956b3855ef1d54d722b9284357ee84113 commit	refs/heads/main
+fbdd97d9693c7bb2f9e9d806f27927c153f9e49a commit	refs/remotes/origin/feat/zustand-migration
+711ede2a3bcfacf22e833468037015645945ae6b commit	refs/remotes/origin/main
+d136d8c6baf78cb0a5c4ecce54677dda7db9a054 commit	refs/stash
+3afd9b8d660d82050097ab69575b2de89997b6eb commit	refs/tags/26.1.7월-3차-백업
+d2dde77efa20412304eeee507041641a201f1d5d commit	refs/tags/backup-1
+322672f689849e46db97eb3d28fdf708c3b3c4e1 commit	refs/tags/backup-2026-01-06
+aaf7660a0d209a50794a80c691b1443a62443062 commit	refs/tags/backup-2026-01-12-week2
+b291f0362b34a8db66f1ff3e4e6405e738f4d1b1 commit	refs/tags/backup-before-rollback-temp
+cc7651a4c13bc01903aee4ed19efbe0f374c1654 commit	refs/tags/backup-v1.8.0-RC1-complete
+efd54e20da8b0a23a543f0f0b195f5f4c6ea44e4 tag	refs/tags/genius-checkpoint
+41ed5c8afd38187c6e2dec6936c9064639279d0c commit	refs/tags/release-ready-2026-02-02
+83eab2ed453340e66ca800e6b989e7fbf365a1ac commit	refs/tags/release-v1.8.0-RC1

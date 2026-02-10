@@ -1,3 +1,0 @@
-[submodule "tools/bkit"]
-	path = tools/bkit
-	url = https://github.com/popup-studio-ai/bkit-claude-code.git
