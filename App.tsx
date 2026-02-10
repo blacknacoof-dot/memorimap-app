@@ -144,16 +144,6 @@ const App: React.FC = () => {
     removeFromSangjoCompare
   } = useComparison(showToast);
 
-  // Reservations State - useReservations hook 사용
-  const {
-    reservations,
-    setReservations,
-    handleBookingConfirm,
-    handleUpdateReservation,
-    isBooking,
-    setIsBooking
-  } = useReservations(isSignedIn, user, showToast, setShowLoginModal, setSelectedFacility, setViewState);
-
   // Facility Admin Context
   const [adminFacilityId, setAdminFacilityId] = useState<string | null>(null);
   const [adminSangjoId, setAdminSangjoId] = useState<string | null>(null);
@@ -174,6 +164,15 @@ const App: React.FC = () => {
   const [initialChatIntent, setInitialChatIntent] = useState<'funeral_home' | 'memorial_facility' | 'pet_funeral' | 'general' | null>(null);
   const [handoverContext, setHandoverContext] = useState<any>(null);
 
+  // Reservations State - useReservations hook 사용
+  const {
+    reservations,
+    setReservations,
+    handleBookingConfirm,
+    handleUpdateReservation,
+    isBooking,
+    setIsBooking
+  } = useReservations(isSignedIn || false, user, showToast, setShowLoginModal, setSelectedFacility, setViewState);
 
   // ------------------------------------------
 

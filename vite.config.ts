@@ -15,6 +15,23 @@ export default defineConfig({
     host: '0.0.0.0',
     strictPort: true,
     allowedHosts: true,
+    watch: {
+      // 대용량 폴더를 감시에서 제외하여 CPU 사용량 감소
+      ignored: [
+        '**/backups/**',
+        '**/scripts/**',
+        '**/data/**',
+        '**/node_modules/**',
+        '**/tools/**',
+        '**/.git/**',
+        '**/dist/**',
+        '**/.venv/**',
+        '**/supabase/**',
+        '**/cypress/**',
+        '**/playwright-report/**',
+        '**/test-results/**'
+      ],
+    },
   },
   base: '/',
   resolve: {
