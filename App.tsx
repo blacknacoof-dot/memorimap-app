@@ -346,17 +346,28 @@ const App: React.FC = () => {
           const mappedFacilities = data.map((item: any) => {
             // 🔄 Category/Type Normalization (Use item.type as primary)
             const resolvedCategory = item.type || item.category || 'charnel';
-
-            let type: any = 'charnel';
             const name = item.name || '';
 
-            if (resolvedCategory === 'funeral_home' || resolvedCategory === 'funeral' || resolvedCategory === 'funeral_home') type = 'funeral';
+            let type: any = 'charnel';
+
+            // [FIX] Sangjo Detection Logic (Name-based + Type-based)
+            const isSangjo =
+              resolvedCategory === 'sangjo' ||
+              name.includes('프리드라이프') ||
+              name.includes('대명스테이션') ||
+              name.includes('보람상조') ||
+              name.includes('교원라이프') ||
+              name.includes('상조') ||
+              name.includes('라이프');
+
+            if (isSangjo) {
+              type = 'sangjo';
+            } else if (resolvedCategory === 'funeral_home' || resolvedCategory === 'funeral' || resolvedCategory === 'funeral_home') type = 'funeral';
             else if (resolvedCategory === 'charnel_house' || resolvedCategory === 'charnel' || resolvedCategory === 'memorial' || resolvedCategory === 'columbarium') type = 'charnel';
             else if (resolvedCategory === 'natural_burial' || resolvedCategory === 'natural' || resolvedCategory === 'tree_burial') type = 'natural';
             else if (resolvedCategory === 'park_cemetery' || resolvedCategory === 'park' || resolvedCategory === 'complex' || resolvedCategory === 'cemetery') type = 'park';
             else if (resolvedCategory === 'pet_funeral' || resolvedCategory === 'pet' || resolvedCategory === 'pet_memorial') type = 'pet';
             else if (resolvedCategory === 'sea_burial' || resolvedCategory === 'sea') type = 'sea';
-            else if (resolvedCategory === 'sangjo') type = 'sangjo'; // [FIX] Add Sangjo Type Check
 
             const categoryMap: Record<string, any> = {
               'funeral': 'funeral_home',
@@ -476,6 +487,12 @@ const App: React.FC = () => {
                   '/images/defaults/cemetery/cemetery_10.png',
                   '/images/defaults/cemetery/cemetery_11.png'
                 ],
+                // [FIX] Add Default Images for Sangjo
+                'sangjo': [
+                  'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/funeral.jpg',
+                  'https://images.unsplash.com/photo-1595852504369-0268ec35c678?q=80&w=800',
+                  'https://images.unsplash.com/photo-1518655007328-97c7689d0b61?q=80&w=800'
+                ],
                 'pet': [
                   'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/pet.jpg',
                   'https://images.unsplash.com/photo-1544568100-847a948585b9?q=80&w=800',
@@ -497,6 +514,17 @@ const App: React.FC = () => {
               selectedImage = options[variantIndex];
             }
 
+            // [FIX] Price Display Logic
+            let displayPriceRange = '가격 정보 상담';
+            if (item.price_min) {
+              const price = Number(item.price_min);
+              if (price >= 10000) {
+                displayPriceRange = `${Math.round(price / 10000).toLocaleString()}만원~`;
+              } else if (price > 0) {
+                displayPriceRange = `${price.toLocaleString()}원~`;
+              }
+            }
+
             return {
               id: item.id?.toString(),
               name: item.name || '이름 없음',
@@ -508,7 +536,7 @@ const App: React.FC = () => {
               // [Fix] Ensure lat/lng are numbers
               lat: Number(item.lat || item.latitude || 0),
               lng: Number(item.lng || item.longitude || 0),
-              priceRange: '가격 정보 상담',
+              priceRange: displayPriceRange, // [FIX] Use calculated price range
               rating: ratingValue,
               reviewCount: reviewCountValue,
               imageUrl: selectedImage,
@@ -565,7 +593,13 @@ const App: React.FC = () => {
       });
     }
 
-    // 2. Filter by Category
+    // 2. Exclude sangjo from general list (only show when sangjo category is selected)
+    const sangjoSelected = selectedCategories.includes('sangjo' as any);
+    if (!sangjoSelected) {
+      result = result.filter(f => f.type !== 'sangjo');
+    }
+
+    // 3. Filter by Category
     if (selectedCategories.length > 0) {
       result = result.filter(f => selectedCategories.includes(f.category as any) || selectedCategories.includes(f.type as any));
     }
@@ -638,13 +672,25 @@ const App: React.FC = () => {
         const resolvedCategory = data.type || data.category || 'charnel';
 
         let type: any = 'charnel';
-        if (resolvedCategory === 'funeral_hall' || resolvedCategory === 'funeral' || resolvedCategory === 'funeral_home') type = 'funeral';
+
+        // [FIX] Sangjo Detection Logic (Name-based + Type-based) - Sync with fetchFacilities
+        const isSangjo =
+          resolvedCategory === 'sangjo' ||
+          name.includes('프리드라이프') ||
+          name.includes('대명스테이션') ||
+          name.includes('보람상조') ||
+          name.includes('교원라이프') ||
+          name.includes('상조') ||
+          name.includes('라이프');
+
+        if (isSangjo) {
+          type = 'sangjo';
+        } else if (resolvedCategory === 'funeral_hall' || resolvedCategory === 'funeral' || resolvedCategory === 'funeral_home') type = 'funeral';
         else if (resolvedCategory === 'charnel_house' || resolvedCategory === 'charnel' || resolvedCategory === 'memorial' || resolvedCategory === 'columbarium') type = 'charnel';
         else if (resolvedCategory === 'natural_burial' || resolvedCategory === 'natural' || resolvedCategory === 'tree_burial') type = 'natural';
         else if (resolvedCategory === 'park_cemetery' || resolvedCategory === 'park' || resolvedCategory === 'complex' || resolvedCategory === 'cemetery') type = 'park';
         else if (resolvedCategory === 'pet_funeral' || resolvedCategory === 'pet' || resolvedCategory === 'pet_memorial') type = 'pet';
         else if (resolvedCategory === 'sea_burial' || resolvedCategory === 'sea') type = 'sea';
-        else if (name.includes('프리드라이프') || name.includes('대명스테이션') || name.includes('보람상조') || name.includes('교원라이프')) type = 'sangjo';
 
         const categoryLabels: Record<string, FacilityCategoryType> = {
           'funeral': '장례식장',
@@ -709,6 +755,12 @@ const App: React.FC = () => {
               'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/sea.jpg',
               'https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?q=80&w=800',
               'https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?q=80&w=800'
+            ],
+            // [FIX] Add Default Images for Sangjo
+            'sangjo': [
+              'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/funeral.jpg',
+              'https://images.unsplash.com/photo-1595852504369-0268ec35c678?q=80&w=800',
+              'https://images.unsplash.com/photo-1518655007328-97c7689d0b61?q=80&w=800'
             ]
           };
 
@@ -727,7 +779,14 @@ const App: React.FC = () => {
           address: data.address,
           lat: Number(data.lat || (data.location?.coordinates ? data.location.coordinates[1] : 0)),
           lng: Number(data.lng || (data.location?.coordinates ? data.location.coordinates[0] : 0)),
-          priceRange: data.price_min ? `${(data.price_min / 10000).toLocaleString()}만원~` : '가격 정보 상담',
+          priceRange: (() => {
+            if (data.price_min) {
+              const price = Number(data.price_min);
+              if (price >= 10000) return `${Math.round(price / 10000).toLocaleString()}만원~`;
+              if (price > 0) return `${price.toLocaleString()}원~`;
+            }
+            return '가격 정보 상담';
+          })(),
           rating: Number(data.rating || 0),
           reviewCount: Number(data.reviews_count || 0),
           imageUrl: selectedImage || 'https://placehold.co/800x600?text=No+Image',
@@ -1028,15 +1087,28 @@ const App: React.FC = () => {
         const mappedFacilities: Facility[] = fetchedData.map((f: any) => {
           // 🔄 Robust Normalization (Same as fetchFacilities)
           const rawType = f.type || f.category || 'charnel';
+          const name = f.name || '';
+
           let normalizedType = 'charnel';
 
-          if (rawType === 'funeral_home' || rawType === 'funeral' || rawType === 'funeral_hall') normalizedType = 'funeral';
+          // [FIX] Sangjo Detection Logic
+          const isSangjo =
+            rawType === 'sangjo' ||
+            name.includes('프리드라이프') ||
+            name.includes('대명스테이션') ||
+            name.includes('보람상조') ||
+            name.includes('교원라이프') ||
+            name.includes('상조') ||
+            name.includes('라이프');
+
+          if (isSangjo) {
+            normalizedType = 'sangjo';
+          } else if (rawType === 'funeral_home' || rawType === 'funeral' || rawType === 'funeral_hall') normalizedType = 'funeral';
           else if (rawType === 'charnel_house' || rawType === 'charnel' || rawType === 'memorial' || rawType === 'columbarium') normalizedType = 'charnel';
           else if (rawType === 'natural_burial' || rawType === 'natural' || rawType === 'tree_burial') normalizedType = 'natural';
           else if (rawType === 'park_cemetery' || rawType === 'park' || rawType === 'complex' || rawType === 'cemetery') normalizedType = 'park';
           else if (rawType === 'pet_funeral' || rawType === 'pet' || rawType === 'pet_memorial') normalizedType = 'pet';
           else if (rawType === 'sea_burial' || rawType === 'sea') normalizedType = 'sea';
-          else if (rawType === 'sangjo') normalizedType = 'sangjo';
 
           const categoryMap: Record<string, any> = {
             'funeral': 'funeral_home',
@@ -1049,6 +1121,91 @@ const App: React.FC = () => {
           };
           const mappedCategory = categoryMap[normalizedType] || 'columbarium';
 
+          // 🖼️ Image Logic Refinement (Sync with fetchFacilities)
+          const rawImages = f.images || [];
+          const dbImageUrl = f.image_url || '';
+
+          const isBadUrl = (url: string) => {
+            if (!url) return true;
+            const badPatterns = ['placeholder', 'placehold.it', 'placehold.co', 'mediahub.seoul.go.kr', 'noimage', 'no-image', 'guitar', '_random', '/defaults/'];
+            return badPatterns.some(pattern => url.toLowerCase().includes(pattern));
+          };
+
+          let selectedImage = rawImages.find((url: string) => !isBadUrl(url));
+          if (!selectedImage && dbImageUrl && !isBadUrl(dbImageUrl)) {
+            selectedImage = dbImageUrl;
+          }
+          if (!selectedImage) {
+            const isOnlyMissing = (url: string) => {
+              if (!url) return true;
+              return ['placeholder', 'noimage', 'guitar'].some(p => url.toLowerCase().includes(p));
+            };
+            selectedImage = rawImages.find((url: string) => !isOnlyMissing(url)) || (isOnlyMissing(dbImageUrl) ? null : dbImageUrl);
+          }
+
+          if (!selectedImage) {
+            const defaultMap: Record<string, string[]> = {
+              'funeral': [
+                '/images/defaults/funeral/funeral_1.jpg', '/images/defaults/funeral/funeral_2.jpg', '/images/defaults/funeral/funeral_3.jpg',
+                '/images/defaults/funeral/funeral_4.jpg', '/images/defaults/funeral/funeral_5.jpg', '/images/defaults/funeral/funeral_6.jpg',
+                '/images/defaults/funeral/funeral_7.jpg', '/images/defaults/funeral/funeral_8.jpg'
+              ],
+              'charnel': [
+                '/images/defaults/columbarium/columbarium_1.jpg', '/images/defaults/columbarium/columbarium_2.jpg', '/images/defaults/columbarium/columbarium_3.jpg',
+                '/images/defaults/columbarium/columbarium_4.jpg', '/images/defaults/columbarium/columbarium_5.jpg', '/images/defaults/columbarium/columbarium_6.jpg',
+                '/images/defaults/columbarium/columbarium_7.jpg', '/images/defaults/columbarium/columbarium_8.jpg', '/images/defaults/columbarium/columbarium_9.jpg',
+                '/images/defaults/columbarium/columbarium_10.jpg', '/images/defaults/columbarium/columbarium_11.jpg', '/images/defaults/columbarium/columbarium_12.jpg',
+                '/images/defaults/columbarium/columbarium_13.jpg'
+              ],
+              'natural': [
+                '/images/defaults/natural/natural_1.png', '/images/defaults/natural/natural_2.png', '/images/defaults/natural/natural_3.png',
+                '/images/defaults/natural/natural_4.png', '/images/defaults/natural/natural_5.png', '/images/defaults/natural/natural_6.png',
+                '/images/defaults/natural/natural_7.png', '/images/defaults/natural/natural_8.png'
+              ],
+              'park': [
+                '/images/defaults/cemetery/cemetery_1.png', '/images/defaults/cemetery/cemetery_2.png', '/images/defaults/cemetery/cemetery_3.png',
+                '/images/defaults/cemetery/cemetery_4.png', '/images/defaults/cemetery/cemetery_5.png', '/images/defaults/cemetery/cemetery_6.png',
+                '/images/defaults/cemetery/cemetery_7.png', '/images/defaults/cemetery/cemetery_8.png', '/images/defaults/cemetery/cemetery_9.png',
+                '/images/defaults/cemetery/cemetery_10.png', '/images/defaults/cemetery/cemetery_11.png'
+              ],
+              'cemetery': [
+                '/images/defaults/cemetery/cemetery_1.png', '/images/defaults/cemetery/cemetery_2.png', '/images/defaults/cemetery/cemetery_3.png',
+                '/images/defaults/cemetery/cemetery_4.png', '/images/defaults/cemetery/cemetery_5.png', '/images/defaults/cemetery/cemetery_6.png',
+                '/images/defaults/cemetery/cemetery_7.png', '/images/defaults/cemetery/cemetery_8.png', '/images/defaults/cemetery/cemetery_9.png',
+                '/images/defaults/cemetery/cemetery_10.png', '/images/defaults/cemetery/cemetery_11.png'
+              ],
+              'sangjo': [
+                'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/funeral.jpg',
+                'https://images.unsplash.com/photo-1595852504369-0268ec35c678?q=80&w=800',
+                'https://images.unsplash.com/photo-1518655007328-97c7689d0b61?q=80&w=800'
+              ],
+              'pet': [
+                'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/pet.jpg',
+                'https://images.unsplash.com/photo-1544568100-847a948585b9?q=80&w=800',
+                'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=800'
+              ],
+              'sea': [
+                'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/sea.jpg',
+                'https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?q=80&w=800',
+                'https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?q=80&w=800'
+              ]
+            };
+            const options = defaultMap[normalizedType] || defaultMap['funeral'];
+            const idHash = f.id ? String(f.id).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) : 0;
+            selectedImage = options[idHash % options.length];
+          }
+
+          // [FIX] Price Display Logic
+          let displayPriceRange = '가격 정보 상담';
+          if (f.price_min) {
+            const price = Number(f.price_min);
+            if (price >= 10000) {
+              displayPriceRange = `${Math.round(price / 10000).toLocaleString()}만원~`;
+            } else if (price > 0) {
+              displayPriceRange = `${price.toLocaleString()}원~`;
+            }
+          }
+
           return {
             id: f.id,
             name: f.name,
@@ -1057,10 +1214,10 @@ const App: React.FC = () => {
             address: f.address,
             lat: Number(f.lat || f.latitude), // Safe Number (Handle both RPC versions)
             lng: Number(f.lng || f.longitude), // Safe Number (Handle both RPC versions)
-            imageUrl: f.image_url || (f.images && f.images.length > 0 ? f.images[0] : null),
+            imageUrl: selectedImage,
             rating: Number(f.rating || 0),
             reviewCount: f.review_count || 0,
-            priceRange: '가격 정보 상담',
+            priceRange: displayPriceRange,
             features: {},
             images: f.images || []
           };
@@ -1301,8 +1458,6 @@ const App: React.FC = () => {
                         // Using static import instead of dynamic choice to fix Vite caching issues
                         await updateFacilitySubscription(adminFacilityId, planId);
                         showToast('구독 정보가 업데이트되었습니다.', 'success');
-                        // Refresh data
-                        window.location.reload();
                       } catch (err) {
                         showToast('구독 정보 업데이트에 실패했습니다.', 'error');
                       }
@@ -1365,12 +1520,12 @@ const App: React.FC = () => {
 
         // Security Check: Allow specific email OR super_admin role
         // user_id check is also done in getUserRole
-        if (userInfo.email !== 'blacknacoof@gmail.com' && userRole !== 'super_admin') {
+        if (userRole !== 'super_admin') {
           return (
             <div className="h-full flex flex-col items-center justify-center p-4">
               <Shield className="text-red-500 mb-4" size={48} />
               <h2 className="text-xl font-bold mb-2 text-red-600">접근 권한이 없습니다</h2>
-              <p className="text-gray-600 mb-6">오직 승인된 관리자 계정(blacknacoof@gmail.com)만 접근할 수 있습니다.</p>
+              <p className="text-gray-600 mb-6">오직 승인된 슈퍼관리자만 접근할 수 있습니다.</p>
               <button onClick={() => setViewState(ViewState.MAP)} className="px-6 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
                 메인으로 돌아가기
               </button>
@@ -1621,11 +1776,7 @@ const App: React.FC = () => {
             {/* Global Toaster */}
             <Toaster richColors position="top-center" closeButton />
 
-            {/* Notification Center (Overlay) */}
-            {/* Notification Center (Overlay) - Now properly placed as a floating or header element if needed, but for now removing invalid props */}
-            <div className="fixed top-4 right-16 z-50">
-              <NotificationCenter />
-            </div>
+            {/* Notification Center - duplicate removed, kept only in mobile header area */}
 
             <SideMenu
               isOpen={isMenuOpen}

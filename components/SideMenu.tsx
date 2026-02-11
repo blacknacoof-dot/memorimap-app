@@ -89,7 +89,7 @@ export const SideMenu: React.FC<Props> = ({
                 </button>
               )}
 
-              {user?.email === 'blacknacoof@gmail.com' && (
+              {userRole === 'super_admin' && (
                 <button
                   onClick={() => { onNavigate(ViewState.SUPER_ADMIN); onClose(); }}
                   className="mt-2 text-xs bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-full flex items-center gap-1 transition-colors shadow-lg"

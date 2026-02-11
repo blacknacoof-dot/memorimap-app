@@ -485,7 +485,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                     onClose={() => setEditingFacility(null)}
                     onSave={() => {
                         loadData();
-                        window.location.reload(); // 시설 정보 새로고침
+                        toast.success('시설 정보가 업데이트되었습니다.');
                     }}
                 />
             )}

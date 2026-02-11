@@ -15,6 +15,9 @@ export default defineConfig({
     host: '0.0.0.0',
     strictPort: true,
     allowedHosts: true,
+    hmr: {
+      overlay: false, // 에러 오버레이 비활성화 (CPU 절약)
+    },
     watch: {
       // 대용량 폴더를 감시에서 제외하여 CPU 사용량 감소
       ignored: [
@@ -48,7 +51,15 @@ export default defineConfig({
   esbuild: {
     drop: ['console', 'debugger'],
   },
+  optimizeDeps: {
+    force: false,
+    esbuildOptions: {
+      target: 'es2020',
+    },
+  },
   build: {
+    sourcemap: false,
+    reportCompressedSize: false,
     rollupOptions: {
       output: {
         manualChunks: {

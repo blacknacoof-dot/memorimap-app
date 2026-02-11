@@ -82,6 +82,21 @@ export function useNotifications() {
         },
     });
 
+    // 개별 삭제
+    const deleteNotification = useMutation({
+        mutationFn: async (notificationId: string) => {
+            const { error } = await supabase
+                .from('user_notifications')
+                .delete()
+                .eq('id', notificationId);
+
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
+        },
+    });
+
     const unreadCount = notifications.filter(n => !n.is_read).length;
 
     return {
@@ -91,5 +106,6 @@ export function useNotifications() {
         refetch,
         markAsRead: markAsRead.mutate,
         markAllAsRead: markAllAsRead.mutate,
+        deleteNotification: deleteNotification.mutate,
     };
 }

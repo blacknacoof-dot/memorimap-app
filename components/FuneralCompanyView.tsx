@@ -239,7 +239,8 @@ export const FuneralCompanyView: React.FC<Props> = ({
     };
 
     const filteredCompanies = companies.filter(c =>
-        c.name.includes(searchQuery) || c.description.includes(searchQuery)
+        (c.name.includes(searchQuery) || c.description.includes(searchQuery)) &&
+        !c.name.includes('새부산상조') // [FIX] Exclude Sae Busan Sangjo as requested
     );
 
     return (

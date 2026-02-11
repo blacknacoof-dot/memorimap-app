@@ -298,7 +298,6 @@ const SubscriptionManager = ({ onManage }: { onManage: (facilityName: string) =>
                 const isoDate = new Date(newDate).toISOString();
                 await updateSubscriptionBillingDate(facilityId, isoDate);
                 toast.success('재결제 예정일이 업데이트되었습니다.');
-                window.location.reload();
             } catch (e) {
                 toast.error('날짜 형식이 올바르지 않거나 업데이트에 실패했습니다.');
             }

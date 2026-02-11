@@ -29,7 +29,6 @@ export const NoticeManager: React.FC = () => {
             setNewTitle('');
             setNewContent('');
             setTarget('all');
-            window.location.reload();
         } catch (e) {
             console.error(e);
             toast.error('공지 등록 실패');
@@ -40,7 +39,7 @@ export const NoticeManager: React.FC = () => {
         if (confirm('정말 삭제하시겠습니까?')) {
             try {
                 await remove(id);
-                window.location.reload();
+                toast.success('공지사항이 삭제되었습니다.');
             } catch (e) {
                 console.error(e);
                 toast.error('삭제 실패');
