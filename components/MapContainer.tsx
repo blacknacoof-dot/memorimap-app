@@ -2,12 +2,12 @@ import React, { useEffect, useRef, useImperativeHandle, forwardRef, useState } f
 import { Facility } from '../types';
 import { useFilterStore } from '../stores/useFilterStore';
 import { getMarkerHtml, LeafletCompatibleBounds } from '../utils/naverMapHelper';
-import { toast } from 'sonner'; // [Phase 2] Error Handler
+import { toast } from 'sonner';
 
-// Extend Window interface for Naver Maps
 declare global {
   interface Window {
     naver: any;
+    MarkerClustering: any;
   }
 }
 
@@ -27,7 +27,9 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
   const mapElement = useRef<HTMLDivElement | null>(null);
   const mapInstance = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
-  const [isMapReady, setIsMapReady] = useState(false); // ✅ Readiness State
+  const clusterRef = useRef<any>(null);
+  const [isMapReady, setIsMapReady] = useState(false);
+  const [isClusterReady, setIsClusterReady] = useState(false);
   const [myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null);
   const locationMarkerRef = useRef<any>(null);
 
@@ -155,6 +157,22 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
 
         setIsMapReady(true);
         console.log('[MapContainer] Naver Map Initialized successfully');
+
+        // Load MarkerClustering script
+        if (!window.MarkerClustering) {
+          const clusterScript = document.createElement('script');
+          clusterScript.src = '/MarkerClustering.js';
+          clusterScript.onload = () => {
+            console.log('[MapContainer] MarkerClustering loaded');
+            if (isMounted) setIsClusterReady(true);
+          };
+          clusterScript.onerror = () => {
+            console.warn('[MapContainer] MarkerClustering load failed, using individual markers');
+          };
+          document.head.appendChild(clusterScript);
+        } else {
+          setIsClusterReady(true);
+        }
       } catch (e) {
         console.error("[MapContainer] Naver Map init failed:", e);
       }
@@ -171,38 +189,77 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
     };
   }, []); // Run once
 
-  // 2. Render Markers
+  // 2. Render Markers (with clustering)
   useEffect(() => {
-    if (!mapInstance.current || !window.naver || !isMapReady) return; // ✅ Guard against unready map
+    if (!mapInstance.current || !window.naver || !isMapReady) return;
 
-    // Clear existing
+    // Clear existing cluster
+    if (clusterRef.current) {
+      clusterRef.current.setMap(null);
+      clusterRef.current = null;
+    }
+    // Clear individual markers
     markersRef.current.forEach(marker => marker.setMap(null));
     markersRef.current = [];
 
-    // Add new
-    filteredFacilities.forEach(facility => {
-      if (!facility.lat || !facility.lng) return;
+    // Create markers (without map for clustering, with map for fallback)
+    const useCluster = isClusterReady && window.MarkerClustering;
 
-      const marker = new window.naver.maps.Marker({
-        position: new window.naver.maps.LatLng(facility.lat, facility.lng),
+    const markers = filteredFacilities
+      .filter(f => f.lat && f.lng)
+      .map(facility => {
+        const marker = new window.naver.maps.Marker({
+          position: new window.naver.maps.LatLng(facility.lat, facility.lng),
+          map: useCluster ? null : mapInstance.current,
+          title: facility.name,
+          icon: {
+            content: getMarkerHtml(facility.category as string, false),
+            size: new window.naver.maps.Size(24, 24),
+            anchor: new window.naver.maps.Point(12, 12)
+          }
+        });
+
+        window.naver.maps.Event.addListener(marker, 'click', () => {
+          onFacilitySelect(facility);
+        });
+
+        return marker;
+      });
+
+    markersRef.current = markers;
+
+    if (useCluster && markers.length > 0) {
+      const clusterIconHtml = (bg: string, size: number) => ({
+        content: `<div style="cursor:pointer;width:${size}px;height:${size}px;line-height:${size}px;font-size:11px;color:white;text-align:center;font-weight:bold;background:${bg};border-radius:50%;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
+        size: new window.naver.maps.Size(size, size),
+        anchor: new window.naver.maps.Point(size / 2, size / 2),
+      });
+
+      clusterRef.current = new window.MarkerClustering({
+        minClusterSize: 2,
+        maxZoom: 14,
         map: mapInstance.current,
-        title: facility.name,
-        icon: {
-          content: getMarkerHtml(facility.category as string, false),
-          size: new window.naver.maps.Size(24, 24),
-          anchor: new window.naver.maps.Point(12, 12)
-        }
+        markers: markers,
+        disableClickZoom: false,
+        gridSize: 120,
+        icons: [
+          clusterIconHtml('#3B82F6', 36),
+          clusterIconHtml('#2563EB', 42),
+          clusterIconHtml('#1D4ED8', 50),
+          clusterIconHtml('#1E40AF', 58),
+        ],
+        indexGenerator: [10, 50, 100, 500],
+        averageCenter: true,
+        stylingFunction: (clusterMarker: any, count: number) => {
+          const el = clusterMarker.getElement();
+          if (el) {
+            const div = el.querySelector('div');
+            if (div) div.textContent = String(count);
+          }
+        },
       });
-
-      // Click Event
-      window.naver.maps.Event.addListener(marker, 'click', () => {
-        onFacilitySelect(facility);
-      });
-
-      markersRef.current.push(marker);
-    });
-
-  }, [filteredFacilities]); // Re-render when list changes
+    }
+  }, [filteredFacilities, isClusterReady]);
 
   // 3. Sync Center (Removed to prevent snapping back when user moves map)
   // The map is initialized with initialCenter, and manual movement should be preserved.

@@ -987,27 +987,21 @@ export const ChatInterface: React.FC<Props> = ({
                                         )}
 
                                         {/* Other Actions */}
-                                        {!['SHOW_FORM_A', 'SHOW_FORM_B', 'SHOW_FORM_C', 'SHOW_FORM_D', 'RECOMMEND'].includes(msg.action || '') && (
+                                        {!['SHOW_FORM_A', 'SHOW_FORM_B', 'SHOW_FORM_C', 'SHOW_FORM_D', 'RECOMMEND', 'URGENT_DISPATCH'].includes(msg.action || '') && (
                                             <button
                                                 onClick={() => {
-                                                    if (msg.action === 'URGENT_DISPATCH') {
-                                                        // [UX Fix] Reset Chat & Start Urgent Flow (AI Mode)
-                                                        setMessages([]);
-                                                        handleSend('mode_urgent'); // Trigger AI Scenario
-                                                    } else if (msg.action === 'RESERVE') {
-                                                        setFormMode('chat'); // Or 'phone' depending on preference
+                                                    if (msg.action === 'RESERVE') {
+                                                        setFormMode('chat');
                                                         setIsFormOpen(true);
                                                     } else {
                                                         onAction(msg.action!);
                                                     }
                                                 }}
-                                                className={`mt-3 w-full bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition font-bold shadow-sm ${msg.action === 'URGENT_DISPATCH' ? 'border-red-200 bg-red-50 text-red-600 hover:bg-red-100' : ''}`}
+                                                className="mt-3 w-full bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition font-bold shadow-sm"
                                             >
                                                 {msg.action === 'RESERVE' && <><CalendarCheck size={16} /> 예약 상담 접수</>}
-                                                {msg.action === 'URGENT_DISPATCH' && <><Siren size={16} /> 긴급 출동 접수</>}
                                                 {msg.action === 'MAP' && <><MapPin size={16} /> 오시는 길 보기</>}
                                                 {msg.action === 'CALL_MANAGER' && <><Phone size={16} /> 담당자 전화 연결</>}
-                                                {msg.action === 'RECOMMEND' && <><Sparkles size={16} /> 추천 결과 보기</>}
                                                 {msg.action === 'SWITCH_TO_CONSULT' && <><Phone size={16} /> 전문 상담원 연결</>}
                                             </button>
                                         )}

@@ -347,7 +347,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                                                         {prod.badges?.[0] || '기본형'}
                                                     </div>
                                                     <span className={`font-bold text-lg ${isPremium || isStandard ? 'text-white' : 'text-primary'
-                                                        }`}>{(prod.price / 10000).toLocaleString()}만원</span>
+                                                        }`}>{prod.price > 0 ? `${(prod.price / 10000).toLocaleString()}만원` : '상담 문의'}</span>
                                                 </div>
                                                 <div className="mb-1">
                                                     <span className={`font-bold text-xl block ${isPremium || isStandard ? 'text-white' : 'text-gray-900'

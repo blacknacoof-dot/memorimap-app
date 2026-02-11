@@ -106,35 +106,60 @@ export const FuneralCompanyView: React.FC<Props> = ({
                         // Deduplicate reviews by ID
                         const uniqueReviews = Array.from(new Map(reviews.map(r => [r.id, r])).values());
 
-                        // 상조 서비스 상품 (하드코딩)
-                        const products = [
-                            {
-                                id: '1',
-                                name: '실속형 (390)',
-                                price: 3900000,
-                                description: '합리적인 가격으로 꼭 필요한 서비스만 담은 실속 상품',
-                                badges: ['실속형', '인기'],
-                                tagline: '합리적인 선택',
-                                serviceDetails: [
-                                    { category: '인력', items: ['의전관리사 4명', '장례지도사 2명'] },
-                                    { category: '용품', items: ['오동나무 1단 관', '고급 수의'] },
-                                    { category: '차량', items: ['고인 전용 운구차량 200km'] }
-                                ]
-                            },
-                            {
-                                id: '2',
-                                name: '표준형 (490)',
-                                price: 4900000,
-                                description: '가장 많은 고객님이 선택하시는 표준 의전 프로그램',
-                                badges: ['표준형', '추천'],
-                                tagline: '격조 높은 의전',
-                                serviceDetails: [
-                                    { category: '인력', items: ['의전관리사 6명', '장례지도사 2명'] },
-                                    { category: '용품', items: ['솔송나무 2단 관', '특수 면수의'] },
-                                    { category: '차량', items: ['리무진 및 버스 왕복 400km'] }
-                                ]
+                        // 상조 서비스 상품 (price_range 기반 동적 생성)
+                        const products = (() => {
+                            const range = item.price_range || '';
+                            const match = range.match(/(\d+)~(\d+,?\d*)/);
+                            if (match) {
+                                const minPrice = parseInt(match[1].replace(/,/g, '')) * 10000;
+                                const maxStr = match[2].replace(/,/g, '');
+                                const maxPrice = parseInt(maxStr) * 10000;
+                                const midPrice = Math.round((minPrice + maxPrice) / 2 / 10000) * 10000;
+                                return [
+                                    {
+                                        id: '1', name: `실속형 (${minPrice / 10000})`, price: minPrice,
+                                        description: '합리적인 가격으로 꼭 필요한 서비스만 담은 실속 상품',
+                                        badges: ['실속형', '인기'], tagline: '합리적인 선택',
+                                        serviceDetails: [
+                                            { category: '인력', items: ['의전관리사 4명', '장례지도사 1명'] },
+                                            { category: '용품', items: ['오동나무 1단 관', '기본 수의'] },
+                                            { category: '차량', items: ['운구차량 200km'] }
+                                        ]
+                                    },
+                                    {
+                                        id: '2', name: `표준형 (${midPrice / 10000})`, price: midPrice,
+                                        description: '가장 많은 고객님이 선택하시는 표준 의전 프로그램',
+                                        badges: ['표준형', '추천'], tagline: '격조 높은 의전',
+                                        serviceDetails: [
+                                            { category: '인력', items: ['의전관리사 6명', '장례지도사 2명'] },
+                                            { category: '용품', items: ['솔송나무 2단 관', '특수 면수의'] },
+                                            { category: '차량', items: ['리무진 및 버스 왕복 400km'] }
+                                        ]
+                                    },
+                                    {
+                                        id: '3', name: `고급형 (${maxPrice / 10000})`, price: maxPrice,
+                                        description: '최고급 의전과 프리미엄 서비스를 제공하는 VIP 상품',
+                                        badges: ['고급형', 'VIP'], tagline: '최상의 품격',
+                                        serviceDetails: [
+                                            { category: '인력', items: ['의전관리사 8명', '장례지도사 3명', '전담 코디네이터'] },
+                                            { category: '용품', items: ['프리미엄 편백관', '최고급 실크수의'] },
+                                            { category: '차량', items: ['VIP 리무진 및 대형버스 전국'] }
+                                        ]
+                                    }
+                                ];
                             }
-                        ];
+                            // price_range가 "문의"인 경우
+                            return [
+                                {
+                                    id: '1', name: '기본형', price: 0,
+                                    description: '상담을 통해 맞춤 견적을 받아보실 수 있습니다',
+                                    badges: ['기본형'], tagline: '상담 문의',
+                                    serviceDetails: [
+                                        { category: '안내', items: ['상담을 통해 맞춤 서비스 구성이 가능합니다', '전화 문의: ' + (item.phone || '상담 접수')] }
+                                    ]
+                                }
+                            ];
+                        })();
 
                         const galleryImages = item.gallery_images || item.images || (staticMatch?.imageUrl ? [staticMatch.imageUrl] : ['https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=400']);
 

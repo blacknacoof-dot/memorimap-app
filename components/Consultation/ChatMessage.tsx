@@ -34,50 +34,42 @@ export const ChatMessage: React.FC<Props> = ({ message, isStreaming }) => {
                     )}
                 </div>
                 {message.recommendation && (
-                    <div className="mt-3 flex gap-3 overflow-x-auto pb-4 -mx-1 px-1 snap-x scrollbar-hide">
+                    <div className="mt-3 space-y-2">
                         {message.recommendation.map((company: FuneralCompany) => (
-                            <div key={company.id} className="snap-center min-w-[260px] w-[260px] bg-white rounded-xl border border-gray-200 shadow-lg flex-shrink-0 overflow-hidden flex flex-col">
-                                {/* Representative Image */}
-                                <div className="relative h-32 bg-gray-100">
+                            <div key={company.id} className="flex bg-gray-50 rounded-xl border border-gray-100 overflow-hidden hover:shadow-sm transition-shadow">
+                                {/* Thumbnail */}
+                                <div className="relative w-20 h-20 shrink-0 bg-gray-200">
                                     <img
                                         src={company.imageUrl || '/images/defaults/sangjo_default.jpg'}
                                         alt={company.name}
                                         className="w-full h-full object-cover"
                                         onError={(e) => {
-                                            (e.target as HTMLImageElement).src = 'https://placehold.co/400x200?text=No+Image';
+                                            (e.target as HTMLImageElement).src = 'https://placehold.co/200x200?text=No+Image';
                                         }}
                                     />
-                                    <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-md flex items-center gap-1">
-                                        <Star size={10} className="text-yellow-400 fill-current" />
-                                        <span className="text-xs font-bold text-white">{company.rating}</span>
-                                    </div>
                                 </div>
 
-                                <div className="p-4 flex flex-col flex-1">
-                                    <h3 className="font-bold text-gray-900 text-base mb-1 truncate">{company.name}</h3>
-
-                                    <p className="text-xs text-gray-500 mb-3 line-clamp-2 min-h-[2.5em]">
-                                        {company.description}
-                                    </p>
-
-                                    <div className="mt-auto pt-3 border-t border-gray-100">
-                                        {/* Tagline or Price Range */}
-                                        <div className="mb-3">
-                                            <span className="inline-block px-2 py-1 bg-amber-50 text-amber-700 text-[10px] font-bold rounded-sm">
-                                                {company.priceRange}
-                                            </span>
+                                {/* Info */}
+                                <div className="flex-1 p-2.5 min-w-0 flex flex-col justify-between">
+                                    <div>
+                                        <div className="flex items-center gap-1.5">
+                                            <h4 className="font-bold text-gray-900 text-[13px] truncate">{company.name}</h4>
+                                            <div className="flex items-center gap-0.5 text-yellow-500 shrink-0">
+                                                <Star size={10} fill="currentColor" />
+                                                <span className="text-[11px] font-bold">{company.rating}</span>
+                                            </div>
                                         </div>
-
-                                        <button
-                                            onClick={() => {
-                                                const event = new CustomEvent('connectToPartner', { detail: company });
-                                                window.dispatchEvent(event);
-                                            }}
-                                            className="w-full bg-gray-900 hover:bg-black text-white py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] shadow-sm"
-                                        >
-                                            상담 연결 <ChevronRight size={14} />
-                                        </button>
+                                        <span className="text-[10px] text-amber-600 font-medium">{company.priceRange}</span>
                                     </div>
+                                    <button
+                                        onClick={() => {
+                                            const event = new CustomEvent('connectToPartner', { detail: company });
+                                            window.dispatchEvent(event);
+                                        }}
+                                        className="self-end py-1 px-2.5 bg-gray-900 text-white rounded-lg text-[11px] font-bold hover:bg-black transition-colors flex items-center gap-0.5"
+                                    >
+                                        상담 연결 <ChevronRight size={11} />
+                                    </button>
                                 </div>
                             </div>
                         ))}
