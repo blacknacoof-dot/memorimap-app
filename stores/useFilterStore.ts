@@ -21,10 +21,11 @@ export const useFilterStore = create<FilterState>((set) => ({
     setSearchQuery: (query) => set({ searchQuery: query }),
 
     toggleCategory: (category) => set((state) => {
-        // Single Select Mode: If already selected, deselect. If not, replace selection.
         const isSelected = state.selectedCategories.includes(category);
         return {
-            selectedCategories: isSelected ? [] : [category]
+            selectedCategories: isSelected
+                ? state.selectedCategories.filter(c => c !== category)
+                : [...state.selectedCategories, category]
         };
     }),
 

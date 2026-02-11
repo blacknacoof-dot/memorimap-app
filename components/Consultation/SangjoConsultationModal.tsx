@@ -246,12 +246,10 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
                     if (recommended.length === 0) recommended = FUNERAL_COMPANIES.slice(0, 3);
                     filterMessage = "종교 예식에 맞는 전문 지도사가 필요하시군요. ✝️\n**입관 예배와 전용 추모 절차**를 지원하는 특화 상품입니다.";
                 } else if (text.includes('급해요') || text.includes('후불') || text.includes('당장')) {
-                    // [Fast-Track Logic]
-                    // Skip regular comparison, go straight to dispatch mode
-                    filterMessage = "🚨 **긴급 출동 상황**으로 접수되었습니다.\n\n경황이 없으시겠지만, 가장 빨리 도착할 수 있는 팀을 배정하기 위해 **현재 계신 위치(장례식장 또는 자택)**를 알려주세요.\n\n(예: 서울 강남세브란스 / 부산 자택)";
-
-                    // Recommend Post-Payment companies
+                    // Post-payment / urgent companies
                     recommended = FUNERAL_COMPANIES.filter(c => c.features.includes("후불제"));
+                    if (recommended.length === 0) recommended = FUNERAL_COMPANIES.slice(0, 3);
+                    filterMessage = "급하신 상황이시군요. ⏰\n**후불제를 지원하고 빠른 대응이 가능한 업체**를 추천드립니다.\n카드를 확인하시고 상담 연결해 보세요.";
                 } else {
                     // General AI fallback for Maum-i if not a keyword match? 
                     // Or just generic recommendation

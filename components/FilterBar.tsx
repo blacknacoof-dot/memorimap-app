@@ -1,6 +1,6 @@
 import React from 'react';
 import { useFilterStore } from '../stores/useFilterStore';
-import { Search } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { FacilityCategoryType } from '../types/facility';
 
 const CATEGORIES: { id: FacilityCategoryType | 'all', label: string }[] = [
@@ -35,6 +35,15 @@ export const FilterBar = () => {
                         placeholder="지역명(서울, 경기...) 또는 시설명 검색"
                         className="w-full h-full outline-none text-sm bg-transparent text-gray-900 placeholder:text-gray-400"
                     />
+                    {searchQuery && (
+                        <button
+                            onClick={() => setSearchQuery('')}
+                            className="ml-1 p-1 text-gray-400 hover:text-gray-600 shrink-0"
+                            aria-label="검색어 초기화"
+                        >
+                            <X size={16} />
+                        </button>
+                    )}
                 </div>
             </div>
 

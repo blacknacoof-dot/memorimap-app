@@ -677,11 +677,6 @@ export const createReview = async (
 };
 
 export const deleteReview = async (reviewId: string) => {
-    // 🚑 [Direct Attack] Check session before Supabase call
-    const { data: { session } } = await supabase.auth.getSession();
-
-
-
     try {
         const { error } = await supabase
             .from('facility_reviews')

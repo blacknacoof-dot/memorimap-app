@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { favoriteService } from '../services/favoriteService';
 import { Facility, Reservation } from '../types';
-import { X, Star, MapPin, Phone, Clock, Navigation, Heart, Check, Scale, Bot, Award, Crown, ShieldCheck, MessageSquare, ChevronLeft, ChevronRight, Image as ImageIcon, Gift } from 'lucide-react';
+import { X, Star, MapPin, Phone, Clock, Navigation, Heart, Check, Scale, Bot, Award, Crown, ShieldCheck, MessageSquare, ChevronLeft, ChevronRight, Image as ImageIcon, Gift, Share2 } from 'lucide-react';
 import { incrementAiUsage } from '../lib/queries';
 import { ReviewForm } from './ReviewForm';
 import { ReviewList } from './ReviewList';
 import { ChatInterface } from './AI/ChatInterface';
 import { getSmartFeatures, getSmartDescription } from '../lib/facilityUtils';
+import { toast } from 'sonner';
 
 interface Props {
   facility: Facility;
@@ -590,10 +591,28 @@ export const FacilitySheet: React.FC<Props> = ({
         <div className="p-4 border-t bg-white safe-area-pb flex gap-3 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] z-20">
           <button
             onClick={() => window.open(`https://map.naver.com/v5/search/${facility.name}`, '_blank')}
-            className="flex flex-col items-center justify-center min-w-[60px] text-gray-500 hover:text-primary transition-colors"
+            className="flex flex-col items-center justify-center min-w-[50px] text-gray-500 hover:text-primary transition-colors"
           >
             <Navigation size={20} />
             <span className="text-[10px] mt-1 font-medium">길찾기</span>
+          </button>
+
+          <button
+            onClick={async () => {
+              const shareData = { title: facility.name, text: `${facility.name} - ${facility.address}`, url: window.location.href };
+              try {
+                if (navigator.share) {
+                  await navigator.share(shareData);
+                } else {
+                  await navigator.clipboard.writeText(`${facility.name}\n${facility.address}\n${window.location.href}`);
+                  toast.success('링크가 복사되었습니다.');
+                }
+              } catch { /* 사용자 취소 */ }
+            }}
+            className="flex flex-col items-center justify-center min-w-[50px] text-gray-500 hover:text-primary transition-colors"
+          >
+            <Share2 size={20} />
+            <span className="text-[10px] mt-1 font-medium">공유</span>
           </button>
 
           {facility.naverBookingUrl && facility.naverBookingUrl.length > 10 && String(facility.id) !== '3' && (
