@@ -1063,6 +1063,7 @@ const App: React.FC = () => {
 
   const handleMapBoundsChange = (bounds: L.LatLngBounds) => {
     setMapBounds(bounds);
+    setCurrentBounds(bounds);
 
     // Server-Side Viewport Fetching (Debounced)
     if (mapDebounceRef.current) {
@@ -1344,32 +1345,35 @@ const App: React.FC = () => {
         );
 
       case ViewState.GUIDE:
-        return <GuideView onBack={() => setViewState(ViewState.MAP)} />;
+        return <Suspense fallback={<LoadingFallback />}><GuideView onBack={() => setViewState(ViewState.MAP)} /></Suspense>;
       case ViewState.NOTICES:
-        return <NoticesView onBack={() => setViewState(ViewState.MAP)} />;
+        return <Suspense fallback={<LoadingFallback />}><NoticesView onBack={() => setViewState(ViewState.MAP)} /></Suspense>;
       case ViewState.SUPPORT:
-        return <SupportView onBack={() => setViewState(ViewState.MAP)} />;
+        return <Suspense fallback={<LoadingFallback />}><SupportView onBack={() => setViewState(ViewState.MAP)} /></Suspense>;
       case ViewState.SETTINGS:
-        return <SettingsView onBack={() => setViewState(ViewState.MAP)} user={userInfo} />;
+        return <Suspense fallback={<LoadingFallback />}><SettingsView onBack={() => setViewState(ViewState.MAP)} user={userInfo} /></Suspense>;
 
       case ViewState.CONSULTATION:
         if (!consultingFacility) return null;
         return (
-          <ConsultationView
-            facility={consultingFacility}
-            existingConsultation={selectedConsultation}
-            onBack={() => {
-              setViewState(ViewState.MAP);
-              setConsultingFacility(null);
-              setSelectedConsultation(null);
-            }}
-            onOpenHistory={() => setViewState(ViewState.CONSULTATION_HISTORY)}
-            onOpenLogin={() => setShowLoginModal(true)}
-          />
+          <Suspense fallback={<LoadingFallback />}>
+            <ConsultationView
+              facility={consultingFacility}
+              existingConsultation={selectedConsultation}
+              onBack={() => {
+                setViewState(ViewState.MAP);
+                setConsultingFacility(null);
+                setSelectedConsultation(null);
+              }}
+              onOpenHistory={() => setViewState(ViewState.CONSULTATION_HISTORY)}
+              onOpenLogin={() => setShowLoginModal(true)}
+            />
+          </Suspense>
         );
 
       case ViewState.CONSULTATION_HISTORY:
         return (
+          <Suspense fallback={<LoadingFallback />}>
           <ConsultationHistoryView
             facilities={facilities}
             onBack={() => setViewState(ViewState.MY_PAGE)}
@@ -1384,6 +1388,7 @@ const App: React.FC = () => {
               }
             }}
           />
+          </Suspense>
         );
 
       case ViewState.FACILITY_ADMIN:
@@ -1421,18 +1426,20 @@ const App: React.FC = () => {
         }
 
         return (
-          <div className="h-full relative flex flex-col">
-            <FacilityAdminView
-              user={userInfo}
-              facilities={facilities}
-              onNavigate={(view, context) => {
-                if (context?.facilityId) {
-                  setAdminFacilityId(context.facilityId);
-                }
-                setViewState(view);
-              }}
-            />
-          </div>
+          <Suspense fallback={<LoadingFallback />}>
+            <div className="h-full relative flex flex-col">
+              <FacilityAdminView
+                user={userInfo}
+                facilities={facilities}
+                onNavigate={(view, context) => {
+                  if (context?.facilityId) {
+                    setAdminFacilityId(context.facilityId);
+                  }
+                  setViewState(view);
+                }}
+              />
+            </div>
+          </Suspense>
         );
 
       case ViewState.SUBSCRIPTION_PLANS:

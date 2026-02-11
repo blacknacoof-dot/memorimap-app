@@ -205,7 +205,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
     const consultationCount = consultations.filter(c => !c.is_read).length;
 
     return (
-        <div className="h-full overflow-y-auto pt-24 pb-20 px-4 bg-gray-50">
+        <div className="h-full overflow-y-auto pt-24 pb-6 px-4 bg-gray-50">
             {/* Header */}
             <div className="mb-6 flex justify-between items-start">
                 <div className="flex-1">
@@ -427,7 +427,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                     }}
                 />
             ) : activeTab === 'faq' ? (
-                <FacilityFAQManager />
+                <FacilityFAQManager facilityId={myFacilityId || undefined} />
             ) : isLoading ? (
                 <div className="text-center py-10">
                     <Loader2 size={32} className="animate-spin text-primary mx-auto" />

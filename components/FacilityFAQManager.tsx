@@ -1,38 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import { useConfirmModal } from '../src/components/common/ConfirmModal';
-import { Plus, Edit, Trash, Save, X } from 'lucide-react';
+import { Plus, Edit, Trash, Save, Loader2 } from 'lucide-react';
+import { getFacilityFaqs, upsertFacilityFaq, deleteFacilityFaq } from '../lib/queries';
+import { toast } from 'sonner';
 
 interface FAQ {
     id: string;
     question: string;
     answer: string;
+    order?: number;
 }
 
-export const FacilityFAQManager: React.FC = () => {
+interface Props {
+    facilityId?: string;
+}
+
+export const FacilityFAQManager: React.FC<Props> = ({ facilityId }) => {
     const [faqs, setFaqs] = useState<FAQ[]>([]);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editForm, setEditForm] = useState<{ question: string; answer: string }>({ question: '', answer: '' });
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
     const confirmModal = useConfirmModal();
 
-    // Load from localStorage on mount
     useEffect(() => {
-        const saved = localStorage.getItem('facility_faqs');
-        if (saved) {
-            setFaqs(JSON.parse(saved));
-        } else {
-            // Initial Seed Data if empty
-            const seeds = [
-                { id: '1', question: '주차는 가능한가요?', answer: '네, 50대까지 가능합니다.' },
-                { id: '2', question: '방문 시간은 언제인가요?', answer: '오전 9시부터 오후 6시까지입니다.' }
-            ];
-            setFaqs(seeds);
-            localStorage.setItem('facility_faqs', JSON.stringify(seeds));
-        }
-    }, []);
+        loadFaqs();
+    }, [facilityId]);
 
-    const saveToStorage = (newFaqs: FAQ[]) => {
-        localStorage.setItem('facility_faqs', JSON.stringify(newFaqs));
-        setFaqs(newFaqs);
+    const loadFaqs = async () => {
+        if (!facilityId) {
+            setIsLoading(false);
+            return;
+        }
+        setIsLoading(true);
+        try {
+            const data = await getFacilityFaqs(facilityId);
+            setFaqs(data.map((d: any) => ({ id: d.id, question: d.question, answer: d.answer, order: d.order })));
+        } catch {
+            toast.error('FAQ 로딩 실패');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleEdit = (faq: FAQ) => {
@@ -41,24 +49,38 @@ export const FacilityFAQManager: React.FC = () => {
     };
 
     const handleSave = () => {
+        if (!editForm.question.trim() || !editForm.answer.trim()) {
+            toast.error('질문과 답변을 모두 입력해주세요.');
+            return;
+        }
         confirmModal.open({
             title: 'FAQ 저장',
             message: '변경사항을 저장하시겠습니까?',
             requireCheckbox: false,
-            onConfirm: () => {
-                let newFaqs: FAQ[];
-                if (editingId === 'new') {
-                    const newFaq = {
-                        id: Date.now().toString(),
-                        ...editForm
-                    };
-                    newFaqs = [...faqs, newFaq];
-                } else {
-                    newFaqs = faqs.map(f => f.id === editingId ? { ...f, ...editForm } : f);
+            onConfirm: async () => {
+                if (!facilityId) return;
+                setIsSaving(true);
+                try {
+                    const result = await upsertFacilityFaq({
+                        ...(editingId !== 'new' ? { id: editingId! } : {}),
+                        facility_id: facilityId,
+                        question: editForm.question,
+                        answer: editForm.answer,
+                        order: editingId === 'new' ? faqs.length : undefined,
+                    });
+                    if (result) {
+                        toast.success('FAQ가 저장되었습니다.');
+                        await loadFaqs();
+                    } else {
+                        toast.error('FAQ 저장 실패');
+                    }
+                } catch {
+                    toast.error('FAQ 저장 중 오류 발생');
+                } finally {
+                    setIsSaving(false);
+                    setEditingId(null);
+                    setEditForm({ question: '', answer: '' });
                 }
-                saveToStorage(newFaqs);
-                setEditingId(null);
-                setEditForm({ question: '', answer: '' });
             }
         });
     };
@@ -68,9 +90,14 @@ export const FacilityFAQManager: React.FC = () => {
             title: 'FAQ 삭제',
             message: '정말로 삭제하시겠습니까?',
             requireCheckbox: false,
-            onConfirm: () => {
-                const newFaqs = faqs.filter(f => f.id !== id);
-                saveToStorage(newFaqs);
+            onConfirm: async () => {
+                const success = await deleteFacilityFaq(id);
+                if (success) {
+                    toast.success('FAQ가 삭제되었습니다.');
+                    setFaqs(prev => prev.filter(f => f.id !== id));
+                } else {
+                    toast.error('FAQ 삭제 실패');
+                }
             }
         });
     };
@@ -79,6 +106,23 @@ export const FacilityFAQManager: React.FC = () => {
         setEditingId('new');
         setEditForm({ question: '', answer: '' });
     };
+
+    if (isLoading) {
+        return (
+            <div className="text-center py-10">
+                <Loader2 size={32} className="animate-spin text-primary mx-auto" />
+                <p className="text-gray-400 text-sm mt-3">FAQ 로딩 중...</p>
+            </div>
+        );
+    }
+
+    if (!facilityId) {
+        return (
+            <div className="text-center py-8 text-gray-500">
+                시설 정보를 불러올 수 없습니다.
+            </div>
+        );
+    }
 
     return (
         <div className="bg-white rounded-xl shadow-sm border p-6">
@@ -118,10 +162,11 @@ export const FacilityFAQManager: React.FC = () => {
                             </button>
                             <button
                                 onClick={handleSave}
-                                className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center gap-1"
+                                disabled={isSaving}
+                                className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center gap-1 disabled:opacity-50"
                                 data-testid="save-button"
                             >
-                                <Save size={14} /> 저장
+                                {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} 저장
                             </button>
                         </div>
                     </div>
@@ -152,10 +197,11 @@ export const FacilityFAQManager: React.FC = () => {
                                     </button>
                                     <button
                                         onClick={handleSave}
-                                        className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center gap-1"
+                                        disabled={isSaving}
+                                        className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center gap-1 disabled:opacity-50"
                                         data-testid="save-button"
                                     >
-                                        <Save size={14} /> 저장
+                                        {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} 저장
                                     </button>
                                 </div>
                             </div>
