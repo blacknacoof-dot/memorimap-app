@@ -220,10 +220,36 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
         }
     };
 
-    const handleFormSubmit = (formData: any) => {
+    const handleFormSubmit = async (formData: any) => {
         setIsFormOpen(false);
 
-        if (formMode === 'phone') {
+        // Supabase에 상담 접수 저장
+        const isUrgent = formMode === ('urgent' as any);
+        const isPhone = formMode === 'phone';
+        const contractNumber = `${isUrgent ? 'URG' : 'REQ'}-2025-${Math.floor(Math.random() * 900000 + 100000)}`;
+
+        try {
+            const { saveSangjoContract } = await import('../../lib/sangjoQueries');
+            await saveSangjoContract({
+                id: `db-${Date.now()}`,
+                contract_number: contractNumber,
+                sangjo_id: company.id,
+                customer_name: formData.name || '익명 고객',
+                customer_phone: formData.phone || '',
+                service_type: isUrgent ? '긴급 출동' : (isPhone ? '전화 상담' : (formData.type || '채팅 상담')),
+                status: '상담신청',
+                application_type: 'CONSULTATION',
+                preferred_call_time: formData.time || '',
+                total_price: 0,
+                emergency_level: isUrgent ? 'critical' : 'normal',
+                created_at: new Date().toISOString()
+            });
+            console.log(`✅ 상담 접수 저장 완료: ${contractNumber}`);
+        } catch (e) {
+            console.error('상담 접수 저장 실패:', e);
+        }
+
+        if (isPhone) {
             setMessages(prev => [...prev, {
                 id: Date.now(),
                 sender: 'system',
@@ -242,11 +268,11 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
                 }]);
             }, 1000);
 
-        } else if (formMode === ('urgent' as any)) { // Handle Urgent Submission
+        } else if (isUrgent) {
             setMessages(prev => [...prev, {
                 id: Date.now(),
                 sender: 'system',
-                text: `🚨 [긴급 출동 접수] ${formData.name}님, ${formData.location}으로 즉시 출동합니다.`,
+                text: `🚨 [긴급 접수 완료] ${formData.name}님, 접수번호 ${contractNumber}`,
                 type: 'text'
             }]);
 
@@ -254,7 +280,7 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
                 setMessages(prev => [...prev, {
                     id: Date.now(),
                     sender: 'ai',
-                    text: `긴급 접수가 확정되었습니다. (상태: 출동 대기)\n담당 의전 팀장이 **3분 이내**에 ${formData.phone}으로 전화를 드려 정확한 도착 시간을 안내해 드립니다.`,
+                    text: `긴급 접수가 확정되었습니다. (접수번호: ${contractNumber})\n담당 팀장이 **3분 이내**에 ${formData.phone}으로 전화를 드려 안내해 드립니다.`,
                     type: 'text'
                 }]);
             }, 1000);
