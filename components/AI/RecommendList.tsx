@@ -55,6 +55,10 @@ export const RecommendList: React.FC<Props> = ({ facilities, onViewDetail }) => 
                             </div>
 
                             <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onViewDetail(facility);
+                                }}
                                 className="w-full py-2 bg-indigo-50 text-indigo-600 rounded-xl text-xs font-bold hover:bg-indigo-100 transition-colors flex items-center justify-center gap-1"
                             >
                                 상담 예약하기 <ChevronRight size={12} />

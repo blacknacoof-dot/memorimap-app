@@ -319,7 +319,7 @@ export const MyPageView: React.FC<Props> = ({
                     </h3>
                     <p className="text-sm text-amber-900 leading-relaxed">
                         관리자 승인을 위해 <b>사업자 등록증</b>을 아래 메일로 보내주세요.<br />
-                        <span className="font-mono bg-amber-100 px-1 rounded">blacknacoof@gmail.com</span>
+                        <span className="font-mono bg-amber-100 px-1 rounded">support@atomcare.co.kr</span>
                     </p>
                     <p className="text-xs text-amber-700 mt-2">
                         * 서류 검토 후 24시간 이내에 업체 관리자(Facility Admin) 권한이 부여됩니다.
@@ -616,9 +616,7 @@ export const MyPageView: React.FC<Props> = ({
                     onClose={() => setShowEditProfile(false)}
                     onUpdate={() => {
                         fetchUserPhone();
-                        // Ideally trigger a full user refresh or update local state name if changed
-                        // For now we rely on re-fetching phone, Name update might need context refresh or local state update
-                        window.location.reload(); // Simple refresh to reflect changes in header/other components
+                        toast.success('프로필이 업데이트되었습니다.');
                     }}
                 />
             )}

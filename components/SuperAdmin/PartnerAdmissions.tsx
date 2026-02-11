@@ -4,11 +4,11 @@ import { useApprovePartner } from '../../hooks/useAdminActions';
 import { CheckCircle, XCircle, Search, FileText, Phone, MapPin, Building2, User, MessageSquare } from 'lucide-react';
 import { PartnerInquiry } from '../../types/db';
 import { useConfirmModal } from '../../src/components/common/ConfirmModal';
-import { useIsSuperAdmin } from '../../hooks/useIsSuperAdmin';
+import { useSuperAdmin } from '../../hooks/useSuperAdmin';
 import { toast } from 'sonner'; // [Phase 2] Error Handler
 
 export const PartnerAdmissions: React.FC = () => {
-    const { isSuperAdmin } = useIsSuperAdmin();
+    const { isSuperAdmin, loading: adminLoading } = useSuperAdmin();
 
 
     const { data: inquiryData, isLoading, refetch } = usePartnerInquiries({ status: 'pending' });
@@ -24,7 +24,7 @@ export const PartnerAdmissions: React.FC = () => {
                 <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center text-red-500 font-bold shrink-0">!</div>
                 <div>
                     <h3 className="text-red-800 font-bold">권한이 없습니다</h3>
-                    <p className="text-red-600 text-sm mt-0.5">이 페이지는 슈퍼관리자(blacknacoof@gmail.com)만 접근할 수 있습니다.</p>
+                    <p className="text-red-600 text-sm mt-0.5">이 페이지는 슈퍼관리자만 접근할 수 있습니다.</p>
                 </div>
             </div>
         );

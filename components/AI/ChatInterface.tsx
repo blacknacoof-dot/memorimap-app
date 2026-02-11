@@ -566,14 +566,9 @@ export const ChatInterface: React.FC<Props> = ({
 
                 logToSystem('INFO', 'Real DB Search Start', traceId, { category, regionText }); // Replaced console.log
 
-                // [PDCA HIGH] Strict Location Check (Global)
+                // [PDCA] Location Check - 위치 없으면 전국 검색 허용
                 if (!regionText && !userLocation?.lat) {
-                    logToSystem('WARN', 'Blocked: No Location Context', traceId); // Replaced console.log
-                    aiMsg.action = 'NONE';
-                    aiMsg.text = "원활한 추천을 위해 지역 정보가 필요합니다. \n\n어느 지역을 찾으시나요? (예: 일산, 강남구)";
-                    setMessages(prev => [...prev, aiMsg]);
-                    setIsLoading(false);
-                    return; // STOP EXECUTION
+                    logToSystem('INFO', 'No location - searching nationwide', traceId);
                 }
 
                 let realResults: Facility[] = [];

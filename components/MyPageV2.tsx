@@ -1,3 +1,8 @@
+/**
+ * @deprecated MyPageView.tsx를 사용하세요.
+ * 이 파일은 V2 프로토타입으로, 실제 앱에서는 사용되지 않습니다.
+ * MyPageView.tsx (V1)이 IntegratedJourneyView, 상조 즐겨찾기 등 모든 기능을 포함합니다.
+ */
 import React, { useState, useEffect } from 'react';
 import { User, Settings2, Heart, Calendar, Star, Info, Edit, MoreHorizontal, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';

@@ -1,3 +1,7 @@
+/**
+ * @deprecated FacilityAdminDashboard.tsx를 사용하세요.
+ * 이 파일은 hooks 기반 리팩토링 프로토타입으로, 실제 앱에서는 사용되지 않습니다.
+ */
 import { useState } from 'react';
 import { LayoutDashboard, Calendar, Settings, LogOut, MessageSquare } from 'lucide-react';
 import { useClerk } from '@clerk/clerk-react';

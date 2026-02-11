@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { toast } from 'sonner';
+import EndingNoteEditModal from './EndingNoteEditModal';
 
 interface EndingNote {
     preferences: string[];
@@ -11,7 +12,7 @@ interface EndingNote {
 
 export default function EndingNoteCard() {
     const [note, setNote] = useState<EndingNote | null>(null);
-    const [isEditing, setIsEditing] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [user, setUser] = useState<any>(null);
 
     useEffect(() => {
@@ -50,7 +51,7 @@ export default function EndingNoteCard() {
         } else {
             toast.success('엔딩 노트가 저장되었습니다.');
             loadUserAndNote();
-            setIsEditing(false);
+            setIsEditModalOpen(false);
         }
     };
 
@@ -132,15 +133,21 @@ export default function EndingNoteCard() {
                 </div>
 
                 <button
-                    onClick={() => {
-                        // 실제 구현 시에는 수정 모달 또는 인풋 활성화 로직 필요
-                        toast.info('엔딩 노트 수정 기능은 준비 중입니다.');
-                    }}
+                    onClick={() => setIsEditModalOpen(true)}
                     className="w-full py-3 bg-gradient-to-r from-pink-400 to-purple-400 text-white rounded-xl font-bold shadow-md hover:shadow-lg hover:opacity-95 transition-all active:scale-95"
                 >
                     엔딩 노트 편집하기
                 </button>
             </div>
+
+            <EndingNoteEditModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                currentNote={note}
+                onSave={async (updates) => {
+                    await updateNote(updates);
+                }}
+            />
         </section>
     );
 }

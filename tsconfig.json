@@ -19,6 +19,8 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
+    "incremental": true,
+    "tsBuildInfoFile": "./.tsbuildinfo",
     "types": [
       "vite/client"
     ],
@@ -45,6 +47,11 @@
     ".venv",
     "test-results",
     "playwright-report",
-    "types_schema.ts"
+    "types_schema.ts",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "**/*.md"
   ]
 }

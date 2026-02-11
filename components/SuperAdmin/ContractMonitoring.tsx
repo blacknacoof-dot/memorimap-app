@@ -14,6 +14,7 @@ export const ContractMonitoring: React.FC = () => {
     const [aiConsultations, setAiConsultations] = useState<AiConsultation[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeFilter, setActiveFilter] = useState<'all' | 'critical' | 'urgent' | 'normal' | 'ai_alert'>('all');
+    const [joinedConversationId, setJoinedConversationId] = useState<string | null>(null);
 
     useEffect(() => {
         loadContracts();
@@ -141,8 +142,12 @@ export const ContractMonitoring: React.FC = () => {
                     : c
             ));
 
-            // TODO: 실제 채팅창 모달 열기 또는 페이지 이동
-            toast.success(`[성공] ${consultation.facility_name} 상담에 개입했습니다.`);
+            // 채팅 개입 성공: 대화 ID를 추적 상태에 저장
+            setJoinedConversationId(consultation.conversation_id);
+            toast.success(
+                `[성공] ${consultation.facility_name} 상담에 개입했습니다.\n대화 ID: ${consultation.conversation_id}`,
+                { duration: 5000 }
+            );
 
         } catch (error: any) {
             console.error('Join Chat Error:', error);
