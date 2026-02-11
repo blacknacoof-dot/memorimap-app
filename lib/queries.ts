@@ -894,6 +894,45 @@ export const getFacilityFaqs = async (facilityId: string) => {
 };
 
 /**
+ * 시설 FAQ 저장 (upsert)
+ */
+export const upsertFacilityFaq = async (faq: { id?: string; facility_id: string; question: string; answer: string; order?: number }) => {
+    try {
+        const { data, error } = await supabase
+            .from('facility_faqs')
+            .upsert({
+                ...faq,
+                is_active: true,
+                updated_at: new Date().toISOString(),
+            })
+            .select()
+            .single();
+        if (error) throw error;
+        return data;
+    } catch (e) {
+        console.error('upsertFacilityFaq error:', e);
+        return null;
+    }
+};
+
+/**
+ * 시설 FAQ 삭제 (soft delete)
+ */
+export const deleteFacilityFaq = async (faqId: string) => {
+    try {
+        const { error } = await supabase
+            .from('facility_faqs')
+            .update({ is_active: false })
+            .eq('id', faqId);
+        if (error) throw error;
+        return true;
+    } catch (e) {
+        console.error('deleteFacilityFaq error:', e);
+        return false;
+    }
+};
+
+/**
  * [호환성 패치] ReviewList.tsx가 옛날 함수명을 찾아도 작동하도록 연결
  */
 export const getReviewsBySpace = getReviews;
@@ -986,7 +1025,8 @@ export const getUserRole = async (userId: string) => {
         const { data: superAdmin } = await supabase
             .from('super_admins')
             .select('*')
-            .eq('id', userId)
+            .eq('user_id', userId)
+            .eq('is_active', true)
             .maybeSingle();
 
         if (superAdmin) {

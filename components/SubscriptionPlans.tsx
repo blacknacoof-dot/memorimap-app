@@ -159,6 +159,9 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
     const plans = type === 'sangjo' ? sangjoPlans : facilityPlans;
     const [selectedPlan, setSelectedPlan] = useState<string | null>(currentPlan || null);
     const [expandedPlan, setExpandedPlan] = useState<string | null>(type === 'sangjo' ? 'sj_professional' : 'premium');
+    const [showInquiryModal, setShowInquiryModal] = useState(false);
+    const [inquiryForm, setInquiryForm] = useState({ name: '', phone: '', email: '', message: '' });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     React.useEffect(() => {
         const loadSub = async () => {
@@ -346,11 +349,119 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                 <div className="mt-12 py-8 bg-slate-900 rounded-3xl text-center px-6">
                     <p className="text-slate-400 text-xs mb-2">도움이 필요하신가요?</p>
                     <h3 className="text-white font-bold mb-6">전문 상담사가 파트너님의<br />시설에 맞는 플랜을 추천해드립니다.</h3>
-                    <button className="w-full bg-white text-slate-900 py-3.5 rounded-xl font-bold hover:bg-slate-100 transition-colors">
+                    <button
+                        onClick={() => setShowInquiryModal(true)}
+                        className="w-full bg-white text-slate-900 py-3.5 rounded-xl font-bold hover:bg-slate-100 transition-colors"
+                    >
                         1:1 도입 문의하기
                     </button>
                 </div>
             </div>
+
+            {/* 문의 폼 모달 */}
+            {showInquiryModal && (
+                <div
+                    className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center bg-black/50"
+                    onClick={(e) => e.target === e.currentTarget && setShowInquiryModal(false)}
+                >
+                    <div className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl shadow-2xl max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom-4">
+                        <div className="flex justify-center pt-2 sm:hidden">
+                            <div className="w-10 h-1 bg-gray-300 rounded-full" />
+                        </div>
+                        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+                            <div>
+                                <h2 className="text-lg font-bold text-slate-900">1:1 도입 문의</h2>
+                                <p className="text-xs text-slate-500 mt-1">전문 상담사가 빠르게 연락드리겠습니다.</p>
+                            </div>
+                            <button
+                                onClick={() => setShowInquiryModal(false)}
+                                className="p-1.5 hover:bg-gray-100 rounded-full text-gray-400"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="px-6 py-5 space-y-4">
+                            <div>
+                                <label className="text-xs font-bold text-slate-700 mb-1 block">담당자명 *</label>
+                                <input
+                                    type="text"
+                                    value={inquiryForm.name}
+                                    onChange={(e) => setInquiryForm(prev => ({ ...prev, name: e.target.value }))}
+                                    placeholder="홍길동"
+                                    className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-slate-700 mb-1 block">연락처 *</label>
+                                <input
+                                    type="tel"
+                                    value={inquiryForm.phone}
+                                    onChange={(e) => setInquiryForm(prev => ({ ...prev, phone: e.target.value }))}
+                                    placeholder="010-0000-0000"
+                                    className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-slate-700 mb-1 block">이메일</label>
+                                <input
+                                    type="email"
+                                    value={inquiryForm.email}
+                                    onChange={(e) => setInquiryForm(prev => ({ ...prev, email: e.target.value }))}
+                                    placeholder="example@company.com"
+                                    className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-slate-700 mb-1 block">문의 내용</label>
+                                <textarea
+                                    value={inquiryForm.message}
+                                    onChange={(e) => setInquiryForm(prev => ({ ...prev, message: e.target.value }))}
+                                    placeholder="관심 있는 플랜이나 궁금한 점을 적어주세요."
+                                    rows={3}
+                                    className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none"
+                                />
+                            </div>
+                        </div>
+                        <div className="px-6 pb-6">
+                            <button
+                                onClick={async () => {
+                                    if (!inquiryForm.name.trim() || !inquiryForm.phone.trim()) {
+                                        toast.error('담당자명과 연락처는 필수입니다.');
+                                        return;
+                                    }
+                                    setIsSubmitting(true);
+                                    try {
+                                        const { supabase } = await import('../lib/supabaseClient');
+                                        await supabase.from('partner_inquiries').insert({
+                                            name: inquiryForm.name,
+                                            phone: inquiryForm.phone,
+                                            email: inquiryForm.email || null,
+                                            message: inquiryForm.message || null,
+                                            inquiry_type: 'subscription',
+                                            facility_id: facilityId || null,
+                                        });
+                                        toast.success('문의가 접수되었습니다. 빠른 시일 내 연락드리겠습니다.');
+                                        setShowInquiryModal(false);
+                                        setInquiryForm({ name: '', phone: '', email: '', message: '' });
+                                    } catch {
+                                        toast.error('문의 접수 중 오류가 발생했습니다.');
+                                    } finally {
+                                        setIsSubmitting(false);
+                                    }
+                                }}
+                                disabled={isSubmitting}
+                                className="w-full py-3.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                                {isSubmitting ? (
+                                    <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> 접수 중...</>
+                                ) : (
+                                    <><MessageCircle size={18} /> 문의 접수하기</>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
