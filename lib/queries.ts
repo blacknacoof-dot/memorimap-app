@@ -226,41 +226,46 @@ export const getIntelligentRecommendations = async (
         // A. Exact 'Dong' Search (e.g. "식사동")
         console.log(`🔍 [Recommendation] Searching for: ${regionText}`);
         let regionResults = await searchFacilitiesByRegion(regionText, undefined);
+        console.log(`🔍 [Recommendation] Raw DB results: ${regionResults.length}`, regionResults.map((r: any) => ({ name: r.name, category: r.category, type: r.type })));
         regionResults = strictFilter(regionResults, regionText);
+        console.log(`🔍 [Recommendation] After strictFilter: ${regionResults.length}`);
 
         finalData = [...regionResults];
 
-        // B. Smart Expansion (If < 3 results) -> Search Parent Region (e.g., "식사동" -> "고양시")
+        // B. 3개 미만이면 좌표 기반 반경 확장 (5km → 10km → 20km)
         if (finalData.length < 3) {
-            let parentRegion = '';
-
-            // Strategy 1: Extract from User Input (if "City Dong" format)
-            const parts = regionText.split(' ');
-            if (parts.length >= 2) {
-                // "고양시 식사동" -> "고양시"
-                parentRegion = parts[0];
+            // 기존 결과에서 좌표 추출
+            let baseLat = 0, baseLng = 0;
+            const firstWithCoords = finalData.find((f: any) => (f.latitude || f.lat) && (f.longitude || f.lng));
+            if (firstWithCoords) {
+                baseLat = firstWithCoords.latitude || firstWithCoords.lat;
+                baseLng = firstWithCoords.longitude || firstWithCoords.lng;
             } else {
-                // Strategy 2: "식사동" -> Try to find it in the 1 result we might have found to get the City
-                if (finalData.length > 0 && finalData[0].address) {
-                    const addrParts = finalData[0].address.split(' ');
-                    const cityPart = addrParts.find((p: string) => p.endsWith('시') || p.endsWith('군'));
-                    if (cityPart) parentRegion = cityPart;
+                // 좌표 없으면 DB에서 해당 지역 아무 시설이라도 찾아서 좌표 확보
+                const anyResults = await searchFacilitiesByRegion(regionText, undefined);
+                const anyWithCoords = anyResults.find((f: any) => (f.latitude || f.lat) && (f.longitude || f.lng));
+                if (anyWithCoords) {
+                    baseLat = anyWithCoords.latitude || anyWithCoords.lat;
+                    baseLng = anyWithCoords.longitude || anyWithCoords.lng;
                 }
             }
 
-            // Strategy 3: Dynamic DB Reverse Check? (Too complex for now)
-
-            if (parentRegion && parentRegion !== regionText) {
-                console.log(`🔍 [Recommendation] Expanding search to: ${parentRegion}`);
-                const parentResults = await searchFacilitiesByRegion(parentRegion, undefined);
-                const filteredParent = strictFilter(parentResults, parentRegion); // Apply strict filter with Parent Region
-
-                // Merge Unique
+            if (baseLat && baseLng) {
                 const existingIds = new Set(finalData.map(f => f.id));
-                for (const f of filteredParent) {
-                    if (!existingIds.has(f.id)) {
-                        finalData.push(f);
-                        existingIds.add(f.id);
+                const radiusList = [5000, 10000, 20000]; // 5km, 10km, 20km
+
+                for (const radius of radiusList) {
+                    if (finalData.length >= 3) break;
+                    console.log(`🔍 [Recommendation] Radius search: ${radius / 1000}km from ${baseLat.toFixed(4)},${baseLng.toFixed(4)}`);
+                    const { data: nearbyData } = await searchFacilitiesV2(baseLat, baseLng, radius, undefined, 10);
+                    if (nearbyData) {
+                        const filtered = strictFilter(nearbyData);
+                        for (const f of filtered) {
+                            if (!existingIds.has(f.id)) {
+                                finalData.push(f);
+                                existingIds.add(f.id);
+                            }
+                        }
                     }
                 }
             }
@@ -310,7 +315,8 @@ export const searchFacilitiesByRegion = async (
 
     const { data, error } = await supabase.rpc('search_facilities_by_text', {
         p_text: optimizedRegion,
-        p_category: category || null
+        p_category: category || null,
+        p_max_results: 20
     });
 
     if (error) {
@@ -1593,7 +1599,6 @@ export const getFacilityLatestInfo = async (facilityId: string) => {
 
 export interface ConsultationData {
     facility_id: string;
-    facility_name?: string;
     user_id?: string;
     user_phone?: string;
     user_name?: string;
@@ -1631,7 +1636,7 @@ export const createFuneralConsultation = async (data: ConsultationData): Promise
             .from('consultations')
             .insert({
                 ...data,
-                status: 'waiting'
+                status: 'pending'
             })
             .select()
             .single();
@@ -1718,11 +1723,14 @@ export const getConsultationsByFacility = async (
  */
 export const getConsultationsByUser = async (userId: string): Promise<Consultation[]> => {
     try {
+        console.log('📋 [MyPage] Fetching consultations for user_id:', userId);
         const { data, error } = await supabase
             .from('consultations')
             .select('*')
             .eq('user_id', userId)
             .order('created_at', { ascending: false });
+
+        console.log('📋 [MyPage] Results:', data?.length, 'Error:', error);
 
         if (error) {
             console.error('getConsultationsByUser error:', error);

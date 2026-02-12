@@ -31,17 +31,19 @@ interface FormProps {
     onGetCurrentPosition?: () => void;
     onSubmit: (data: { text: string; data: any }) => void;
     onClose?: () => void;
+    onGoToMyPage?: () => void;
     onLoginRequired?: () => void;
     initialCategory?: string;
     facilityId?: string;
     facilityName?: string;
     currentUser?: any;
-    onSwitchToFacility?: (facility: any) => void;
+    onSwitchToFacility?: (facility: any, context?: any) => void;
 }
 
 const MemorialSearchForm: React.FC<FormProps> = ({
     onSubmit,
     onClose,
+    onGoToMyPage,
     onLoginRequired,
     initialCategory = 'memorial',
     facilityId,

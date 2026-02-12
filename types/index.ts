@@ -58,7 +58,7 @@ export interface Review {
 
 export type AiTone = 'polite' | 'warm' | 'factual';
 export type FacilityType = 'FUNERAL_HOME' | 'MEMORIAL_PARK' | 'SANGJO';
-export type ActionType = 'NONE' | 'RESERVE' | 'MAP' | 'CALL_MANAGER' | 'RECOMMEND' | 'SWITCH_TO_CONSULT' | 'SHOW_FORM_A' | 'SHOW_FORM_B' | 'SHOW_FORM_C' | 'SHOW_FORM_D' | 'SHOW_PRODUCTS' | 'URGENT_DISPATCH' | 'URGENT_CHECK' | 'URGENT_RESERVATION_CONFIRM' | 'SHOW_PROCESS';
+export type ActionType = 'NONE' | 'RESERVE' | 'MAP' | 'CALL_MANAGER' | 'RECOMMEND' | 'SWITCH_TO_CONSULT' | 'SHOW_FORM_A' | 'SHOW_FORM_B' | 'SHOW_FORM_C' | 'SHOW_FORM_D' | 'SHOW_PRODUCTS' | 'URGENT_DISPATCH' | 'URGENT_CHECK' | 'URGENT_RESERVATION_CONFIRM' | 'SHOW_PROCESS' | 'GO_MY_PAGE';
 export type AiActionType = ActionType; // Backward compatibility
 
 export enum AiConsultationStatus {

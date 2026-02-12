@@ -34,6 +34,7 @@ interface Props {
     onGetCurrentPosition?: () => void;
     handoverContext?: any;
     onSearchFacilities?: (region: string) => Facility[];
+    onGoToMyPage?: () => void;
 }
 
 
@@ -253,7 +254,8 @@ export const ChatInterface: React.FC<Props> = ({
     onNavigateToFacility,
     userLocation,
     onGetCurrentPosition,
-    handoverContext
+    handoverContext,
+    onGoToMyPage
 }) => {
 
     const { openSignIn } = useClerk(); // For login modal
@@ -940,6 +942,7 @@ export const ChatInterface: React.FC<Props> = ({
                                                 onGetCurrentPosition={onGetCurrentPosition}
                                                 onSubmit={(payload: { text: string; data: any }) => handleSend(payload)}
                                                 onClose={onClose}
+                                                onGoToMyPage={onGoToMyPage}
                                                 onLoginRequired={() => {
                                                     onClose();
                                                     openSignIn(); // Open Clerk login modal
