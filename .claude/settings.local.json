@@ -41,7 +41,8 @@
       "Bash(git commit:*)",
       "Bash(npm run dev:*)",
       "Bash(netstat:*)",
-      "Bash(rsync:*)"
+      "Bash(rsync:*)",
+      "Bash(npx vite build:*)"
     ]
   }
 }
