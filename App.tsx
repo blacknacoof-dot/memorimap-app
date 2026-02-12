@@ -2011,6 +2011,11 @@ const App: React.FC = () => {
                       setAiChatFacility(null);
                       setInitialChatIntent(null);
                     }}
+                    onGoToMyPage={() => {
+                      setAiChatFacility(null);
+                      setInitialChatIntent(null);
+                      setViewState(ViewState.MY_PAGE);
+                    }}
                     onSearchFacilities={(region: string) => {
                       // Simple Search Logic
                       // 1. Filter by address containing region (e.g. "신촌동")

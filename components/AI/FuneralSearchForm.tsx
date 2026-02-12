@@ -11,7 +11,9 @@ import {
     Phone,
     Loader2
 } from 'lucide-react';
-import { createFuneralConsultation, getDistinctRegions, getIntelligentRecommendations } from '@/lib/queries';
+import { getDistinctRegions, getIntelligentRecommendations } from '@/lib/queries';
+import { createAuthenticatedClient } from '@/lib/supabaseClient';
+import { useSession } from '@/lib/auth';
 import {
     FUNERAL_URGENCY_OPTIONS,
     FUNERAL_SCALE_OPTIONS,
@@ -38,6 +40,7 @@ interface FormProps {
     onGetCurrentPosition?: () => void;
     onSubmit: (data: { text: string; data: any }) => void;
     onClose?: () => void;
+    onGoToMyPage?: () => void;
     onLoginRequired?: () => void;
     initialCategory?: string;
     facilityId?: string;
@@ -49,6 +52,7 @@ interface FormProps {
 const FuneralSearchForm: React.FC<FormProps> = ({
     onSubmit,
     onClose,
+    onGoToMyPage,
     onLoginRequired,
     initialCategory = 'funeral',
     facilityId,
@@ -56,6 +60,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
     currentUser,
     onSwitchToFacility
 }) => {
+    const { session } = useSession();
     const [step, setStep] = useState(1);
     const [isSaving, setIsSaving] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
@@ -63,6 +68,13 @@ const FuneralSearchForm: React.FC<FormProps> = ({
     // [ADD] State for in-form recommendations
     const [recommendedFacilities, setRecommendedFacilities] = useState<any[]>([]);
     const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
+    const [bookedIds, setBookedIds] = useState<Set<string>>(new Set());
+    const [bookingId, setBookingId] = useState<string | null>(null);
+    // 접수 폼 상태
+    const [showContactFor, setShowContactFor] = useState<string | null>(null);
+    const [cName, setCName] = useState(currentUser?.name || '');
+    const [cPhone, setCPhone] = useState(currentUser?.phone || '');
+    const [cMemo, setCMemo] = useState('');
 
     const [urgency, setUrgency] = useState('');
 
@@ -114,11 +126,10 @@ const FuneralSearchForm: React.FC<FormProps> = ({
     const handleNext = () => {
         if (step === 1) {
             if (!urgency) return;
-            // [FIX] 'inquiry'일 때도 Step 3에서 멈추도록 step 상태만 변경 (UI 조건문은 JSX에서 처리)
             if (urgency === 'deceased' || urgency === 'imminent') {
                 setStep(2);
             } else {
-                setStep(3); // Skip deceased location for simple inquiry
+                setStep(3);
             }
             return;
         }
@@ -132,9 +143,10 @@ const FuneralSearchForm: React.FC<FormProps> = ({
         if (step === 5 && !religion) return;
         if (step === 6 && !schedule) return;
 
-        // [FIX] Ensure transition to step 8
-        if (step === 7 && services.length === 0) {
-            // Optional check for services, currently allowed to be empty
+        // Step 6 → Step 8 (skip Step 7 부대시설)
+        if (step === 6) {
+            setStep(8);
+            return;
         }
 
         setStep(prev => prev + 1);
@@ -164,7 +176,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
         const religionLabel = FUNERAL_RELIGION_OPTIONS.find(o => o.id === religion)?.label || religion;
         const scheduleLabel = FUNERAL_SCHEDULE_OPTIONS.find(o => o.id === schedule)?.label || schedule;
 
-        const finalText = `[🚨 장례식장 찾기]\n` +
+        const finalText = `[장례식장 찾기]\n` +
             `| 구분 | 선택 내용 |\n` +
             `|---|---|\n` +
             `| 상황 | ${urgencyLabel} |\n` +
@@ -172,46 +184,25 @@ const FuneralSearchForm: React.FC<FormProps> = ({
             `| 지역 설정 | ${location} |\n` +
             `| 희망 규모 | ${scaleLabel} |\n` +
             `| 종교 | ${religionLabel} |\n` +
-            `| 일정 | ${scheduleLabel} |\n` +
-            `| 부대시설 | ${services.join(', ') || '선택 없음'} |`;
+            `| 일정 | ${scheduleLabel} |`;
 
-        // Submit to AI
-        onSubmit({ text: finalText, data: searchData });
         setIsSaving(false);
-        setIsSubmitted(true); // Show success view
+        setIsSubmitted(true);
 
-        // [FIX] Fetch recommendations inside the form instead of auto-closing
+        // 해당 지역 시설 3개 추천 (없으면 전체 지역에서 fallback)
         setIsLoadingRecommendations(true);
         try {
-            // Use getIntelligentRecommendations for better results
-            // Adjust arguments as needed: lat, lng, category, regionText
-            // Assuming we have location text, let's try to get coordinates or just use region text if API supports it
-            // For now, falling back to a region-based search or similar if intelligent search needs coordinates
-            // NOTE: getIntelligentRecommendations needs lat/lng. If we don't have them, we might need a geocoding step or use a simpler query.
-            // Let's assume we can use the region text for a simple search or if we have userLocation (which we don't in props yet, maybe need to add).
-            // For this implementation, let's assume we use the region text to find facilities.
-            // If getIntelligentRecommendations requires lat/lng, we might need to fetch them.
-            // Let's use getFuneralFacilities (which seems to exist or we can use a similar one).
-            // Actually, querying by region text directly might be best if available.
-            // Let's use `getFuneralFacilitiesByRegion` if available, or fetch all and filter (inefficient).
-            // Better: use `getDistinctRegions` to get list, but we need facilities.
-
-            // Let's import getIntelligentRecommendations from lib/queries
-            // We need lat/lng. If not available, maybe skip or use defaults?
-            // Let's try to pass 0,0 and region text if the API supports filtering by region text logic inside.
-            // Wait, getIntelligentRecommendations implementation in queries.ts:
-            // "export const getIntelligentRecommendations = async (lat: number, lng: number, category?: string, regionText?: string)"
-            // It seems it CAN take regionText.
-            const recs = await getIntelligentRecommendations(0, 0, 'funeral_home', location);
+            let recs = await getIntelligentRecommendations(0, 0, 'funeral_home', location);
+            if (!recs || recs.length === 0) {
+                // fallback: 전체 지역에서 검색
+                recs = await getIntelligentRecommendations(0, 0, 'funeral_home', '');
+            }
             setRecommendedFacilities(recs.slice(0, 3));
         } catch (e) {
             console.error("Failed to fetch recommendations", e);
         } finally {
             setIsLoadingRecommendations(false);
         }
-
-        // [REMOVED] Auto-close timeout
-        // setTimeout(() => { onClose?.(); }, 1500);
     };
 
     const handleReset = () => {
@@ -292,79 +283,118 @@ const FuneralSearchForm: React.FC<FormProps> = ({
         );
     }
 
-    // Step 6: Completion Screen (fallback if onClose not provided)
-    // [FIX] Render In-Form Recommendations on Success
+    // 접수 제출
+    const doBooking = async (facilityId: string, facilityName: string) => {
+        if (!cName.trim() || !cPhone.trim()) return;
+        setBookingId(facilityId);
+
+        const notes = [
+            `[AI 마음이 추천 접수]`,
+            `시설: ${facilityName}`,
+            `상황: ${FUNERAL_URGENCY_OPTIONS.find(o => o.id === urgency)?.label}`,
+            deceasedLocation ? `고인위치: ${deceasedLocation}` : '',
+            `지역: ${location}`,
+            `규모: ${FUNERAL_SCALE_OPTIONS.find(o => o.id === scale)?.label}`,
+            `종교: ${FUNERAL_RELIGION_OPTIONS.find(o => o.id === religion)?.label}`,
+            `일정: ${FUNERAL_SCHEDULE_OPTIONS.find(o => o.id === schedule)?.label}`,
+            cMemo ? `요청: ${cMemo}` : '',
+        ].filter(Boolean).join(', ');
+
+        try {
+            const token = await session?.getToken({ template: 'supabase' });
+            if (!token) throw new Error('인증 토큰 없음');
+            const authClient = createAuthenticatedClient(token);
+
+            const { error } = await authClient
+                .from('consultations')
+                .insert({
+                    facility_id: facilityId,
+                    user_id: currentUser?.id,
+                    user_name: cName.trim(),
+                    user_phone: cPhone.trim(),
+                    notes,
+                    status: 'pending'
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+            setBookedIds(prev => new Set(prev).add(String(facilityId)));
+            setShowContactFor(null);
+        } catch (e) {
+            console.error('상담접수 실패:', e);
+        } finally {
+            setBookingId(null);
+        }
+    };
+
+    // Completion Screen with Recommendations
     if (isSubmitted) {
         return (
             <div className="space-y-4 animate-in fade-in zoom-in duration-300">
                 <QuestionBubble>
-                    ✅ <strong>상담 접수 완료!</strong><br />
-                    입력하신 정보(<strong>{location}</strong>)를 바탕으로 엄선한<br />
-                    추천 장례식장을 안내해 드립니다.
+                    <strong>접수 완료되었습니다.</strong><br />
+                    <strong>{location}</strong> 지역 상담 가능한 시설을 추천해 드립니다.
                 </QuestionBubble>
 
-                <div className="pl-10">
+                <div className="pl-10 space-y-3">
                     {isLoadingRecommendations ? (
                         <div className="flex flex-col items-center justify-center py-8 space-y-3 bg-white border border-slate-200 rounded-xl">
                             <Loader2 className="animate-spin text-indigo-600" size={32} />
                             <span className="text-xs text-slate-500 font-medium">맞춤 시설을 찾고 있습니다...</span>
                         </div>
-                    ) : (
-                        <div className="space-y-3">
-                            {recommendedFacilities.length > 0 ? (
-                                <div className="max-h-[320px] overflow-y-auto space-y-3 pr-1 custom-scrollbar">
-                                    {recommendedFacilities.map((f, idx) => (
-                                        <div
-                                            key={idx}
-                                            className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer group"
-                                            onClick={() => {
-                                                // Navigate to facility
-                                                if (onSwitchToFacility) {
-                                                    const targetId = typeof f.id === 'object' ? (f.id as any).id || (f as any).facilityId : f.id;
-                                                    onSwitchToFacility({
-                                                        ...f,
-                                                        id: targetId,
-                                                        category: 'funeral_home'
-                                                    });
-                                                }
-                                            }}
-                                        >
-                                            <div className="flex justify-between items-start mb-1">
-                                                <div className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
-                                                    {f.name}
-                                                </div>
-                                                <span className="bg-slate-100 text-slate-600 text-[10px] px-2 py-0.5 rounded-full font-bold">
-                                                    추천 {idx + 1}
-                                                </span>
-                                            </div>
-                                            <div className="text-xs text-slate-500 mb-1 flex items-center gap-1">
-                                                <MapPin size={12} /> {f.address || f.jibun_address || '주소 정보 없음'}
-                                            </div>
-                                            <div className="text-xs text-slate-500 flex items-center gap-1">
-                                                <Phone size={12} /> {f.phone || '연락처 정보 없음'}
-                                            </div>
+                    ) : recommendedFacilities.length > 0 ? (
+                        recommendedFacilities.map((f, idx) => {
+                            const fId = String(typeof f.id === 'object' ? (f.id as any).id || (f as any).facilityId : f.id);
+                            const imageUrl = f.image_url || (f.images?.[0] ?? null);
+                            const isBooked = bookedIds.has(fId);
+                            const isThisOpen = showContactFor === fId;
+                            const isThisBooking = bookingId === fId;
+
+                            return (
+                                <div key={fId} className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                                    {imageUrl && <img src={imageUrl} alt={f.name} className="w-full h-32 object-cover" />}
+                                    <div className="p-4 space-y-2">
+                                        <div className="flex justify-between items-start">
+                                            <span className="font-bold text-slate-900">{f.name}</span>
+                                            <span className="bg-indigo-50 text-indigo-600 text-[10px] px-2 py-0.5 rounded-full font-bold">추천 {idx + 1}</span>
                                         </div>
-                                    ))}
+                                        <div className="text-xs text-slate-500 flex items-center gap-1"><MapPin size={12} /> {f.address || '주소 없음'}</div>
+                                        <div className="text-xs text-slate-500 flex items-center gap-1"><Phone size={12} /> {f.phone || '연락처 없음'}</div>
+
+                                        {isBooked ? (
+                                            <div className="bg-green-50 border border-green-200 text-green-700 text-sm font-bold py-2.5 rounded-xl text-center flex items-center justify-center gap-1.5">
+                                                <Check size={16} /> 접수 완료
+                                            </div>
+                                        ) : isThisOpen ? (
+                                            <div className="space-y-2 border-t border-slate-100 pt-3">
+                                                <input id={`name-${fId}`} name="contact-name" type="text" value={cName} onChange={e => setCName(e.target.value)} placeholder="성함 *" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none" />
+                                                <input id={`phone-${fId}`} name="contact-phone" type="tel" value={cPhone} onChange={e => setCPhone(e.target.value)} placeholder="연락처 * (010-1234-5678)" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none" />
+                                                <input id={`memo-${fId}`} name="contact-memo" type="text" value={cMemo} onChange={e => setCMemo(e.target.value)} placeholder="요청사항 (선택)" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none" />
+                                                <div className="flex gap-2">
+                                                    <button type="button" onClick={() => setShowContactFor(null)} className="flex-1 bg-slate-100 text-slate-600 text-sm font-bold py-2.5 rounded-xl">취소</button>
+                                                    <button type="button" onClick={() => doBooking(fId, f.name)} disabled={!cName.trim() || !cPhone.trim() || !!bookingId} className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white text-sm font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5">
+                                                        {isThisBooking ? <><Loader2 size={16} className="animate-spin" /> 접수 중...</> : <><Check size={16} /> 접수하기</>}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <button type="button" onClick={() => { setCName(currentUser?.name || ''); setCPhone(currentUser?.phone || ''); setCMemo(''); setShowContactFor(fId); }} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2.5 rounded-xl shadow-md active:scale-95 flex items-center justify-center gap-1.5">
+                                                <Calendar size={16} /> 상담접수하기
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
-                            ) : (
-                                <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center">
-                                    <p className="text-sm text-slate-600 font-medium mb-1">추천 가능한 시설이 없습니다.</p>
-                                    <p className="text-xs text-slate-500">
-                                        선택하신 지역({location})에 등록된 시설이 없거나<br />
-                                        일시적인 오류일 수 있습니다.
-                                    </p>
-                                </div>
-                            )}
+                            );
+                        })
+                    ) : (
+                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center">
+                            <p className="text-sm text-slate-600 font-medium">추천 가능한 시설이 없습니다.</p>
                         </div>
                     )}
-                </div>
 
-                <div className="pl-10 pt-2">
-                    <button
-                        onClick={onClose}
-                        className="w-full bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold py-3.5 rounded-xl shadow-lg transition-all"
-                    >
-                        닫기
+                    <button type="button" onClick={() => onGoToMyPage ? onGoToMyPage() : onClose?.()} className="w-full bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-2">
+                        <Check size={16} /> 상담 내역 보기
                     </button>
                 </div>
             </div>
@@ -616,43 +646,14 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                 )
             }
 
-            {/* Step 7: Services */}
-            {
-                step >= 7 && (
-                    <>
-                        <QuestionBubble>
-                            <strong>7. 추가 서비스:</strong> 추가적으로 필요한 서비스가 있으신가요?
-                        </QuestionBubble>
-                        {step === 7 && (
-                            <div className="pl-10">
-                                <div className="flex flex-wrap gap-2">
-                                    {FUNERAL_SERVICE_OPTIONS.map(opt => (
-                                        <button key={opt} onClick={() => toggleService(opt)} className={`py-2 px-3 text-xs rounded-full border transition-all ${services.includes(opt) ? 'bg-indigo-600 border-indigo-600 text-white font-bold' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
-                                            {opt}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                        {step > 7 && services.length > 0 && (
-                            <div className="flex justify-end mb-3">
-                                <div className="bg-indigo-600 text-white px-4 py-2 rounded-2xl rounded-br-sm text-sm shadow-sm max-w-[80%] text-right">
-                                    {services.join(', ')}
-                                </div>
-                            </div>
-                        )}
-                    </>
-                )
-            }
-
-            {/* Step 8: Summary */}
+            {/* Step 8: Summary & Submit */}
             {
                 step === 8 && (
                     <>
                         <QuestionBubble>
-                            <strong>8. 최종 확인:</strong> 입력하신 내용을 확인해 주세요. 아래 내용이 맞으시면 <strong>상담 접수</strong> 버튼을 눌러주세요.
+                            최종 확인: 입력하신 내용을 확인해 주세요. 맞으시면 <strong>상담 접수</strong> 버튼을 눌러주세요.
                         </QuestionBubble>
-                        <div className="pl-10">
+                        <div className="pl-10 space-y-4">
                             <div className="bg-white border-2 border-indigo-200 rounded-xl p-4 space-y-2">
                                 <div className="flex justify-between text-sm border-b border-slate-100 pb-2">
                                     <span className="text-slate-500">현재 상황</span>
@@ -661,7 +662,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                                 {deceasedLocation && (
                                     <div className="flex justify-between text-sm border-b border-slate-100 pb-2">
                                         <span className="text-slate-500">고인 위치</span>
-                                        <span className="font-bold text-slate-800">{deceasedLocation} {needsAmbulance ? '(🚑 운구 필요)' : ''}</span>
+                                        <span className="font-bold text-slate-800">{deceasedLocation} {needsAmbulance ? '(운구 필요)' : ''}</span>
                                     </div>
                                 )}
                                 <div className="flex justify-between text-sm border-b border-slate-100 pb-2">
@@ -676,63 +677,13 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                                     <span className="text-slate-500">종교</span>
                                     <span className="font-bold text-slate-800">{FUNERAL_RELIGION_OPTIONS.find(o => o.id === religion)?.label}</span>
                                 </div>
-                                <div className="flex justify-between text-sm border-b border-slate-100 pb-2">
+                                <div className="flex justify-between text-sm">
                                     <span className="text-slate-500">장례 일정</span>
                                     <span className="font-bold text-slate-800">{FUNERAL_SCHEDULE_OPTIONS.find(o => o.id === schedule)?.label}</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-slate-500">부대시설</span>
-                                    <span className="font-bold text-slate-800">{services.join(', ') || '선택 없음'}</span>
                                 </div>
                             </div>
                         </div>
                     </>
-                )
-            }
-
-            {/* Step 8: Final Summary & Submit */}
-            {
-                step === 8 && (
-                    <div className="pl-10 space-y-4">
-                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm space-y-2">
-                            <h4 className="font-bold text-slate-800 mb-2 border-b border-slate-200 pb-2">입력하신 정보를 확인해주세요</h4>
-                            <div className="grid grid-cols-[80px_1fr] gap-y-1">
-                                <span className="text-slate-500">상황:</span>
-                                <span className="font-medium text-slate-800">
-                                    {urgency === 'deceased' ? '임종 발생 (긴급)' :
-                                        urgency === 'imminent' ? '임종 임박 (준비)' : '단순 문의'}
-                                </span>
-
-                                {deceasedLocation && (
-                                    <>
-                                        <span className="text-slate-500">고인 위치:</span>
-                                        <span className="font-medium text-slate-800">{deceasedLocation}</span>
-                                    </>
-                                )}
-
-                                <span className="text-slate-500">희망 지역:</span>
-                                <span className="font-medium text-slate-800">{location}</span>
-
-                                <span className="text-slate-500">예상 조문:</span>
-                                <span className="font-medium text-slate-800">{scale}</span>
-
-                                <span className="text-slate-500">종교:</span>
-                                <span className="font-medium text-slate-800">{religion}</span>
-
-                                <span className="text-slate-500">장례 일정:</span>
-                                <span className="font-medium text-slate-800">{schedule}</span>
-
-                                <span className="text-slate-500">필요 서비스:</span>
-                                <span className="font-medium text-slate-800">
-                                    {services.length > 0 ? services.join(', ') : '선택 없음'}
-                                </span>
-                            </div>
-                        </div>
-                        <p className="text-xs text-slate-500 text-center">
-                            위 내용으로 상담을 접수하고<br />
-                            맞춤 장례식장 추천을 받으시겠습니까?
-                        </p>
-                    </div>
                 )
             }
 
@@ -761,7 +712,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                             }
                             className="flex-1 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-bold py-3 rounded-xl shadow-md transition-all"
                         >
-                            {step === 7 ? '마지막 확인 →' : '다음 질문으로 →'}
+                            {step === 6 ? '최종 확인 →' : '다음 질문으로 →'}
                         </button>
                     </div>
                 )
@@ -771,7 +722,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
             {
                 step === 8 && (
                     <div className="pl-10 pt-2 flex gap-2">
-                        <button onClick={() => setStep(7)} className="px-3 py-3 text-slate-500 text-xs hover:bg-slate-100 rounded-xl border border-slate-200 transition">수정하기</button>
+                        <button onClick={() => setStep(6)} className="px-3 py-3 text-slate-500 text-xs hover:bg-slate-100 rounded-xl border border-slate-200 transition">수정하기</button>
                         <button
                             onClick={handleSubmit}
                             disabled={isSaving}

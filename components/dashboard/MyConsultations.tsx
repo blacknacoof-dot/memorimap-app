@@ -207,7 +207,7 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat }) => {
                                     <Building2 size={18} className="text-slate-500" />
                                 </div>
                                 <div className="flex-1">
-                                    <h4 className="font-bold text-sm text-slate-800">{consultation.facility_name || '장례식장'}</h4>
+                                    <h4 className="font-bold text-sm text-slate-800">{(consultation as any).facilities?.name || '장례식장'}</h4>
                                     {consultation.location && (
                                         <p className="text-xs text-slate-500 flex items-center gap-1">
                                             <MapPin size={10} />
