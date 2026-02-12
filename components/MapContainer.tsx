@@ -21,6 +21,7 @@ interface MapProps {
 
 export interface MapRef {
   flyToLocation: () => void;
+  flyTo: (center: [number, number], zoom: number) => void;
 }
 
 const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelect, onBoundsChange, initialCenter, initialZoom }, ref) => {
@@ -295,7 +296,13 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
         console.error("Geolocation error", err);
         toast.error("위치를 가져올 수 없습니다.");
       });
-    }
+    },
+    flyTo: (center: [number, number], zoom: number) => {
+      if (!mapInstance.current || !window.naver?.maps) return;
+      const latLng = new window.naver.maps.LatLng(center[0], center[1]);
+      mapInstance.current.setCenter(latLng);
+      mapInstance.current.setZoom(zoom);
+    },
   }));
 
   // Render

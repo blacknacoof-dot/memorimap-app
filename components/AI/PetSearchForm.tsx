@@ -1,15 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { AlertCircle, MapPin, Check, Heart, Dog, Cat, Fish, ArrowRight, Phone, Loader2 } from 'lucide-react';
+import { AlertCircle, MapPin, Check, Heart, Dog, Cat, Fish, ArrowRight, Phone, Loader2, Calendar } from 'lucide-react';
 import { createLead, getDistinctRegions, getIntelligentRecommendations } from '../../lib/queries';
+import { createAuthenticatedClient } from '@/lib/supabaseClient';
+import { useSession } from '@/lib/auth';
+import { addSearchHistory } from '@/utils/searchHistory';
 
 interface FormProps {
     userLocation?: { lat: number, lng: number, type: string };
     onGetCurrentPosition?: () => void;
     onSubmit: (data: { text: string, data: any }) => void;
     onClose?: () => void;
+    onGoToMyPage?: () => void;
+    onLoginRequired?: () => void;
     initialCategory?: string;
     currentUser?: any;
-    onSwitchToFacility?: (facility: any) => void;
+    onSwitchToFacility?: (facility: any, context?: any) => void;
 }
 
 const PetSearchForm: React.FC<FormProps> = ({
@@ -19,8 +24,11 @@ const PetSearchForm: React.FC<FormProps> = ({
     initialCategory = 'pet_funeral',
     currentUser,
     onClose,
+    onGoToMyPage,
+    onLoginRequired,
     onSwitchToFacility
 }) => {
+    const { session } = useSession();
     const [step, setStep] = useState(1);
     const [timing, setTiming] = useState<'immediate' | 'prepare' | ''>('');
     const [petType, setPetType] = useState('');
@@ -28,15 +36,25 @@ const PetSearchForm: React.FC<FormProps> = ({
     const [region, setRegion] = useState('');
     const [services, setServices] = useState<string[]>([]);
     const [error, setError] = useState('');
+    const [gpsError, setGpsError] = useState('');
 
-    // [ADD] State for recommendations
+    // State for recommendations
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
     const [recommendedFacilities, setRecommendedFacilities] = useState<any[]>([]);
 
+    // 인라인 상담접수 상태
+    const [bookedIds, setBookedIds] = useState<Set<string>>(new Set());
+    const [bookingId, setBookingId] = useState<string | null>(null);
+    const [showContactFor, setShowContactFor] = useState<string | null>(null);
+    const [cName, setCName] = useState(currentUser?.name || '');
+    const [cPhone, setCPhone] = useState(currentUser?.phone || '');
+    const [cMemo, setCMemo] = useState('');
+
     // Autocomplete State
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const [isComposing, setIsComposing] = useState(false);
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
     const TIMING_OPTIONS = [
@@ -110,8 +128,9 @@ const PetSearchForm: React.FC<FormProps> = ({
 
         onSubmit({ text: finalText, data: searchData });
 
-        // [ADD] Fetch Recommendations
+        // Fetch Recommendations
         setIsSubmitted(true);
+        addSearchHistory(region || '내 위치 주변', 'pet');
         setIsLoadingRecommendations(true);
 
         try {
@@ -121,7 +140,7 @@ const PetSearchForm: React.FC<FormProps> = ({
             const searchRegion = region || (userLocation?.type === 'gps' ? '' : ''); // Priority to text region
 
             const results = await getIntelligentRecommendations(lat, lng, 'pet', searchRegion);
-            setRecommendedFacilities(results.slice(0, 3));
+            setRecommendedFacilities(results.slice(0, 5));
         } catch (e) {
             console.error("Failed to fetch pet recommendations", e);
         } finally {
@@ -131,6 +150,49 @@ const PetSearchForm: React.FC<FormProps> = ({
 
     const toggleService = (opt: string) => {
         setServices(prev => prev.includes(opt) ? prev.filter(p => p !== opt) : [...prev, opt]);
+    };
+
+    // 인라인 상담접수 제출
+    const doBooking = async (fId: string, fName: string) => {
+        if (!cName.trim() || !cPhone.trim()) return;
+        setBookingId(fId);
+
+        const petLabel = PACK_TYPE_OPTIONS.find(o => o.id === petType)?.label;
+        const weightLabel = WEIGHT_OPTIONS.find(o => o.id === weight)?.label;
+        const notes = [
+            `[AI 마음이 반려동물 장례 추천 접수]`,
+            `시설: ${fName}`,
+            `상황: ${TIMING_OPTIONS.find(o => o.id === timing)?.label}`,
+            `아이: ${petLabel} (${weightLabel})`,
+            `지역: ${region || '내 위치 주변'}`,
+            `서비스: ${services.join(', ') || '없음'}`,
+            cMemo ? `요청: ${cMemo}` : '',
+        ].filter(Boolean).join(', ');
+
+        try {
+            const token = await session?.getToken({ template: 'supabase' });
+            if (!token) throw new Error('인증 토큰 없음');
+            const authClient = createAuthenticatedClient(token);
+
+            const { error } = await authClient
+                .from('consultations')
+                .insert({
+                    facility_id: fId,
+                    user_id: currentUser?.id,
+                    user_name: cName.trim(),
+                    user_phone: cPhone.trim(),
+                    notes,
+                    status: 'pending'
+                });
+
+            if (error) throw error;
+            setBookedIds(prev => new Set(prev).add(String(fId)));
+            setShowContactFor(null);
+        } catch (e) {
+            console.error('상담접수 실패:', e);
+        } finally {
+            setBookingId(null);
+        }
     };
 
     // Helper Components
@@ -179,37 +241,49 @@ const PetSearchForm: React.FC<FormProps> = ({
                         <div className="space-y-3">
                             {recommendedFacilities.length > 0 ? (
                                 <div className="max-h-[320px] overflow-y-auto space-y-3 pr-1 custom-scrollbar">
-                                    {recommendedFacilities.map((f, idx) => (
-                                        <div
-                                            key={idx}
-                                            className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer group"
-                                            onClick={() => {
-                                                if (onSwitchToFacility) {
-                                                    const targetId = typeof f.id === 'object' ? (f.id as any).id || (f as any).facilityId : f.id;
-                                                    onSwitchToFacility({
-                                                        ...f,
-                                                        id: targetId,
-                                                        category: 'pet_funeral'
-                                                    });
-                                                }
-                                            }}
-                                        >
-                                            <div className="flex justify-between items-start mb-1">
-                                                <div className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
-                                                    {f.name}
+                                    {recommendedFacilities.map((f, idx) => {
+                                        const fId = String(typeof f.id === 'object' ? (f.id as any).id || (f as any).facilityId : f.id);
+                                        const imageUrl = f.image_url || (f.images?.[0] ?? null);
+                                        const isBooked = bookedIds.has(fId);
+                                        const isThisOpen = showContactFor === fId;
+                                        const isThisBooking = bookingId === fId;
+
+                                        return (
+                                            <div key={fId} className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                                                {imageUrl && <img src={imageUrl} alt={f.name} className="w-full h-32 object-cover" loading="lazy" />}
+                                                <div className="p-4 space-y-2">
+                                                    <div className="flex justify-between items-start">
+                                                        <span className="font-bold text-slate-900">{f.name}</span>
+                                                        <span className="bg-indigo-50 text-indigo-600 text-[10px] px-2 py-0.5 rounded-full font-bold">추천 {idx + 1}</span>
+                                                    </div>
+                                                    <div className="text-xs text-slate-500 flex items-center gap-1"><MapPin size={12} /> {f.address || f.jibun_address || '주소 정보 없음'}</div>
+                                                    <div className="text-xs text-slate-500 flex items-center gap-1"><Phone size={12} /> {f.phone || '연락처 정보 없음'}</div>
+
+                                                    {isBooked ? (
+                                                        <div className="bg-green-50 border border-green-200 text-green-700 text-sm font-bold py-2.5 rounded-xl text-center flex items-center justify-center gap-1.5">
+                                                            <Check size={16} /> 접수 완료
+                                                        </div>
+                                                    ) : isThisOpen ? (
+                                                        <div className="space-y-2 border-t border-slate-100 pt-3">
+                                                            <input type="text" value={cName} onChange={e => setCName(e.target.value)} placeholder="성함 *" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none" />
+                                                            <input type="tel" value={cPhone} onChange={e => setCPhone(e.target.value)} placeholder="연락처 * (010-1234-5678)" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none" />
+                                                            <input type="text" value={cMemo} onChange={e => setCMemo(e.target.value)} placeholder="요청사항 (선택)" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none" />
+                                                            <div className="flex gap-2">
+                                                                <button type="button" onClick={() => setShowContactFor(null)} className="flex-1 bg-slate-100 text-slate-600 text-sm font-bold py-2.5 rounded-xl">취소</button>
+                                                                <button type="button" onClick={() => doBooking(fId, f.name)} disabled={!cName.trim() || !cPhone.trim() || !!bookingId} className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white text-sm font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5">
+                                                                    {isThisBooking ? <><Loader2 size={16} className="animate-spin" /> 접수 중...</> : <><Check size={16} /> 접수하기</>}
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <button type="button" onClick={() => { setCName(currentUser?.name || ''); setCPhone(currentUser?.phone || ''); setCMemo(''); setShowContactFor(fId); }} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2.5 rounded-xl shadow-md active:scale-95 flex items-center justify-center gap-1.5">
+                                                            <Calendar size={16} /> 상담접수하기
+                                                        </button>
+                                                    )}
                                                 </div>
-                                                <span className="bg-slate-100 text-slate-600 text-[10px] px-2 py-0.5 rounded-full font-bold">
-                                                    추천 {idx + 1}
-                                                </span>
                                             </div>
-                                            <div className="text-xs text-slate-500 mb-1 flex items-center gap-1">
-                                                <MapPin size={12} /> {f.address || f.jibun_address || '주소 정보 없음'}
-                                            </div>
-                                            <div className="text-xs text-slate-500 flex items-center gap-1">
-                                                <Phone size={12} /> {f.phone || '연락처 정보 없음'}
-                                            </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             ) : (
                                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center">
@@ -226,10 +300,10 @@ const PetSearchForm: React.FC<FormProps> = ({
 
                 <div className="pl-10 pt-2">
                     <button
-                        onClick={onClose}
-                        className="w-full bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold py-3.5 rounded-xl shadow-lg transition-all"
+                        onClick={() => onGoToMyPage ? onGoToMyPage() : onClose?.()}
+                        className="w-full bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold py-3.5 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
                     >
-                        닫기
+                        <Check size={16} /> 상담 내역 보기
                     </button>
                 </div>
             </div>
@@ -315,13 +389,28 @@ const PetSearchForm: React.FC<FormProps> = ({
                         어느 <strong>지역</strong>의 장례식장을 찾으시나요?
                     </QuestionBubble>
                     <div className="pl-10 space-y-2">
-                        <button onClick={() => { onGetCurrentPosition?.(); setRegion(''); setError(''); }} className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-sm font-medium transition-all ${userLocation?.type === 'gps' && !region ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+                        <button onClick={() => {
+                            setGpsError('');
+                            if (!navigator.geolocation) {
+                                setGpsError('이 브라우저에서는 위치 서비스를 지원하지 않습니다.');
+                                return;
+                            }
+                            navigator.geolocation.getCurrentPosition(
+                                () => { onGetCurrentPosition?.(); setRegion(''); setError(''); },
+                                (err) => {
+                                    if (err.code === 1) setGpsError('위치 권한이 거부되었습니다. 아래에서 지역을 직접 입력해주세요.');
+                                    else setGpsError('위치를 가져올 수 없습니다. 지역을 직접 입력해주세요.');
+                                },
+                                { timeout: 10000 }
+                            );
+                        }} className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-sm font-medium transition-all ${userLocation?.type === 'gps' && !region ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
                             <MapPin size={16} /> 내 위치 주변 (GPS)
                         </button>
+                        {gpsError && <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">{gpsError}</p>}
                         <div className="relative">
-                            <input type="text" value={region} onChange={(e) => { setRegion(e.target.value); setError(''); }} onFocus={() => suggestions.length > 0 && setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} placeholder="예: 경기 김포시, 서울 마포구" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-3 text-sm focus:border-indigo-600 focus:outline-none" />
+                            <input type="text" value={region} onChange={(e) => { setRegion(e.target.value); setError(''); }} onFocus={() => suggestions.length > 0 && setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onCompositionStart={() => setIsComposing(true)} onCompositionEnd={() => setIsComposing(false)} placeholder="예: 경기 김포시, 서울 마포구" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-3 text-sm focus:border-indigo-600 focus:outline-none" aria-label="지역 검색" />
                             {showSuggestions && (
-                                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-[200] max-h-48 overflow-y-auto">
                                     {suggestions.map((s, i) => (
                                         <button key={i} onClick={() => { setRegion(s); setShowSuggestions(false); setError(''); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 border-b border-slate-50 last:border-none">
                                             {s}

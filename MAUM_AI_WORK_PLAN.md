@@ -25,24 +25,24 @@
 ## 남은 작업
 
 ### Phase 1: Critical (P0)
-- [ ] **P0-001** GPS 권한 거부 시 fallback 지역 선택 모달
+- [x] **P0-001** GPS 권한 거부 시 fallback 지역 선택 모달
   - 파일: SmartSearchInput.tsx (또는 FuneralSearchForm 내 위치 관련)
   - 해결: geolocation 에러 핸들링 → 지역 수동 선택 유도
 
 ### Phase 2: High Priority (P1)
-- [ ] **P1-001** ChatInterface로 조건 자동 전달 (handoverContext 점검)
-- [ ] **P1-002** 한글 조합 이벤트 처리 (compositionstart/end)
-- [ ] **P1-003** 모바일 드롭다운 z-index 잘림
-- [ ] **P1-004** 반려동물 무게 음수값 validation (min:0.1, max:100)
+- [x] **P1-001** ChatInterface로 조건 자동 전달 (handoverContext 점검)
+- [x] **P1-002** 한글 조합 이벤트 처리 (compositionstart/end)
+- [x] **P1-003** 모바일 드롭다운 z-index 잘림
+- [x] **P1-004** 반려동물 무게 음수값 validation (min:0.1, max:100)
 
 ### Phase 3: 성능/UX (P2)
-- [ ] **P2-001** 추천 카드 이미지 lazy loading
-- [ ] **P2-002** 검색 기록 localStorage 저장 (최대 10개)
-- [ ] **P2-003** 접근성 aria-label 추가
+- [x] **P2-001** 추천 카드 이미지 lazy loading
+- [x] **P2-002** 검색 기록 localStorage 저장 (최대 10개)
+- [x] **P2-003** 접근성 aria-label 추가
 
 ### Phase 4: 동물장례 흐름 점검
-- [ ] PetFuneral 예약 폼 → Supabase 저장 확인
-- [ ] MemorialSearchForm 상담접수 동일 패턴 적용
+- [x] PetFuneral 예약 폼 → Supabase 저장 확인
+- [x] MemorialSearchForm 상담접수 동일 패턴 적용
 
 ---
 

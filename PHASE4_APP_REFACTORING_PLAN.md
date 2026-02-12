@@ -2,7 +2,7 @@
 
 > 작성일: 2026-02-10 (Last Updated: 2026-02-12)
 > 현재 상태: App.tsx **2,118줄** (Feature 추가로 증가) → 목표: **~400줄 이하**
-> ⚠️ **Status Update**: Refactoring postponed due to urgent QA & Feature fixes (Consultation, Super Admin).
+> ✅ **Status Update**: Refactoring Completed & Verified (Commit c609ba8).
 
 ---
 
@@ -82,11 +82,11 @@ export const REGION_COORDINATES: Record<string, { center: [number, number], zoom
 
 ### 3-3. 체크리스트
 
-- [ ] `utils/facilityNormalizer.ts` 생성
-- [ ] `constants/regions.ts` 생성
-- [ ] App.tsx에서 import 교체 및 중복 코드 제거
-- [ ] `npx tsc --noEmit` 빌드 검증
-- [ ] 개발 서버 동작 확인
+- [x] `utils/facilityNormalizer.ts` 생성
+- [x] `constants/regions.ts` 생성
+- [x] App.tsx에서 import 교체 및 중복 코드 제거
+- [x] `npx tsc --noEmit` 빌드 검증
+- [x] 개발 서버 동작 확인
 
 ---
 
@@ -146,10 +146,10 @@ export const REGION_COORDINATES: Record<string, { center: [number, number], zoom
 
 ### 체크리스트
 
-- [ ] `hooks/useFacilityData.ts` 생성
-- [ ] `hooks/useMapViewport.ts` 생성
-- [ ] App.tsx에서 호출 교체
-- [ ] 빌드 검증 + 기능 테스트
+- [x] `hooks/useFacilityData.ts` 생성
+- [x] `hooks/useMapViewport.ts` 생성
+- [x] App.tsx에서 호출 교체
+- [x] 빌드 검증 + 기능 테스트
 
 ---
 
@@ -188,11 +188,11 @@ export const REGION_COORDINATES: Record<string, { center: [number, number], zoom
 
 ### 체크리스트
 
-- [ ] `hooks/useReviews.ts` 생성
-- [ ] `hooks/useCompanySelect.ts` 생성
-- [ ] `hooks/useUserRole.ts` 생성
-- [ ] App.tsx에서 호출 교체
-- [ ] 빌드 검증
+- [x] `hooks/useReviews.ts` 생성
+- [x] `hooks/useCompanySelect.ts` 생성
+- [x] `hooks/useUserRole.ts` 생성
+- [x] App.tsx에서 호출 교체
+- [x] 빌드 검증
 
 ---
 
@@ -215,10 +215,10 @@ export const REGION_COORDINATES: Record<string, { center: [number, number], zoom
 
 ### 체크리스트
 
-- [ ] `views/` 디렉토리 생성
-- [ ] ViewState별 컴포넌트 분리
-- [ ] App.tsx의 `renderContent()` → `<ContentRouter>` 교체
-- [ ] 빌드 검증
+- [x] `views/` 디렉토리 생성
+- [x] ViewState별 컴포넌트 분리
+- [x] App.tsx의 `renderContent()` → `<ContentRouter>` 교체
+- [x] 빌드 검증
 
 ---
 

@@ -2,9 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ViewState, Facility } from '../../types';
 import { useFacilities } from '../../hooks/useFacilities';
 import { useUser, useClerk } from '../../lib/auth'; // For side menu props
-import { Menu, Search, X, Crosshair } from 'lucide-react';
+import { Menu, Crosshair } from 'lucide-react';
 import { CategoryFilter } from '../map/CategoryFilter';
 import { FacilityCategoryType } from '../../types';
+import { REGION_COORDINATES } from '../../constants/regions';
+import { SmartSearchInput } from '../AI/SmartSearchInput';
 
 // Components
 import MapComponent, { MapRef } from '../MapContainer';
@@ -102,22 +104,27 @@ const MapView: React.FC<MapViewProps> = ({ viewState, setViewState }) => {
                         <Menu size={24} className="text-gray-700" />
                     </button>
 
-                    <div className="flex-1 max-w-md pointer-events-auto relative">
-                        <div className="bg-white rounded-xl shadow-lg flex items-center p-3 gap-3">
-                            <Search size={20} className="text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="시설명 또는 지역 검색..."
-                                className="flex-1 bg-transparent outline-none text-sm"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
-                            {searchQuery && (
-                                <button onClick={() => setSearchQuery('')}>
-                                    <X size={16} className="text-gray-400" />
-                                </button>
-                            )}
-                        </div>
+                    <div className="flex-1 max-w-md pointer-events-auto">
+                        <SmartSearchInput
+                            value={searchQuery}
+                            onChange={setSearchQuery}
+                            onAction={(type, region) => {
+                                if (type === 'urgent') {
+                                    handleSelectIntent('funeral_home');
+                                } else if (type === 'search') {
+                                    setSearchQuery(region);
+                                    setSelectedFilter('funeral_home');
+                                } else if (type === 'map') {
+                                    const coords = Object.entries(REGION_COORDINATES).find(
+                                        ([key]) => region.includes(key) || key.includes(region)
+                                    );
+                                    if (coords) {
+                                        mapRef.current?.flyTo(coords[1].center, coords[1].zoom);
+                                    }
+                                    setSelectedFilter('전체');
+                                }
+                            }}
+                        />
                     </div>
                 </div>
 

@@ -73,6 +73,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({ userLocation, onGetCurrentPos
     // Autocomplete State (Reused logic could be extracted but keeping local for speed)
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const [isComposing, setIsComposing] = useState(false);
     const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
@@ -171,9 +172,9 @@ const MemorialSearchForm: React.FC<FormProps> = ({ userLocation, onGetCurrentPos
                         <MapPin size={16} /> 내 위치 주변 (GPS)
                     </button>
                     <div className="relative">
-                        <input type="text" value={region} onChange={(e) => { setRegion(e.target.value); setError(''); }} onFocus={() => suggestions.length > 0 && setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} placeholder="예: 경기 용인, 분당" className="w-full bg-white border border-emerald-200 rounded-xl px-3 py-3 text-sm focus:border-emerald-600 focus:outline-none" />
+                        <input type="text" value={region} onChange={(e) => { setRegion(e.target.value); setError(''); }} onFocus={() => suggestions.length > 0 && setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onCompositionStart={() => setIsComposing(true)} onCompositionEnd={() => setIsComposing(false)} placeholder="예: 경기 용인, 분당" className="w-full bg-white border border-emerald-200 rounded-xl px-3 py-3 text-sm focus:border-emerald-600 focus:outline-none" aria-label="지역 검색" />
                         {showSuggestions && (
-                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-emerald-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-emerald-200 rounded-lg shadow-lg z-[200] max-h-48 overflow-y-auto">
                                 {suggestions.map((s, i) => (
                                     <button key={i} onClick={() => { setRegion(s); setShowSuggestions(false); setError(''); }} className="w-full text-left px-4 py-2 text-sm hover:bg-emerald-50 border-b border-emerald-50 last:border-none">
                                         <SafeHighlight text={s} highlight={region} />
@@ -970,9 +971,12 @@ export const ChatInterface: React.FC<Props> = ({
                                                 userLocation={userLocation}
                                                 onGetCurrentPosition={onGetCurrentPosition}
                                                 onSubmit={(payload) => handleSend(payload)}
+                                                onClose={onClose}
+                                                onGoToMyPage={onGoToMyPage}
+                                                onLoginRequired={() => { onClose(); openSignIn(); }}
                                                 initialCategory="pet_funeral"
                                                 currentUser={currentUser}
-                                                onSwitchToFacility={onSwitchToFacility}
+                                                onSwitchToFacility={(f, ctx) => onSwitchToFacility?.(f, ctx)}
                                             />
                                         )}
 

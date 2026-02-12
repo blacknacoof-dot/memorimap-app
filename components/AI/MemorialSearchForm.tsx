@@ -5,14 +5,18 @@ import {
     X,
     Phone,
     Loader2,
-    ChevronDown
+    ChevronDown,
+    Calendar
 } from 'lucide-react';
 import { getDistinctRegions, getIntelligentRecommendations } from '@/lib/queries';
+import { createAuthenticatedClient } from '@/lib/supabaseClient';
+import { useSession } from '@/lib/auth';
 import {
     MEMORIAL_TIMING_OPTIONS,
     MEMORIAL_RELIGION_OPTIONS,
     MEMORIAL_BUDGET_OPTIONS
 } from '@/constants/maumAiConstants';
+import { addSearchHistory } from '@/utils/searchHistory';
 
 const MEMORIAL_LIGHTING_OPTIONS = [
     { id: 'bright', label: '☀️ 채광 좋음', sub: '자연광이 잘 드는 밝은 공간' },
@@ -51,9 +55,18 @@ const MemorialSearchForm: React.FC<FormProps> = ({
     currentUser,
     onSwitchToFacility
 }) => {
+    const { session } = useSession();
     const [step, setStep] = useState(1);
     const [isSaving, setIsSaving] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
+
+    // 인라인 상담접수 상태
+    const [bookedIds, setBookedIds] = useState<Set<string>>(new Set());
+    const [bookingId, setBookingId] = useState<string | null>(null);
+    const [showContactFor, setShowContactFor] = useState<string | null>(null);
+    const [cName, setCName] = useState(currentUser?.name || '');
+    const [cPhone, setCPhone] = useState(currentUser?.phone || '');
+    const [cMemo, setCMemo] = useState('');
 
     const [recommendedFacilities, setRecommendedFacilities] = useState<any[]>([]);
     const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
@@ -68,6 +81,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
     // Autocomplete State
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const [isComposing, setIsComposing] = useState(false);
     const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Auto-fill location if facility context exists
@@ -146,33 +160,28 @@ const MemorialSearchForm: React.FC<FormProps> = ({
         onSubmit({ text: finalText, data: searchData });
         setIsSaving(false);
         setIsSubmitted(true);
+        addSearchHistory(location, 'memorial');
 
-        // For facility-specific consultations, save directly to DB
+        // For facility-specific consultations, save directly to DB (authenticated)
         if (facilityId && currentUser) {
             try {
-                const { createClient } = await import('@supabase/supabase-js');
-                const supabase = createClient(
-                    import.meta.env.VITE_SUPABASE_URL,
-                    import.meta.env.VITE_SUPABASE_ANON_KEY
-                );
+                const token = await session?.getToken({ template: 'supabase' });
+                if (!token) throw new Error('인증 토큰 없음');
+                const authClient = createAuthenticatedClient(token);
 
-                const consultationData = {
-                    user_id: currentUser.id,
-                    facility_id: facilityId,
-                    user_name: currentUser.firstName || 'Unknown',
-                    user_phone: currentUser.phoneNumbers?.[0]?.phoneNumber || 'N/A',
-                    status: 'pending',
-                    notes: finalText
-                };
-
-                const { error: dbError } = await supabase
+                const { error: dbError } = await authClient
                     .from('consultations')
-                    .insert([consultationData]);
+                    .insert({
+                        user_id: currentUser.id,
+                        facility_id: facilityId,
+                        user_name: currentUser.firstName || 'Unknown',
+                        user_phone: currentUser.phoneNumbers?.[0]?.phoneNumber || 'N/A',
+                        status: 'pending',
+                        notes: finalText
+                    });
 
                 if (dbError) {
                     console.error('[MemorialSearchForm] Failed to save consultation:', dbError);
-                } else {
-                    console.log('[MemorialSearchForm] Consultation saved successfully to facility:', facilityId);
                 }
             } catch (e) {
                 console.error('[MemorialSearchForm] Exception saving consultation:', e);
@@ -191,7 +200,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                 }]);
             } else {
                 const recs = await getIntelligentRecommendations(0, 0, 'memorial', location);
-                setRecommendedFacilities(recs.slice(0, 3));
+                setRecommendedFacilities(recs.slice(0, 5));
             }
         } catch (e) {
             console.error("Failed to fetch recommendations", e);
@@ -234,6 +243,47 @@ const MemorialSearchForm: React.FC<FormProps> = ({
             {children}
         </button>
     );
+
+    // 인라인 상담접수 제출
+    const doBooking = async (fId: string, fName: string) => {
+        if (!cName.trim() || !cPhone.trim()) return;
+        setBookingId(fId);
+
+        const notes = [
+            `[AI 마음이 추모시설 추천 접수]`,
+            `시설: ${fName}`,
+            `상황: ${MEMORIAL_TIMING_OPTIONS.find(o => o.id === timing)?.label}`,
+            `지역: ${location}`,
+            `종교: ${MEMORIAL_RELIGION_OPTIONS.find(o => o.id === religion)?.label}`,
+            `예산: ${MEMORIAL_BUDGET_OPTIONS.find(o => o.id === budget)?.label}`,
+            cMemo ? `요청: ${cMemo}` : '',
+        ].filter(Boolean).join(', ');
+
+        try {
+            const token = await session?.getToken({ template: 'supabase' });
+            if (!token) throw new Error('인증 토큰 없음');
+            const authClient = createAuthenticatedClient(token);
+
+            const { error } = await authClient
+                .from('consultations')
+                .insert({
+                    facility_id: fId,
+                    user_id: currentUser?.id,
+                    user_name: cName.trim(),
+                    user_phone: cPhone.trim(),
+                    notes,
+                    status: 'pending'
+                });
+
+            if (error) throw error;
+            setBookedIds(prev => new Set(prev).add(String(fId)));
+            setShowContactFor(null);
+        } catch (e) {
+            console.error('상담접수 실패:', e);
+        } finally {
+            setBookingId(null);
+        }
+    };
 
     // Login required screen
     if (!currentUser && onLoginRequired) {
@@ -326,37 +376,49 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                         <div className="space-y-3">
                             {recommendedFacilities.length > 0 ? (
                                 <div className="max-h-[320px] overflow-y-auto space-y-3 pr-1">
-                                    {recommendedFacilities.map((f, idx) => (
-                                        <div
-                                            key={idx}
-                                            className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer group"
-                                            onClick={() => {
-                                                if (onSwitchToFacility) {
-                                                    const targetId = typeof f.id === 'object' ? (f.id as any).id || (f as any).facilityId : f.id;
-                                                    onSwitchToFacility({
-                                                        ...f,
-                                                        id: targetId,
-                                                        category: 'memorial'
-                                                    });
-                                                }
-                                            }}
-                                        >
-                                            <div className="flex justify-between items-start mb-1">
-                                                <div className="font-bold text-slate-900 group-hover:text-purple-600 transition-colors">
-                                                    {f.name}
+                                    {recommendedFacilities.map((f, idx) => {
+                                        const fId = String(typeof f.id === 'object' ? (f.id as any).id || (f as any).facilityId : f.id);
+                                        const imageUrl = f.image_url || (f.images?.[0] ?? null);
+                                        const isBooked = bookedIds.has(fId);
+                                        const isThisOpen = showContactFor === fId;
+                                        const isThisBooking = bookingId === fId;
+
+                                        return (
+                                            <div key={fId} className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                                                {imageUrl && <img src={imageUrl} alt={f.name} className="w-full h-32 object-cover" loading="lazy" />}
+                                                <div className="p-4 space-y-2">
+                                                    <div className="flex justify-between items-start">
+                                                        <span className="font-bold text-slate-900">{f.name}</span>
+                                                        <span className="bg-purple-50 text-purple-600 text-[10px] px-2 py-0.5 rounded-full font-bold">추천 {idx + 1}</span>
+                                                    </div>
+                                                    <div className="text-xs text-slate-500 flex items-center gap-1"><MapPin size={12} /> {f.address || f.jibun_address || '주소 정보 없음'}</div>
+                                                    <div className="text-xs text-slate-500 flex items-center gap-1"><Phone size={12} /> {f.phone || '연락처 정보 없음'}</div>
+
+                                                    {isBooked ? (
+                                                        <div className="bg-green-50 border border-green-200 text-green-700 text-sm font-bold py-2.5 rounded-xl text-center flex items-center justify-center gap-1.5">
+                                                            <Check size={16} /> 접수 완료
+                                                        </div>
+                                                    ) : isThisOpen ? (
+                                                        <div className="space-y-2 border-t border-slate-100 pt-3">
+                                                            <input type="text" value={cName} onChange={e => setCName(e.target.value)} placeholder="성함 *" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-purple-500 focus:outline-none" />
+                                                            <input type="tel" value={cPhone} onChange={e => setCPhone(e.target.value)} placeholder="연락처 * (010-1234-5678)" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-purple-500 focus:outline-none" />
+                                                            <input type="text" value={cMemo} onChange={e => setCMemo(e.target.value)} placeholder="요청사항 (선택)" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-purple-500 focus:outline-none" />
+                                                            <div className="flex gap-2">
+                                                                <button type="button" onClick={() => setShowContactFor(null)} className="flex-1 bg-slate-100 text-slate-600 text-sm font-bold py-2.5 rounded-xl">취소</button>
+                                                                <button type="button" onClick={() => doBooking(fId, f.name)} disabled={!cName.trim() || !cPhone.trim() || !!bookingId} className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-300 text-white text-sm font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5">
+                                                                    {isThisBooking ? <><Loader2 size={16} className="animate-spin" /> 접수 중...</> : <><Check size={16} /> 접수하기</>}
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <button type="button" onClick={() => { setCName(currentUser?.name || ''); setCPhone(currentUser?.phone || ''); setCMemo(''); setShowContactFor(fId); }} className="w-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold py-2.5 rounded-xl shadow-md active:scale-95 flex items-center justify-center gap-1.5">
+                                                            <Calendar size={16} /> 상담접수하기
+                                                        </button>
+                                                    )}
                                                 </div>
-                                                <span className="bg-slate-100 text-slate-600 text-[10px] px-2 py-0.5 rounded-full font-bold">
-                                                    추천 {idx + 1}
-                                                </span>
                                             </div>
-                                            <div className="text-xs text-slate-500 mb-1 flex items-center gap-1">
-                                                <MapPin size={12} /> {f.address || f.jibun_address || '주소 정보 없음'}
-                                            </div>
-                                            <div className="text-xs text-slate-500 flex items-center gap-1">
-                                                <Phone size={12} /> {f.phone || '연락처 정보 없음'}
-                                            </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             ) : (
                                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center">
@@ -373,10 +435,10 @@ const MemorialSearchForm: React.FC<FormProps> = ({
 
                 <div className="pl-10 pt-2">
                     <button
-                        onClick={onClose}
-                        className="w-full bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold py-3.5 rounded-xl shadow-lg transition-all"
+                        onClick={() => onGoToMyPage ? onGoToMyPage() : onClose?.()}
+                        className="w-full bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold py-3.5 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
                     >
-                        닫기
+                        <Check size={16} /> 상담 내역 보기
                     </button>
                 </div>
             </div>
@@ -432,13 +494,16 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                             placeholder="예: 경기 용인, 서울 강남"
                             value={location}
                             onChange={(e) => setLocation(e.target.value)}
+                            onCompositionStart={() => setIsComposing(true)}
+                            onCompositionEnd={() => setIsComposing(false)}
                             className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-purple-400 focus:outline-none text-sm"
+                            aria-label="지역 검색"
                         />
                         <ChevronDown size={20} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     </div>
 
                     {showSuggestions && suggestions.length > 0 && (
-                        <div className="absolute z-10 w-full bg-white border border-slate-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                        <div className="absolute z-[200] w-full bg-white border border-slate-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
                             {suggestions.map((sug, idx) => (
                                 <button
                                     key={idx}

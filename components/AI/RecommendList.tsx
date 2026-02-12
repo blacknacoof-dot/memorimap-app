@@ -17,6 +17,10 @@ export const RecommendList: React.FC<Props> = ({ facilities, onViewDetail }) => 
                     key={facility.id}
                     className="flex bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
                     onClick={() => onViewDetail(facility)}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`${facility.name} 상세보기`}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onViewDetail(facility); } }}
                 >
                     {/* Image */}
                     <div className="relative w-24 h-24 shrink-0 bg-slate-100">
@@ -25,6 +29,7 @@ export const RecommendList: React.FC<Props> = ({ facilities, onViewDetail }) => 
                                 src={facility.imageUrl}
                                 alt={facility.name}
                                 className="w-full h-full object-cover"
+                                loading="lazy"
                             />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-slate-300">
@@ -55,6 +60,7 @@ export const RecommendList: React.FC<Props> = ({ facilities, onViewDetail }) => 
                                     e.stopPropagation();
                                     onViewDetail(facility);
                                 }}
+                                aria-label={`${facility.name} 상세보기`}
                                 className="py-1 px-2.5 bg-indigo-50 text-indigo-600 rounded-lg text-[11px] font-bold hover:bg-indigo-100 transition-colors flex items-center gap-0.5"
                             >
                                 상세보기 <ChevronRight size={11} />
