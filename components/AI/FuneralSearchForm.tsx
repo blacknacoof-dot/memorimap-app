@@ -21,6 +21,7 @@ import {
     FUNERAL_SCHEDULE_OPTIONS,
     FUNERAL_SERVICE_OPTIONS
 } from '@/constants/maumAiConstants';
+import { addSearchHistory } from '@/utils/searchHistory';
 
 // Safe Highlighting Component
 const SafeHighlight = ({ text, highlight }: { text: string, highlight: string }) => {
@@ -100,6 +101,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
     // Autocomplete State
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const [isComposing, setIsComposing] = useState(false);
     const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
@@ -188,8 +190,9 @@ const FuneralSearchForm: React.FC<FormProps> = ({
 
         setIsSaving(false);
         setIsSubmitted(true);
+        addSearchHistory(location, 'funeral');
 
-        // 해당 지역 시설 3개 추천 (없으면 전체 지역에서 fallback)
+        // 해당 지역 시설 5개 추천 (없으면 전체 지역에서 fallback)
         setIsLoadingRecommendations(true);
         try {
             let recs = await getIntelligentRecommendations(0, 0, 'funeral_home', location);
@@ -197,7 +200,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                 // fallback: 전체 지역에서 검색
                 recs = await getIntelligentRecommendations(0, 0, 'funeral_home', '');
             }
-            setRecommendedFacilities(recs.slice(0, 3));
+            setRecommendedFacilities(recs.slice(0, 5));
         } catch (e) {
             console.error("Failed to fetch recommendations", e);
         } finally {
@@ -447,11 +450,14 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                                     type="text"
                                     value={deceasedLocation}
                                     onChange={(e) => setDeceasedLocation(e.target.value)}
+                                    onCompositionStart={() => setIsComposing(true)}
+                                    onCompositionEnd={() => setIsComposing(false)}
                                     placeholder="예: 서울아산병원, 자택"
                                     className="w-full bg-white border-2 border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-indigo-500 focus:outline-none"
+                                    aria-label="고인 위치 입력"
                                 />
                                 {showSuggestions && step === 2 && (
-                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-[200] max-h-48 overflow-y-auto">
                                         {suggestions.map((s, i) => (
                                             <button key={i} onClick={() => { setDeceasedLocation(s); setShowSuggestions(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 border-b border-slate-50 last:border-none">
                                                 <SafeHighlight text={s} highlight={deceasedLocation} />
@@ -525,11 +531,14 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                                     onChange={(e) => setLocation(e.target.value)}
                                     onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
                                     onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                                    onCompositionStart={() => setIsComposing(true)}
+                                    onCompositionEnd={() => setIsComposing(false)}
                                     placeholder="또는 구체적인 지역 입력 (예: 분당구, 수지구)"
                                     className="w-full bg-white border-2 border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-indigo-500 focus:outline-none"
+                                    aria-label="지역 검색"
                                 />
                                 {showSuggestions && step === 3 && (
-                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-[200] max-h-48 overflow-y-auto">
                                         {suggestions.map((s, i) => (
                                             <button key={i} onClick={() => { setLocation(s); setShowSuggestions(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 border-b border-slate-50 last:border-none">
                                                 <SafeHighlight text={s} highlight={location} />

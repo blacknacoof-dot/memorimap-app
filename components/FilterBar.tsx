@@ -1,7 +1,7 @@
 import React from 'react';
 import { useFilterStore } from '../stores/useFilterStore';
-import { Search, X } from 'lucide-react';
 import { FacilityCategoryType } from '../types/facility';
+import { SmartSearchInput } from './AI/SmartSearchInput';
 
 const CATEGORIES: { id: FacilityCategoryType | 'all', label: string }[] = [
     { id: 'all', label: '전체' },
@@ -14,37 +14,15 @@ const CATEGORIES: { id: FacilityCategoryType | 'all', label: string }[] = [
 ];
 
 export const FilterBar = () => {
-    const searchQuery = useFilterStore(s => s.searchQuery);
-    const setSearchQuery = useFilterStore(s => s.setSearchQuery);
     const selectedCategories = useFilterStore(s => s.selectedCategories);
     const toggleCategory = useFilterStore(s => s.toggleCategory);
     const resetFilters = useFilterStore(s => s.resetFilters);
 
     return (
         <div className="w-full pointer-events-auto">
-            {/* Search Input */}
-            <div className="bg-white rounded-xl shadow-md p-0 overflow-hidden mb-2">
-                <div className="flex items-center px-4 h-12 bg-white">
-                    <Search size={18} className="text-gray-400 mr-2 shrink-0" />
-                    <input
-                        id="search-input"
-                        name="search"
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="지역명(서울, 경기...) 또는 시설명 검색"
-                        className="w-full h-full outline-none text-sm bg-transparent text-gray-900 placeholder:text-gray-400"
-                    />
-                    {searchQuery && (
-                        <button
-                            onClick={() => setSearchQuery('')}
-                            className="ml-1 p-1 text-gray-400 hover:text-gray-600 shrink-0"
-                            aria-label="검색어 초기화"
-                        >
-                            <X size={16} />
-                        </button>
-                    )}
-                </div>
+            {/* Smart Search Input */}
+            <div className="mb-2">
+                <SmartSearchInput compact />
             </div>
 
             {/* Category Filters */}

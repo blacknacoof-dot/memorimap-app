@@ -82,24 +82,24 @@
 ## 4. 🔧 수정 계획 (Fix Plan)
 
 ### Phase 1: Critical 핫픽스 (2월 13일 ~ 2월 14일)
-- [ ] **P0-001**: GPS 권한 거부 시 fallback 지역 선택 모달 표시
-- [ ] **P0-002**: 추천 시설 데이터 쿼리 LIMIT 3 -> 5로 수정 후 클라이언트 필터링
-- [ ] **P0-003**: `/api/pet-reservation` 엔드포인트 생성 및 검증
+- [x] **P0-001**: GPS 권한 거부 시 fallback 지역 선택 모달 표시
+- [x] **P0-002**: 추천 시설 데이터 쿼리 LIMIT 3 -> 5로 수정 후 클라이언트 필터링
+- [x] **P0-003**: `/api/pet-reservation` 엔드포인트 생성 및 검증
 
 ### Phase 2: 고우선순위 수정 (2월 17일 ~ 2월 19일)
-- [ ] **P1-001**: ChatInterface 연결 시 query params로 조건 전달
+- [x] **P1-001**: ChatInterface 연결 시 query params로 조건 전달
   ```typescript
   // 수정 예시
   router.push(`/chat/${facilityId}?conditions=${encodedConditions}`);
   ```
-- [ ] **P1-002**: 한글 조합 이벤트 처리 (compositionstart/end)
-- [ ] **P1-003**: 모바일 뷰포트 메타 태그 확인 및 드롭다운 z-index 조정
-- [ ] **P1-004**: 무게 입력 필드 validation (min: 0.1, max: 100)
+- [x] **P1-002**: 한글 조합 이벤트 처리 (compositionstart/end)
+- [x] **P1-003**: 모바일 뷰포트 메타 태그 확인 및 드롭다운 z-index 조정
+- [x] **P1-004**: 무게 입력 필드 validation (min: 0.1, max: 100)
 
 ### Phase 3: 성능/UX 개선 (2월 20일 ~ 2월 21일)
-- [ ] **P2-001**: 이미지 lazy loading 및 WebP 포맷 적용
-- [ ] **P2-002**: 검색 기록 localStorage 저장 (최대 10개)
-- [ ] **P2-003**: 접근성 속성 추가 (aria-label, role)
+- [x] **P2-001**: 이미지 lazy loading 및 WebP 포맷 적용
+- [x] **P2-002**: 검색 기록 localStorage 저장 (최대 10개)
+- [x] **P2-003**: 접근성 속성 추가 (aria-label, role)
 
 ---
 
@@ -171,4 +171,4 @@
 
 **작성일**: 2025-02-12  
 **버전**: Final Refined v2.1  
-**상태**: 검증 완료, 수정 계획 수립 중
+**상태**: 구현 완료 (Implementation Complete), 배포 준비 중
