@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Phone, Mail, FileText, Bell, Shield, Info, ChevronLeft } from 'lucide-react';
+import { ChevronDown, ChevronUp, Phone, Mail, FileText, Bell, Shield, Info, ChevronLeft, Send, CheckCircle } from 'lucide-react';
+import { toast } from 'sonner';
+import { useSession, useUser } from '../lib/auth';
+import { createAuthenticatedClient } from '../lib/supabaseClient';
 import { ViewState } from '../types';
 
 interface ViewProps {
@@ -112,41 +115,219 @@ export const NoticesView: React.FC<ViewProps> = ({ onBack }) => {
 };
 
 // --- 고객센터 / 자주 묻는 질문 ---
-export const SupportView: React.FC<ViewProps> = ({ onBack }) => {
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+const FAQ_TABS = ['서비스 이용', '시설·계약', '결제·환불', '입점·제휴'] as const;
 
-  const faqs = [
-    { q: "예약은 어떻게 취소하나요?", a: "마이페이지 > 예약 내역에서 해당 예약을 선택하신 후 '예약 취소' 버튼을 눌러 진행하실 수 있습니다. 방문 3일 전까지는 전액 환불됩니다." },
-    { q: "예약금은 꼭 결제해야 하나요?", a: "네, 허위 예약을 방지하기 위해 10만원의 예약금을 선결제 받고 있습니다. 이는 추후 계약 시 시설 비용에서 차감됩니다." },
-    { q: "당일 방문 예약도 가능한가요?", a: "시설 상황에 따라 다르지만, 최소 3시간 전까지 예약해 주시는 것을 권장드립니다. 급한 경우 고객센터로 전화 부탁드립니다." },
-  ];
+const FAQ_DATA: Record<string, { q: string; a: string }[]> = {
+  '서비스 이용': [
+    { q: '추모맵은 어떤 서비스인가요?', a: '장례식장·추모시설·반려동물 장례를 한 곳에서 비교하고 AI 맞춤 추천받을 수 있는 플랫폼입니다.' },
+    { q: '회원가입 없이도 이용할 수 있나요?', a: '시설 검색·정보 확인은 비회원도 가능합니다. 상담 예약·리뷰 작성은 로그인이 필요합니다.' },
+    { q: 'AI 마음이는 어떻게 사용하나요?', a: '화면 우측 하단 마음이 아이콘을 탭하면 AI 상담이 시작됩니다. 장례식장, 추모시설, 반려동물 장례 중 선택하세요.' },
+    { q: '앱 알림은 어떻게 설정하나요?', a: '마이페이지 > 설정에서 알림 수신 여부를 변경할 수 있습니다.' },
+  ],
+  '시설·계약': [
+    { q: '시설 정보는 정확한가요?', a: '입점 업체가 직접 등록·관리하며, 추모맵에서 주기적으로 검증합니다. 오류 발견 시 고객센터로 알려주세요.' },
+    { q: '예약은 어떻게 하나요?', a: "시설 상세 페이지 '상담 예약' 버튼 또는 AI 마음이를 통해 예약할 수 있습니다." },
+    { q: '예약 취소가 가능한가요?', a: '마이페이지 > 상담 내역에서 취소할 수 있습니다. 시설별 취소 규정이 다를 수 있습니다.' },
+    { q: '계약은 추모맵에서 직접 하나요?', a: '추모맵은 시설 추천·상담 연결 플랫폼입니다. 실제 계약은 해당 시설과 직접 진행합니다.' },
+  ],
+  '결제·환불': [
+    { q: '추모맵 이용 요금이 있나요?', a: '고객님의 시설 검색·상담 예약은 모두 무료입니다.' },
+    { q: '시설 이용료는 어떻게 결제하나요?', a: '시설 이용료는 해당 시설에 직접 결제합니다. 추모맵에서 별도 청구하지 않습니다.' },
+    { q: '환불 규정은 어떻게 되나요?', a: '시설별 환불 규정이 상이합니다. 계약 전 해당 시설에 확인해 주세요.' },
+  ],
+  '입점·제휴': [
+    { q: '우리 시설도 등록할 수 있나요?', a: "사이드 메뉴 > '업체 입점/제휴 문의'에서 신청하실 수 있습니다." },
+    { q: '입점 비용은 얼마인가요?', a: '기본 등록은 무료이며, 프리미엄 노출 등은 요금제에 따라 다릅니다.' },
+    { q: '제휴 문의는 어디로 하나요?', a: '고객센터 031-975-3335 또는 1:1 문의를 이용해 주세요.' },
+  ],
+};
+
+const INQUIRY_CATEGORIES = ['서비스 이용', '시설·계약', '결제·환불', '입점·제휴', '기타'] as const;
+
+export const SupportView: React.FC<ViewProps> = ({ onBack, user }) => {
+  const { session } = useSession();
+  const { user: clerkUser } = useUser();
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [faqTab, setFaqTab] = useState<string>(FAQ_TABS[0]);
+  const [showInquiry, setShowInquiry] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [form, setForm] = useState({
+    category: INQUIRY_CATEGORIES[0] as string,
+    name: user?.user_metadata?.name || user?.user_metadata?.full_name || '',
+    phone: '',
+    email: '',
+    message: '',
+  });
+
+  const handleSubmit = async () => {
+    if (!form.phone.trim() || !form.message.trim()) {
+      toast.error('연락처와 문의 내용은 필수 항목입니다.');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const token = await session?.getToken({ template: 'supabase' });
+      if (!token) { toast.error('로그인이 필요합니다.'); setIsSubmitting(false); return; }
+      const authClient = createAuthenticatedClient(token);
+      // user_id는 DB default (auth.uid())로 자동 설정됨 - Clerk ID는 UUID가 아니므로 직접 전달하지 않음
+      const { error } = await authClient.from('partner_inquiries').insert({
+        company_name: '고객문의',
+        manager_name: form.name || '고객',
+        phone: form.phone,
+        email: form.email || null,
+        type: 'customer_support',
+        inquiry_type: 'customer_support',
+        message: `[${form.category}] ${form.message}`,
+        status: 'pending',
+      });
+      if (error) throw error;
+      setSubmitted(true);
+      toast.success('문의가 접수되었습니다.');
+    } catch {
+      toast.error('문의 접수 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const currentFaqs = FAQ_DATA[faqTab] || [];
 
   return (
     <div className="bg-gray-50 min-h-full pb-20">
       <Header title="고객센터" onBack={onBack} />
 
-      {/* Contact Info */}
+      {/* Contact Buttons */}
       <div className="p-4 bg-white mb-2">
-        <h3 className="font-bold mb-3">문의하기</h3>
         <div className="grid grid-cols-2 gap-3">
-          <button className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-xl border hover:bg-gray-100">
+          <a
+            href="tel:031-975-3335"
+            className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-xl border hover:bg-gray-100 transition-colors"
+          >
             <Phone className="text-primary mb-2" size={24} />
-            <span className="font-bold text-gray-800">1588-0000</span>
-            <span className="text-xs text-gray-500">평일 09:00 - 18:00</span>
-          </button>
-          <button className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-xl border hover:bg-gray-100">
-            <Mail className="text-primary mb-2" size={24} />
+            <span className="font-bold text-gray-800">031-975-3335</span>
+            <span className="text-xs text-gray-500">평일 09:00 ~ 18:00</span>
+          </a>
+          <button
+            onClick={() => { setShowInquiry(!showInquiry); setSubmitted(false); }}
+            className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-colors ${showInquiry ? 'bg-primary/10 border-primary' : 'bg-gray-50 hover:bg-gray-100'}`}
+          >
+            <Mail className={`mb-2 ${showInquiry ? 'text-primary' : 'text-primary'}`} size={24} />
             <span className="font-bold text-gray-800">1:1 문의</span>
             <span className="text-xs text-gray-500">24시간 접수 가능</span>
           </button>
         </div>
       </div>
 
-      {/* FAQ */}
+      {/* 1:1 Inquiry Form (toggle) */}
+      {showInquiry && (
+        <div className="bg-white p-4 mb-2 border-t">
+          {submitted ? (
+            <div className="flex flex-col items-center py-8 text-center">
+              <CheckCircle size={48} className="text-green-500 mb-3" />
+              <p className="font-bold text-lg text-gray-800">문의가 접수되었습니다</p>
+              <p className="text-sm text-gray-500 mt-1">빠른 시일 내 연락드리겠습니다.</p>
+              <button
+                onClick={() => { setShowInquiry(false); setSubmitted(false); setForm(f => ({ ...f, phone: '', email: '', message: '', category: INQUIRY_CATEGORIES[0] })); }}
+                className="mt-4 px-6 py-2 bg-primary text-white rounded-lg text-sm"
+              >
+                확인
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <h3 className="font-bold text-gray-800">1:1 문의하기</h3>
+
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">문의 유형</label>
+                <select
+                  value={form.category}
+                  onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+                  className="w-full border rounded-lg px-3 py-2.5 text-sm bg-white"
+                >
+                  {INQUIRY_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">이름</label>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                  placeholder="이름을 입력하세요"
+                  className="w-full border rounded-lg px-3 py-2.5 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">연락처 <span className="text-red-500">*</span></label>
+                <input
+                  type="tel"
+                  value={form.phone}
+                  onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                  placeholder="010-0000-0000"
+                  className="w-full border rounded-lg px-3 py-2.5 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">이메일</label>
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                  placeholder="example@email.com"
+                  className="w-full border rounded-lg px-3 py-2.5 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">문의 내용 <span className="text-red-500">*</span></label>
+                <textarea
+                  value={form.message}
+                  onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
+                  placeholder="문의 내용을 입력하세요"
+                  rows={4}
+                  className="w-full border rounded-lg px-3 py-2.5 text-sm resize-none"
+                />
+              </div>
+
+              <button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="w-full flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-lg font-medium text-sm disabled:opacity-50"
+              >
+                <Send size={16} />
+                {isSubmitting ? '접수 중...' : '문의 접수하기'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* FAQ Section */}
       <div className="bg-white p-4">
         <h3 className="font-bold mb-3">자주 묻는 질문</h3>
+
+        {/* Tab chips */}
+        <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide">
+          {FAQ_TABS.map(tab => (
+            <button
+              key={tab}
+              onClick={() => { setFaqTab(tab); setOpenFaq(null); }}
+              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                faqTab === tab ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        {/* Accordion FAQ list */}
         <div className="space-y-2">
-          {faqs.map((faq, idx) => (
+          {currentFaqs.map((faq, idx) => (
             <div key={idx} className="border rounded-lg overflow-hidden">
               <button
                 onClick={() => setOpenFaq(openFaq === idx ? null : idx)}

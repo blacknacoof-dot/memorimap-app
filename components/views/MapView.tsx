@@ -31,7 +31,7 @@ const MapView: React.FC<MapViewProps> = ({ viewState, setViewState }) => {
 
     // Chat State
     const [isChatOpen, setIsChatOpen] = useState(false);
-    const [chatIntent, setChatIntent] = useState<'funeral_home' | 'memorial_facility' | 'pet_funeral' | 'general' | null>(null);
+    const [chatIntent, setChatIntent] = useState<'funeral_home' | 'memorial_facility' | 'pet_funeral' | null>(null);
 
     // Auth State for SideMenu
     const { isSignedIn, user } = useUser();
@@ -86,7 +86,7 @@ const MapView: React.FC<MapViewProps> = ({ viewState, setViewState }) => {
     };
 
     // Chat Handler
-    const handleSelectIntent = (intent: 'funeral_home' | 'memorial_facility' | 'pet_funeral' | 'general') => {
+    const handleSelectIntent = (intent: 'funeral_home' | 'memorial_facility' | 'pet_funeral') => {
         setChatIntent(intent);
         setIsChatOpen(true);
     };

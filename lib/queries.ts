@@ -2036,6 +2036,11 @@ export const getInquiries = async () => {
     return data.map((i: any) => ({
         id: i.id,
         companyName: i.company_name,
+        managerName: i.manager_name,
+        phone: i.phone,
+        email: i.email,
+        message: i.message,
+        inquiryType: i.inquiry_type,
         type: i.business_type || i.type,
         createdAt: i.created_at ? new Date(i.created_at).toLocaleDateString() : 'Unknown date',
         status: (i.status === 'completed' || i.status === 'approved') ? 'resolved' : 'pending'

@@ -12,7 +12,6 @@ import { RecommendList } from './RecommendList';
 import FuneralSearchForm from './FuneralSearchForm';
 import MemorialSearchForm from './MemorialSearchForm';
 import PetSearchForm from './PetSearchForm';
-import GeneralInquiryForm from './GeneralInquiryForm';
 import { useClerk } from '../../lib/auth'; // For login modal
 import { logger } from '../../utils/logger';
 
@@ -22,7 +21,7 @@ interface Props {
     onAction: (action: ActionType, data?: any) => void;
     onClose: () => void;
     currentUser: any;
-    initialIntent?: 'funeral_home' | 'memorial_facility' | 'pet_funeral' | 'general' | null;
+    initialIntent?: 'funeral_home' | 'memorial_facility' | 'pet_funeral' | null;
     onSwitchToFacility?: (facility: Facility, context?: any) => void;
     onNavigateToFacility?: (facility: Facility) => void;
     userLocation?: { lat: number, lng: number, type: string };
@@ -83,7 +82,7 @@ export const ChatInterface: React.FC<Props> = ({
     const [recommendedCandidates, setRecommendedCandidates] = useState<Facility[]>([]);
     const [searchContext, setSearchContext] = useState<string>('');
     const [liveFacility, setLiveFacility] = useState<Facility>(facility); // [Dynamic Prompt Injection] Live facility data
-    const [activeScenario, setActiveScenario] = useState<'funeral' | 'memorial' | 'pet' | 'general' | null>(null);
+    const [activeScenario, setActiveScenario] = useState<'funeral' | 'memorial' | 'pet' | null>(null);
     const [currentLeadId, setCurrentLeadId] = useState<string | null>(null); // [NEW] Track Lead ID for handover
     const scrollRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -276,8 +275,7 @@ export const ChatInterface: React.FC<Props> = ({
                 options: facility.id === 'maum-i' ? [
                     { label: '🚨 장례식장 찾기', value: 'scenario_funeral' },
                     { label: '🌳 추모시설 찾기', value: 'scenario_memorial' },
-                    { label: '🐾 반려동물 장례', value: 'scenario_pet' },
-                    { label: '📞 일반/제휴 문의', value: 'scenario_general' }
+                    { label: '🐾 반려동물 장례', value: 'scenario_pet' }
                 ] : [
                     { label: '🚨 장례 발생/임종 임박', value: 'mode_urgent' },
                     { label: '📋 사전 상담/내방', value: 'consult_chat' }
@@ -399,13 +397,7 @@ export const ChatInterface: React.FC<Props> = ({
                     logToSystem('ERROR', 'Real DB Search failed', traceId, { error: e }); // Replaced console.error
                 }
 
-                if (activeScenario === 'general') {
-                    // [VERIFICATION] Block Search for General Inquiry
-                    console.log('🛑 [Verification] Blocked Search for General Intent');
-                    aiMsg.action = 'NONE';
-                    aiMsg.text = "문의 내용을 확인했습니다. 담당자가 확인 후 신속히 답변 드리겠습니다. (상담 모드에서는 자동 추천이 제한됩니다)";
-                }
-                else if (realResults.length > 0) {
+                    if (realResults.length > 0) {
                     // 1. Use Real DB Data
                     logToSystem('INFO', `Real DB Found facilities: ${realResults.length}`, traceId, { count: realResults.length }); // Replaced console.log
                     // Attach to message for rendering
@@ -551,10 +543,6 @@ export const ChatInterface: React.FC<Props> = ({
                 setActiveScenario('pet');
                 welcomeMsg = `사랑하는 아이와의 이별, 얼마나 가슴 아프실지 짐작이 갑니다.\n아이가 무지개다리를 편안히 건널 수 있도록, 아래 정보를 입력해 주시면 맞춤 장례식장을 안내해 드릴게요.`;
                 actionType = 'SHOW_FORM_C'; // New Action for Pet
-            } else if (scenario === 'general') {
-                setActiveScenario('general');
-                welcomeMsg = `안녕하세요. 무엇을 도와드릴까요?\n일반 상담이나 제휴 문의, 오류 신고 등 궁금한 점을 남겨주세요.`;
-                actionType = 'SHOW_FORM_D'; // New Action for General
             }
 
             setMessages(prev => [...prev, {
@@ -563,7 +551,6 @@ export const ChatInterface: React.FC<Props> = ({
                     'funeral': '장례식장 찾기',
                     'memorial': '추모시설 찾기',
                     'pet': '반려동물 장례',
-                    'general': '일반/제휴 문의'
                 }[scenario] || '선택',
                 timestamp: new Date()
             }, {
@@ -603,8 +590,7 @@ export const ChatInterface: React.FC<Props> = ({
     const isFormActive = messages.length > 0 && (
         messages[messages.length - 1].action === 'SHOW_FORM_A' ||
         messages[messages.length - 1].action === 'SHOW_FORM_B' ||
-        messages[messages.length - 1].action === 'SHOW_FORM_C' ||
-        messages[messages.length - 1].action === 'SHOW_FORM_D'
+        messages[messages.length - 1].action === 'SHOW_FORM_C'
     );
 
     return (
@@ -802,12 +788,6 @@ export const ChatInterface: React.FC<Props> = ({
                                             />
                                         )}
 
-                                        {msg.action === 'SHOW_FORM_D' && (
-                                            <GeneralInquiryForm
-                                                onSubmit={(payload) => handleSend(payload)}
-                                            />
-                                        )}
-
                                         {msg.action === 'RECOMMEND' && msg.facilities && msg.facilities.length > 0 && (
                                             <RecommendList
                                                 facilities={msg.facilities}
@@ -816,7 +796,7 @@ export const ChatInterface: React.FC<Props> = ({
                                         )}
 
                                         {/* Other Actions */}
-                                        {!['SHOW_FORM_A', 'SHOW_FORM_B', 'SHOW_FORM_C', 'SHOW_FORM_D', 'RECOMMEND', 'URGENT_DISPATCH'].includes(msg.action || '') && (
+                                        {!['SHOW_FORM_A', 'SHOW_FORM_B', 'SHOW_FORM_C', 'RECOMMEND', 'URGENT_DISPATCH'].includes(msg.action || '') && (
                                             <button
                                                 onClick={() => {
                                                     if (msg.action === 'RESERVE') {

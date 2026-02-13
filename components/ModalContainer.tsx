@@ -88,8 +88,8 @@ export interface ModalContainerProps {
   // AI Chat
   aiChatFacility: Facility | null;
   setAiChatFacility: (f: Facility | null) => void;
-  initialChatIntent: 'funeral_home' | 'memorial_facility' | 'pet_funeral' | 'general' | null;
-  setInitialChatIntent: (i: 'funeral_home' | 'memorial_facility' | 'pet_funeral' | 'general' | null) => void;
+  initialChatIntent: 'funeral_home' | 'memorial_facility' | 'pet_funeral' | null;
+  setInitialChatIntent: (i: 'funeral_home' | 'memorial_facility' | 'pet_funeral' | null) => void;
   userLocation: { lat: number; lng: number; type: string };
   getCurrentPosition: () => void;
   handoverContext: any;

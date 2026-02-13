@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Bot, MapPin, Building2, Trees, Dog, MessageCircle, X, ChevronUp } from 'lucide-react';
+import { Bot, MapPin, Building2, Trees, Dog, X, ChevronUp } from 'lucide-react';
 
 interface Props {
-    onSelectIntent: (intent: 'funeral_home' | 'memorial_facility' | 'pet_funeral' | 'general') => void;
+    onSelectIntent: (intent: 'funeral_home' | 'memorial_facility' | 'pet_funeral') => void;
 }
 
 export const RecommendationStarter: React.FC<Props> = ({ onSelectIntent }) => {
@@ -30,13 +30,6 @@ export const RecommendationStarter: React.FC<Props> = ({ onSelectIntent }) => {
             color: 'bg-amber-500',
             desc: '반려동물 장례 상담'
         },
-        {
-            id: 'general',
-            label: '기타/상담',
-            icon: MessageCircle,
-            color: 'bg-blue-500',
-            desc: '무엇이든 물어보세요'
-        }
     ] as const;
 
     return (
