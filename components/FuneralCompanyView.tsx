@@ -270,8 +270,8 @@ export const FuneralCompanyView: React.FC<Props> = ({
 
     return (
         <div className="h-full flex flex-col bg-gray-50 relative">
-            {/* Search Header Container - Condensed for Mobile */}
-            <div className="px-4 mb-1.5 shrink-0">
+            {/* Search Header Container */}
+            <div className="px-4 pt-12 mb-1.5 shrink-0">
                 <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-2">
                         <h2 className="font-bold text-[17px] text-gray-800">상조 서비스 추천</h2>

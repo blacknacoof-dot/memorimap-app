@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { X, Phone, FileText, MessageSquare, Info, User, Smartphone, ChevronDown, Clock } from 'lucide-react';
+import { X, Phone, FileText, MessageSquare, Info, User, Smartphone, ChevronDown, Clock, MapPin, Calendar } from 'lucide-react';
 import { FuneralCompany } from '../../types';
 
 interface FormProps {
     company: FuneralCompany;
     onClose: () => void;
     onSubmit: (data: any) => void;
-    mode: 'phone' | 'chat' | 'urgent';
+    mode: 'phone' | 'chat' | 'urgent' | 'memorial';
     preStepData?: { scale: string; religion: string };
 }
 
@@ -14,6 +14,7 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
     // Dynamic Styles based on company type
     const isPetCompany = company.id.startsWith('pet_');
     const isUrgent = mode === 'urgent';
+    const isMemorial = mode === 'memorial';
 
     // Theme Colors
     let themeColor = isPetCompany ? "bg-[#8B5CF6]" : "bg-[#005B50]";
@@ -29,8 +30,16 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
         lightBg = "bg-red-50";
     }
 
-    const ringColor = isUrgent ? "focus:ring-red-500" : (isPetCompany ? "focus:ring-amber-500" : "focus:ring-teal-500");
-    const borderColor = isUrgent ? "focus:border-red-500" : (isPetCompany ? "focus:border-amber-500" : "focus:border-teal-500");
+    // Memorial Mode Overrides
+    if (isMemorial) {
+        themeColor = "bg-emerald-600";
+        accentColor = "text-emerald-600";
+        headerColor = "bg-emerald-800";
+        lightBg = "bg-emerald-50";
+    }
+
+    const ringColor = isUrgent ? "focus:ring-red-500" : isMemorial ? "focus:ring-emerald-500" : (isPetCompany ? "focus:ring-amber-500" : "focus:ring-teal-500");
+    const borderColor = isUrgent ? "focus:border-red-500" : isMemorial ? "focus:border-emerald-500" : (isPetCompany ? "focus:border-amber-500" : "focus:border-teal-500");
 
     const [formData, setFormData] = useState({
         // [User Request] 2. Applicant Info
@@ -58,7 +67,7 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
 
         // Common / Legacy
         time: '즉시 출동',
-        type: isUrgent ? '긴급 출동 접수' : '장례 예약 상담',
+        type: isUrgent ? '긴급 출동 접수' : isMemorial ? '추모시설 상담' : '장례 예약 상담',
         location: '', // For Urgent Mode (Simple)
 
         // Pet Specific
@@ -67,7 +76,14 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
         weight: '',
         isStone: false,
         date: '',
-        requests: ''
+        requests: '',
+
+        // Memorial Specific
+        memorialType: '', // 봉안당/수목장/공원묘지/해양장
+        urnCount: '1기',
+        deathDate: '',
+        visitDate: '',
+        memorialBudget: '',
     });
 
     const isPhoneMode = mode === 'phone';
@@ -80,7 +96,7 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
 
     return (
         <div className="absolute inset-0 z-50 flex items-end justify-center sm:items-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
-            <div className={`bg-white w-full max-w-sm max-h-[calc(100vh-2rem)] rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-slideUp ${isUrgent ? 'border-2 border-red-500' : ''}`}>
+            <div className={`bg-white w-full max-w-sm max-h-[calc(100vh-2rem)] rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-slideUp ${isUrgent ? 'border-2 border-red-500' : isMemorial ? 'border-2 border-emerald-500' : ''}`}>
                 {/* Modal Header */}
                 <div className={`${headerColor} text-white p-5 pt-6 shadow-md shrink-0 flex justify-between items-center relative overflow-hidden`}>
                     {isUrgent && (
@@ -88,14 +104,22 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
                             <Smartphone size={64} />
                         </div>
                     )}
+                    {isMemorial && (
+                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                            <MapPin size={64} />
+                        </div>
+                    )}
                     <div>
                         <h3 className="font-bold text-lg flex items-center gap-2">
-                            {isUrgent ? (
+                            {isMemorial ? (
+                                <>🕊️ 추모시설 상담 접수</>
+                            ) : isUrgent ? (
                                 <>🚨 긴급 출동 접수</>
                             ) : (
                                 isPetCompany ? '장례 예약 신청' : (isPhoneMode ? '전화 상담 예약' : '채팅 상담 예약')
                             )}
                         </h3>
+                        {isMemorial && <p className="text-xs text-white/80 mt-1">{company.name} 상담 신청서</p>}
                         {isUrgent && <p className="text-xs text-white/80 mt-1">가장 가까운 의전 팀이 즉시 출동합니다.</p>}
                     </div>
                     <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-full transition-colors z-10">
@@ -119,8 +143,180 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
                     )}
 
                     {/* 0. Guardian Info (Common) */}
-                    {/* === URGENT MODE (Detailed 5-Section) === */}
-                    {isUrgent ? (
+                    {/* === MEMORIAL MODE (4-Section) === */}
+                    {isMemorial ? (
+                        <div className="space-y-5">
+                            {/* Section 1: Deceased Info */}
+                            <div className="space-y-3">
+                                <h3 className="text-sm font-bold text-emerald-700 flex items-center gap-1.5 border-b border-emerald-100 pb-2">
+                                    <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs border border-emerald-200">1</span>
+                                    고인 정보
+                                </h3>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-gray-500 mb-1">고인 성함</label>
+                                        <input
+                                            type="text" placeholder="성함" required
+                                            className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none ${borderColor} focus:ring-1 ${ringColor}`}
+                                            value={formData.deceasedName} onChange={e => setFormData({ ...formData, deceasedName: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-gray-500 mb-1">성별</label>
+                                        <select
+                                            className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none ${borderColor} focus:ring-1 ${ringColor} bg-white`}
+                                            value={formData.deceasedGender} onChange={e => setFormData({ ...formData, deceasedGender: e.target.value })}
+                                        >
+                                            <option value="남성">남성</option>
+                                            <option value="여성">여성</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold text-gray-500 mb-1">사망일 (또는 예정일)</label>
+                                    <input
+                                        type="date"
+                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none ${borderColor} focus:ring-1 ${ringColor}`}
+                                        value={formData.deathDate} onChange={e => setFormData({ ...formData, deathDate: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Section 2: Memorial Type */}
+                            <div className="space-y-3 pt-2">
+                                <h3 className="text-sm font-bold text-emerald-700 flex items-center gap-1.5 border-b border-emerald-100 pb-2">
+                                    <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs border border-emerald-200">2</span>
+                                    안치 유형 선택
+                                </h3>
+                                <div className="grid grid-cols-4 gap-2">
+                                    {[
+                                        { id: '봉안당', icon: '⛩️' },
+                                        { id: '수목장', icon: '🌳' },
+                                        { id: '공원묘지', icon: '🏞️' },
+                                        { id: '해양장', icon: '🌊' },
+                                    ].map(opt => (
+                                        <button
+                                            key={opt.id} type="button"
+                                            onClick={() => setFormData({ ...formData, memorialType: opt.id })}
+                                            className={`flex flex-col items-center gap-1 py-2.5 rounded-lg border text-xs font-bold transition-all ${
+                                                formData.memorialType === opt.id
+                                                    ? 'bg-emerald-600 text-white border-emerald-600'
+                                                    : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-300'
+                                            }`}
+                                        >
+                                            <span className="text-base">{opt.icon}</span>
+                                            {opt.id}
+                                        </button>
+                                    ))}
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-gray-500 mb-1">유골함 수량</label>
+                                        <select
+                                            className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none ${borderColor} focus:ring-1 ${ringColor} bg-white`}
+                                            value={formData.urnCount} onChange={e => setFormData({ ...formData, urnCount: e.target.value })}
+                                        >
+                                            <option value="1기">1기</option>
+                                            <option value="2기">2기 (부부)</option>
+                                            <option value="3기">3기</option>
+                                            <option value="4기">4기</option>
+                                            <option value="5기 이상">5기 이상 (가족)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-gray-500 mb-1">종교</label>
+                                        <select
+                                            className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none ${borderColor} focus:ring-1 ${ringColor} bg-white`}
+                                            value={formData.religion} onChange={e => setFormData({ ...formData, religion: e.target.value })}
+                                        >
+                                            <option value="">선택 안함</option>
+                                            <option value="기독교">기독교</option>
+                                            <option value="천주교">천주교</option>
+                                            <option value="불교">불교</option>
+                                            <option value="무교/기타">무교/기타</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Section 3: Applicant Info */}
+                            <div className="space-y-3 pt-2">
+                                <h3 className="text-sm font-bold text-emerald-700 flex items-center gap-1.5 border-b border-emerald-100 pb-2">
+                                    <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs border border-emerald-200">3</span>
+                                    신청인 정보
+                                </h3>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-gray-500 mb-1">성함</label>
+                                        <input
+                                            type="text" placeholder="성함" required
+                                            className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none ${borderColor} focus:ring-1 ${ringColor}`}
+                                            value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-gray-500 mb-1">고인과의 관계</label>
+                                        <input
+                                            type="text" placeholder="예: 자녀, 배우자"
+                                            className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none ${borderColor} focus:ring-1 ${ringColor}`}
+                                            value={formData.relation} onChange={e => setFormData({ ...formData, relation: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold text-gray-500 mb-1">연락처</label>
+                                    <input
+                                        type="tel" placeholder="010-0000-0000" required
+                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none ${borderColor} focus:ring-1 ${ringColor}`}
+                                        value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Section 4: Preferences */}
+                            <div className="space-y-3 pt-2">
+                                <h3 className="text-sm font-bold text-emerald-700 flex items-center gap-1.5 border-b border-emerald-100 pb-2">
+                                    <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs border border-emerald-200">4</span>
+                                    희망 사항
+                                </h3>
+                                <div>
+                                    <label className="block text-[10px] font-bold text-gray-500 mb-1">희망 방문일</label>
+                                    <input
+                                        type="date"
+                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none ${borderColor} focus:ring-1 ${ringColor}`}
+                                        value={formData.visitDate} onChange={e => setFormData({ ...formData, visitDate: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold text-gray-500 mb-1">예산 범위</label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {['~300만원', '~500만원', '~1,000만원', '1,000만원~'].map(b => (
+                                            <button
+                                                key={b} type="button"
+                                                onClick={() => setFormData({ ...formData, memorialBudget: b })}
+                                                className={`py-2 text-xs rounded-lg border font-bold transition-all ${
+                                                    formData.memorialBudget === b
+                                                        ? 'bg-emerald-600 text-white border-emerald-600'
+                                                        : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-300'
+                                                }`}
+                                            >
+                                                {b}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold text-gray-500 mb-1">요청사항</label>
+                                    <textarea
+                                        placeholder="추가 요청사항이 있으면 입력해 주세요."
+                                        rows={2}
+                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none ${borderColor} focus:ring-1 ${ringColor} resize-none`}
+                                        value={formData.requests} onChange={e => setFormData({ ...formData, requests: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    ) : isUrgent ? (
                         <div className="space-y-5">
                             {/* Section 1: Deceased Info */}
                             <div className="space-y-3">
@@ -467,7 +663,7 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
                         <input type="checkbox" id="privacy" required className={`mt-1 w-4 h-4 text-white focus:ring-0 border-gray-300 rounded checked:${isUrgent ? 'bg-red-600' : themeColor}`} />
                         <label htmlFor="privacy" className="text-xs text-gray-500 leading-tight cursor-pointer">
                             [필수] 개인정보 수집 및 이용에 동의합니다. <br />
-                            <span className="text-gray-400 text-[10px]">(수집 목적: {isUrgent ? '긴급 출동 연락' : '상담 예약 및 안내'})</span>
+                            <span className="text-gray-400 text-[10px]">(수집 목적: {isMemorial ? '추모시설 상담 및 방문 안내' : isUrgent ? '긴급 출동 연락' : '상담 예약 및 안내'})</span>
                         </label>
                     </div>
 
@@ -475,10 +671,10 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
                     <div className="p-4 pt-0 mt-auto z-20 bg-white border-t border-gray-100 safe-bottom">
                         <button
                             onClick={handleSubmit}
-                            className={`w-full ${isUrgent ? 'bg-red-600 hover:bg-red-700' : (isPetCompany ? 'bg-amber-600 hover:bg-amber-700' : 'bg-gray-900 hover:bg-gray-800')} text-white py-3.5 rounded-xl font-bold text-sm shadow-md active:scale-95 transition-all flex items-center justify-center gap-2`}
+                            className={`w-full ${isMemorial ? 'bg-emerald-600 hover:bg-emerald-700' : isUrgent ? 'bg-red-600 hover:bg-red-700' : (isPetCompany ? 'bg-amber-600 hover:bg-amber-700' : 'bg-gray-900 hover:bg-gray-800')} text-white py-3.5 rounded-xl font-bold text-sm shadow-md active:scale-95 transition-all flex items-center justify-center gap-2`}
                         >
-                            {isUrgent ? <Smartphone size={18} className="animate-pulse" /> : (isPhoneMode ? <Phone size={18} /> : <FileText size={18} />)}
-                            {isUrgent ? '긴급 출동 요청하기' : (isPetCompany ? '예약 신청하기' : (isPhoneMode ? '전화 상담 예약' : '상담 신청하기'))}
+                            {isMemorial ? <Calendar size={18} /> : isUrgent ? <Smartphone size={18} className="animate-pulse" /> : (isPhoneMode ? <Phone size={18} /> : <FileText size={18} />)}
+                            {isMemorial ? '상담 신청하기' : isUrgent ? '긴급 출동 요청하기' : (isPetCompany ? '예약 신청하기' : (isPhoneMode ? '전화 상담 예약' : '상담 신청하기'))}
                         </button>
                     </div>
                 </form>

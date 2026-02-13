@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import { MapPin, Check, Phone, Loader2, Calendar, Dog, Cat, Fish } from 'lucide-react';
-import { getDistinctRegions, getIntelligentRecommendations } from '../../lib/queries';
+import { getDistinctRegions, getDistinctRegionsFromFacilities, getIntelligentRecommendations } from '../../lib/queries';
 import { createAuthenticatedClient } from '@/lib/supabaseClient';
 import { useSession } from '@/lib/auth';
 import { addSearchHistory } from '@/utils/searchHistory';
@@ -80,8 +80,12 @@ const PetSearchForm: React.FC<FormProps> = ({
         if (debounceTimer.current) clearTimeout(debounceTimer.current);
         debounceTimer.current = setTimeout(async () => {
             try {
-                const results = await getDistinctRegions(region) as string[];
-                const uniqueResults = Array.from(new Set(results)).slice(0, 5);
+                const [rpcResults, facilityResults] = await Promise.all([
+                    getDistinctRegions(region).catch(() => []),
+                    getDistinctRegionsFromFacilities(region).catch(() => []),
+                ]);
+                const merged = Array.from(new Set([...(rpcResults as string[]), ...facilityResults]));
+                const uniqueResults = merged.slice(0, 8);
                 setSuggestions(uniqueResults);
                 setShowSuggestions(uniqueResults.length > 0);
             } catch (e) { console.error(e); }

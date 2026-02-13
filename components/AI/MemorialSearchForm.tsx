@@ -7,7 +7,7 @@ import {
     Loader2,
     Calendar
 } from 'lucide-react';
-import { getDistinctRegions, getIntelligentRecommendations } from '@/lib/queries';
+import { getDistinctRegions, getDistinctRegionsFromFacilities, getIntelligentRecommendations } from '@/lib/queries';
 import { createAuthenticatedClient } from '@/lib/supabaseClient';
 import { useSession } from '@/lib/auth';
 import {
@@ -97,8 +97,13 @@ const MemorialSearchForm: React.FC<FormProps> = ({
         if (debounceTimer.current) clearTimeout(debounceTimer.current);
         debounceTimer.current = setTimeout(async () => {
             try {
-                const results = await getDistinctRegions(location) as string[];
-                const uniqueResults = Array.from(new Set(results)).slice(0, 5);
+                // RPC(memorial_spaces) + facilities 테이블 병합 조회
+                const [rpcResults, facilityResults] = await Promise.all([
+                    getDistinctRegions(location).catch(() => []),
+                    getDistinctRegionsFromFacilities(location).catch(() => []),
+                ]);
+                const merged = Array.from(new Set([...(rpcResults as string[]), ...facilityResults]));
+                const uniqueResults = merged.slice(0, 8);
                 setSuggestions(uniqueResults);
                 setShowSuggestions(uniqueResults.length > 0);
             } catch (e) { console.error(e); }
@@ -189,17 +194,21 @@ const MemorialSearchForm: React.FC<FormProps> = ({
         if (!consultFacility) return;
         setBookingId(consultFacility.id);
 
-        const scaleVal = data.scale || '미선택';
         const religionVal = data.religion || MEMORIAL_RELIGION_OPTIONS.find(o => o.id === religion)?.label || '미선택';
+        const memorialType = data.memorialType || '미선택';
+        const urnCount = data.urnCount || '1기';
 
         const notes = [
-            `[AI 마음이 추모시설 바로 예약 접수]`,
+            `[AI 마음이 추모시설 상담 접수]`,
             `시설: ${consultFacility.name}`,
             `고인: ${data.deceasedName || '미입력'} (${data.deceasedGender || ''})`,
+            data.deathDate ? `사망일: ${data.deathDate}` : '',
+            `안치유형: ${memorialType}`,
+            `유골함: ${urnCount}`,
             `지역: ${location}`,
-            `빈소: ${scaleVal}`,
             `종교: ${religionVal}`,
-            `예산: ${MEMORIAL_BUDGET_OPTIONS.find(o => o.id === budget)?.label || '미선택'}`,
+            `예산: ${data.memorialBudget || MEMORIAL_BUDGET_OPTIONS.find(o => o.id === budget)?.label || '미선택'}`,
+            data.visitDate ? `희망방문일: ${data.visitDate}` : '',
             data.requests ? `요청: ${data.requests}` : '',
         ].filter(Boolean).join(', ');
 
@@ -228,13 +237,13 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                 user_name: data.name || currentUser?.name || '',
                 user_phone: data.phone || '',
                 notes,
-                scale: scaleVal,
+                scale: memorialType,
                 religion: religionVal,
                 status: 'waiting'
             });
             if (error) throw error;
             setBookedIds(prev => new Set(prev).add(consultFacility.id));
-            setBookingComplete({ facilityName: consultFacility.name, scale: scaleVal, religion: religionVal });
+            setBookingComplete({ facilityName: consultFacility.name, scale: memorialType, religion: religionVal });
         } catch (e) {
             console.error('상담접수 실패:', e);
             toast.error('접수 중 오류가 발생했습니다. 다시 시도해 주세요.');
@@ -277,10 +286,10 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                 <div className="mt-3 space-y-3 animate-in fade-in duration-300">
                     <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center space-y-3">
                         <Check className="text-green-500 mx-auto" size={40} />
-                        <p className="text-lg font-bold text-green-700">바로 예약 되었습니다</p>
+                        <p className="text-lg font-bold text-green-700">상담 접수 완료</p>
                         <p className="text-sm text-slate-600 font-semibold">{bookingComplete.facilityName}</p>
                         <p className="text-xs text-slate-500">
-                            빈소: {bookingComplete.scale} | 종교: {bookingComplete.religion}
+                            안치유형: {bookingComplete.scale} | 종교: {bookingComplete.religion}
                         </p>
                         <p className="text-xs text-slate-400">담당자가 곧 연락드립니다.</p>
                         <p className="text-xs text-slate-400">접수 내역은 마이페이지에서 확인하실 수 있습니다.</p>
@@ -317,7 +326,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                                     priceRange: '',
                                     benefits: [],
                                 }}
-                                mode="urgent"
+                                mode="memorial"
                                 onClose={() => { setConsultFacility(null); }}
                                 onSubmit={handleConsultSubmit}
                             />
@@ -364,8 +373,8 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                                             <Check size={14} /> 접수 완료
                                         </div>
                                     ) : (
-                                        <button onClick={() => setConsultFacility({ id: fId, name: f.name, phone: f.phone })} className="w-full bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-1">
-                                            <Calendar size={14} /> 바로 예약 접수
+                                        <button onClick={() => setConsultFacility({ id: fId, name: f.name, phone: f.phone })} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-1">
+                                            <Calendar size={14} /> 상담 신청
                                         </button>
                                     )}
                                 </div>
