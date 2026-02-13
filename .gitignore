@@ -36,3 +36,4 @@ full_price_update.json
 !.env.template
 
 types_schema.ts  # Invalid file - ignore
+nul

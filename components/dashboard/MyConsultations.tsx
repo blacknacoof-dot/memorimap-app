@@ -66,6 +66,7 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
                     .from('consultations')
                     .select('*')
                     .eq('user_id', userId)
+                    .not('status', 'eq', 'cancelled')
                     .order('created_at', { ascending: false });
                 if (!error && data) {
                     legacyData = data as Consultation[];
@@ -76,8 +77,9 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
             legacyData = await getConsultationsByUser(userId); // fallback
         }
 
-        // 2. Fetch AI Consultations
-        const aiData = await aiConsultationService.getUserConsultations(userId);
+        // 2. Fetch AI Consultations (deleted 제외)
+        const aiDataRaw = await aiConsultationService.getUserConsultations(userId);
+        const aiData = aiDataRaw.filter(ai => ai.status !== 'cancelled' && ai.status !== 'deleted');
 
         // 3. Merge & Adapt
         const aiAdapted = aiData.map(ai => ({
@@ -155,28 +157,48 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
     const handleDelete = async (consultation: any) => {
         if (!confirm('상담 내역을 삭제하시겠습니까?')) return;
 
-        if (consultation.isAi) {
-            // AI 상담: 로컬 상태에서만 제거
-            setConsultations(prev => prev.filter(c => c.id !== consultation.id));
-            toast.success('상담 내역이 삭제되었습니다.');
-            return;
-        }
-
         try {
             const token = await session?.getToken({ template: 'supabase' });
             if (!token) throw new Error('인증 토큰 없음');
             const authClient = createAuthenticatedClient(token);
-            const { error } = await authClient
-                .from('consultations')
-                .delete()
-                .eq('id', consultation.id)
-                .eq('user_id', userId);
-            if (error) throw error;
+
+            if (consultation.isAi) {
+                // AI 상담: cancelled로 상태 변경
+                const { error } = await authClient
+                    .from('ai_consultations')
+                    .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+                    .eq('conversation_id', consultation.conversation_id)
+                    .eq('user_id', userId);
+                if (error) {
+                    const { error: e2 } = await supabase
+                        .from('ai_consultations')
+                        .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+                        .eq('conversation_id', consultation.conversation_id)
+                        .eq('user_id', userId);
+                    if (e2) throw e2;
+                }
+            } else {
+                // 일반 상담: cancelled로 상태 변경
+                const { error } = await authClient
+                    .from('consultations')
+                    .update({ status: 'cancelled' })
+                    .eq('id', consultation.id)
+                    .eq('user_id', userId);
+                if (error) {
+                    const { error: e2 } = await supabase
+                        .from('consultations')
+                        .update({ status: 'cancelled' })
+                        .eq('id', consultation.id)
+                        .eq('user_id', userId);
+                    if (e2) throw e2;
+                }
+            }
+
             setConsultations(prev => prev.filter(c => c.id !== consultation.id));
             toast.success('상담 내역이 삭제되었습니다.');
         } catch (e) {
             console.error('삭제 실패:', e);
-            toast.error('삭제 중 오류가 발생했습니다.');
+            toast.error('삭제 중 오류가 발생했습니다. 다시 시도해주세요.');
         }
     };
 

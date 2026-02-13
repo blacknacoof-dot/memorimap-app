@@ -46,3 +46,25 @@ export const MEMORIAL_BUDGET_OPTIONS = [
 ];
 
 export const MEMORIAL_SERVICE_OPTIONS = ['🚗 주차 편리', '🚌 셔틀버스', '☕ 카페/편의시설', '🕰️ 365일 개방', '🏞️ 자연 경관'];
+
+// Pet Funeral Options
+export const PET_TYPE_OPTIONS = [
+    { id: 'dog', label: '강아지', icon: '🐕' },
+    { id: 'cat', label: '고양이', icon: '🐈' },
+    { id: 'small', label: '소동물', icon: '🐹' },
+];
+
+export const PET_WEIGHT_OPTIONS = [
+    { id: 'under5', label: '5kg 미만', sub: '소형' },
+    { id: '5to10', label: '5~10kg', sub: '중형' },
+    { id: '10to25', label: '10~25kg', sub: '대형' },
+    { id: 'over25', label: '25kg 이상', sub: '초대형' },
+];
+
+export const PET_SERVICE_OPTIONS = [
+    { id: 'individual', label: '개별 화장', icon: '🔥' },
+    { id: 'pickup', label: '픽업/이송', icon: '🚗' },
+    { id: 'memorial_stone', label: '메모리얼 스톤', icon: '💎' },
+    { id: 'ceremony', label: '장례 의식', icon: '🕯️' },
+    { id: 'urn', label: '유골함/수목장', icon: '🏺' },
+];

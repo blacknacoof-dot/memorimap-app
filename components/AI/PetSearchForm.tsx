@@ -1,11 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
-import { MapPin, Check, Phone, Loader2, Calendar, Dog, Cat, Fish } from 'lucide-react';
+import { MapPin, Check, Phone, Loader2, Calendar } from 'lucide-react';
 import { getDistinctRegions, getDistinctRegionsFromFacilities, getIntelligentRecommendations } from '../../lib/queries';
 import { createAuthenticatedClient } from '@/lib/supabaseClient';
 import { useSession } from '@/lib/auth';
 import { addSearchHistory } from '@/utils/searchHistory';
 import { ConsultationForm } from '../Consultation/BrandChatHelpers';
+import {
+    PET_TYPE_OPTIONS,
+    PET_WEIGHT_OPTIONS,
+    PET_SERVICE_OPTIONS,
+} from '@/constants/maumAiConstants';
 
 // Safe Highlighting Component
 const SafeHighlight = ({ text, highlight }: { text: string, highlight: string }) => {
@@ -32,12 +37,6 @@ interface FormProps {
     onSwitchToFacility?: (facility: any, context?: any) => void;
 }
 
-const PET_TYPE_OPTIONS = [
-    { id: 'dog', label: '강아지', icon: <Dog size={18} /> },
-    { id: 'cat', label: '고양이', icon: <Cat size={18} /> },
-    { id: 'small', label: '소동물', icon: <Fish size={18} /> },
-];
-
 const REGION_CHIPS = ['서울', '경기', '인천', '부산', '대구', '광주', '대전', '울산', '강원', '제주'];
 
 const PetSearchForm: React.FC<FormProps> = ({
@@ -53,8 +52,11 @@ const PetSearchForm: React.FC<FormProps> = ({
     const { session } = useSession();
     const [isSubmitted, setIsSubmitted] = useState(false);
 
-    // Form fields (single screen: pet type + region only)
+    // Form fields
     const [petType, setPetType] = useState('');
+    const [petName, setPetName] = useState('');
+    const [weight, setWeight] = useState('');
+    const [services, setServices] = useState<string[]>([]);
     const [region, setRegion] = useState('');
 
     // Recommendations
@@ -93,7 +95,13 @@ const PetSearchForm: React.FC<FormProps> = ({
         return () => { if (debounceTimer.current) clearTimeout(debounceTimer.current); };
     }, [region]);
 
-    const canSubmit = region; // Only region is required
+    const canSubmit = petType && weight && region;
+
+    const toggleService = (id: string) => {
+        setServices(prev =>
+            prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
+        );
+    };
 
     const handleSubmit = async () => {
         if (!canSubmit) return;
@@ -101,6 +109,9 @@ const PetSearchForm: React.FC<FormProps> = ({
         const searchData = {
             category: initialCategory,
             petType,
+            petName,
+            weight,
+            services,
             location: {
                 type: userLocation?.type === 'gps' && !region ? 'gps' : 'text',
                 lat: userLocation?.lat,
@@ -110,7 +121,16 @@ const PetSearchForm: React.FC<FormProps> = ({
         };
 
         const petLabel = PET_TYPE_OPTIONS.find(o => o.id === petType)?.label || '미선택';
-        const finalText = `[반려동물 장례]\n아이: ${petLabel}\n지역: ${region || '내 위치 주변'}`;
+        const weightLabel = PET_WEIGHT_OPTIONS.find(o => o.id === weight)?.label || '';
+        const serviceLabels = services.map(s => PET_SERVICE_OPTIONS.find(o => o.id === s)?.label).filter(Boolean).join(', ');
+
+        const finalText = [
+            `[반려동물 장례]`,
+            `아이: ${petLabel}${petName ? ` (${petName})` : ''}`,
+            `몸무게: ${weightLabel}`,
+            serviceLabels ? `서비스: ${serviceLabels}` : '',
+            `지역: ${region || '내 위치 주변'}`,
+        ].filter(Boolean).join('\n');
 
         onSubmit({ text: finalText, data: searchData });
         setIsSubmitted(true);
@@ -136,10 +156,14 @@ const PetSearchForm: React.FC<FormProps> = ({
         setBookingId(consultFacility.id);
 
         const petLabel = PET_TYPE_OPTIONS.find(o => o.id === petType)?.label || '미선택';
+        const weightLabel = PET_WEIGHT_OPTIONS.find(o => o.id === weight)?.label || '';
+        const serviceLabels = services.map(s => PET_SERVICE_OPTIONS.find(o => o.id === s)?.label).filter(Boolean).join(', ');
         const notes = [
             `[AI 마음이 반려동물 장례 바로 예약 접수]`,
             `시설: ${consultFacility.name}`,
-            `아이: ${petLabel}`,
+            `아이: ${petLabel}${petName ? ` (${petName})` : ''}`,
+            `몸무게: ${weightLabel}`,
+            serviceLabels ? `서비스: ${serviceLabels}` : '',
             `지역: ${region || '내 위치 주변'}`,
             data.petName ? `이름: ${data.petName}` : '',
             data.requests ? `요청: ${data.requests}` : '',
@@ -150,17 +174,20 @@ const PetSearchForm: React.FC<FormProps> = ({
             if (!token) throw new Error('인증 토큰 없음');
             const authClient = createAuthenticatedClient(token);
 
-            // 동일 시설 중복 접수 방지
-            const { data: existing } = await authClient
+            // 카테고리별 1건 제한: 동물장례 활성 상담 체크
+            const { data: existingCategory } = await authClient
                 .from('consultations')
-                .select('id')
+                .select('id, facility_id')
                 .eq('user_id', currentUser?.id)
-                .eq('facility_id', consultFacility.id)
+                .eq('category', 'pet')
                 .in('status', ['waiting', 'pending', 'accepted'])
                 .limit(1);
-            if (existing && existing.length > 0) {
-                toast.error('이미 해당 시설에 접수된 상담이 있습니다.');
-                return;
+            if (existingCategory && existingCategory.length > 0) {
+                const willReplace = confirm('이미 접수된 동물장례 상담이 있습니다.\n새 시설로 변경하시겠습니까? (기존 상담은 자동 취소됩니다)');
+                if (!willReplace) return;
+                await authClient.from('consultations')
+                    .update({ status: 'cancelled' })
+                    .eq('id', existingCategory[0].id);
             }
 
             const { error } = await authClient.from('consultations').insert({
@@ -169,6 +196,7 @@ const PetSearchForm: React.FC<FormProps> = ({
                 user_name: data.name || currentUser?.name || '',
                 user_phone: data.phone || '',
                 notes,
+                category: 'pet',
                 status: 'pending'
             });
             if (error) throw error;
@@ -311,12 +339,12 @@ const PetSearchForm: React.FC<FormProps> = ({
         );
     }
 
-    // Single-screen form (simplified: pet type + region)
+    // Single-screen form
     return (
         <div className="mt-3 bg-orange-50/50 border border-orange-100 rounded-xl p-4 space-y-4 animate-in fade-in duration-300">
             {/* Section 1: Pet Type */}
             <div>
-                <label className="text-xs font-bold text-slate-700 mb-2 block">반려동물 종류 <span className="text-slate-400 font-normal">(선택)</span></label>
+                <label className="text-xs font-bold text-slate-700 mb-2 block">🐾 아이 종류</label>
                 <div className="flex gap-2">
                     {PET_TYPE_OPTIONS.map(opt => (
                         <button key={opt.id} onClick={() => setPetType(petType === opt.id ? '' : opt.id)}
@@ -329,9 +357,50 @@ const PetSearchForm: React.FC<FormProps> = ({
                 </div>
             </div>
 
-            {/* Section 2: Region */}
+            {/* Section 2: Pet Name */}
             <div>
-                <label className="text-xs font-bold text-slate-700 mb-2 block">희망 지역</label>
+                <label className="text-xs font-bold text-slate-700 mb-2 block">💕 아이 이름 <span className="text-slate-400 font-normal">(선택)</span></label>
+                <input
+                    type="text" value={petName}
+                    onChange={(e) => setPetName(e.target.value)}
+                    placeholder="예: 초코, 나비"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-orange-400 focus:outline-none"
+                />
+            </div>
+
+            {/* Section 3: Weight */}
+            <div>
+                <label className="text-xs font-bold text-slate-700 mb-2 block">⚖️ 몸무게</label>
+                <div className="grid grid-cols-2 gap-1.5">
+                    {PET_WEIGHT_OPTIONS.map(opt => (
+                        <button key={opt.id} onClick={() => setWeight(weight === opt.id ? '' : opt.id)}
+                            className={`px-3 py-2 rounded-lg text-xs font-bold border transition-all text-left ${weight === opt.id
+                                ? 'bg-orange-500 border-orange-500 text-white'
+                                : 'bg-white border-slate-200 text-slate-600 hover:border-orange-300'}`}>
+                            {opt.label} <span className={`font-normal ${weight === opt.id ? 'text-orange-100' : 'text-slate-400'}`}>({opt.sub})</span>
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Section 4: Services (multi-select) */}
+            <div>
+                <label className="text-xs font-bold text-slate-700 mb-2 block">🛎️ 필요 서비스 <span className="text-slate-400 font-normal">(선택, 복수 가능)</span></label>
+                <div className="flex flex-wrap gap-1.5">
+                    {PET_SERVICE_OPTIONS.map(opt => (
+                        <button key={opt.id} onClick={() => toggleService(opt.id)}
+                            className={`px-3 py-2 rounded-lg text-xs font-bold border transition-all ${services.includes(opt.id)
+                                ? 'bg-orange-100 border-orange-400 text-orange-700'
+                                : 'bg-white border-slate-200 text-slate-600 hover:border-orange-300'}`}>
+                            {opt.icon} {opt.label}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Section 5: Region */}
+            <div>
+                <label className="text-xs font-bold text-slate-700 mb-2 block">📍 희망 지역</label>
                 <div className="flex flex-wrap gap-1.5 mb-2">
                     {REGION_CHIPS.map(reg => (
                         <button key={reg} onClick={() => { setRegion(reg); setShowSuggestions(false); }}
