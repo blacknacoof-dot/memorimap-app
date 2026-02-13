@@ -159,11 +159,10 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                 await authClient.from('consultations').insert({
                     user_id: currentUser.id,
                     facility_id: facilityId,
-                    facility_name: facilityName || '',
                     user_name: currentUser.firstName || 'Unknown',
                     user_phone: currentUser.phoneNumbers?.[0]?.phoneNumber || 'N/A',
-                    status: 'waiting',
-                    notes: finalText
+                    status: 'pending',
+                    notes: `시설: ${facilityName || ''}\n${finalText}`
                 });
             } catch (e) {
                 console.error('[MemorialSearchForm] Exception saving:', e);
@@ -232,14 +231,11 @@ const MemorialSearchForm: React.FC<FormProps> = ({
 
             const { error } = await authClient.from('consultations').insert({
                 facility_id: consultFacility.id,
-                facility_name: consultFacility.name,
                 user_id: currentUser?.id,
                 user_name: data.name || currentUser?.name || '',
                 user_phone: data.phone || '',
                 notes,
-                scale: memorialType,
-                religion: religionVal,
-                status: 'waiting'
+                status: 'pending'
             });
             if (error) throw error;
             setBookedIds(prev => new Set(prev).add(consultFacility.id));
