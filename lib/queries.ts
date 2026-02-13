@@ -1691,7 +1691,7 @@ export interface Consultation extends ConsultationData {
     id: string;
     created_at: string;
     updated_at: string;
-    status: 'waiting' | 'accepted' | 'cancelled' | 'completed';
+    status: 'pending' | 'waiting' | 'accepted' | 'cancelled' | 'completed';
     notes?: string;
     answer?: string; // Admin's response
     answered_at?: string; // ISO timestamp
@@ -1777,7 +1777,11 @@ export const getConsultationsByFacility = async (
             .order('created_at', { ascending: false });
 
         if (status) {
-            query = query.eq('status', status);
+            if (status === 'waiting') {
+                query = query.in('status', ['waiting', 'pending']);
+            } else {
+                query = query.eq('status', status);
+            }
         }
 
         const { data, error } = await query;

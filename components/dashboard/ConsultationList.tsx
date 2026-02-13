@@ -11,7 +11,8 @@ interface Props {
     facilityId: string;
 }
 
-const STATUS_CONFIG = {
+const STATUS_CONFIG: Record<string, { label: string; color: string; icon: typeof Clock }> = {
+    pending: { label: '대기중', color: 'bg-amber-100 text-amber-700', icon: Clock },
     waiting: { label: '대기중', color: 'bg-amber-100 text-amber-700', icon: Clock },
     accepted: { label: '접수됨', color: 'bg-blue-100 text-blue-700', icon: CheckCircle },
     cancelled: { label: '취소됨', color: 'bg-red-100 text-red-700', icon: XCircle },
@@ -155,7 +156,7 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
         });
     };
 
-    const waitingCount = consultations.filter(c => c.status === 'waiting').length;
+    const waitingCount = consultations.filter(c => c.status === 'waiting' || c.status === 'pending').length;
 
     return (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">

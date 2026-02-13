@@ -106,12 +106,29 @@ const FuneralSearchForm: React.FC<FormProps> = ({
         return () => { if (debounceTimer.current) clearTimeout(debounceTimer.current); };
     }, [location]);
 
-    const canSubmit = urgency && location;
+    const isDirectFacility = !!(facilityId && facilityId !== 'maum-i');
+    const canSubmit = isDirectFacility ? !!urgency : !!(urgency && location);
 
     const handleSubmit = async () => {
         if (!canSubmit) return;
         setIsSaving(true);
 
+        const urgencyLabel = FUNERAL_URGENCY_OPTIONS.find(o => o.id === urgency)?.label || urgency;
+        const scaleLabel = FUNERAL_SCALE_OPTIONS.find(o => o.id === scale)?.label || '미선택';
+        const religionLabel = FUNERAL_RELIGION_OPTIONS.find(o => o.id === religion)?.label || '미선택';
+
+        if (isDirectFacility) {
+            // 시설 직접 모드: 지역 검색 건너뛰고 바로 ConsultationForm 진입
+            const finalText = `[장례식장 예약]\n| 구분 | 선택 |\n|---|---|\n| 시설 | ${facilityName} |\n| 상황 | ${urgencyLabel} |\n| 규모 | ${scaleLabel} |\n| 종교 | ${religionLabel} |`;
+
+            setIsSaving(false);
+            setIsSubmitted(true);
+            onSubmit({ text: finalText, data: { category: initialCategory, urgency, scale, religion, facilityId, facilityName } });
+            setConsultFacility({ id: facilityId!, name: facilityName || '' });
+            return;
+        }
+
+        // 마음이 모드: 기존 검색 → 추천 흐름
         const searchData = {
             category: initialCategory,
             urgency,
@@ -119,10 +136,6 @@ const FuneralSearchForm: React.FC<FormProps> = ({
             scale,
             religion,
         };
-
-        const urgencyLabel = FUNERAL_URGENCY_OPTIONS.find(o => o.id === urgency)?.label || urgency;
-        const scaleLabel = FUNERAL_SCALE_OPTIONS.find(o => o.id === scale)?.label || '미선택';
-        const religionLabel = FUNERAL_RELIGION_OPTIONS.find(o => o.id === religion)?.label || '미선택';
 
         const finalText = `[장례식장 찾기]\n| 구분 | 선택 |\n|---|---|\n| 상황 | ${urgencyLabel} |\n| 지역 | ${location} |\n| 규모 | ${scaleLabel} |\n| 종교 | ${religionLabel} |`;
 
@@ -177,7 +190,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                 .select('id, facility_id')
                 .eq('user_id', currentUser?.id)
                 .eq('category', 'funeral')
-                .in('status', ['waiting', 'pending', 'accepted'])
+                .in('status', ['waiting', 'accepted'])
                 .limit(1);
             if (existingCategory && existingCategory.length > 0) {
                 const willReplace = confirm('이미 접수된 장례식장 상담이 있습니다.\n새 시설로 변경하시겠습니까? (기존 상담은 자동 취소됩니다)');
@@ -195,7 +208,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                 user_phone: data.phone || '',
                 notes,
                 category: 'funeral',
-                status: 'pending'
+                status: 'waiting',
             });
             if (error) throw error;
             setBookedIds(prev => new Set(prev).add(consultFacility.id));
@@ -277,57 +290,61 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                     </div>
                 )}
 
+                {!isDirectFacility && (
                 <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
                     <p className="text-sm text-green-700 font-bold"><Check size={14} className="inline mr-1" />접수 완료 — <strong>{location}</strong> 지역 추천 시설</p>
                 </div>
+                )}
 
-                {isLoadingRecommendations ? (
-                    <div className="flex flex-col items-center py-6 space-y-2 bg-white border border-slate-200 rounded-xl">
-                        <Loader2 className="animate-spin text-indigo-600" size={28} />
-                        <span className="text-xs text-slate-500">맞춤 시설을 찾고 있습니다...</span>
-                    </div>
-                ) : recommendedFacilities.length > 0 ? (
-                    <div className="max-h-[320px] overflow-y-auto space-y-2 pr-1">
-                        {recommendedFacilities.map((f, idx) => {
-                            const fId = String(typeof f.id === 'object' ? (f.id as any).id || (f as any).facilityId : f.id);
-                            const isBooked = bookedIds.has(fId);
+                {!isDirectFacility && (
+                    isLoadingRecommendations ? (
+                        <div className="flex flex-col items-center py-6 space-y-2 bg-white border border-slate-200 rounded-xl">
+                            <Loader2 className="animate-spin text-indigo-600" size={28} />
+                            <span className="text-xs text-slate-500">맞춤 시설을 찾고 있습니다...</span>
+                        </div>
+                    ) : recommendedFacilities.length > 0 ? (
+                        <div className="max-h-[320px] overflow-y-auto space-y-2 pr-1">
+                            {recommendedFacilities.map((f, idx) => {
+                                const fId = String(typeof f.id === 'object' ? (f.id as any).id || (f as any).facilityId : f.id);
+                                const isBooked = bookedIds.has(fId);
 
-                            const imgUrl = f.image_url || f.imageUrl || (f.images?.length > 0 ? f.images[0] : null);
-                            return (
-                                <div key={fId} className="bg-white border border-slate-200 rounded-xl p-3 space-y-2">
-                                    <div className="flex gap-3">
-                                        {imgUrl ? (
-                                            <img src={imgUrl} alt={f.name} className="w-[60px] h-[60px] rounded-lg object-cover shrink-0 bg-slate-100" />
-                                        ) : (
-                                            <div className="w-[60px] h-[60px] rounded-lg bg-slate-100 shrink-0 flex items-center justify-center text-slate-300 text-lg">🏥</div>
-                                        )}
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-start">
-                                                <button onClick={() => onSwitchToFacility?.({ id: f.id, name: f.name, address: f.address, phone: f.phone })} className="font-bold text-sm text-indigo-700 hover:underline truncate text-left">{f.name}</button>
-                                                <span className="bg-indigo-50 text-indigo-600 text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ml-1">추천 {idx + 1}</span>
+                                const imgUrl = f.image_url || f.imageUrl || (f.images?.length > 0 ? f.images[0] : null);
+                                return (
+                                    <div key={fId} className="bg-white border border-slate-200 rounded-xl p-3 space-y-2">
+                                        <div className="flex gap-3">
+                                            {imgUrl ? (
+                                                <img src={imgUrl} alt={f.name} className="w-[60px] h-[60px] rounded-lg object-cover shrink-0 bg-slate-100" />
+                                            ) : (
+                                                <div className="w-[60px] h-[60px] rounded-lg bg-slate-100 shrink-0 flex items-center justify-center text-slate-300 text-lg">🏥</div>
+                                            )}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex justify-between items-start">
+                                                    <button onClick={() => onSwitchToFacility?.({ id: f.id, name: f.name, address: f.address, phone: f.phone })} className="font-bold text-sm text-indigo-700 hover:underline truncate text-left">{f.name}</button>
+                                                    <span className="bg-indigo-50 text-indigo-600 text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ml-1">추천 {idx + 1}</span>
+                                                </div>
+                                                <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5 truncate"><MapPin size={11} className="shrink-0" /> {f.address || '주소 없음'}</div>
+                                                <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5"><Phone size={11} className="shrink-0" /> {f.phone || '연락처 없음'}</div>
                                             </div>
-                                            <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5 truncate"><MapPin size={11} className="shrink-0" /> {f.address || '주소 없음'}</div>
-                                            <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5"><Phone size={11} className="shrink-0" /> {f.phone || '연락처 없음'}</div>
                                         </div>
-                                    </div>
 
-                                    {isBooked ? (
-                                        <div className="bg-green-50 border border-green-200 text-green-700 text-xs font-bold py-2 rounded-lg text-center flex items-center justify-center gap-1">
-                                            <Check size={14} /> 접수 완료
-                                        </div>
-                                    ) : (
-                                        <button onClick={() => setConsultFacility({ id: fId, name: f.name, phone: f.phone })} className="w-full bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-1">
-                                            <Calendar size={14} /> 바로 예약 접수
-                                        </button>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-                ) : (
-                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-center">
-                        <p className="text-sm text-slate-600">추천 가능한 시설이 없습니다.</p>
-                    </div>
+                                        {isBooked ? (
+                                            <div className="bg-green-50 border border-green-200 text-green-700 text-xs font-bold py-2 rounded-lg text-center flex items-center justify-center gap-1">
+                                                <Check size={14} /> 접수 완료
+                                            </div>
+                                        ) : (
+                                            <button onClick={() => setConsultFacility({ id: fId, name: f.name, phone: f.phone })} className="w-full bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-1">
+                                                <Calendar size={14} /> 바로 예약 접수
+                                            </button>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-center">
+                            <p className="text-sm text-slate-600">추천 가능한 시설이 없습니다.</p>
+                        </div>
+                    )
                 )}
 
                 <button onClick={() => onGoToMyPage ? onGoToMyPage() : onClose?.()} className="w-full bg-slate-900 text-white text-sm font-bold py-3 rounded-xl flex items-center justify-center gap-2">
@@ -355,7 +372,8 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                 </div>
             </div>
 
-            {/* Section 2: Location */}
+            {/* Section 2: Location (마음이 모드에서만 표시) */}
+            {!isDirectFacility && (
             <div>
                 <label className="text-xs font-bold text-slate-700 mb-2 block">희망 지역</label>
                 <div className="flex flex-wrap gap-1.5 mb-2">
@@ -390,6 +408,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                     )}
                 </div>
             </div>
+            )}
 
             {/* Section 3: Scale */}
             <div>
@@ -427,7 +446,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                 disabled={!canSubmit || isSaving}
                 className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white text-sm font-bold py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
             >
-                {isSaving ? <Loader2 size={16} className="animate-spin" /> : <><Check size={16} /> 맞춤 장례식장 찾기</>}
+                {isSaving ? <Loader2 size={16} className="animate-spin" /> : <><Check size={16} /> {isDirectFacility ? '예약하기' : '맞춤 장례식장 찾기'}</>}
             </button>
         </div>
     );
