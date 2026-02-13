@@ -18,8 +18,17 @@
     - **🗺️ 지도**: 해당 지역 주변의 '추모시설' 카테고리 필터링된 지도 뷰.
 
 ### 2. [MODIFY] `src/components/FilterBar.tsx`
-- 기존의 단순 `<input>` 태그를 신규 개발한 `SmartSearchInput` 컴포넌트로 교체.
-- 검색어 전역 상태(`useFilterStore`)와의 동기화 유지.
+- `onAction` prop을 추가로 정의하고 `<SmartSearchInput>`에 전달합니다.
+
+### 3. [MODIFY] `src/components/TopBar.tsx`
+- `FilterBar`에 전달할 `onAction` prop을 `App.tsx`로부터 전달받도록 수정합니다.
+
+### 4. [MODIFY] `src/App.tsx`
+- `handleSmartSearchAction` 함수를 구현하여 `TopBar`에 전달합니다.
+- **로직**:
+    - `urgent`: '마음이 AI' 통합 상담 모달을 열고 `urgency='immediate'` 컨텍스트를 주입합니다.
+    - `search`: 검색어 필터를 적용하고 '장례식장' 목록 뷰(`ViewState.LIST`)로 전환합니다.
+    - `map`: 검색어 필터를 적용하고 지도 뷰(`ViewState.MAP`)로 전환합니다.
 
 ## Verification Plan
 

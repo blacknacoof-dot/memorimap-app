@@ -6,6 +6,7 @@ import { ko } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { ChevronRight, Edit2, Share2, Lock, Copy, X } from 'lucide-react';
 import EndingNoteEditModal from './EndingNoteEditModal'; // 신규 에디터 모달 임포트
+import JourneyProgressGraph, { computeJourneySteps } from './JourneyProgressGraph';
 
 interface JourneyLog {
     title: string;
@@ -20,7 +21,17 @@ interface EndingNote {
     percent: number;
 }
 
-export default function IntegratedJourneyView() {
+interface IntegratedJourneyViewProps {
+    facilityFavoriteCount?: number;
+    sangjoFavoriteCount?: number;
+    consultationCount?: number;
+}
+
+export default function IntegratedJourneyView({
+    facilityFavoriteCount = 0,
+    sangjoFavoriteCount = 0,
+    consultationCount = 0,
+}: IntegratedJourneyViewProps) {
     const { isLoaded, isSignedIn, user } = useUser();
     const { session } = useSession();
     const [logs, setLogs] = useState<JourneyLog[]>([]);
@@ -222,7 +233,13 @@ export default function IntegratedJourneyView() {
     }
 
     const userName = (user as any)?.fullName || (user as any)?.user_metadata?.name || user?.primaryEmailAddress?.emailAddress?.split('@')[0] || '사용자';
-    const percent = note?.percent || 0;
+    const { steps: journeySteps, percent: journeyPercent } = computeJourneySteps(
+        facilityFavoriteCount,
+        sangjoFavoriteCount,
+        consultationCount,
+        note
+    );
+    const percent = journeyPercent;
 
     return (
         <section className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mx-1 mb-8">
@@ -233,25 +250,11 @@ export default function IntegratedJourneyView() {
                     <h2 className="text-base font-bold text-gray-900">나의 여정 기록</h2>
                 </div>
 
-                <div className="bg-white rounded-xl p-4 border border-pink-100 shadow-sm">
-                    <div className="flex justify-between items-baseline mb-2">
-                        <p className="text-xs font-medium text-gray-700">
-                            <span className="text-pink-600 font-bold">{userName}</span> 님의 추모 여정이 <span className="text-pink-600 font-bold">{percent}%</span> 준비되었습니다.
-                        </p>
-                    </div>
-
-                    {/* Progress Bar */}
-                    <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden mb-2">
-                        <div
-                            className="bg-gradient-to-r from-pink-400 to-purple-400 h-full rounded-full transition-all duration-1000"
-                            style={{ width: `${percent}%` }}
-                        />
-                    </div>
-
-                    <p className="text-xs text-gray-500">
-                        나머지 <strong>{100 - percent}%</strong>를 위해 AI 상담사에게 장례 절차를 물어보세요.
-                    </p>
-                </div>
+                <JourneyProgressGraph
+                    steps={journeySteps}
+                    percent={percent}
+                    userName={userName}
+                />
             </div>
 
             {/* 2. Timeline (Gi-Sun-Haeng-Bo) */}

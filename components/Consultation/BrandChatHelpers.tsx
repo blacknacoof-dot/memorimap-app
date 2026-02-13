@@ -7,9 +7,10 @@ interface FormProps {
     onClose: () => void;
     onSubmit: (data: any) => void;
     mode: 'phone' | 'chat' | 'urgent';
+    preStepData?: { scale: string; religion: string };
 }
 
-export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubmit, mode = 'phone' }) => {
+export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubmit, mode = 'phone', preStepData }) => {
     // Dynamic Styles based on company type
     const isPetCompany = company.id.startsWith('pet_');
     const isUrgent = mode === 'urgent';
@@ -50,8 +51,8 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
 
         // [User Request] 4. Preferences (Funeral)
         region: '', // NEW
-        scale: '', // NEW (Binso size)
-        religion: '', // NEW
+        scale: preStepData?.scale || '', // NEW (Binso size)
+        religion: preStepData?.religion || '', // NEW
         funeralMethod: '3일장', // NEW
         burialMethod: '', // NEW (Cremation/Burial)
 
@@ -226,7 +227,8 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
                                 </div>
                             </div>
 
-                            {/* Section 4: Preferences */}
+                            {/* Section 4: Preferences (hidden when preStepData provided) */}
+                            {!preStepData && (
                             <div className="space-y-3 pt-2">
                                 <h3 className="text-sm font-bold text-red-700 flex items-center gap-1.5 border-b border-red-100 pb-2">
                                     <span className="w-5 h-5 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xs border border-red-200">4</span>
@@ -256,11 +258,12 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
                                     </div>
                                 </div>
                             </div>
+                            )}
 
-                            {/* Section 5: Emergency Contact */}
+                            {/* Section 4/5: Emergency Contact */}
                             <div className="space-y-3 pt-2">
                                 <h3 className="text-sm font-bold text-red-700 flex items-center gap-1.5 border-b border-red-100 pb-2">
-                                    <span className="w-5 h-5 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xs border border-red-200">5</span>
+                                    <span className="w-5 h-5 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xs border border-red-200">{preStepData ? '4' : '5'}</span>
                                     비상 연락망
                                 </h3>
                                 <div>

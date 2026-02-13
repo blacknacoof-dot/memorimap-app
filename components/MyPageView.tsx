@@ -55,6 +55,7 @@ export const MyPageView: React.FC<Props> = ({
     const [myConsultations, setMyConsultations] = useState<any[]>([]);
     const [sangjoFavorites, setSangjoFavorites] = useState<SangjoFavorite[]>([]);
     const [isLoadingSangjoFavorites, setIsLoadingSangjoFavorites] = useState(false);
+    const [consultationCount, setConsultationCount] = useState(0);
 
     useEffect(() => {
         if (isLoggedIn && user) {
@@ -62,6 +63,7 @@ export const MyPageView: React.FC<Props> = ({
             fetchUserPhone();
             fetchMyFavorites();
             fetchSangjoFavorites();
+            fetchConsultationCount();
         }
     }, [isLoggedIn, user]);
 
@@ -188,6 +190,19 @@ export const MyPageView: React.FC<Props> = ({
         }
     };
 
+    const fetchConsultationCount = async () => {
+        if (!user) return;
+        try {
+            const { count } = await supabase
+                .from('consultations')
+                .select('*', { count: 'exact', head: true })
+                .eq('user_id', user.id);
+            setConsultationCount(count || 0);
+        } catch (err) {
+            console.error('Failed to fetch consultation count:', err);
+        }
+    };
+
     const fetchSangjoFavorites = async () => {
         if (!user) return;
         setIsLoadingSangjoFavorites(true);
@@ -201,18 +216,20 @@ export const MyPageView: React.FC<Props> = ({
         }
     };
 
-    const handleRemoveSangjoFavorite = async (companyId: string) => {
+    const handleRemoveSangjoFavorite = async (favId: string, companyId: string) => {
         if (!user) return;
         if (!confirm('즐겨찾기를 해제하시겠습니까?')) return;
         try {
-            const company = FUNERAL_COMPANIES.find(c => c.id === companyId) ||
-                FUNERAL_COMPANIES.find(c => c.name === sangjoFavorites.find(f => f.company_id === companyId)?.company_name);
-            if (!company) return;
+            const { error } = await supabase
+                .from('sangjo_favorites')
+                .delete()
+                .eq('id', favId);
 
-            await sangjoFavoriteService.toggleFavorite(user.id, company);
-            setSangjoFavorites(prev => prev.filter(f => f.company_id !== companyId));
+            if (error) throw error;
+            setSangjoFavorites(prev => prev.filter(f => f.id !== favId));
             toast.success('즐겨찾기가 해제되었습니다.');
         } catch (err) {
+            console.error('Failed to remove sangjo favorite:', err);
             toast.error('오류가 발생했습니다.');
         }
     };
@@ -376,7 +393,7 @@ export const MyPageView: React.FC<Props> = ({
 
             <div className="mb-8">
                 {activeTab === 'consultations' ? (
-                    <MyConsultations userId={user.id} />
+                    <MyConsultations userId={user.id} onViewFacility={onSelectFacility} />
                 ) : isLoadingReservations ? (
                     <div className="text-center py-10">
                         <Loader2 size={32} className="animate-spin text-primary mx-auto" />
@@ -540,7 +557,7 @@ export const MyPageView: React.FC<Props> = ({
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                handleRemoveSangjoFavorite(company.id);
+                                                                handleRemoveSangjoFavorite(fav.id, company.id);
                                                             }}
                                                             className="text-red-500 hover:bg-red-50 p-1 rounded-full absolute top-3 right-3 z-10"
                                                             title="즐겨찾기 해제"
@@ -571,7 +588,11 @@ export const MyPageView: React.FC<Props> = ({
 
             {/* My Journey (My Story) Integrated View */}
             <div className="mb-12">
-                <IntegratedJourneyView />
+                <IntegratedJourneyView
+                    facilityFavoriteCount={myFavorites.length}
+                    sangjoFavoriteCount={sangjoFavorites.length}
+                    consultationCount={consultationCount}
+                />
             </div>
 
             {/* Service Info Section */}

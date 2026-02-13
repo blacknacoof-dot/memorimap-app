@@ -1,21 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { getConsultationsByUser, updateConsultationStatus, Consultation } from '@/lib/queries';
-import { Clock, CheckCircle, XCircle, Check, MapPin, Building2, Calendar, ChevronRight, RefreshCw, MessageSquare } from 'lucide-react';
+import { getConsultationsByUser, updateConsultationStatus, getFacility, Consultation } from '@/lib/queries';
+import { Clock, CheckCircle, XCircle, Check, MapPin, Building2, Calendar, ChevronRight, RefreshCw, MessageSquare, Trash2 } from 'lucide-react';
 import { aiConsultationService } from '@/lib/api/aiConsultation';
 import { AiConsultationStatus } from '@/types';
-import { supabase } from '@/lib/supabaseClient'; // [Realtime]
+import { supabase, createAuthenticatedClient } from '@/lib/supabaseClient'; // [Realtime]
+import { useSession } from '@/lib/auth';
 
 interface Props {
     userId: string;
     onResumeChat?: (consultation: Consultation & { conversation_id?: string; isAi?: boolean; originStatus?: string }) => void;
+    onViewFacility?: (facility: any) => void;
 }
 
-const STATUS_CONFIG = {
+const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any; description: string }> = {
+    pending: { label: '대기중', color: 'bg-amber-100 text-amber-700 border-amber-200', icon: Clock, description: '담당자 확인 중' },
     waiting: { label: '대기중', color: 'bg-amber-100 text-amber-700 border-amber-200', icon: Clock, description: '담당자 확인 중' },
     accepted: { label: '접수됨', color: 'bg-blue-100 text-blue-700 border-blue-200', icon: CheckCircle, description: '담당자가 확인했습니다' },
     cancelled: { label: '취소됨', color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle, description: '상담이 취소되었습니다' },
     completed: { label: '완료', color: 'bg-emerald-100 text-emerald-700 border-emerald-200', icon: Check, description: '장례가 완료되었습니다' }
+};
+
+const getFacilityName = (c: any): string => {
+    if (c.facility_name) return c.facility_name;
+    if (c.notes) {
+        const match = c.notes.match(/시설:\s*([^,\n]+)/);
+        if (match) return match[1].trim();
+    }
+    return '장례식장';
 };
 
 const RELIGION_LABELS: Record<string, string> = {
@@ -37,14 +49,32 @@ const SCHEDULE_LABELS: Record<string, string> = {
     other: '기타'
 };
 
-export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat }) => {
+export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewFacility }) => {
     const [consultations, setConsultations] = useState<Consultation[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const { session } = useSession();
 
     const fetchConsultations = async () => {
         setIsLoading(true);
-        // 1. Fetch Legacy Consultations
-        const legacyData = await getConsultationsByUser(userId);
+        // 1. Fetch Legacy Consultations (인증된 클라이언트로 RLS 통과)
+        let legacyData: Consultation[] = [];
+        try {
+            const token = await session?.getToken({ template: 'supabase' });
+            if (token) {
+                const authClient = createAuthenticatedClient(token);
+                const { data, error } = await authClient
+                    .from('consultations')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .order('created_at', { ascending: false });
+                if (!error && data) {
+                    legacyData = data as Consultation[];
+                }
+            }
+        } catch (e) {
+            console.error('인증 consultations 조회 실패:', e);
+            legacyData = await getConsultationsByUser(userId); // fallback
+        }
 
         // 2. Fetch AI Consultations
         const aiData = await aiConsultationService.getUserConsultations(userId);
@@ -67,9 +97,10 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat }) => {
             originStatus: ai.status
         })) as any[];
 
-        setConsultations([...aiAdapted, ...legacyData].sort((a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        ));
+        setConsultations(
+            [...aiAdapted, ...legacyData]
+                .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        );
         setIsLoading(false);
     };
 
@@ -121,6 +152,44 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat }) => {
         }
     };
 
+    const handleDelete = async (consultation: any) => {
+        if (!confirm('상담 내역을 삭제하시겠습니까?')) return;
+
+        if (consultation.isAi) {
+            // AI 상담: 로컬 상태에서만 제거
+            setConsultations(prev => prev.filter(c => c.id !== consultation.id));
+            toast.success('상담 내역이 삭제되었습니다.');
+            return;
+        }
+
+        try {
+            const token = await session?.getToken({ template: 'supabase' });
+            if (!token) throw new Error('인증 토큰 없음');
+            const authClient = createAuthenticatedClient(token);
+            const { error } = await authClient
+                .from('consultations')
+                .delete()
+                .eq('id', consultation.id)
+                .eq('user_id', userId);
+            if (error) throw error;
+            setConsultations(prev => prev.filter(c => c.id !== consultation.id));
+            toast.success('상담 내역이 삭제되었습니다.');
+        } catch (e) {
+            console.error('삭제 실패:', e);
+            toast.error('삭제 중 오류가 발생했습니다.');
+        }
+    };
+
+    const handleViewFacility = async (facilityId: string) => {
+        if (!onViewFacility || !facilityId) return;
+        try {
+            const facility = await getFacility(facilityId);
+            if (facility) onViewFacility(facility);
+        } catch (e) {
+            toast.error('시설 정보를 불러올 수 없습니다.');
+        }
+    };
+
     const formatDate = (dateStr: string) => {
         const date = new Date(dateStr);
         return date.toLocaleDateString('ko-KR', {
@@ -168,8 +237,8 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat }) => {
 
             <div className="space-y-3">
                 {consultations.map(consultation => {
-                    const StatusIcon = STATUS_CONFIG[consultation.status].icon;
-                    const statusConfig = STATUS_CONFIG[consultation.status];
+                    const statusConfig = STATUS_CONFIG[consultation.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.waiting;
+                    const StatusIcon = statusConfig.icon;
 
                     return (
                         <div
@@ -202,36 +271,18 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat }) => {
                             </div>
 
                             {/* Facility Info */}
-                            <div className="bg-slate-50 rounded-xl p-3 mb-3 flex items-center gap-3">
+                            <div
+                                onClick={() => handleViewFacility(consultation.facility_id)}
+                                className="bg-slate-50 rounded-xl p-3 mb-3 flex items-center gap-3 cursor-pointer hover:bg-slate-100 active:scale-[0.98] transition"
+                            >
                                 <div className="w-10 h-10 bg-slate-200 rounded-lg flex items-center justify-center">
                                     <Building2 size={18} className="text-slate-500" />
                                 </div>
                                 <div className="flex-1">
-                                    <h4 className="font-bold text-sm text-slate-800">{(consultation as any).facilities?.name || '장례식장'}</h4>
-                                    {consultation.location && (
-                                        <p className="text-xs text-slate-500 flex items-center gap-1">
-                                            <MapPin size={10} />
-                                            {consultation.location}
-                                        </p>
-                                    )}
+                                    <h4 className="font-bold text-sm text-slate-800">{getFacilityName(consultation)}</h4>
+                                    <p className="text-xs text-blue-500">상세 보기</p>
                                 </div>
                                 <ChevronRight size={16} className="text-slate-400" />
-                            </div>
-
-                            {/* Details */}
-                            <div className="grid grid-cols-3 gap-2 text-xs mb-3">
-                                <div className="bg-slate-50 rounded-lg p-2 text-center">
-                                    <span className="text-slate-400 block">규모</span>
-                                    <span className="font-bold text-slate-700">{SCALE_LABELS[consultation.scale]}</span>
-                                </div>
-                                <div className="bg-slate-50 rounded-lg p-2 text-center">
-                                    <span className="text-slate-400 block">종교</span>
-                                    <span className="font-bold text-slate-700">{RELIGION_LABELS[consultation.religion]}</span>
-                                </div>
-                                <div className="bg-slate-50 rounded-lg p-2 text-center">
-                                    <span className="text-slate-400 block">일정</span>
-                                    <span className="font-bold text-slate-700">{SCHEDULE_LABELS[consultation.schedule]}</span>
-                                </div>
                             </div>
 
                             {/* Facility Instruction Box */}
@@ -294,7 +345,7 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat }) => {
                                 </button>
                             )}
 
-                            {consultation.status === 'waiting' && (
+                            {(['waiting', 'pending'].includes(consultation.status)) && (
                                 <button
                                     onClick={() => handleCancel(consultation.id)}
                                     className="w-full py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition font-medium"
@@ -303,12 +354,23 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat }) => {
                                 </button>
                             )}
 
+                            {/* Delete Button */}
+                            {(['waiting', 'pending', 'cancelled'].includes(consultation.status)) && (
+                                <button
+                                    onClick={() => handleDelete(consultation)}
+                                    className="w-full py-2 text-sm text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition font-medium flex items-center justify-center gap-1"
+                                >
+                                    <Trash2 size={14} />
+                                    삭제
+                                </button>
+                            )}
+
                             {/* Progress Bar */}
                             <div className="mt-3">
                                 <div className="flex items-center gap-1">
                                     {['waiting', 'accepted', 'completed'].map((step, idx) => {
-                                        const stepOrder = { waiting: 0, accepted: 1, cancelled: -1, completed: 2 };
-                                        const currentOrder = stepOrder[consultation.status];
+                                        const stepOrder: Record<string, number> = { pending: 0, waiting: 0, accepted: 1, cancelled: -1, completed: 2 };
+                                        const currentOrder = stepOrder[consultation.status] ?? 0;
                                         const isActive = stepOrder[step as keyof typeof stepOrder] <= currentOrder && currentOrder >= 0;
                                         const isCancelled = consultation.status === 'cancelled';
 
