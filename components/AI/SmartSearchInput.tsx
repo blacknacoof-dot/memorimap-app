@@ -27,9 +27,9 @@ const REGION_KEYWORDS = [
 const URGENT_KEYWORDS = ['급해요', '긴급', '빨리', '도와주세요', '임종', '위급', '사망', '부고'];
 
 const QUICK_CHIPS = [
-  { label: '분당 장례식장', icon: '🏥' },
-  { label: '급해요', icon: '🚨' },
-  { label: '서울 추모시설', icon: '🗺️' },
+  { label: '장례식장', icon: '🏥' },
+  { label: '긴급', icon: '🚨' },
+  { label: '추모시설', icon: '🗺️' },
 ];
 
 export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
@@ -121,16 +121,16 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
         <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
           {/* Quick Chips (empty input) */}
           {showQuickChips && (
-            <div className="p-4">
-              <p className="text-xs text-gray-400 font-medium mb-3">이렇게 검색해 보세요</p>
-              <div className="flex flex-wrap gap-2">
+            <div className="p-3">
+              <p className="text-[11px] text-gray-300 font-medium mb-2">이렇게 검색해 보세요</p>
+              <div className="flex flex-wrap gap-1.5">
                 {QUICK_CHIPS.map((chip) => (
                   <button
                     key={chip.label}
                     onClick={() => handleChipClick(chip.label)}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-full text-sm font-medium text-gray-700 transition-colors"
+                    className="flex items-center gap-1 px-2.5 py-1.5 bg-gray-50/70 hover:bg-gray-100/90 rounded-full text-xs font-medium text-gray-400 hover:text-gray-600 transition-colors"
                   >
-                    <span>{chip.icon}</span>
+                    <span className="opacity-60">{chip.icon}</span>
                     <span>{chip.label}</span>
                   </button>
                 ))}
