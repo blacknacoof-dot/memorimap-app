@@ -2,18 +2,36 @@ import React, { useState, useEffect } from 'react';
 import {
     LayoutGrid, User, Truck, MapPin,
     Calendar, MoreVertical, Plus,
-    ChevronRight, CheckCircle, Clock
+    ChevronRight, CheckCircle, Clock, X
 } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { PartnerOperation } from '../../types';
+import { toast } from 'sonner';
 
 interface OperationsManagementProps {
     partnerId: string;
 }
 
+interface NewOperationForm {
+    deceased_name: string;
+    funeral_director: string;
+    funeral_location: string;
+    notes: string;
+}
+
+const EMPTY_FORM: NewOperationForm = {
+    deceased_name: '',
+    funeral_director: '',
+    funeral_location: '',
+    notes: '',
+};
+
 export const OperationsManagement: React.FC<OperationsManagementProps> = ({ partnerId }) => {
     const [operations, setOperations] = useState<PartnerOperation[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showNewModal, setShowNewModal] = useState(false);
+    const [form, setForm] = useState<NewOperationForm>(EMPTY_FORM);
+    const [isSaving, setIsSaving] = useState(false);
 
     const STAGES: PartnerOperation['operation_stage'][] = ['pending', 'dispatched', 'in_progress', 'completed'];
 
@@ -56,6 +74,33 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
             .from('partner_operations')
             .update({ operation_stage: nextStage })
             .eq('id', id);
+    };
+
+    const handleNewOperation = async () => {
+        if (!form.deceased_name.trim()) {
+            toast.error('고인명을 입력해주세요.');
+            return;
+        }
+        setIsSaving(true);
+        try {
+            const { error } = await supabase.from('partner_operations').insert({
+                partner_id: partnerId,
+                operation_stage: 'pending',
+                deceased_name: form.deceased_name.trim(),
+                funeral_director: form.funeral_director.trim() || null,
+                funeral_location: form.funeral_location.trim() || null,
+                notes: form.notes.trim() || null,
+            });
+            if (error) throw error;
+            toast.success('신규 작업이 접수되었습니다.');
+            setForm(EMPTY_FORM);
+            setShowNewModal(false);
+        } catch (err) {
+            console.error('Failed to create operation:', err);
+            toast.error('작업 접수에 실패했습니다.');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const renderCard = (op: PartnerOperation) => (
@@ -116,7 +161,10 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
                     <LayoutGrid className="text-blue-600" />
                     운영 현황 (Kanban)
                 </h2>
-                <button className="bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-900 transition-all flex items-center gap-2">
+                <button
+                    onClick={() => setShowNewModal(true)}
+                    className="bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-900 transition-all flex items-center gap-2"
+                >
                     <Plus size={16} /> 신규 작업 접수
                 </button>
             </div>
@@ -151,6 +199,77 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
                     );
                 })}
             </div>
+
+            {/* 신규 작업 접수 모달 */}
+            {showNewModal && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px]">
+                    <div className="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden">
+                        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                            <h3 className="font-bold text-slate-800 text-sm">신규 작업 접수</h3>
+                            <button onClick={() => setShowNewModal(false)} className="p-1 text-slate-400 hover:text-slate-600 rounded-lg">
+                                <X size={18} />
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-600 mb-1">고인명 *</label>
+                                <input
+                                    type="text"
+                                    value={form.deceased_name}
+                                    onChange={(e) => setForm(f => ({ ...f, deceased_name: e.target.value }))}
+                                    placeholder="홍길동"
+                                    className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-600 mb-1">담당 장례지도사</label>
+                                <input
+                                    type="text"
+                                    value={form.funeral_director}
+                                    onChange={(e) => setForm(f => ({ ...f, funeral_director: e.target.value }))}
+                                    placeholder="김지도사"
+                                    className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-600 mb-1">장례 장소</label>
+                                <input
+                                    type="text"
+                                    value={form.funeral_location}
+                                    onChange={(e) => setForm(f => ({ ...f, funeral_location: e.target.value }))}
+                                    placeholder="서울 OO장례식장"
+                                    className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-600 mb-1">메모</label>
+                                <textarea
+                                    value={form.notes}
+                                    onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))}
+                                    placeholder="특이사항 메모"
+                                    rows={2}
+                                    className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 resize-none"
+                                />
+                            </div>
+                        </div>
+                        <div className="px-6 pb-6 flex gap-2">
+                            <button
+                                onClick={() => setShowNewModal(false)}
+                                className="flex-1 py-2.5 border border-slate-200 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-50 transition-all"
+                            >
+                                취소
+                            </button>
+                            <button
+                                onClick={handleNewOperation}
+                                disabled={isSaving}
+                                className="flex-1 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-all disabled:opacity-50"
+                            >
+                                {isSaving ? '접수 중...' : '접수하기'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -2,10 +2,17 @@ import { useEffect, useRef } from 'react';
 import { useUser, useSession } from './auth';
 import { supabase, isSupabaseConfigured, setSupabaseAuth } from './supabaseClient';
 
-export const useAuthSync = () => {
-    // [DEBUG] Hook Mount Log
-    // console.log('[AuthSync] Hook Rendered'); 
+/** 타임아웃 래퍼: Clerk getToken이 무한 대기하는 것을 방지 */
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
+    return Promise.race([
+        promise,
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), ms)),
+    ]);
+}
 
+const TOKEN_TIMEOUT = 8000; // 8초
+
+export const useAuthSync = () => {
     const { user, isSignedIn } = useUser();
     const { session } = useSession();
     const hasSyncedRef = useRef(false);
@@ -33,35 +40,24 @@ export const useAuthSync = () => {
             hasSyncedRef.current = true;
 
             try {
-                // 0. Set Supabase Auth Token
+                // 0. Set Supabase Auth Token (with timeout)
                 const updateToken = async () => {
                     if (session) {
                         try {
-                            const token = await session.getToken({ template: 'supabase' });
+                            const token = await withTimeout(
+                                session.getToken({ template: 'supabase' }),
+                                TOKEN_TIMEOUT
+                            );
 
-                            // [DEBUG] 토큰 확인 (로그)
                             if (token) {
-                                console.log('[AuthSync] ✅ Token Retrieved! Length:', token.length);
-
-                                // JWT Payload Decode for Debugging
-                                try {
-                                    const parts = token.split('.');
-                                    if (parts.length === 3) {
-                                        const payload = JSON.parse(atob(parts[1]));
-                                        console.log('[AuthSync] 🕵️ Token Payload:', payload);
-                                    }
-                                } catch (e) {
-                                    console.warn('[AuthSync] Failed to decode token payload', e);
-                                }
-
                                 await setSupabaseAuth(token);
                                 return token;
                             } else {
-                                console.warn('[AuthSync] ❌ Token is NULL. Check Clerk Dashboard > JWT Templates > "supabase" exist?');
+                                console.warn('[AuthSync] Token is NULL or timed out.');
                                 return null;
                             }
                         } catch (tokenError) {
-                            console.error("Error fetching Clerk token:", tokenError);
+                            console.error('[AuthSync] Error fetching Clerk token:', tokenError);
                             return null;
                         }
                     }
@@ -75,9 +71,7 @@ export const useAuthSync = () => {
                     return;
                 }
 
-                // 1. Upsert profile specifically using a fresh authenticated client
-                // This avoids any potential singleton header mutation race conditions and ensures Auth header is present
-                // [Revert Reason] Singleton header mutation caused 401 errors. Prioritizing robust Auth over avoiding instance warnings.
+                // 1. Upsert profile using fresh authenticated client
                 const { createAuthenticatedClient } = await import('./supabaseClient');
                 const authClient = createAuthenticatedClient(token);
 
@@ -88,7 +82,7 @@ export const useAuthSync = () => {
                         email: user.primaryEmailAddress?.emailAddress,
                         full_name: user.fullName || user.username || '사용자',
                         avatar_url: user.imageUrl,
-                        role: 'user', // Default role
+                        role: 'user',
                         phone_number: user.primaryPhoneNumber?.phoneNumber,
                         updated_at: new Date().toISOString()
                     }, {
@@ -96,42 +90,35 @@ export const useAuthSync = () => {
                     });
 
                 if (syncError) {
-                    // Ignore 401/42501 logging for cleaner console (handled by RLS)
-                    // @ts-ignore - status property might exist in runtime but not in type definition
+                    // @ts-ignore
                     if (syncError.code !== '42501' && syncError.status !== 401) {
-                        console.error("Failed to sync profile:", syncError);
+                        console.error('Failed to sync profile:', syncError);
                     }
-                } else {
-                    // console.log("Profile synced successfully!");
                 }
             } catch (err) {
-                console.error("Auth sync error:", err);
+                console.error('Auth sync error:', err);
             }
         };
 
         syncUser();
 
-        // Token Refresh - only when needed
-        // Clerk tokens are short-lived (usually 60s). We refresh every 50s to be safe.
+        // Token Refresh - with timeout protection
         const REFRESH_INTERVAL = 50 * 1000;
-        let lastToken: string | null = null;
 
         const intervalId = setInterval(async () => {
             if (isSignedIn && session) {
-                const token = await session.getToken({ template: 'supabase' });
-                // 토큰이 실제로 변경되었을 때만 업데이트
-                if (token) {
-                    // [DEBUG] 토큰 검사
-                    console.log('[AuthSync] 🔑 Token acquired. Length:', token.length);
-                    console.log('[AuthSync] 🔍 Raw Token Preview:', token.substring(0, 10) + '...' + token.substring(token.length - 10));
-
-                    // Supabase 클라이언트에 토큰 설정
-                    await setSupabaseAuth(token);
-
-                    // [DEBUG] 헤더 설정 확인
-                    // @ts-ignore
-                    const currentHeaders = (await import('./supabaseClient')).supabase['rest']?.headers;
-                    console.log('[AuthSync] 📡 Current Headers:', currentHeaders);
+                try {
+                    const token = await withTimeout(
+                        session.getToken({ template: 'supabase' }),
+                        TOKEN_TIMEOUT
+                    );
+                    if (token) {
+                        await setSupabaseAuth(token);
+                    } else {
+                        console.warn('[AuthSync] Token refresh timed out, will retry next interval.');
+                    }
+                } catch (err) {
+                    console.warn('[AuthSync] Token refresh failed:', err);
                 }
             }
         }, REFRESH_INTERVAL);

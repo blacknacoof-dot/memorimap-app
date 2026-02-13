@@ -7,7 +7,7 @@ import {
     Loader2,
     Calendar
 } from 'lucide-react';
-import { getDistinctRegions, getIntelligentRecommendations } from '@/lib/queries';
+import { getDistinctRegions, getDistinctRegionsFromFacilities, getIntelligentRecommendations } from '@/lib/queries';
 import { createAuthenticatedClient } from '@/lib/supabaseClient';
 import { useSession } from '@/lib/auth';
 import {
@@ -93,8 +93,12 @@ const FuneralSearchForm: React.FC<FormProps> = ({
         if (debounceTimer.current) clearTimeout(debounceTimer.current);
         debounceTimer.current = setTimeout(async () => {
             try {
-                const results = await getDistinctRegions(location) as string[];
-                const uniqueResults = Array.from(new Set(results)).slice(0, 5);
+                const [rpcResults, facilityResults] = await Promise.all([
+                    getDistinctRegions(location).catch(() => []),
+                    getDistinctRegionsFromFacilities(location).catch(() => []),
+                ]);
+                const merged = Array.from(new Set([...(rpcResults as string[]), ...facilityResults]));
+                const uniqueResults = merged.slice(0, 8);
                 setSuggestions(uniqueResults);
                 setShowSuggestions(uniqueResults.length > 0);
             } catch (e) { console.error(e); }

@@ -196,7 +196,7 @@ export const getIntelligentRecommendations = async (
             } else if (normalizedCategory === 'pet') {
                 categoryMatch = i.category === 'pet_memorial' || i.category === 'pet_funeral' || i.category === 'pet' || i.category === '동물장례';
             } else if (isMemorialGroup) {
-                const MEMORIAL_CATEGORIES = ['charnel_house', 'natural_burial', 'tree_burial', 'park_cemetery', 'complex', 'sea_burial', 'memorial', '봉안시설', '자연장', '공원묘지', '해양장'];
+                const MEMORIAL_CATEGORIES = ['columbarium', 'charnel_house', 'natural_burial', 'tree_burial', 'park_cemetery', 'cemetery', 'complex', 'sea_burial', 'memorial', '봉안시설', '자연장', '공원묘지', '해양장'];
                 categoryMatch = MEMORIAL_CATEGORIES.includes(i.type) || MEMORIAL_CATEGORIES.includes(i.category);
             }
 
@@ -342,6 +342,43 @@ export const getDistinctRegions = async (searchText: string) => {
         return [];
     }
     return data || [];
+};
+
+/**
+ * facilities 테이블 기반 지역 자동완성 (memorial_spaces만 조회하는 RPC 대체)
+ * - 모든 시설 타입에서 주소 검색
+ * - 시/도 + 시/군/구 단위로 추출
+ */
+export const getDistinctRegionsFromFacilities = async (searchText: string) => {
+    const sanitized = sanitizeSearchInput(searchText);
+    if (!sanitized || sanitized.length < 2) return [];
+
+    const { data, error } = await supabase
+        .from('facilities')
+        .select('address')
+        .ilike('address', `%${sanitized}%`)
+        .not('address', 'is', null)
+        .limit(100);
+
+    if (error || !data) {
+        console.error('Error fetching regions from facilities:', error);
+        return [];
+    }
+
+    const regions = new Set<string>();
+    data.forEach((item: { address: string }) => {
+        if (!item.address) return;
+        const addr = item.address
+            .replace(/^경기\s/, '경기도 ')
+            .replace(/^서울\s/, '서울특별시 ')
+            .replace(/^부산\s/, '부산광역시 ');
+        const parts = addr.split(' ').filter(Boolean);
+        if (parts.length >= 2) {
+            regions.add(`${parts[0]} ${parts[1]}`);
+        }
+    });
+
+    return Array.from(regions).sort();
 };
 
 /**

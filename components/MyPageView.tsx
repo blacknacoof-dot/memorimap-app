@@ -13,7 +13,8 @@ import { FUNERAL_COMPANIES, FACILITIES } from '../constants';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { MyConsultations } from './dashboard/MyConsultations';
-import { supabase } from '../lib/supabaseClient';
+import { supabase, createAuthenticatedClient } from '../lib/supabaseClient';
+import { useSession } from '../lib/auth';
 
 import IntegratedJourneyView from './IntegratedJourneyView';
 
@@ -56,6 +57,22 @@ export const MyPageView: React.FC<Props> = ({
     const [sangjoFavorites, setSangjoFavorites] = useState<SangjoFavorite[]>([]);
     const [isLoadingSangjoFavorites, setIsLoadingSangjoFavorites] = useState(false);
     const [consultationCount, setConsultationCount] = useState(0);
+    const { session } = useSession();
+
+    /** Clerk JWT 토큰으로 인증된 Supabase 클라이언트 반환 (8초 타임아웃) */
+    const getAuthClient = async () => {
+        if (!session) return supabase;
+        try {
+            const token = await Promise.race([
+                session.getToken({ template: 'supabase' }),
+                new Promise<null>((r) => setTimeout(() => r(null), 8000)),
+            ]);
+            if (token) return createAuthenticatedClient(token);
+        } catch (e) {
+            console.error('[MyPage] Failed to get auth token:', e);
+        }
+        return supabase;
+    };
 
     useEffect(() => {
         if (isLoggedIn && user) {
@@ -88,9 +105,16 @@ export const MyPageView: React.FC<Props> = ({
 
     const fetchMyFavorites = async () => {
         if (!isLoggedIn || !user?.id) return;
-        setIsLoadingFavorites(true); // Moved to the start of the function
+        setIsLoadingFavorites(true);
         try {
-            const data = await favoriteService.getFavorites(user.id);
+            const client = await getAuthClient();
+            const { data: favData, error: favError } = await client
+                .from('favorites')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false });
+            if (favError) throw favError;
+            const data = (favData || []) as Favorite[];
             setMyFavorites(data);
 
             // 🔄 Two-Step Fetch Logic: Get details for facilities not in global state
@@ -193,7 +217,8 @@ export const MyPageView: React.FC<Props> = ({
     const fetchConsultationCount = async () => {
         if (!user) return;
         try {
-            const { count } = await supabase
+            const client = await getAuthClient();
+            const { count } = await client
                 .from('consultations')
                 .select('*', { count: 'exact', head: true })
                 .eq('user_id', user.id);
@@ -207,7 +232,13 @@ export const MyPageView: React.FC<Props> = ({
         if (!user) return;
         setIsLoadingSangjoFavorites(true);
         try {
-            const data = await sangjoFavoriteService.getFavorites(user.id);
+            const client = await getAuthClient();
+            const { data, error } = await client
+                .from('sangjo_favorites')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false });
+            if (error) throw error;
             setSangjoFavorites(data || []);
         } catch (err) {
             console.error('Failed to fetch sangjo favorites:', err);
