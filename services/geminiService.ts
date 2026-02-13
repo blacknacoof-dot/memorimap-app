@@ -309,13 +309,6 @@ export const sendMessageToGemini = async (
     };
   }
 
-  if (userMsg.includes("[📞 일반 문의 접수]")) {
-    return {
-      text: "문의가 정상적으로 접수되었습니다. 담당자가 확인 후 신속히 연락드리겠습니다.",
-      action: 'NONE'
-    };
-  }
-
   // === [CONTEXT CHECK] Determine Type ===
   const isMemorial = facility && ['columbarium', 'natural_burial', 'cemetery', 'sea_burial', 'memorial'].includes((facility as Facility).facility_type || (facility as Facility).type as any);
   const isPet = facility && (facility as Facility).facility_type === 'pet_funeral';

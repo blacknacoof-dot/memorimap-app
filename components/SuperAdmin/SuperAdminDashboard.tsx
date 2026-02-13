@@ -20,6 +20,9 @@ import { FacilityManagement } from './FacilityManagement';
 import { ConfirmModal } from '../../src/components/common/ConfirmModal';
 import { NotificationCenter } from '../NotificationCenter';
 import { AdminLogsView } from './AdminLogsView';
+import { AdminCommunication } from '../admin/AdminCommunication';
+import { MessageSquare } from 'lucide-react';
+import { supabase } from '../../lib/supabaseClient';
 
 // MOCK_DATA removed. Using real hooks.
 
@@ -59,6 +62,7 @@ const SideMenuDrawer = ({ isOpen, onClose, onNavigate }: { isOpen: boolean; onCl
                             { icon: Users, label: '회원/권한 관리', id: 'users' },
                             { icon: FileText, label: '공지사항 관리', id: 'notices' },
                             { icon: History, label: '시스템 활동 로그', id: 'logs' },
+                            { icon: MessageSquare, label: '소통 센터', id: 'communication' },
                         ].map((item) => (
                             <button
                                 key={item.id}
@@ -103,8 +107,27 @@ import { updateSystemSetting, updateSubscriptionBillingDate } from '../../lib/ap
 import { Calendar } from 'lucide-react';
 
 const AdminSettings = () => {
-    const handleSaveProfile = () => {
-        toast.success('프로필 정보가 저장되었습니다. (Internal)');
+    const { user } = useUser();
+    const [fullName, setFullName] = useState(user?.fullName || '');
+    const [phone, setPhone] = useState('');
+    const [saving, setSaving] = useState(false);
+
+    const handleSaveProfile = async () => {
+        if (!user?.id) return;
+        setSaving(true);
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update({ full_name: fullName, phone })
+                .eq('id', user.id);
+            if (error) throw error;
+            toast.success('프로필 정보가 저장되었습니다.');
+        } catch (e: any) {
+            console.error(e);
+            toast.error('저장 실패: ' + e.message);
+        } finally {
+            setSaving(false);
+        }
     };
 
     const handleChangePassword = () => {
@@ -119,20 +142,22 @@ const AdminSettings = () => {
                     <UserCog className="w-5 h-5 text-blue-600" />
                     내 정보 수정
                 </h3>
+                <p className="text-xs text-slate-400 mb-3">{user?.primaryEmailAddress?.emailAddress}</p>
                 <div className="space-y-3">
                     <div>
                         <label className="block text-xs font-medium text-slate-500 mb-1">관리자 이름</label>
-                        <input type="text" defaultValue="Super Admin" className="w-full text-sm p-2 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500" />
+                        <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full text-sm p-2 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-slate-500 mb-1">연락처</label>
-                        <input type="tel" defaultValue="010-1234-5678" className="w-full text-sm p-2 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500" />
+                        <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="010-0000-0000" className="w-full text-sm p-2 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500" />
                     </div>
                     <button
                         onClick={handleSaveProfile}
-                        className="w-full mt-2 bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                        disabled={saving}
+                        className="w-full mt-2 bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
                     >
-                        정보 업데이트
+                        {saving ? '저장 중...' : '정보 업데이트'}
                     </button>
                 </div>
             </div>
@@ -453,7 +478,7 @@ const AdminLeadsView = () => {
 /** [Main Container] */
 export default function SuperAdminDashboard() {
     const { user } = useUser();
-    const [activeTab, setActiveTab] = useState<'subs' | 'revenue' | 'leads' | 'admissions' | 'facilities' | 'users' | 'notices' | 'logs' | 'admin_settings' | 'system_settings' | 'monitoring'>('monitoring');
+    const [activeTab, setActiveTab] = useState<'subs' | 'revenue' | 'leads' | 'admissions' | 'facilities' | 'users' | 'notices' | 'logs' | 'communication' | 'admin_settings' | 'system_settings' | 'monitoring'>('monitoring');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [facilitySearchTerm, setFacilitySearchTerm] = useState('');
 
@@ -542,6 +567,7 @@ export default function SuperAdminDashboard() {
                 {activeTab === 'users' && <UserManagement />}
                 {activeTab === 'notices' && <NoticeManagement />}
                 {activeTab === 'logs' && <AdminLogsView />}
+                {activeTab === 'communication' && <AdminCommunication />}
                 {activeTab === 'admin_settings' && <AdminSettings />}
                 {activeTab === 'system_settings' && <SystemSettings />}
                 <ConfirmModal />

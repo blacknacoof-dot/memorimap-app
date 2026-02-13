@@ -4,9 +4,11 @@ import { createNotice, getNotices, getInquiries, Inquiry } from '../../lib/queri
 import { Loader2, Send, MessageSquare, Megaphone, CheckCircle } from 'lucide-react';
 
 export const AdminCommunication: React.FC = () => {
-    const [activeTab, setActiveTab] = useState<'notices' | 'inquiries'>('notices');
+    const [activeTab, setActiveTab] = useState<'notices' | 'inquiries' | 'customer_support'>('notices');
     const [notices, setNotices] = useState<any[]>([]);
     const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+    const [supportInquiries, setSupportInquiries] = useState<any[]>([]);
+    const [expandedSupport, setExpandedSupport] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     // Notice Form
@@ -18,9 +20,14 @@ export const AdminCommunication: React.FC = () => {
         if (activeTab === 'notices') {
             const data = await getNotices();
             setNotices(data);
+        } else if (activeTab === 'customer_support') {
+            const data = await getInquiries();
+            const all = data as unknown as any[];
+            setSupportInquiries(all.filter((i: any) => i.type === 'customer_support' || i.inquiryType === 'customer_support'));
         } else {
             const data = await getInquiries();
-            setInquiries(data as unknown as Inquiry[]);
+            const all = data as unknown as any[];
+            setInquiries(all.filter((i: any) => i.type !== 'customer_support' && i.inquiryType !== 'customer_support') as Inquiry[]);
         }
         setIsLoading(false);
     };
@@ -56,7 +63,13 @@ export const AdminCommunication: React.FC = () => {
                     onClick={() => setActiveTab('inquiries')}
                     className={`px-4 py-2 font-medium text-sm ${activeTab === 'inquiries' ? 'border-b-2 border-green-600 text-green-600' : 'text-gray-500'}`}
                 >
-                    1:1 파트너 문의
+                    파트너 문의
+                </button>
+                <button
+                    onClick={() => setActiveTab('customer_support')}
+                    className={`px-4 py-2 font-medium text-sm ${activeTab === 'customer_support' ? 'border-b-2 border-green-600 text-green-600' : 'text-gray-500'}`}
+                >
+                    고객센터 문의
                 </button>
             </div>
 
@@ -147,6 +160,51 @@ export const AdminCommunication: React.FC = () => {
                                     )}
                                 </tbody>
                             </table>
+                        </div>
+                    )}
+
+                    {activeTab === 'customer_support' && (
+                        <div className="space-y-3">
+                            {supportInquiries.map((i: any) => (
+                                <div key={i.id} className="bg-white rounded-xl border shadow-sm overflow-hidden">
+                                    <button
+                                        onClick={() => setExpandedSupport(expandedSupport === i.id ? null : i.id)}
+                                        className="w-full p-4 flex justify-between items-center text-left hover:bg-gray-50"
+                                    >
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-medium text-gray-900">{i.managerName || '고객'}</span>
+                                                <span className="text-xs text-gray-400">{i.createdAt}</span>
+                                            </div>
+                                            <p className="text-sm text-gray-500 truncate mt-0.5">{i.message}</p>
+                                        </div>
+                                        <span className={`ml-3 flex-shrink-0 px-2 py-0.5 rounded text-xs font-bold ${i.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
+                                            {i.status === 'pending' ? '대기중' : '처리완료'}
+                                        </span>
+                                    </button>
+                                    {expandedSupport === i.id && (
+                                        <div className="px-4 pb-4 border-t pt-3 space-y-2 text-sm">
+                                            <div className="flex gap-4">
+                                                <span className="text-gray-400 w-16 flex-shrink-0">연락처</span>
+                                                <a href={`tel:${i.phone}`} className="text-primary font-medium">{i.phone || '-'}</a>
+                                            </div>
+                                            {i.email && (
+                                                <div className="flex gap-4">
+                                                    <span className="text-gray-400 w-16 flex-shrink-0">이메일</span>
+                                                    <span className="text-gray-700">{i.email}</span>
+                                                </div>
+                                            )}
+                                            <div className="flex gap-4">
+                                                <span className="text-gray-400 w-16 flex-shrink-0">문의내용</span>
+                                                <p className="text-gray-700 whitespace-pre-wrap">{i.message}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                            {supportInquiries.length === 0 && (
+                                <div className="text-center text-gray-400 py-8 bg-white rounded-xl border">접수된 고객 문의가 없습니다.</div>
+                            )}
                         </div>
                     )}
                 </>

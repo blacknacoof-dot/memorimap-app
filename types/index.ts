@@ -58,7 +58,7 @@ export interface Review {
 
 export type AiTone = 'polite' | 'warm' | 'factual';
 export type FacilityType = 'FUNERAL_HOME' | 'MEMORIAL_PARK' | 'SANGJO';
-export type ActionType = 'NONE' | 'RESERVE' | 'MAP' | 'CALL_MANAGER' | 'RECOMMEND' | 'SWITCH_TO_CONSULT' | 'SHOW_FORM_A' | 'SHOW_FORM_B' | 'SHOW_FORM_C' | 'SHOW_FORM_D' | 'SHOW_PRODUCTS' | 'URGENT_DISPATCH' | 'URGENT_CHECK' | 'URGENT_RESERVATION_CONFIRM' | 'SHOW_PROCESS' | 'GO_MY_PAGE';
+export type ActionType = 'NONE' | 'RESERVE' | 'MAP' | 'CALL_MANAGER' | 'RECOMMEND' | 'SWITCH_TO_CONSULT' | 'SHOW_FORM_A' | 'SHOW_FORM_B' | 'SHOW_FORM_C' | 'SHOW_PRODUCTS' | 'URGENT_DISPATCH' | 'URGENT_CHECK' | 'URGENT_RESERVATION_CONFIRM' | 'SHOW_PROCESS' | 'GO_MY_PAGE';
 export type AiActionType = ActionType; // Backward compatibility
 
 export enum AiConsultationStatus {
@@ -67,7 +67,9 @@ export enum AiConsultationStatus {
   AGENT_REQUESTED = 'agent_requested',
   AGENT_CONNECTED = 'agent_connected',
   CONSULTATION_CONFIRMED = 'consultation_confirmed',
-  COMPLETED = 'completed'
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled',
+  DELETED = 'deleted'
 }
 
 export interface AiConsultation {
@@ -76,7 +78,7 @@ export interface AiConsultation {
   user_id: string | null;
   facility_id: number | string | null;
   facility_name: string;
-  category: 'funeral' | 'pet' | 'memorial' | 'general';
+  category: 'funeral' | 'pet' | 'memorial';
   status: AiConsultationStatus;
   messages: any[];
   metadata: Record<string, any>;

@@ -53,8 +53,8 @@ export function useAllFacilities() {
     const updateManager = useCallback(async (facilityId: string, userId: string | null) => {
         try {
             const { error } = await supabase
-                .from('facilities')
-                .update({ user_id: userId })
+                .from('memorial_spaces')
+                .update({ owner_user_id: userId })
                 .eq('id', facilityId);
 
             if (error) throw error;

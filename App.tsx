@@ -78,7 +78,7 @@ const App: React.FC = () => {
   const { signOut } = useClerk();
   const { session } = useSession();
 
-  const [initialChatIntent, setInitialChatIntent] = useState<'funeral_home' | 'memorial_facility' | 'pet_funeral' | 'general' | null>(null);
+  const [initialChatIntent, setInitialChatIntent] = useState<'funeral_home' | 'memorial_facility' | 'pet_funeral' | null>(null);
   const [handoverContext, setHandoverContext] = useState<any>(null);
 
   // Map Viewport Hook
