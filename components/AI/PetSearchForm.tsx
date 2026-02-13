@@ -243,7 +243,7 @@ const PetSearchForm: React.FC<FormProps> = ({
                                     priceRange: '',
                                     benefits: [],
                                 }}
-                                mode="urgent"
+                                mode="phone"
                                 onClose={() => setConsultFacility(null)}
                                 onSubmit={handleConsultSubmit}
                             />
@@ -290,7 +290,7 @@ const PetSearchForm: React.FC<FormProps> = ({
                                             <Check size={14} /> 접수 완료
                                         </div>
                                     ) : (
-                                        <button onClick={() => setConsultFacility({ id: fId, name: f.name, phone: f.phone })} className="w-full bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-1">
+                                        <button onClick={() => setConsultFacility({ id: fId, name: f.name, phone: f.phone })} className="w-full bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-1">
                                             <Calendar size={14} /> 바로 예약 접수
                                         </button>
                                     )}
