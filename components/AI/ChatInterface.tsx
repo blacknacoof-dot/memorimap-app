@@ -711,7 +711,7 @@ export const ChatInterface: React.FC<Props> = ({
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 pb-4 no-scrollbar" ref={scrollRef}>
                 {messages.map((msg, idx) => (
                     <div key={idx} className={`flex w-full animate-in fade-in slide-in-from-bottom-2 duration-300 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[85%] flex flex-col items-start gap-2`}>
+                        <div className={`${['SHOW_FORM_A','SHOW_FORM_B','SHOW_FORM_C'].includes(msg.action || '') ? 'max-w-full w-full' : 'max-w-[85%]'} flex flex-col items-start gap-2`}>
                             <div className={`p-4 text-sm leading-relaxed ${msg.role === 'user'
                                 ? `bg-slate-800 text-white rounded-2xl rounded-tr-sm shadow-sm self-end`
                                 : 'bg-white text-slate-800 border border-slate-200 rounded-2xl rounded-tl-sm shadow-sm w-full'
