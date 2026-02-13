@@ -42,7 +42,17 @@
       "Bash(npm run dev:*)",
       "Bash(netstat:*)",
       "Bash(rsync:*)",
-      "Bash(npx vite build:*)"
+      "Bash(npx vite build:*)",
+      "Bash(git log:*)",
+      "Bash(npx supabase:*)",
+      "Bash(node -e \"\nconst { createClient } = require\\(''@supabase/supabase-js''\\);\nconst supabase = createClient\\(\n  ''https://xvmpvzldezpoxxsarizm.supabase.co'',\n  ''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2bXB2emxkZXpwb3h4c2FyaXptIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDI1MTYwNCwiZXhwIjoyMDg1NjExNjA0fQ.TDmo5ltVxUfDBFxmb7jHjpYAfpKzXevBxDXjBqPn5Io''\n\\);\n\nasync function run\\(\\) {\n  // Test: check if category column already exists\n  const { data, error } = await supabase.from\\(''consultations''\\).select\\(''category''\\).limit\\(1\\);\n  if \\(error\\) {\n    console.log\\(''category column does NOT exist yet:'', error.message\\);\n  } else {\n    console.log\\(''category column EXISTS already:'', JSON.stringify\\(data\\)\\);\n  }\n}\nrun\\(\\);\n\")",
+      "Bash(nslookup:*)",
+      "Bash(node -e \"\nconst { createClient } = require\\(''@supabase/supabase-js''\\);\n\nconst supabase = createClient\\(\n  ''https://xvmpvzldezpoxxsarizm.supabase.co'',\n  ''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2bXB2emxkZXpwb3h4c2FyaXptIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDI1MTYwNCwiZXhwIjoyMDg1NjExNjA0fQ.TDmo5ltVxUfDBFxmb7jHjpYAfpKzXevBxDXjBqPn5Io'',\n  { db: { schema: ''public'' } }\n\\);\n\nasync function run\\(\\) {\n  // Step 1: Add category column via RPC workaround - create a temp function\n  const { data, error } = await supabase.rpc\\(''exec_sql_admin'', { \n    sql_text: ''ALTER TABLE public.consultations ADD COLUMN IF NOT EXISTS category TEXT'' \n  }\\);\n  console.log\\(''RPC result:'', data, error?.message\\);\n}\nrun\\(\\);\n\")",
+      "Bash(node:*)",
+      "Bash(git -C \"C:\\\\Users\\\\black\\\\Desktop\\\\memorimap\" add -A)",
+      "Bash(git -C \"C:\\\\Users\\\\black\\\\Desktop\\\\memorimap\" status --short)",
+      "Bash(del \"C:\\\\Users\\\\black\\\\Desktop\\\\memorimap\\\\nul\")",
+      "Bash(git -C \"C:\\\\Users\\\\black\\\\Desktop\\\\memorimap\" rm --cached nul)"
     ]
   }
 }

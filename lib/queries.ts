@@ -194,7 +194,8 @@ export const getIntelligentRecommendations = async (
 
                 return isFuneralCategory || isNameMatch;
             } else if (normalizedCategory === 'pet') {
-                categoryMatch = i.category === 'pet_memorial' || i.category === 'pet_funeral' || i.category === 'pet' || i.category === '동물장례';
+                const PET_CATEGORIES = ['pet_memorial', 'pet_funeral', 'pet', '동물장례', '반려동물'];
+                categoryMatch = PET_CATEGORIES.includes(i.category) || PET_CATEGORIES.includes(i.type);
             } else if (isMemorialGroup) {
                 const MEMORIAL_CATEGORIES = ['columbarium', 'charnel_house', 'natural_burial', 'tree_burial', 'park_cemetery', 'cemetery', 'complex', 'sea_burial', 'memorial', '봉안시설', '자연장', '공원묘지', '해양장'];
                 categoryMatch = MEMORIAL_CATEGORIES.includes(i.type) || MEMORIAL_CATEGORIES.includes(i.category);
@@ -231,6 +232,25 @@ export const getIntelligentRecommendations = async (
         console.log(`🔍 [Recommendation] After strictFilter: ${regionResults.length}`);
 
         finalData = [...regionResults];
+
+        // B-0. Pet fallback: 지역 검색 결과가 없으면 이름 키워드로 재검색
+        if (finalData.length === 0 && normalizedCategory === 'pet') {
+            console.log(`🐾 [Pet Fallback] No pet facilities found by region, trying keyword search...`);
+            const petKeywords = ['동물장례', '펫', '반려동물', 'pet'];
+            for (const keyword of petKeywords) {
+                if (finalData.length >= 3) break;
+                const keywordResults = await searchFacilitiesByRegion(keyword, undefined);
+                const filtered = strictFilter(keywordResults, regionText);
+                const existingIds = new Set(finalData.map(f => f.id));
+                for (const f of filtered) {
+                    if (!existingIds.has(f.id)) {
+                        finalData.push(f);
+                        existingIds.add(f.id);
+                    }
+                }
+            }
+            console.log(`🐾 [Pet Fallback] After keyword search: ${finalData.length}`);
+        }
 
         // B. 3개 미만이면 좌표 기반 반경 확장 (5km → 10km → 20km)
         if (finalData.length < 3) {
@@ -279,6 +299,25 @@ export const getIntelligentRecommendations = async (
         if (data) {
             finalData = strictFilter(data);
         }
+    }
+
+    // 2-b. Pet 최종 fallback: 지역 무관 pet 시설 검색 (결과가 0이면)
+    if (finalData.length === 0 && normalizedCategory === 'pet') {
+        console.log(`🐾 [Pet Final Fallback] Searching all pet facilities without region filter...`);
+        const petKeywords = ['동물장례', '펫', '반려동물'];
+        for (const keyword of petKeywords) {
+            if (finalData.length >= 3) break;
+            const allPet = await searchFacilitiesByRegion(keyword, undefined);
+            const filtered = strictFilter(allPet); // region filter 없이
+            const existingIds = new Set(finalData.map(f => f.id));
+            for (const f of filtered) {
+                if (!existingIds.has(f.id)) {
+                    finalData.push(f);
+                    existingIds.add(f.id);
+                }
+            }
+        }
+        console.log(`🐾 [Pet Final Fallback] Found: ${finalData.length}`);
     }
 
     // 3. Final Sort & Limit
@@ -1765,6 +1804,7 @@ export const getConsultationsByUser = async (userId: string): Promise<Consultati
             .from('consultations')
             .select('*')
             .eq('user_id', userId)
+            .not('status', 'eq', 'cancelled')
             .order('created_at', { ascending: false });
 
         console.log('📋 [MyPage] Results:', data?.length, 'Error:', error);

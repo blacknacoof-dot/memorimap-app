@@ -12,6 +12,24 @@ export interface SangjoTimelineEvent {
 }
 
 export const saveSangjoContract = async (contract: SangjoContract) => {
+    // 동일 고객(전화번호) 활성 계약 1건 제한
+    if (contract.customer_phone) {
+        const { data: existing } = await supabase
+            .from('sangjo_contracts')
+            .select('id, contract_number, sangjo_id')
+            .eq('customer_phone', contract.customer_phone)
+            .in('status', ['상담신청', '예약대기', '계약진행'])
+            .limit(1);
+        if (existing && existing.length > 0) {
+            // 기존 활성 계약을 취소하고 새 계약으로 교체
+            await supabase
+                .from('sangjo_contracts')
+                .update({ status: '완료' })
+                .eq('id', existing[0].id);
+            console.log(`🔄 기존 상조 계약 자동 종료: ${existing[0].contract_number}`);
+        }
+    }
+
     const { data, error } = await supabase
         .from('sangjo_contracts')
         .insert([contract]);

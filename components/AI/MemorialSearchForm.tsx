@@ -143,17 +143,20 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                 if (!token) throw new Error('인증 토큰 없음');
                 const authClient = createAuthenticatedClient(token);
 
-                // 동일 시설 중복 접수 방지
-                const { data: existing } = await authClient
+                // 카테고리별 1건 제한: 추모시설 활성 상담 체크
+                const { data: existingCategory } = await authClient
                     .from('consultations')
-                    .select('id')
+                    .select('id, facility_id')
                     .eq('user_id', currentUser.id)
-                    .eq('facility_id', facilityId)
+                    .eq('category', 'memorial')
                     .in('status', ['waiting', 'pending', 'accepted'])
                     .limit(1);
-                if (existing && existing.length > 0) {
-                    toast.error('이미 해당 시설에 접수된 상담이 있습니다.');
-                    return;
+                if (existingCategory && existingCategory.length > 0) {
+                    const willReplace = confirm('이미 접수된 추모시설 상담이 있습니다.\n새 시설로 변경하시겠습니까? (기존 상담은 자동 취소됩니다)');
+                    if (!willReplace) return;
+                    await authClient.from('consultations')
+                        .update({ status: 'cancelled' })
+                        .eq('id', existingCategory[0].id);
                 }
 
                 await authClient.from('consultations').insert({
@@ -162,6 +165,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                     user_name: currentUser.firstName || 'Unknown',
                     user_phone: currentUser.phoneNumbers?.[0]?.phoneNumber || 'N/A',
                     status: 'pending',
+                    category: 'memorial',
                     notes: `시설: ${facilityName || ''}\n${finalText}`
                 });
             } catch (e) {
@@ -216,17 +220,20 @@ const MemorialSearchForm: React.FC<FormProps> = ({
             if (!token) throw new Error('인증 토큰 없음');
             const authClient = createAuthenticatedClient(token);
 
-            // 동일 시설 중복 접수 방지
-            const { data: existing } = await authClient
+            // 카테고리별 1건 제한: 추모시설 활성 상담 체크
+            const { data: existingCategory } = await authClient
                 .from('consultations')
-                .select('id')
+                .select('id, facility_id')
                 .eq('user_id', currentUser?.id)
-                .eq('facility_id', consultFacility.id)
+                .eq('category', 'memorial')
                 .in('status', ['waiting', 'pending', 'accepted'])
                 .limit(1);
-            if (existing && existing.length > 0) {
-                toast.error('이미 해당 시설에 접수된 상담이 있습니다.');
-                return;
+            if (existingCategory && existingCategory.length > 0) {
+                const willReplace = confirm('이미 접수된 추모시설 상담이 있습니다.\n새 시설로 변경하시겠습니까? (기존 상담은 자동 취소됩니다)');
+                if (!willReplace) return;
+                await authClient.from('consultations')
+                    .update({ status: 'cancelled' })
+                    .eq('id', existingCategory[0].id);
             }
 
             const { error } = await authClient.from('consultations').insert({
@@ -235,6 +242,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                 user_name: data.name || currentUser?.name || '',
                 user_phone: data.phone || '',
                 notes,
+                category: 'memorial',
                 status: 'pending'
             });
             if (error) throw error;

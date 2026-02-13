@@ -218,8 +218,15 @@ export const ChatInterface: React.FC<Props> = ({
                     setTimeout(() => inputRef.current?.focus(), 100);
                     return;
                 } else if (initialIntent === 'pet_funeral') {
-                    // Scenario C: Pet Funeral Form
-                    defaultWelcome = `사랑하는 아이와의 이별, 얼마나 가슴 아프실지 짐작이 갑니다. 아이가 무지개다리를 편안히 건널 수 있도록, 믿을 수 있는 장례식장을 안내해 드릴까요?\n\n1. **희망 지역** (예: 서울 마포구)\n2. **아이 정보** (예: 강아지/5kg)\n3. **필요 서비스** (예: 픽업, 스톤제작)`;
+                    // Scenario C: Pet Funeral Form — 바로 폼 표시
+                    setMessages([{
+                        role: 'model',
+                        text: `사랑하는 아이와의 이별, 얼마나 가슴 아프실지 짐작이 갑니다.\n아이가 무지개다리를 편안히 건널 수 있도록, 아래 정보를 입력해 주시면 맞춤 장례식장을 안내해 드릴게요.`,
+                        timestamp: new Date(),
+                        action: 'SHOW_FORM_C'
+                    }]);
+                    setTimeout(() => inputRef.current?.focus(), 100);
+                    return;
                 } else {
                     defaultWelcome = `반갑습니다, ${userName}님! **AI 마음이**입니다.\n무엇을 도와드릴까요?\n\n아래 버튼을 눌러 원하시는 서비스를 선택해 주세요.`;
                 }
@@ -542,7 +549,7 @@ export const ChatInterface: React.FC<Props> = ({
                 actionType = 'SHOW_FORM_B';
             } else if (scenario === 'pet') {
                 setActiveScenario('pet');
-                welcomeMsg = `사랑하는 아이와의 이별, 얼마나 가슴 아프실지 짐작이 갑니다. 아이가 무지개다리를 편안히 건널 수 있도록, 믿을 수 있는 장례식장을 안내해 드릴까요?`;
+                welcomeMsg = `사랑하는 아이와의 이별, 얼마나 가슴 아프실지 짐작이 갑니다.\n아이가 무지개다리를 편안히 건널 수 있도록, 아래 정보를 입력해 주시면 맞춤 장례식장을 안내해 드릴게요.`;
                 actionType = 'SHOW_FORM_C'; // New Action for Pet
             } else if (scenario === 'general') {
                 setActiveScenario('general');
