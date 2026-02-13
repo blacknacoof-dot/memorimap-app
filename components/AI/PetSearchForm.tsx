@@ -165,14 +165,11 @@ const PetSearchForm: React.FC<FormProps> = ({
 
             const { error } = await authClient.from('consultations').insert({
                 facility_id: consultFacility.id,
-                facility_name: consultFacility.name,
                 user_id: currentUser?.id,
                 user_name: data.name || currentUser?.name || '',
                 user_phone: data.phone || '',
                 notes,
-                scale: '해당없음',
-                religion: '해당없음',
-                status: 'waiting'
+                status: 'pending'
             });
             if (error) throw error;
             setBookedIds(prev => new Set(prev).add(consultFacility.id));
