@@ -37,3 +37,6 @@ full_price_update.json
 
 types_schema.ts  # Invalid file - ignore
 nul
+
+# Claude Code
+.claude/

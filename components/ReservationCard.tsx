@@ -36,31 +36,43 @@ export const ReservationCard: React.FC<Props> = ({
     };
 
     return (
-        <div className="bg-white border rounded-xl p-4 hover:shadow-md transition-shadow">
-            <div className="flex justify-between items-start mb-3">
-                <h3 className="font-bold text-gray-900">{reservation.facility_name}</h3>
+        <div className="bg-white border rounded-xl p-3 hover:shadow-md transition-shadow overflow-hidden">
+            <div className="flex justify-between items-center mb-2 gap-2">
+                <h3 className="font-bold text-xs text-gray-900 truncate">{reservation.facility_name}</h3>
                 {getStatusBadge(reservation.status)}
             </div>
 
-            <div className="space-y-2 text-sm text-gray-600">
-                <div className="flex items-center gap-2">
-                    <Calendar size={16} className="text-primary" />
+            <div className="space-y-1 text-xs text-gray-600">
+                <div className="flex items-center gap-1.5">
+                    <Calendar size={13} className="text-primary flex-shrink-0" />
                     <span>{new Date(reservation.visit_date).toLocaleDateString('ko-KR')}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Clock size={16} className="text-primary" />
+                <div className="flex items-center gap-1.5">
+                    <Clock size={13} className="text-primary flex-shrink-0" />
                     <span>{reservation.time_slot}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Users size={16} className="text-primary" />
-                    <span>{reservation.visitor_count}명</span>
-                </div>
+                {reservation.visitor_name && (
+                    <div className="flex items-center gap-1.5">
+                        <Users size={13} className="text-primary flex-shrink-0" />
+                        <span>{reservation.visitor_name} · {reservation.visitor_count}명</span>
+                    </div>
+                )}
+                {reservation.purpose && (
+                    <div className="flex items-center gap-1.5">
+                        <MapPin size={13} className="text-primary flex-shrink-0" />
+                        <span className="truncate">
+                            {reservation.purpose === 'funeral' ? '장례' :
+                             reservation.purpose === 'pet' ? '반려동물' :
+                             reservation.purpose === 'memorial' ? '추모' : reservation.purpose}
+                        </span>
+                    </div>
+                )}
             </div>
 
-            <div className="mt-4 pt-4 border-t flex gap-2">
+            <div className="mt-2.5 pt-2.5 border-t flex gap-1.5">
                 <button
                     onClick={() => onViewDetails(reservation)}
-                    className="flex-1 py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+                    className="flex-1 py-1.5 px-3 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium transition-colors"
                 >
                     상세보기
                 </button>
@@ -68,18 +80,18 @@ export const ReservationCard: React.FC<Props> = ({
                 {(reservation.status === 'pending' || reservation.status === 'urgent') && onCancel && (
                     <button
                         onClick={() => reservation.id && onCancel(reservation.id)}
-                        className="py-2 px-4 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-medium transition-colors"
+                        className="py-1.5 px-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-medium transition-colors"
                     >
-                        취소하기
+                        취소
                     </button>
                 )}
 
                 {reservation.status === 'confirmed' && onWriteReview && (
                     <button
                         onClick={() => onWriteReview(String(reservation.facility_id))}
-                        className="py-2 px-4 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg text-sm font-medium transition-colors"
+                        className="py-1.5 px-3 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg text-xs font-medium transition-colors"
                     >
-                        리뷰 작성
+                        리뷰
                     </button>
                 )}
             </div>

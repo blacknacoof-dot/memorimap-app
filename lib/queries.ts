@@ -279,7 +279,7 @@ export const getIntelligentRecommendations = async (
                     console.log(`🔍 [Recommendation] Radius search: ${radius / 1000}km from ${baseLat.toFixed(4)},${baseLng.toFixed(4)}`);
                     const { data: nearbyData } = await searchFacilitiesV2(baseLat, baseLng, radius, undefined, 10);
                     if (nearbyData) {
-                        const filtered = strictFilter(nearbyData);
+                        const filtered = strictFilter(nearbyData, regionText);
                         for (const f of filtered) {
                             if (!existingIds.has(f.id)) {
                                 finalData.push(f);
@@ -956,7 +956,7 @@ export const getFacilityFaqs = async (facilityId: string) => {
             .select('*')
             .eq('facility_id', facilityId)
             .eq('is_active', true)
-            .order('order', { ascending: true });
+            .order('order_index', { ascending: true });
 
         if (error) {
             // 테이블이 없거나 에러 시 빈 배열 반환
@@ -973,12 +973,14 @@ export const getFacilityFaqs = async (facilityId: string) => {
 /**
  * 시설 FAQ 저장 (upsert)
  */
-export const upsertFacilityFaq = async (faq: { id?: string; facility_id: string; question: string; answer: string; order?: number }) => {
+export const upsertFacilityFaq = async (faq: { id?: string; facility_id: string; question: string; answer: string; order_index?: number; category?: string }) => {
     try {
+        const { order, ...rest } = faq as any;
         const { data, error } = await supabase
             .from('facility_faqs')
             .upsert({
-                ...faq,
+                ...rest,
+                order_index: faq.order_index ?? order ?? 0,
                 is_active: true,
                 updated_at: new Date().toISOString(),
             })
@@ -1067,16 +1069,16 @@ export const getFacilitySubscription = async (facilityId: string) => {
  */
 export const getUserFacility = async (userId: string) => {
     const { data, error } = await supabase
-        .from('facilities') // Changed from memorial_spaces
+        .from('facilities')
         .select('id')
-        .eq('user_id', userId) // [Fix] Updated manager_id -> user_id
-        .maybeSingle();
+        .eq('user_id', userId)
+        .limit(1);
 
     if (error) {
         console.error('Error in getUserFacility:', error);
         return null;
     }
-    return data?.id || null;
+    return data?.[0]?.id || null;
 };
 
 /**
@@ -1111,14 +1113,13 @@ export const getUserRole = async (userId: string) => {
         }
 
         // 2. 시설 관리자 확인 (facilities 테이블의 user_id 확인)
-        const { data: facility } = await supabase
+        const { data: facilityArr } = await supabase
             .from('facilities')
             .select('id')
             .eq('user_id', userId)
-            .maybeSingle();
-        /* [Fix] manager_id -> user_id */
+            .limit(1);
 
-        if (facility) {
+        if (facilityArr && facilityArr.length > 0) {
             return { role: 'facility_admin', isError: false };
         }
 
@@ -1831,7 +1832,7 @@ export const getConsultationsByUser = async (userId: string): Promise<Consultati
  */
 export const updateConsultationStatus = async (
     consultationId: string,
-    status: 'waiting' | 'accepted' | 'cancelled' | 'completed',
+    status: 'pending' | 'accepted' | 'cancelled' | 'completed',
     notes?: string
 ): Promise<boolean> => {
     try {

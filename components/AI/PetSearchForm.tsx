@@ -174,30 +174,35 @@ const PetSearchForm: React.FC<FormProps> = ({
             if (!token) throw new Error('인증 토큰 없음');
             const authClient = createAuthenticatedClient(token);
 
-            // 카테고리별 1건 제한: 동물장례 활성 상담 체크
-            const { data: existingCategory } = await authClient
-                .from('consultations')
+            // 카테고리별 1건 제한: 기존 반려동물 예약 체크
+            const { data: existingRes } = await authClient
+                .from('reservations')
                 .select('id, facility_id')
                 .eq('user_id', currentUser?.id)
-                .eq('category', 'pet')
-                .in('status', ['waiting', 'pending', 'accepted'])
+                .eq('purpose', 'pet')
+                .in('status', ['pending', 'urgent'])
                 .limit(1);
-            if (existingCategory && existingCategory.length > 0) {
-                const willReplace = confirm('이미 접수된 동물장례 상담이 있습니다.\n새 시설로 변경하시겠습니까? (기존 상담은 자동 취소됩니다)');
+            if (existingRes && existingRes.length > 0) {
+                const willReplace = confirm('이미 접수된 동물장례 예약이 있습니다.\n새 시설로 변경하시겠습니까? (기존 예약은 자동 취소됩니다)');
                 if (!willReplace) return;
-                await authClient.from('consultations')
+                await authClient.from('reservations')
                     .update({ status: 'cancelled' })
-                    .eq('id', existingCategory[0].id);
+                    .eq('id', existingRes[0].id);
             }
 
-            const { error } = await authClient.from('consultations').insert({
+            const { error } = await authClient.from('reservations').insert({
                 facility_id: consultFacility.id,
+                facility_name: consultFacility.name,
                 user_id: currentUser?.id,
-                user_name: data.name || currentUser?.name || '',
-                user_phone: data.phone || '',
-                notes,
-                category: 'pet',
-                status: 'pending'
+                visitor_name: data.name || currentUser?.name || '',
+                contact_number: '',
+                visit_date: new Date().toISOString(),
+                time_slot: '긴급(즉시)',
+                visitor_count: 1,
+                purpose: 'pet',
+                special_requests: notes,
+                status: 'urgent',
+                payment_amount: 0,
             });
             if (error) throw error;
             setBookedIds(prev => new Set(prev).add(consultFacility.id));

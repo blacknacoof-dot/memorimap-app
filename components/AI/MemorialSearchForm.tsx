@@ -143,30 +143,35 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                 if (!token) throw new Error('인증 토큰 없음');
                 const authClient = createAuthenticatedClient(token);
 
-                // 카테고리별 1건 제한: 추모시설 활성 상담 체크
-                const { data: existingCategory } = await authClient
-                    .from('consultations')
+                // 카테고리별 1건 제한: 기존 추모시설 예약 체크
+                const { data: existingRes } = await authClient
+                    .from('reservations')
                     .select('id, facility_id')
                     .eq('user_id', currentUser.id)
-                    .eq('category', 'memorial')
-                    .in('status', ['waiting', 'pending', 'accepted'])
+                    .eq('purpose', 'memorial')
+                    .in('status', ['pending', 'urgent'])
                     .limit(1);
-                if (existingCategory && existingCategory.length > 0) {
-                    const willReplace = confirm('이미 접수된 추모시설 상담이 있습니다.\n새 시설로 변경하시겠습니까? (기존 상담은 자동 취소됩니다)');
+                if (existingRes && existingRes.length > 0) {
+                    const willReplace = confirm('이미 접수된 추모시설 예약이 있습니다.\n새 시설로 변경하시겠습니까? (기존 예약은 자동 취소됩니다)');
                     if (!willReplace) return;
-                    await authClient.from('consultations')
+                    await authClient.from('reservations')
                         .update({ status: 'cancelled' })
-                        .eq('id', existingCategory[0].id);
+                        .eq('id', existingRes[0].id);
                 }
 
-                await authClient.from('consultations').insert({
-                    user_id: currentUser.id,
+                await authClient.from('reservations').insert({
                     facility_id: facilityId,
-                    user_name: currentUser.firstName || 'Unknown',
-                    user_phone: currentUser.phoneNumbers?.[0]?.phoneNumber || 'N/A',
+                    facility_name: facilityName || '',
+                    user_id: currentUser.id,
+                    visitor_name: currentUser.firstName || 'Unknown',
+                    contact_number: '',
+                    visit_date: new Date().toISOString(),
+                    time_slot: '상담예약',
+                    visitor_count: 1,
+                    purpose: 'memorial',
+                    special_requests: `시설: ${facilityName || ''}\n${finalText}`,
                     status: 'pending',
-                    category: 'memorial',
-                    notes: `시설: ${facilityName || ''}\n${finalText}`
+                    payment_amount: 0,
                 });
             } catch (e) {
                 console.error('[MemorialSearchForm] Exception saving:', e);
@@ -220,30 +225,35 @@ const MemorialSearchForm: React.FC<FormProps> = ({
             if (!token) throw new Error('인증 토큰 없음');
             const authClient = createAuthenticatedClient(token);
 
-            // 카테고리별 1건 제한: 추모시설 활성 상담 체크
-            const { data: existingCategory } = await authClient
-                .from('consultations')
+            // 카테고리별 1건 제한: 추모시설 기존 예약 체크
+            const { data: existingRes } = await authClient
+                .from('reservations')
                 .select('id, facility_id')
                 .eq('user_id', currentUser?.id)
-                .eq('category', 'memorial')
-                .in('status', ['waiting', 'pending', 'accepted'])
+                .eq('purpose', 'memorial')
+                .in('status', ['pending', 'urgent'])
                 .limit(1);
-            if (existingCategory && existingCategory.length > 0) {
-                const willReplace = confirm('이미 접수된 추모시설 상담이 있습니다.\n새 시설로 변경하시겠습니까? (기존 상담은 자동 취소됩니다)');
+            if (existingRes && existingRes.length > 0) {
+                const willReplace = confirm('이미 접수된 추모시설 예약이 있습니다.\n새 시설로 변경하시겠습니까? (기존 예약은 자동 취소됩니다)');
                 if (!willReplace) return;
-                await authClient.from('consultations')
+                await authClient.from('reservations')
                     .update({ status: 'cancelled' })
-                    .eq('id', existingCategory[0].id);
+                    .eq('id', existingRes[0].id);
             }
 
-            const { error } = await authClient.from('consultations').insert({
+            const { error } = await authClient.from('reservations').insert({
                 facility_id: consultFacility.id,
+                facility_name: consultFacility.name,
                 user_id: currentUser?.id,
-                user_name: data.name || currentUser?.name || '',
-                user_phone: data.phone || '',
-                notes,
-                category: 'memorial',
-                status: 'pending'
+                visitor_name: data.name || currentUser?.name || '',
+                contact_number: '',
+                visit_date: new Date().toISOString(),
+                time_slot: '상담예약',
+                visitor_count: 1,
+                purpose: 'memorial',
+                special_requests: notes,
+                status: 'pending',
+                payment_amount: 0,
             });
             if (error) throw error;
             setBookedIds(prev => new Set(prev).add(consultFacility.id));

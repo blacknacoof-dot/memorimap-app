@@ -4,6 +4,23 @@
  */
 
 // ============================================================
+// PACKAGE & MANAGER TYPES
+// ============================================================
+
+export interface FacilityPackage {
+    name: string;
+    price: number;
+    items: string[];
+    description: string;
+}
+
+export interface FacilityManager {
+    name: string;
+    position: string;
+    phone: string;
+}
+
+// ============================================================
 // CORE TYPES
 // ============================================================
 
@@ -120,6 +137,10 @@ export interface Facility {
     ai_price_summary?: Record<string, string | number>;
     subscription?: any;
     products?: any[];
+
+    // Packages & Managers (JSONB)
+    packages?: FacilityPackage[];
+    managers?: FacilityManager[];
 }
 
 // ============================================================

@@ -100,6 +100,8 @@ export type { FacilityCategoryType } from './facility';
 // ============================================================
 export type {
   Facility,
+  FacilityPackage,
+  FacilityManager,
   FacilityFilter,
   FacilitySearchParams,
   CategoryConfig

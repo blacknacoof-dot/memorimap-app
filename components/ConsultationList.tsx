@@ -61,108 +61,117 @@ export const ConsultationList: React.FC<Props> = ({ consultations, onAnswer, onR
     }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-3">
             {consultations.map(item => {
                 const isExpanded = expandedId === item.id;
                 const isAnswered = item.status === 'accepted' || item.status === 'completed' || !!item.answer;
                 const isUnread = !item.is_read;
 
                 return (
-                    <div key={item.id} className={`bg-white rounded-xl border transition-all ${isExpanded ? 'ring-2 ring-primary/20 shadow-md' : 'hover:shadow-sm'}`}>
+                    <div key={item.id} className={`bg-white rounded-xl border overflow-hidden transition-all ${isExpanded ? 'ring-2 ring-primary/20 shadow-md' : 'hover:shadow-sm'}`}>
                         {/* Header Summary */}
                         <div
-                            className="p-4 flex items-center justify-between cursor-pointer"
+                            className="p-3 flex items-center justify-between cursor-pointer gap-2"
                             onClick={() => toggleExpand(item.id)}
                         >
-                            <div className="flex items-center gap-4">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isAnswered ? 'bg-green-100 text-green-600' :
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                                <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${isAnswered ? 'bg-green-100 text-green-600' :
                                     item.status === 'cancelled' ? 'bg-gray-100 text-gray-400' :
                                         'bg-amber-100 text-amber-600'
                                     }`}>
-                                    {isAnswered ? <CheckCircle size={20} /> :
-                                        item.status === 'cancelled' ? <XCircle size={20} /> :
-                                            <Clock size={20} />}
+                                    {isAnswered ? <CheckCircle size={16} /> :
+                                        item.status === 'cancelled' ? <XCircle size={16} /> :
+                                            <Clock size={16} />}
                                 </div>
-                                <div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-bold text-gray-900">{item.user_name || '익명 사용자'}</span>
+                                <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                        <span className="font-bold text-xs text-gray-900">{item.user_name || '익명'}</span>
                                         {isUnread && (
-                                            <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold animate-pulse">NEW</span>
+                                            <span className="bg-red-500 text-white text-[9px] px-1 py-0.5 rounded-full font-bold animate-pulse leading-none">N</span>
                                         )}
-                                        <span className="text-xs text-gray-500">{new Date(item.created_at).toLocaleDateString()}</span>
-                                        {item.urgency === 'deceased' && (
-                                            <span className="bg-red-100 text-red-600 text-[10px] px-2 py-0.5 rounded-full font-bold">긴급</span>
-                                        )}
+                                        <span className="text-[10px] text-gray-400">{new Date(item.created_at).toLocaleDateString()}</span>
                                     </div>
-                                    <p className={`text-sm truncate max-w-xs sm:max-w-md ${isUnread ? 'text-gray-900 font-medium' : 'text-gray-600'}`}>
+                                    <p className={`text-xs truncate ${isUnread ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>
                                         {item.notes || '문의 내용 없음'}
                                     </p>
                                 </div>
                             </div>
-                            <div className="text-gray-400">
-                                {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                            <div className="text-gray-400 flex-shrink-0">
+                                {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                             </div>
                         </div>
 
                         {/* Expanded Details */}
                         {isExpanded && (
-                            <div className="px-4 pb-4 border-t pt-4 bg-gray-50/50 rounded-b-xl">
-                                <div className="grid grid-cols-2 gap-4 text-sm mb-4">
-                                    <div>
-                                        <span className="text-gray-500 block mb-1">연락처</span>
-                                        <span className="font-medium">{item.user_phone || '-'}</span>
+                            <div className="px-3 pb-3 border-t pt-3 bg-gray-50/50 rounded-b-xl">
+                                <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+                                    <div className="bg-white rounded-lg p-2 border">
+                                        <span className="text-[10px] text-gray-400 block">연락처</span>
+                                        <span className="font-medium text-gray-900">{item.user_phone || '미입력'}</span>
                                     </div>
-                                    <div>
-                                        <span className="text-gray-500 block mb-1">장례 규모</span>
-                                        <span className="font-medium">{item.scale || '-'}</span>
+                                    <div className="bg-white rounded-lg p-2 border">
+                                        <span className="text-[10px] text-gray-400 block">카테고리</span>
+                                        <span className="font-medium text-gray-900">
+                                            {(item as any).category === 'funeral' ? '장례식장' :
+                                             (item as any).category === 'pet' ? '반려동물' :
+                                             (item as any).category === 'memorial' ? '추모시설' : '일반'}
+                                        </span>
                                     </div>
-                                    <div>
-                                        <span className="text-gray-500 block mb-1">종교</span>
-                                        <span className="font-medium">{item.religion || '-'}</span>
+                                    <div className="bg-white rounded-lg p-2 border">
+                                        <span className="text-[10px] text-gray-400 block">접수일</span>
+                                        <span className="font-medium text-gray-900">{new Date(item.created_at).toLocaleDateString()}</span>
                                     </div>
-                                    <div>
-                                        <span className="text-gray-500 block mb-1">장례 일정</span>
-                                        <span className="font-medium">{item.schedule || '-'}</span>
+                                    <div className="bg-white rounded-lg p-2 border">
+                                        <span className="text-[10px] text-gray-400 block">상태</span>
+                                        <span className={`font-medium ${
+                                            item.status === 'pending' ? 'text-amber-600' :
+                                            item.status === 'accepted' || item.status === 'completed' ? 'text-green-600' :
+                                            'text-gray-400'
+                                        }`}>
+                                            {item.status === 'pending' ? '대기중' :
+                                             item.status === 'accepted' ? '답변완료' :
+                                             item.status === 'completed' ? '완료' : '취소'}
+                                        </span>
                                     </div>
                                 </div>
 
-                                <div className="bg-white p-3 rounded-lg border mb-4">
-                                    <span className="text-xs text-gray-400 block mb-1">문의 내용</span>
-                                    <p className="text-gray-800 whitespace-pre-wrap">{item.notes}</p>
+                                <div className="bg-white p-2.5 rounded-lg border mb-3">
+                                    <span className="text-[10px] text-gray-400 block mb-1">문의 내용</span>
+                                    <p className="text-gray-800 text-xs whitespace-pre-wrap leading-relaxed break-words">{item.notes}</p>
                                 </div>
 
                                 {/* Answer Section */}
                                 {item.answer ? (
-                                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <span className="font-bold text-blue-800 text-sm">보낸 답변</span>
-                                            <span className="text-xs text-blue-400">
+                                    <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                                        <div className="flex items-center gap-1.5 mb-1">
+                                            <span className="font-bold text-blue-800 text-xs">보낸 답변</span>
+                                            <span className="text-[10px] text-blue-400">
                                                 {item.answered_at ? new Date(item.answered_at).toLocaleString() : ''}
                                             </span>
                                         </div>
-                                        <p className="text-blue-900 text-sm whitespace-pre-wrap">{item.answer}</p>
+                                        <p className="text-blue-900 text-xs whitespace-pre-wrap break-words">{item.answer}</p>
                                     </div>
                                 ) : item.status === 'cancelled' ? (
-                                    <div className="text-center py-2 text-gray-400 text-sm">
+                                    <div className="text-center py-2 text-gray-400 text-xs">
                                         취소된 상담입니다.
                                     </div>
                                 ) : (
-                                    <div className="mt-4">
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">답변 작성하기</label>
+                                    <div className="mt-2">
+                                        <label className="block text-xs font-medium text-gray-700 mb-1">답변 작성</label>
                                         <textarea
                                             value={answerText}
                                             onChange={(e) => setAnswerText(e.target.value)}
-                                            placeholder="상담 문의에 대한 답변을 입력해주세요..."
-                                            className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent min-h-[100px] text-sm"
+                                            placeholder="답변을 입력해주세요..."
+                                            className="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent min-h-[80px] text-xs"
                                         />
-                                        <div className="flex justify-end mt-2">
+                                        <div className="flex justify-end mt-1.5">
                                             <button
                                                 onClick={() => handleSubmit(item.id)}
                                                 disabled={isSubmitting || !answerText.trim()}
-                                                className="bg-primary text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                className="bg-primary text-white px-3 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1.5 hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
-                                                {isSubmitting ? <Clock size={16} className="animate-spin" /> : <Send size={16} />}
-                                                답변 전송
+                                                {isSubmitting ? <Clock size={14} className="animate-spin" /> : <Send size={14} />}
+                                                전송
                                             </button>
                                         </div>
                                     </div>

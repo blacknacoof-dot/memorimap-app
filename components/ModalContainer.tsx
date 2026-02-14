@@ -279,6 +279,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
           <SangjoConsultationModal
             company={selectedFuneralCompany}
             onClose={() => { setShowSangjoAIConsult(false); setSelectedFuneralCompany(null); }}
+            currentUser={userInfo ? { id: userInfo.id, name: userInfo.name } : null}
           />
         </Suspense>
       )}

@@ -75,7 +75,7 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
                 {
                     event: '*', // Listen to INSERT/UPDATE
                     schema: 'public',
-                    table: 'ai_consultations',
+                    table: 'consultations',
                     filter: `facility_id=eq.${facilityId}`
                 },
                 (payload) => {
@@ -90,7 +90,7 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
         };
     }, [facilityId, filter]);
 
-    const handleStatusChange = async (consultationId: string, newStatus: 'waiting' | 'accepted' | 'cancelled' | 'completed') => {
+    const handleStatusChange = async (consultationId: string, newStatus: 'pending' | 'accepted' | 'cancelled' | 'completed') => {
         try {
             // [Migration] AI Service Integration for 'accepted' (Confirm)
             if (newStatus === 'accepted') {

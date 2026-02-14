@@ -13,6 +13,7 @@ interface Props {
     onClose: () => void;
     company?: FuneralCompany | null;
     onCompanySelect?: (company: FuneralCompany) => void;
+    currentUser?: { id: string; name: string } | null;
 }
 
 const TOPICS: string[] = [
@@ -111,7 +112,7 @@ ${companiesInfo}
 import { BrandChatInterface } from './BrandChatInterface';
 import { PetChatInterface } from './PetChatInterface';
 
-export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onCompanySelect }) => {
+export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onCompanySelect, currentUser }) => {
     const [activeCompany, setActiveCompany] = useState<FuneralCompany | null | undefined>(company);
 
     // If specific pet company is active, use the dedicated Pet UI
@@ -337,6 +338,34 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
                             });
 
                             console.log(`✅ ${isConsult ? '상담 신청' : '가입 신청'} 완료:`, contractNumber);
+
+                            // 대시보드 연동: consultations 테이블에도 INSERT
+                            if (activeCompany && currentUser) {
+                                try {
+                                    const { supabase } = await import('../../lib/supabaseClient');
+                                    // 상조 회사명으로 facilities UUID 조회
+                                    const { data: facilityRow } = await supabase
+                                        .from('facilities')
+                                        .select('id')
+                                        .eq('name', activeCompany.name)
+                                        .limit(1)
+                                        .single();
+                                    if (facilityRow) {
+                                        await supabase.from('consultations').insert({
+                                            facility_id: facilityRow.id,
+                                            user_id: currentUser.id,
+                                            user_name: d.name || currentUser.name || '익명',
+                                            user_phone: d.phone || '',
+                                            notes: `[상조 ${isConsult ? '상담' : '가입'}] ${activeCompany.name} / ${d.service || '일반'} / ${d.callTime ? '희망시간: ' + d.callTime : ''}`.trim(),
+                                            status: 'pending',
+                                            category: 'sangjo',
+                                        });
+                                        console.log('✅ consultations 테이블 연동 완료');
+                                    }
+                                } catch (consultErr) {
+                                    console.error('consultations 연동 실패 (비치명적):', consultErr);
+                                }
+                            }
                         } catch (e) {
                             console.error('데이터 파싱 또는 저장 실패:', e);
                         }

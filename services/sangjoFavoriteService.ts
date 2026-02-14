@@ -1,5 +1,7 @@
-import { supabase } from '../lib/supabaseClient';
-import { FuneralCompany } from '../types'; export interface SangjoFavorite {
+import { supabase, createAuthenticatedClient, getCurrentAccessToken } from '../lib/supabaseClient';
+import { FuneralCompany } from '../types';
+
+export interface SangjoFavorite {
     id: string;
     user_id: string;
     company_id: string;
@@ -7,16 +9,16 @@ import { FuneralCompany } from '../types'; export interface SangjoFavorite {
     created_at: string;
 }
 
+/** 인증된 클라이언트 반환 (토큰 있으면 authClient, 없으면 싱글톤) */
+function getClient() {
+    const token = getCurrentAccessToken();
+    return token ? createAuthenticatedClient(token) : supabase;
+}
+
 export const sangjoFavoriteService = {
-    /**
-     * 사용자의 상조 즐겨찾기 목록 조회
-     */
     async getFavorites(userId: string): Promise<SangjoFavorite[]> {
-        // 🚑 [Direct Attack] Check session before Supabase call
-
-
         try {
-            const { data, error } = await supabase
+            const { data, error } = await getClient()
                 .from('sangjo_favorites')
                 .select('*')
                 .eq('user_id', userId)
@@ -33,14 +35,9 @@ export const sangjoFavoriteService = {
         }
     },
 
-    /**
-     * 특정 회사가 즐겨찾기되어 있는지 확인
-     */
     async checkFavorite(userId: string, companyId: string): Promise<boolean> {
-
-
         try {
-            const { data, error } = await supabase
+            const { data, error } = await getClient()
                 .from('sangjo_favorites')
                 .select('id')
                 .eq('user_id', userId)
@@ -60,22 +57,16 @@ export const sangjoFavoriteService = {
         }
     },
 
-    /**
-     * 즐겨찾기 추가/삭제 토글
-     * @returns true면 추가됨, false면 삭제됨
-     */
     async toggleFavorite(
         userId: string,
         company: FuneralCompany
     ): Promise<boolean> {
-
-
         try {
+            const client = getClient();
             const isFav = await this.checkFavorite(userId, company.id);
 
             if (isFav) {
-                // 삭제
-                const { error } = await supabase
+                const { error } = await client
                     .from('sangjo_favorites')
                     .delete()
                     .eq('user_id', userId)
@@ -87,8 +78,7 @@ export const sangjoFavoriteService = {
                 }
                 return false;
             } else {
-                // 추가
-                const { error } = await supabase
+                const { error } = await client
                     .from('sangjo_favorites')
                     .insert({
                         user_id: userId,
