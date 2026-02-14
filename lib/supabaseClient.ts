@@ -183,6 +183,11 @@ export const resetAuthenticatedClient = (): void => {
   clientInstanceCounter = 0;
 };
 
+/**
+ * 현재 저장된 액세스 토큰 반환
+ */
+export const getCurrentAccessToken = (): string | null => currentAccessToken;
+
 export const isSupabaseConfigured = () => {
   return !!supabaseUrl && !!supabaseAnonKey && supabaseUrl !== 'YOUR_SUPABASE_URL';
 };

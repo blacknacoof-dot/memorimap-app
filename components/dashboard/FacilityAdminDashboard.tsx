@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { useSession } from '@clerk/clerk-react';
 import { Reservation, ViewState, Facility } from '../../types';
 import { getFacilityReservations, approveReservation, rejectReservation, getUserFacility, getFacilitySubscription, getFacilityConsultations, answerConsultation, Consultation, markConsultationAsRead, supabase } from '../../lib/queries';
+import { createAuthenticatedClient } from '../../lib/supabaseClient';
 import { ReservationList } from '../ReservationList';
 import { ConsultationList } from '../ConsultationList';
 import { ReservationDetailModal } from '../ReservationDetailModal';
@@ -17,6 +19,7 @@ interface Props {
 }
 
 export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNavigate }) => {
+    const { session } = useSession();
     const [myFacilityId, setMyFacilityId] = useState<string | null>(null);
     const [fetchedFacility, setFetchedFacility] = useState<Facility | null>(null);
     const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -27,6 +30,21 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
     const [editingFacility, setEditingFacility] = useState<Facility | null>(null);
     const [subscription, setSubscription] = useState<any>(null);
 
+    /** Clerk JWT 토큰으로 인증된 Supabase 클라이언트 반환 */
+    const getAuthClient = async () => {
+        if (!session) return supabase;
+        try {
+            const token = await Promise.race([
+                session.getToken({ template: 'supabase' }),
+                new Promise<null>((r) => setTimeout(() => r(null), 8000)),
+            ]);
+            if (token) return createAuthenticatedClient(token);
+        } catch (e) {
+            console.error('[Dashboard] Failed to get auth token:', e);
+        }
+        return supabase;
+    };
+
     useEffect(() => {
         if (user) {
             loadData();
@@ -36,9 +54,17 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
     const loadData = async () => {
         setIsLoading(true);
         try {
-            // Get the single facility owned by this user
-            const { getUserFacility, getFacility } = await import('../../lib/queries');
-            const facilityId = await getUserFacility(user.id);
+            const client = await getAuthClient();
+            console.log('[Dashboard] loadData started. user.id:', user.id);
+
+            // Get the single facility owned by this user (using auth client for RLS)
+            const { data: facilityArr } = await client
+                .from('facilities')
+                .select('id')
+                .eq('user_id', user.id)
+                .limit(1);
+            const facilityId = facilityArr?.[0]?.id || null;
+            console.log('[Dashboard] facilityId:', facilityId);
             setMyFacilityId(facilityId);
 
             if (facilityId) {
@@ -47,13 +73,18 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                 if (foundInProps) {
                     setFetchedFacility(foundInProps);
                 } else {
+                    const { getFacility } = await import('../../lib/queries');
                     const data = await getFacility(facilityId);
                     setFetchedFacility(data);
                 }
 
-                // Get reservations for this specific facility
-                const res = await getFacilityReservations(facilityId);
-                // Sort by date
+                // Get reservations (using auth client)
+                const { data: resData } = await client
+                    .from('reservations')
+                    .select('*')
+                    .eq('facility_id', facilityId)
+                    .order('created_at', { ascending: false });
+                const res = (resData || []) as Reservation[];
                 res.sort((a, b) => new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime());
                 setReservations(res);
 
@@ -61,12 +92,21 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                 const sub = await getFacilitySubscription(facilityId);
                 setSubscription(sub);
 
-                // Get consultations
-                const cons = await getFacilityConsultations(facilityId);
+                // Get consultations (using auth client for RLS)
+                const { data: consData, error: consError } = await client
+                    .from('consultations')
+                    .select('*')
+                    .eq('facility_id', facilityId)
+                    .order('created_at', { ascending: false });
+                if (consError) console.error('[Dashboard] consultations error:', consError);
+                const cons = (consData || []) as Consultation[];
+                console.log('[Dashboard] consultations:', cons.length);
                 setConsultations(cons);
+            } else {
+                console.warn('[Dashboard] No facilityId found for user:', user.id);
             }
         } catch (err) {
-            console.error('Error loading facility data:', err);
+            console.error('[Dashboard] Error loading facility data:', err);
         } finally {
             setIsLoading(false);
         }
@@ -315,93 +355,66 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
             )}
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-3 gap-3 mb-6">
-                <div className="bg-white rounded-xl p-4 border">
-                    <div className="flex items-center gap-2 text-yellow-600 mb-1">
-                        <Clock size={20} />
-                        <span className="text-xs font-medium">대기중</span>
+            <div className="grid grid-cols-3 gap-2 mb-4">
+                <div className="bg-white rounded-xl p-3 border">
+                    <div className="flex items-center gap-1.5 text-yellow-600 mb-0.5">
+                        <Clock size={14} />
+                        <span className="text-[11px] font-medium">대기</span>
                     </div>
-                    <p className="text-2xl font-bold">
+                    <p className="text-xl font-bold">
                         {reservations.filter(r => r.status === 'pending' || r.status === 'urgent').length}
                     </p>
                     {reservations.filter(r => r.status === 'urgent').length > 0 && (
-                        <p className="text-xs text-red-500 font-bold mt-1">
-                            🚨 긴급 {reservations.filter(r => r.status === 'urgent').length}건
+                        <p className="text-[10px] text-red-500 font-bold mt-0.5">
+                            긴급 {reservations.filter(r => r.status === 'urgent').length}건
                         </p>
                     )}
                 </div>
-                <div className="bg-white rounded-xl p-4 border">
-                    <div className="flex items-center gap-2 text-green-600 mb-1">
-                        <CheckCircle size={20} />
-                        <span className="text-xs font-medium">확정</span>
+                <div className="bg-white rounded-xl p-3 border">
+                    <div className="flex items-center gap-1.5 text-green-600 mb-0.5">
+                        <CheckCircle size={14} />
+                        <span className="text-[11px] font-medium">확정</span>
                     </div>
-                    <p className="text-2xl font-bold">{reservations.filter(r => r.status === 'confirmed').length}</p>
+                    <p className="text-xl font-bold">{reservations.filter(r => r.status === 'confirmed').length}</p>
                 </div>
-                <div className="bg-white rounded-xl p-4 border">
-                    <div className="flex items-center gap-2 text-gray-600 mb-1">
-                        <XCircle size={20} />
-                        <span className="text-xs font-medium">취소</span>
+                <div className="bg-white rounded-xl p-3 border">
+                    <div className="flex items-center gap-1.5 text-gray-600 mb-0.5">
+                        <XCircle size={14} />
+                        <span className="text-[11px] font-medium">취소</span>
                     </div>
-                    <p className="text-2xl font-bold">{reservations.filter(r => r.status === 'cancelled').length}</p>
+                    <p className="text-xl font-bold">{reservations.filter(r => r.status === 'cancelled').length}</p>
                 </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
-                <button
-                    onClick={() => setActiveTab('pending')}
-                    className={`flex-1 min-w-[100px] py-2 px-4 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'pending'
-                        ? 'bg-primary text-white'
-                        : 'bg-white text-gray-600 hover:bg-gray-50'
-                        }`}
-                >
-                    예약 대기 ({reservations.filter(r => r.status === 'pending' || r.status === 'urgent').length})
-                </button>
-                <button
-                    onClick={() => setActiveTab('consultations')}
-                    className={`flex-1 min-w-[100px] py-2 px-4 rounded-lg font-medium transition-colors whitespace-nowrap flex items-center justify-center gap-1 ${activeTab === 'consultations'
-                        ? 'bg-primary text-white'
-                        : 'bg-white text-gray-600 hover:bg-gray-50'
-                        }`}
-                >
-                    <MessageSquare size={16} />
-                    상담 문의
-                    {consultationCount > 0 && (
-                        <span className="ml-1 px-1.5 py-0.5 bg-red-500 text-white text-[10px] rounded-full font-bold">
-                            {consultationCount}
-                        </span>
-                    )}
-                </button>
-                <button
-                    onClick={() => setActiveTab('confirmed')}
-                    className={`flex-1 min-w-[80px] py-2 px-4 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'confirmed'
-                        ? 'bg-primary text-white'
-                        : 'bg-white text-gray-600 hover:bg-gray-50'
-                        }`}
-                >
-                    확정 ({reservations.filter(r => r.status === 'confirmed').length})
-                </button>
-                <button
-                    onClick={() => setActiveTab('cancelled')}
-                    className={`flex-1 min-w-[80px] py-2 px-4 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'cancelled'
-                        ? 'bg-primary text-white'
-                        : 'bg-white text-gray-600 hover:bg-gray-50'
-                        }`}
-                >
-                    취소 ({reservations.filter(r => r.status === 'cancelled').length})
-                </button>
-                <button
-                    onClick={() => setActiveTab('faq')}
-                    className={`flex-1 min-w-[80px] py-2 px-4 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'faq'
-                        ? 'bg-primary text-white'
-                        : 'bg-white text-gray-600 hover:bg-gray-50'
-                        }`}
-                    data-testid="faq-tab"
-                >
-                    <div className="flex items-center justify-center gap-1">
-                        <HelpCircle size={16} /> FAQ
-                    </div>
-                </button>
+            <div className="flex gap-1.5 mb-4 overflow-x-auto pb-2">
+                {[
+                    { key: 'pending', label: '예약 대기', count: reservations.filter(r => r.status === 'pending' || r.status === 'urgent').length },
+                    { key: 'consultations', label: '상담 문의', count: consultationCount, icon: MessageSquare, badge: true },
+                    { key: 'confirmed', label: '확정', count: reservations.filter(r => r.status === 'confirmed').length },
+                    { key: 'cancelled', label: '취소', count: reservations.filter(r => r.status === 'cancelled').length },
+                    { key: 'faq', label: 'FAQ', icon: HelpCircle },
+                ].map(tab => (
+                    <button
+                        key={tab.key}
+                        onClick={() => setActiveTab(tab.key as any)}
+                        className={`flex-1 min-w-[60px] py-2 px-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap flex items-center justify-center gap-1 ${activeTab === tab.key
+                            ? 'bg-primary text-white shadow-sm'
+                            : 'bg-white text-gray-600 hover:bg-gray-50 border'
+                            }`}
+                        data-testid={tab.key === 'faq' ? 'faq-tab' : undefined}
+                    >
+                        {tab.icon && <tab.icon size={14} />}
+                        <span>{tab.label}</span>
+                        {tab.badge && tab.count > 0 ? (
+                            <span className="ml-0.5 w-6 h-6 bg-red-500 text-white text-xs rounded-full font-bold inline-flex items-center justify-center leading-none">
+                                {tab.count}
+                            </span>
+                        ) : tab.count !== undefined && !tab.badge ? (
+                            <span className="opacity-70">({tab.count})</span>
+                        ) : null}
+                    </button>
+                ))}
             </div>
 
             {/* Content Area */}
@@ -409,20 +422,38 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                 <ConsultationList
                     consultations={consultations}
                     onAnswer={async (id, text) => {
-                        const success = await answerConsultation(id, text);
-                        if (success) {
-                            setConsultations(prev => prev.map(c =>
-                                c.id === id ? { ...c, answer: text, answered_at: new Date().toISOString(), status: 'accepted', is_read: true } : c
-                            ));
-                            loadData(); // Reload for freshness
+                        try {
+                            const client = await getAuthClient();
+                            const { error } = await client
+                                .from('consultations')
+                                .update({ answer: text, answered_at: new Date().toISOString(), status: 'accepted', is_read: true })
+                                .eq('id', id);
+                            if (!error) {
+                                setConsultations(prev => prev.map(c =>
+                                    c.id === id ? { ...c, answer: text, answered_at: new Date().toISOString(), status: 'accepted', is_read: true } : c
+                                ));
+                                toast.success('답변이 전송되었습니다.');
+                            } else {
+                                console.error('[Dashboard] answer error:', error);
+                                toast.error('답변 전송 실패');
+                            }
+                        } catch (e) {
+                            console.error('[Dashboard] answer exception:', e);
+                            toast.error('답변 전송 실패');
                         }
                     }}
                     onRead={async (id) => {
-                        const success = await markConsultationAsRead(id);
-                        if (success) {
+                        try {
+                            const client = await getAuthClient();
+                            await client
+                                .from('consultations')
+                                .update({ is_read: true })
+                                .eq('id', id);
                             setConsultations(prev => prev.map(c =>
                                 c.id === id ? { ...c, is_read: true } : c
                             ));
+                        } catch (e) {
+                            console.error('[Dashboard] markRead error:', e);
                         }
                     }}
                 />

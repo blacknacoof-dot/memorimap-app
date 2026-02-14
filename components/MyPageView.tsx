@@ -117,62 +117,20 @@ export const MyPageView: React.FC<Props> = ({
             const data = (favData || []) as Favorite[];
             setMyFavorites(data);
 
-            // 🔄 Two-Step Fetch Logic: Get details for facilities not in global state
-            const missingIds = data
-                .map(fav => String(fav.facility_id))
-                .filter(id => !facilities.find(f => String(f.id) === id));
+            // Always fetch facility details from DB for all favorites
+            const facilityIds = data.map(fav => String(fav.facility_id)).filter(Boolean);
+            if (facilityIds.length > 0) {
+                const { data: facData } = await supabase
+                    .from('facilities')
+                    .select('*')
+                    .in('id', facilityIds);
 
-            if (missingIds.length > 0) {
-                console.log('🔄 Fetching missing favorite details:', missingIds);
-
-                // 🚑 Mock Mode Fallback: Try finding in local FACILITIES constant first
-                let missingFacs: any[] = [];
-                const idsToFetchFromDB: string[] = [];
-
-                missingIds.forEach(id => {
-                    // Try exact ID match first
-                    let localMatch = (FACILITIES as any[]).find(f => String(f.id) === id);
-
-                    // If not found, try legacy ID match
-                    if (!localMatch) {
-                        localMatch = (FACILITIES as any[]).find(f => String(f.legacy_id) === id);
-                    }
-
-                    if (localMatch) {
-                        missingFacs.push(localMatch);
-                    } else {
-                        idsToFetchFromDB.push(id);
-                    }
-                });
-
-                if (idsToFetchFromDB.length > 0) {
-                    const isUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-                    const uuidIds = idsToFetchFromDB.filter(isUUID);
-                    const legacyIds = idsToFetchFromDB.filter(id => !isUUID(id));
-
-                    // 1. Fetch by UUID
-                    if (uuidIds.length > 0) {
-                        try {
-                            const { data } = await supabase.from('facilities').select('*').in('id', uuidIds);
-                            if (data) missingFacs = [...missingFacs, ...data];
-                        } catch (e) { console.error('Supabase fetch failed (UUID):', e); }
-                    }
-
-                    // 2. Fetch by Legacy ID (BIGINT)
-                    if (legacyIds.length > 0) {
-                        try {
-                            const { data } = await supabase.from('facilities').select('*').in('legacy_id', legacyIds.map(id => parseInt(id)).filter(n => !isNaN(n)));
-                            if (data) missingFacs = [...missingFacs, ...data];
-                        } catch (e) { console.error('Supabase fetch failed (Legacy):', e); }
-                    }
-                }
-
-                if (missingFacs.length > 0) {
-                    const mappedFacs: Facility[] = missingFacs.map((f: any) => ({
+                if (facData && facData.length > 0) {
+                    const mappedFacs: Facility[] = facData.map((f: any) => ({
                         id: f.id,
-                        legacy_id: f.legacy_id, // Store for lookups
-                        name: f.name,
-                        address: f.address,
+                        legacy_id: f.legacy_id,
+                        name: f.name || '이름 없음',
+                        address: f.address || '',
                         imageUrl: f.image_url || (f.images && f.images[0]) || null,
                         type: f.type?.includes('funeral') ? 'funeral' :
                             f.type?.includes('natural') ? 'natural' :
@@ -181,15 +139,15 @@ export const MyPageView: React.FC<Props> = ({
                                         f.type?.includes('sea') ? 'sea' : 'charnel',
                         rating: Number(f.rating || 0),
                         reviewCount: Number(f.review_count || 0),
-                        lat: Number(f.latitude || 0),
-                        lng: Number(f.longitude || 0),
+                        lat: Number(f.lat || f.latitude || 0),
+                        lng: Number(f.lng || f.longitude || 0),
                         category: 'etc' as any
                     }));
-                    setExtraFacilities((prev: Map<string, Facility>) => {
-                        const newMap = new Map(prev);
+                    setExtraFacilities(() => {
+                        const newMap = new Map<string, Facility>();
                         mappedFacs.forEach(f => {
                             newMap.set(String(f.id), f);
-                            if (f.legacy_id) newMap.set(String(f.legacy_id), f); // Also map by legacy_id
+                            if (f.legacy_id) newMap.set(String(f.legacy_id), f);
                         });
                         return newMap;
                     });
@@ -320,9 +278,14 @@ export const MyPageView: React.FC<Props> = ({
                             <User size={32} className="text-gray-500" />
                         </div>
                     )}
-                    {userRole === 'facility_admin' && (
+                    {(userRole === 'facility_admin' || userRole === 'facility_manager') && (
                         <div className="absolute -bottom-1 -right-1 bg-amber-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold border-2 border-white">
                             업체
+                        </div>
+                    )}
+                    {(userRole === 'sangjo_hq_admin' || userRole === 'sangjo_branch_admin') && (
+                        <div className="absolute -bottom-1 -right-1 bg-indigo-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold border-2 border-white">
+                            상조
                         </div>
                     )}
                 </div>
@@ -349,12 +312,20 @@ export const MyPageView: React.FC<Props> = ({
                         </span>
                     )}
                 </div>
-                {userRole === 'facility_admin' && onNavigate && (
+                {(userRole === 'facility_admin' || userRole === 'facility_manager') && onNavigate && (
                     <button
                         onClick={() => onNavigate(ViewState.FACILITY_ADMIN)}
                         className="ml-auto bg-amber-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-md hover:bg-amber-600 transition-colors whitespace-nowrap"
                     >
                         시설 관리자
+                    </button>
+                )}
+                {(userRole === 'sangjo_hq_admin' || userRole === 'sangjo_branch_admin') && onNavigate && (
+                    <button
+                        onClick={() => onNavigate(ViewState.FACILITY_ADMIN)}
+                        className="ml-auto bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-md hover:bg-indigo-600 transition-colors whitespace-nowrap"
+                    >
+                        상조 대시보드
                     </button>
                 )}
             </div>

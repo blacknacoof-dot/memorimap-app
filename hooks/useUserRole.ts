@@ -49,10 +49,10 @@ export function useUserRole({ isSignedIn, userInfo, viewState, setViewState, sho
             setRoleError(null);
 
             // Auto-route based on role
-            if (result.role === 'facility_admin' && viewState === ViewState.MAP) {
+            if ((result.role === 'facility_admin' || result.role === 'facility_manager') && viewState === ViewState.MAP) {
               setViewState(ViewState.FACILITY_ADMIN);
             } else if (result.role.startsWith('sangjo_') && viewState === ViewState.MAP) {
-              setViewState(ViewState.FUNERAL_COMPANIES);
+              setViewState(ViewState.FACILITY_ADMIN);
             }
           }
 

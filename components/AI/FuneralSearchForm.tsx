@@ -184,34 +184,50 @@ const FuneralSearchForm: React.FC<FormProps> = ({
             if (!token) throw new Error('인증 토큰 없음');
             const authClient = createAuthenticatedClient(token);
 
-            // 카테고리별 1건 제한: 장례식장 활성 상담 체크
-            const { data: existingCategory } = await authClient
-                .from('consultations')
+            // 카테고리별 1건 제한: 기존 긴급 예약 체크
+            const { data: existingRes } = await authClient
+                .from('reservations')
                 .select('id, facility_id')
                 .eq('user_id', currentUser?.id)
-                .eq('category', 'funeral')
-                .in('status', ['waiting', 'accepted'])
+                .eq('purpose', 'funeral')
+                .in('status', ['pending', 'urgent'])
                 .limit(1);
-            if (existingCategory && existingCategory.length > 0) {
-                const willReplace = confirm('이미 접수된 장례식장 상담이 있습니다.\n새 시설로 변경하시겠습니까? (기존 상담은 자동 취소됩니다)');
+            if (existingRes && existingRes.length > 0) {
+                const willReplace = confirm('이미 접수된 장례 예약이 있습니다.\n새 시설로 변경하시겠습니까? (기존 예약은 자동 취소됩니다)');
                 if (!willReplace) return;
-                // 기존 상담 취소
-                await authClient.from('consultations')
+                await authClient.from('reservations')
                     .update({ status: 'cancelled' })
-                    .eq('id', existingCategory[0].id);
+                    .eq('id', existingRes[0].id);
             }
 
-            const { error } = await authClient.from('consultations').insert({
-                facility_id: consultFacility.id,
+            // 상수 ID → 실제 facilities UUID 매핑
+            let actualFacilityId = consultFacility.id;
+            const { data: facilityRow } = await authClient
+                .from('facilities')
+                .select('id')
+                .eq('name', consultFacility.name)
+                .limit(1)
+                .single();
+            if (facilityRow) {
+                actualFacilityId = facilityRow.id;
+            }
+
+            const { error } = await authClient.from('reservations').insert({
+                facility_id: actualFacilityId,
+                facility_name: consultFacility.name,
                 user_id: currentUser?.id,
-                user_name: data.name || currentUser?.name || '',
-                user_phone: data.phone || '',
-                notes,
-                category: 'funeral',
-                status: 'waiting',
+                visitor_name: data.name || currentUser?.name || '',
+                contact_number: '',
+                visit_date: new Date().toISOString(),
+                time_slot: '긴급(즉시)',
+                visitor_count: 1,
+                purpose: 'funeral',
+                special_requests: notes,
+                status: 'urgent',
+                payment_amount: 0,
             });
             if (error) throw error;
-            setBookedIds(prev => new Set(prev).add(consultFacility.id));
+            setBookedIds(prev => new Set(prev).add(actualFacilityId));
             setBookingComplete({ facilityName: consultFacility.name, scale: scaleVal, religion: religionVal });
         } catch (e) {
             console.error('상담접수 실패:', e);
@@ -425,20 +441,22 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                 </div>
             </div>
 
-            {/* Section 4: Religion */}
-            <div>
-                <label className="text-xs font-bold text-slate-700 mb-2 block">종교 <span className="text-slate-400 font-normal">(선택)</span></label>
-                <div className="flex flex-wrap gap-1.5">
-                    {FUNERAL_RELIGION_OPTIONS.map(opt => (
-                        <button key={opt.id} onClick={() => setReligion(religion === opt.id ? '' : opt.id)}
-                            className={`px-3 py-2 rounded-lg text-xs font-bold border transition-all ${religion === opt.id
-                                ? 'bg-indigo-600 border-indigo-600 text-white'
-                                : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300'}`}>
-                            {opt.label}
-                        </button>
-                    ))}
+            {/* Section 4: Religion (마음이 모드에서만 표시 - 시설 직접 모드는 ConsultationForm에서 선택) */}
+            {!isDirectFacility && (
+                <div>
+                    <label className="text-xs font-bold text-slate-700 mb-2 block">종교 <span className="text-slate-400 font-normal">(선택)</span></label>
+                    <div className="flex flex-wrap gap-1.5">
+                        {FUNERAL_RELIGION_OPTIONS.map(opt => (
+                            <button key={opt.id} onClick={() => setReligion(religion === opt.id ? '' : opt.id)}
+                                className={`px-3 py-2 rounded-lg text-xs font-bold border transition-all ${religion === opt.id
+                                    ? 'bg-indigo-600 border-indigo-600 text-white'
+                                    : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300'}`}>
+                                {opt.label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Submit */}
             <button

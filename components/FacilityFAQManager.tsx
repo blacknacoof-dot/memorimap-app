@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { useSession } from '@clerk/clerk-react';
 import { useConfirmModal } from '../src/components/common/ConfirmModal';
 import { Plus, Edit, Trash, Save, Loader2 } from 'lucide-react';
-import { getFacilityFaqs, upsertFacilityFaq, deleteFacilityFaq } from '../lib/queries';
+import { getFacilityFaqs, upsertFacilityFaq, deleteFacilityFaq, supabase } from '../lib/queries';
+import { createAuthenticatedClient } from '../lib/supabaseClient';
 import { toast } from 'sonner';
 
 interface FAQ {
     id: string;
     question: string;
     answer: string;
-    order?: number;
+    order_index?: number;
 }
 
 interface Props {
@@ -16,12 +18,28 @@ interface Props {
 }
 
 export const FacilityFAQManager: React.FC<Props> = ({ facilityId }) => {
+    const { session } = useSession();
     const [faqs, setFaqs] = useState<FAQ[]>([]);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editForm, setEditForm] = useState<{ question: string; answer: string }>({ question: '', answer: '' });
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const confirmModal = useConfirmModal();
+
+    /** Clerk JWT 토큰으로 인증된 Supabase 클라이언트 반환 */
+    const getAuthClient = async () => {
+        if (!session) return supabase;
+        try {
+            const token = await Promise.race([
+                session.getToken({ template: 'supabase' }),
+                new Promise<null>((r) => setTimeout(() => r(null), 8000)),
+            ]);
+            if (token) return createAuthenticatedClient(token);
+        } catch (e) {
+            console.error('[FAQ] Failed to get auth token:', e);
+        }
+        return supabase;
+    };
 
     useEffect(() => {
         loadFaqs();
@@ -34,8 +52,17 @@ export const FacilityFAQManager: React.FC<Props> = ({ facilityId }) => {
         }
         setIsLoading(true);
         try {
-            const data = await getFacilityFaqs(facilityId);
-            setFaqs(data.map((d: any) => ({ id: d.id, question: d.question, answer: d.answer, order: d.order })));
+            const client = await getAuthClient();
+            const { data, error } = await client
+                .from('facility_faqs')
+                .select('*')
+                .eq('facility_id', facilityId)
+                .eq('is_active', true)
+                .order('order_index', { ascending: true });
+            if (error) {
+                console.warn('[FAQ] loadFaqs error:', error);
+            }
+            setFaqs((data || []).map((d: any) => ({ id: d.id, question: d.question, answer: d.answer, order_index: d.order_index })));
         } catch {
             toast.error('FAQ 로딩 실패');
         } finally {
@@ -61,13 +88,24 @@ export const FacilityFAQManager: React.FC<Props> = ({ facilityId }) => {
                 if (!facilityId) return;
                 setIsSaving(true);
                 try {
-                    const result = await upsertFacilityFaq({
-                        ...(editingId !== 'new' ? { id: editingId! } : {}),
+                    const client = await getAuthClient();
+                    const upsertData: any = {
                         facility_id: facilityId,
                         question: editForm.question,
                         answer: editForm.answer,
-                        order: editingId === 'new' ? faqs.length : undefined,
-                    });
+                        order_index: editingId === 'new' ? faqs.length : undefined,
+                        is_active: true,
+                        updated_at: new Date().toISOString(),
+                    };
+                    if (editingId !== 'new') upsertData.id = editingId;
+                    const { data: result, error } = await client
+                        .from('facility_faqs')
+                        .upsert(upsertData)
+                        .select()
+                        .single();
+                    if (error) {
+                        console.error('[FAQ] upsert error:', error);
+                    }
                     if (result) {
                         toast.success('FAQ가 저장되었습니다.');
                         await loadFaqs();
@@ -91,7 +129,13 @@ export const FacilityFAQManager: React.FC<Props> = ({ facilityId }) => {
             message: '정말로 삭제하시겠습니까?',
             requireCheckbox: false,
             onConfirm: async () => {
-                const success = await deleteFacilityFaq(id);
+                const client = await getAuthClient();
+                const { error } = await client
+                    .from('facility_faqs')
+                    .update({ is_active: false })
+                    .eq('id', id);
+                const success = !error;
+                if (error) console.error('[FAQ] delete error:', error);
                 if (success) {
                     toast.success('FAQ가 삭제되었습니다.');
                     setFaqs(prev => prev.filter(f => f.id !== id));

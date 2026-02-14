@@ -219,6 +219,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
           reservations={reservations}
           facilities={facilities}
           onLoginClick={handleLoginClick}
+          onNavigate={setViewState}
           onReviewDeleted={handleReviewDeleted}
           onSelectFacility={handleFacilitySelect}
           onSelectCompany={handleCompanySelect}
@@ -269,7 +270,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
       );
 
     case ViewState.FACILITY_ADMIN:
-      if (userRole !== 'facility_admin') {
+      if (userRole !== 'facility_admin' && userRole !== 'facility_manager' && userRole !== 'sangjo_hq_admin' && userRole !== 'sangjo_branch_admin') {
         return (
           <div className="h-full flex flex-col items-center justify-center p-6 bg-gray-50">
             <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center">

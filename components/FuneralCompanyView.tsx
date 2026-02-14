@@ -462,6 +462,7 @@ export const FuneralCompanyView: React.FC<Props> = ({
                         setShowConsultation(false);
                         onCompanySelect(company, true);
                     }}
+                    currentUser={user ? { id: user.id, name: user.fullName || user.firstName || '' } : null}
                 />
             )}
         </div>
