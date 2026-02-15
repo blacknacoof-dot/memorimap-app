@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { X, Send, CheckCircle, MessageSquare, Building2, User, Phone, Mail, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '../lib/supabaseClient';
+import { supabase, createAuthenticatedClient } from '../lib/supabaseClient';
 import { useUser } from '../lib/auth';
+import { useSession } from '@clerk/clerk-react';
 import { FUNERAL_COMPANIES } from '../constants';
 
 interface InquiryModalProps {
@@ -15,6 +16,7 @@ interface InquiryModalProps {
 
 export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, initialPlan, facilityId, type }) => {
     const { user, isSignedIn } = useUser();
+    const { session } = useSession();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [fetchedCompanyName, setFetchedCompanyName] = useState<string>('');
@@ -65,7 +67,12 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, ini
         setIsSubmitting(true);
 
         try {
-            const { error } = await supabase
+            let client = supabase;
+            if (session) {
+                const token = await session.getToken({ template: 'supabase' });
+                if (token) client = createAuthenticatedClient(token);
+            }
+            const { error } = await client
                 .from('partner_inquiries')
                 .insert({
                     user_id: user?.id || null,

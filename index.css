@@ -46,11 +46,11 @@ body,
   }
 }
 /* ============================================
-   iOS Safe Area & In-App Browser ´ëÀÀ
+   iOS Safe Area & In-App Browser ï¿½ï¿½ï¿½ï¿½
    ============================================ */
 
 :root {
-  /* Safe Area Insets (iOS ³ëÄ¡/È¨¹Ù ¿µ¿ª) */
+  /* Safe Area Insets (iOS ï¿½ï¿½Ä¡/È¨ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½) */
   --safe-area-inset-top: env(safe-area-inset-top, 0px);
   --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
   --safe-area-inset-left: env(safe-area-inset-left, 0px);
@@ -58,17 +58,17 @@ body,
 }
 
 body {
-  /* ½ºÅ©·Ñ ¹Ù¿î½º ¹æÁö (iOS) */
+  /* ï¿½ï¿½Å©ï¿½ï¿½ ï¿½Ù¿î½º ï¿½ï¿½ï¿½ï¿½ (iOS) */
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
   
-  /* ÀüÃ¼ ³ôÀÌ (¸ð¹ÙÀÏ ÁÖ¼ÒÃ¢ °í·Á) */
+  /* ï¿½ï¿½Ã¼ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö¼ï¿½Ã¢ ï¿½ï¿½ï¿½ï¿½) */
   min-height: 100vh;
   min-height: -webkit-fill-available;
 }
 
 #root {
-  /* Safe Area ÆÐµù Àû¿ë */
+  /* Safe Area ï¿½Ðµï¿½ ï¿½ï¿½ï¿½ï¿½ */
   padding-top: var(--safe-area-inset-top);
   padding-bottom: var(--safe-area-inset-bottom);
   padding-left: var(--safe-area-inset-left);
@@ -78,7 +78,7 @@ body {
   min-height: -webkit-fill-available;
 }
 
-/* ÇÏ´Ü °íÁ¤ ³×ºñ°ÔÀÌ¼Ç (Safe Area Àû¿ë ¿¹½Ã) */
+/* ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½×ºï¿½ï¿½ï¿½Ì¼ï¿½ (Safe Area ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½) */
 .bottom-nav-fixed {
   position: fixed;
   bottom: 0;
@@ -89,7 +89,7 @@ body {
   border-top: 1px solid #e5e7eb;
 }
 
-/* »ó´Ü °íÁ¤ Çì´õ (Safe Area Àû¿ë ¿¹½Ã) */
+/* ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ (Safe Area ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½) */
 .top-header-fixed {
   position: fixed;
   top: 0;
@@ -101,7 +101,12 @@ body {
   z-index: 50;
 }
 
-/* ÀüÃ¼È­¸é ¸ð´Þ (Safe Area °í·Á) */
+/* Safe Area Utility Classes */
+.pb-safe {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+/* Fullscreen Modal (Safe Area) */
 .fullscreen-modal {
   position: fixed;
   inset: 0;

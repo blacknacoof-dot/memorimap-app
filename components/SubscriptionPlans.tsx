@@ -214,6 +214,17 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                 return;
             }
 
+            // 결제 성공 → DB 구독 업데이트
+            if (facilityId) {
+                try {
+                    const { updateFacilitySubscription } = await import('../lib/queries');
+                    await updateFacilitySubscription(facilityId, plan.nameEn);
+                } catch (e) {
+                    console.error('구독 DB 업데이트 실패:', e);
+                    toast.error('결제는 완료되었으나 구독 정보 업데이트에 실패했습니다. 고객센터에 문의해주세요.');
+                }
+            }
+
             setSelectedPlan(plan.id);
             onSelectPlan?.(plan.id);
             toast.success(`${plan.name} 구독이 시작되었습니다!`);

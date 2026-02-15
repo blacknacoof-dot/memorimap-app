@@ -104,17 +104,31 @@ export const getTimelineEvents = async (contract_number: string) => {
 };
 
 export const getSangjoUser = async (userId: string) => {
+    // 1차: sangjo_dashboard_users 조회
     const { data, error } = await supabase
         .from('sangjo_dashboard_users')
         .select('sangjo_id, role, name')
         .eq('id', userId)
         .maybeSingle();
 
-    if (error) {
-        console.error('Error fetching sangjo user:', error);
+    if (data) return data;
+    if (error) console.error('Error fetching sangjo_dashboard_users:', error);
+
+    // 2차 fallback: sangjo_hq_admins 조회 (마이그레이션 전 기존 데이터 호환)
+    const { data: hqData, error: hqError } = await supabase
+        .from('sangjo_hq_admins')
+        .select('sangjo_id, role, company_name')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+    if (hqError) {
+        console.error('Error fetching sangjo_hq_admins:', hqError);
         return null;
     }
-    return data;
+    if (hqData) {
+        return { sangjo_id: hqData.sangjo_id, role: hqData.role, name: hqData.company_name };
+    }
+    return null;
 };
 
 // --- Partners ---

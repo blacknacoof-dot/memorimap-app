@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase, createAuthenticatedClient } from '../lib/supabaseClient';
+import { useUser, useSession } from '../lib/auth';
 import { toast } from 'sonner';
 import EndingNoteEditModal from './EndingNoteEditModal';
 
@@ -13,17 +14,24 @@ interface EndingNote {
 export default function EndingNoteCard() {
     const [note, setNote] = useState<EndingNote | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [user, setUser] = useState<any>(null);
+    const { user } = useUser();
+    const { session } = useSession();
 
     useEffect(() => {
-        loadUserAndNote();
-    }, []);
+        if (user) loadNote();
+    }, [user]);
 
-    const loadUserAndNote = async () => {
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        setUser(authUser);
+    const getAuthClient = async () => {
+        try {
+            const token = await session?.getToken({ template: 'supabase' });
+            if (token) return createAuthenticatedClient(token);
+        } catch { /* fallback */ }
+        return supabase;
+    };
 
-        const { data, error } = await supabase.rpc('get_my_journey_full');
+    const loadNote = async () => {
+        const client = await getAuthClient();
+        const { data, error } = await client.rpc('get_my_journey_full');
         if (!error) {
             setNote(data?.ending_note || null);
         }
@@ -35,7 +43,8 @@ export default function EndingNoteCard() {
             return;
         }
 
-        const { error } = await supabase
+        const client = await getAuthClient();
+        const { error } = await client
             .from('user_ending_notes')
             .upsert({
                 user_id: user.id,
@@ -50,7 +59,7 @@ export default function EndingNoteCard() {
             toast.error('정보 업데이트 중 오류가 발생했습니다.');
         } else {
             toast.success('엔딩 노트가 저장되었습니다.');
-            loadUserAndNote();
+            loadNote();
             setIsEditModalOpen(false);
         }
     };
@@ -81,7 +90,7 @@ export default function EndingNoteCard() {
 
                 <div className="mt-4 space-y-1">
                     <p className="text-sm text-gray-700">
-                        {user?.user_metadata?.name || user?.email?.split('@')[0] || '사용자'} 님의 추모 여정이 <strong>{note?.percent || 0}%</strong> 준비되었습니다.
+                        {user?.fullName || user?.firstName || '사용자'} 님의 추모 여정이 <strong>{note?.percent || 0}%</strong> 준비되었습니다.
                     </p>
                     <p className="text-xs text-gray-500 leading-relaxed">
                         나머지 <strong>{100 - (note?.percent || 0)}%</strong>를 위해 AI 상담사에게 장례 절차를 물어보세요.

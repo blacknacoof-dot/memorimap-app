@@ -75,24 +75,24 @@ export const SideMenu: React.FC<Props> = ({
               </div>
               <button
                 onClick={() => { onNavigate(ViewState.MY_PAGE); onClose(); }}
-                className="text-xs bg-black/20 hover:bg-black/30 px-3 py-1.5 rounded-full flex items-center gap-1 transition-colors"
+                className="text-sm bg-black/20 hover:bg-black/30 px-4 py-2 rounded-full flex items-center gap-1 transition-colors"
               >
                 내 정보 관리 <ChevronRight size={12} />
               </button>
 
-              {(userRole === 'facility_admin' || userRole === 'facility_manager') && (
+              {(userRole === 'facility_admin' || userRole === 'facility_manager' || userRole === 'super_admin') && (
                 <button
                   onClick={() => { onNavigate(ViewState.FACILITY_ADMIN); onClose(); }}
-                  className="mt-2 text-xs bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-full flex items-center gap-1 transition-colors shadow-lg"
+                  className="mt-2 text-sm bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-full flex items-center gap-1 transition-colors shadow-lg"
                 >
                   시설 관리자 <ChevronRight size={12} />
                 </button>
               )}
 
-              {(userRole === 'sangjo_hq_admin' || userRole === 'sangjo_branch_admin') && (
+              {(userRole === 'sangjo_hq_admin' || userRole === 'sangjo_branch_admin' || userRole === 'super_admin') && (
                 <button
-                  onClick={() => { onNavigate(ViewState.FACILITY_ADMIN); onClose(); }}
-                  className="mt-2 text-xs bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1.5 rounded-full flex items-center gap-1 transition-colors shadow-lg"
+                  onClick={() => { onNavigate(ViewState.SANGJO_DASHBOARD); onClose(); }}
+                  className="mt-2 text-sm bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-full flex items-center gap-1 transition-colors shadow-lg"
                 >
                   상조 대시보드 <ChevronRight size={12} />
                 </button>
@@ -101,7 +101,7 @@ export const SideMenu: React.FC<Props> = ({
               {userRole === 'super_admin' && (
                 <button
                   onClick={() => { onNavigate(ViewState.SUPER_ADMIN); onClose(); }}
-                  className="mt-2 text-xs bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-full flex items-center gap-1 transition-colors shadow-lg"
+                  className="mt-2 text-sm bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-full flex items-center gap-1 transition-colors shadow-lg"
                 >
                   슈퍼 관리 컨트롤 센터 <ChevronRight size={12} />
                 </button>

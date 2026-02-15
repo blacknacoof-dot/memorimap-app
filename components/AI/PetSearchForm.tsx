@@ -184,14 +184,26 @@ const PetSearchForm: React.FC<FormProps> = ({
                 .limit(1);
             if (existingRes && existingRes.length > 0) {
                 const willReplace = confirm('이미 접수된 동물장례 예약이 있습니다.\n새 시설로 변경하시겠습니까? (기존 예약은 자동 취소됩니다)');
-                if (!willReplace) return;
+                if (!willReplace) { setBookingId(null); setConsultFacility(null); return; }
                 await authClient.from('reservations')
                     .update({ status: 'cancelled' })
                     .eq('id', existingRes[0].id);
             }
 
+            // 상수 ID → 실제 facilities UUID 매핑
+            let actualFacilityId = consultFacility.id;
+            const { data: facilityRow } = await authClient
+                .from('facilities')
+                .select('id')
+                .eq('name', consultFacility.name)
+                .limit(1)
+                .single();
+            if (facilityRow) {
+                actualFacilityId = facilityRow.id;
+            }
+
             const { error } = await authClient.from('reservations').insert({
-                facility_id: consultFacility.id,
+                facility_id: actualFacilityId,
                 facility_name: consultFacility.name,
                 user_id: currentUser?.id,
                 visitor_name: data.name || currentUser?.name || '',

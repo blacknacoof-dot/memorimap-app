@@ -21,6 +21,7 @@ const NoticesView = React.lazy(() => import('./StaticViews').then(m => ({ defaul
 const SupportView = React.lazy(() => import('./StaticViews').then(m => ({ default: m.SupportView })));
 const SettingsView = React.lazy(() => import('./StaticViews').then(m => ({ default: m.SettingsView })));
 const PartnerInquiryView = React.lazy(() => import('./PartnerInquiryView').then(m => ({ default: m.PartnerInquiryView })));
+const PersonalSubscriptionPlans = React.lazy(() => import('./PersonalSubscriptionPlans'));
 
 export const LoadingFallback = () => (
   <div className="h-full w-full flex items-center justify-center bg-gray-50">
@@ -349,6 +350,28 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
         </Suspense>
       );
 
+    case ViewState.PERSONAL_SUBSCRIPTION:
+      return (
+        <Suspense fallback={<LoadingFallback />}>
+          <div className="h-full relative flex flex-col">
+            <div className="bg-white p-4 shadow-sm border-b flex items-center gap-3">
+              <button
+                onClick={() => setViewState(ViewState.MY_PAGE)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <ArrowLeft size={20} />
+              </button>
+              <h1 className="font-bold text-lg">나의 요금제</h1>
+            </div>
+            <div className="flex-1 overflow-auto">
+              <PersonalSubscriptionPlans
+                onBack={() => setViewState(ViewState.MY_PAGE)}
+              />
+            </div>
+          </div>
+        </Suspense>
+      );
+
     case ViewState.FUNERAL_COMPANIES:
       return (
         <FuneralCompanyView
@@ -403,22 +426,8 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
         );
       }
       return (
-        <div className="h-full relative flex flex-col">
-          <div className="bg-white p-4 shadow mb-4 flex flex-wrap justify-between items-center gap-2">
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="font-bold text-base sm:text-lg whitespace-nowrap">슈퍼 관리자 : {userInfo.name}</h1>
-              <button
-                onClick={() => setViewState(ViewState.SANGJO_DASHBOARD)}
-                className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold hover:bg-amber-200 whitespace-nowrap"
-              >
-                상조 관제 대시보드 바로가기
-              </button>
-            </div>
-            <button onClick={() => setViewState(ViewState.MAP)} className="text-sm p-2 bg-gray-100 rounded">나가기</button>
-          </div>
-          <div className="flex-1 overflow-auto p-4">
-            <SuperAdminDashboard />
-          </div>
+        <div className="h-full relative">
+          <SuperAdminDashboard onBack={() => setViewState(ViewState.MAP)} />
         </div>
       );
 

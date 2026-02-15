@@ -15,8 +15,7 @@ export const AdminSubscriptions: React.FC = () => {
         load();
     }, []);
 
-    // Simple Revenue Calculation (Mock Price)
-    const totalRevenue = subs.length * 99000; // Assuming 99,000 KRW avg
+    const totalRevenue = subs.reduce((sum: number, s: any) => sum + (s.price || 0), 0);
 
     if (isLoading) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-primary" /></div>;
 
@@ -61,7 +60,9 @@ export const AdminSubscriptions: React.FC = () => {
                                 </td>
                                 <td className="p-4 text-gray-500">{s.expiresAt}</td>
                                 <td className="p-4 text-right">
-                                    <span className="text-green-600 font-bold text-xs">● Active</span>
+                                    <span className={`font-bold text-xs ${s.status === 'expired' ? 'text-red-500' : 'text-green-600'}`}>
+                                        ● {s.status === 'expired' ? 'Expired' : 'Active'}
+                                    </span>
                                 </td>
                             </tr>
                         ))}

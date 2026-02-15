@@ -23,7 +23,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ viewState, setViewState })
   if (!VISIBLE_VIEWS.has(viewState)) return null;
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-3 flex justify-between items-center z-[200] safe-area-bottom">
+    <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-3 flex justify-between items-center z-[200] pb-safe">
       {NAV_ITEMS.map(({ view, icon: Icon, label }) => (
         <button
           key={view}

@@ -61,14 +61,14 @@ export const ConsultationView: React.FC<Props> = ({
 
         if (!consultationId) {
             // Create new consultation
-            const newId = await createConsultation(
-                user.id,
+            const result = await createConsultation(
                 facility.id,
-                topic || "일반 상담",
-                facility.name,
-                newMessages[newMessages.length - 1]?.text || "상담 시작" // Pass latest text as initial message string if required by API, or JSON.stringify if it takes JSON. Validating based on error context likely String. 
+                user.id,
+                user.fullName || user.firstName || '사용자',
+                user.primaryPhoneNumber?.phoneNumber || '',
+                `[${topic || '일반 상담'}] ${newMessages[newMessages.length - 1]?.text || '상담 시작'}`
             );
-            if (newId) setConsultationId(newId);
+            if (result?.id) setConsultationId(result.id);
         } else {
             // Update existing
             await updateConsultation(consultationId, newMessages);
