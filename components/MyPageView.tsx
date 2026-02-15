@@ -612,10 +612,10 @@ export const MyPageView: React.FC<Props> = ({
             {/* My Journey (My Story) Integrated View */}
             <div className="mb-12">
                 <IntegratedJourneyView
-                    key={journeyRefreshKey}
                     facilityFavoriteCount={myFavorites.length}
                     sangjoFavoriteCount={sangjoFavorites.length}
                     consultationCount={consultationCount}
+                    refreshTrigger={journeyRefreshKey}
                 />
             </div>
 

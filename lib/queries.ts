@@ -1984,7 +1984,7 @@ export interface Inquiry {
 
 export const createNotice = async (title: string, content: string) => {
     const { data, error } = await supabase
-        .from('admin_notices')
+        .from('notices')
         .insert([{
             title,
             content,
@@ -2001,7 +2001,7 @@ export const createNotice = async (title: string, content: string) => {
 
 export const getNotices = async () => {
     const { data, error } = await supabase
-        .from('admin_notices')
+        .from('notices')
         .select('*')
         .order('created_at', { ascending: false });
 
