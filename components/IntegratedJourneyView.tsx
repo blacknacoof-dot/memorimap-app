@@ -25,12 +25,14 @@ interface IntegratedJourneyViewProps {
     facilityFavoriteCount?: number;
     sangjoFavoriteCount?: number;
     consultationCount?: number;
+    refreshTrigger?: number;
 }
 
 export default function IntegratedJourneyView({
     facilityFavoriteCount = 0,
     sangjoFavoriteCount = 0,
     consultationCount = 0,
+    refreshTrigger = 0,
 }: IntegratedJourneyViewProps) {
     const { isLoaded, isSignedIn, user } = useUser();
     const { session } = useSession();
@@ -52,7 +54,7 @@ export default function IntegratedJourneyView({
         } else if (isLoaded && !isSignedIn) {
             setLoading(false); // 비로그인 시 로딩 종료 (빈 상태 표시)
         }
-    }, [isLoaded, isSignedIn]);
+    }, [isLoaded, isSignedIn, refreshTrigger]);
 
     const loadData = async () => {
         setLoading(true);
