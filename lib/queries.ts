@@ -801,11 +801,15 @@ export const updateUserProfile = async (userId: string, data: Partial<{
     full_name: string;
     phone_number: string;
     avatar_url: string;
-}>) => {
-    const { data: result, error } = await supabase
+}>, client?: any) => {
+    const db = client || supabase;
+    // upsert: clerk_id 행이 없으면 INSERT, 있으면 UPDATE (406 방지)
+    const { data: result, error } = await db
         .from('profiles')
-        .update(data)
-        .eq('clerk_id', userId)
+        .upsert(
+            { clerk_id: userId, ...data, updated_at: new Date().toISOString() },
+            { onConflict: 'clerk_id' }
+        )
         .select()
         .single();
 
@@ -927,8 +931,9 @@ export const cancelReservation = async (id: string) => {
 /**
  * 사용자 전화번호 조회
  */
-export const getUserPhoneNumber = async (userId: string): Promise<string> => {
-    const { data, error } = await supabase
+export const getUserPhoneNumber = async (userId: string, client?: any): Promise<string> => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('profiles')
         .select('phone_number')
         .eq('clerk_id', userId)
