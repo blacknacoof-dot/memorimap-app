@@ -734,11 +734,6 @@ export const createReview = async (
         created_at: new Date().toISOString()
     };
 
-    // 🚑 [Direct Attack] Check session before Supabase call
-    const { data: { session } } = await supabase.auth.getSession();
-
-
-
     try {
         const { data, error } = await supabase
             .from('facility_reviews')
@@ -1541,8 +1536,9 @@ export const getAllSubscriptions = async () => {
             id: item.id,
             facilityName: item.facilities?.name || 'Unknown',
             planName: item.plan?.name || 'Unknown',
-            expiresAt: item.end_date ? new Date(item.end_date).toLocaleDateString() : 'N/A', // Formatting
-            price: item.plan?.price || 0
+            expiresAt: item.end_date ? new Date(item.end_date).toLocaleDateString() : 'N/A',
+            price: item.plan?.price || 0,
+            status: item.status || 'active'
         }));
     } catch (e) {
         console.error('Error fetching all subscriptions:', e);
@@ -1982,20 +1978,11 @@ export interface Inquiry {
 }
 
 export const createNotice = async (title: string, content: string) => {
-    // 🚑 Check for session
-    const { data: { session } } = await supabase.auth.getSession();
-
-    // Fallback for no session or mock mode
-    if (!session) {
-        console.warn('No session found for createNotice');
-    }
-
     const { data, error } = await supabase
         .from('admin_notices')
         .insert([{
             title,
             content,
-            author_id: session?.user?.id
         }])
         .select()
         .single();

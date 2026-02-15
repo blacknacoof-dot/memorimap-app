@@ -8,6 +8,7 @@ import {
     Lock, BellRing, MonitorStop, Percent, History
 } from 'lucide-react';
 import { PartnerManagement } from './PartnerManagement';
+import { PartnerAdmissions } from './PartnerAdmissions';
 import { ContractMonitoring } from './ContractMonitoring';
 import { RevenueManagement } from './RevenueManagement';
 import { NoticeManagement } from './NoticeManagement';
@@ -59,6 +60,7 @@ const SideMenuDrawer = ({ isOpen, onClose, onNavigate }: { isOpen: boolean; onCl
                             { icon: ShieldCheck, label: '상조 파트너 관리', id: 'admissions' },
                             { icon: MonitorStop, label: '실시간 통합 관제', id: 'monitoring' },
                             { icon: Building2, label: '시설 통합 관리', id: 'facilities' },
+                            { icon: CreditCard, label: '구독 현황', id: 'subs' },
                             { icon: Users, label: '회원/권한 관리', id: 'users' },
                             { icon: FileText, label: '공지사항 관리', id: 'notices' },
                             { icon: History, label: '시스템 활동 로그', id: 'logs' },
@@ -476,7 +478,7 @@ const AdminLeadsView = () => {
 };
 
 /** [Main Container] */
-export default function SuperAdminDashboard() {
+export default function SuperAdminDashboard({ onBack }: { onBack?: () => void }) {
     const { user } = useUser();
     const [activeTab, setActiveTab] = useState<'subs' | 'revenue' | 'leads' | 'admissions' | 'facilities' | 'users' | 'notices' | 'logs' | 'communication' | 'admin_settings' | 'system_settings' | 'monitoring'>('monitoring');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -510,7 +512,10 @@ export default function SuperAdminDashboard() {
                     <div className="flex items-center gap-2 md:gap-3">
                         <NotificationCenter />
                         <div className="h-5 w-[1px] bg-slate-200 mx-0.5 md:mx-1"></div>
-                        <button className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all text-xs font-bold">
+                        <button
+                            onClick={() => onBack?.()}
+                            className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all text-xs font-bold"
+                        >
                             <LogOut className="w-4 h-4" />
                             <span className="hidden sm:inline">나가기</span>
                         </button>
@@ -557,7 +562,24 @@ export default function SuperAdminDashboard() {
                 {activeTab === 'leads' && <AdminLeadsView />}
 
                 {/* Render Management Components */}
-                {activeTab === 'admissions' && <PartnerManagement />}
+                {activeTab === 'admissions' && (
+                    <div className="space-y-8">
+                        <div>
+                            <h2 className="text-xl font-black text-slate-800 mb-4 flex items-center gap-2">
+                                <ShieldCheck className="text-amber-500" size={22} />
+                                신규 입점 신청
+                            </h2>
+                            <PartnerAdmissions />
+                        </div>
+                        <div className="border-t border-slate-200 pt-8">
+                            <h2 className="text-xl font-black text-slate-800 mb-4 flex items-center gap-2">
+                                <Building2 className="text-blue-500" size={22} />
+                                기존 파트너 관리
+                            </h2>
+                            <PartnerManagement />
+                        </div>
+                    </div>
+                )}
                 {activeTab === 'facilities' && (
                     <FacilityManagement
                         initialSearch={facilitySearchTerm}

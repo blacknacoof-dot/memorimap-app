@@ -170,8 +170,8 @@ export const SupportView: React.FC<ViewProps> = ({ onBack, user }) => {
       const token = await session?.getToken({ template: 'supabase' });
       if (!token) { toast.error('로그인이 필요합니다.'); setIsSubmitting(false); return; }
       const authClient = createAuthenticatedClient(token);
-      // user_id는 DB default (auth.uid())로 자동 설정됨 - Clerk ID는 UUID가 아니므로 직접 전달하지 않음
       const { error } = await authClient.from('partner_inquiries').insert({
+        user_id: clerkUser?.id || null,
         company_name: '고객문의',
         manager_name: form.name || '고객',
         phone: form.phone,

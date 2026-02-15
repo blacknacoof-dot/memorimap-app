@@ -588,7 +588,7 @@ export const FacilitySheet: React.FC<Props> = ({
             User might want to book after asking questions. Let's keep it but make it minimal or stick to standard.
             For now, keeping standard footer for all tabs.
         */}
-        <div className="p-4 border-t bg-white safe-area-pb flex gap-3 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] z-20">
+        <div className="p-4 border-t bg-white pb-safe flex gap-3 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] z-20">
           <button
             onClick={() => window.open(`https://map.naver.com/v5/search/${facility.name}`, '_blank')}
             className="flex flex-col items-center justify-center min-w-[50px] text-gray-500 hover:text-primary transition-colors"

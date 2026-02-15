@@ -18,7 +18,7 @@ const SangjoContractModal = React.lazy(() => import('./Consultation/SangjoContra
 const SangjoComparisonModal = React.lazy(() => import('./SangjoComparisonModal').then(m => ({ default: m.SangjoComparisonModal })));
 
 const SuspenseSpinner = () => (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
+  <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/20">
     <div className="bg-white p-3 rounded-full shadow-lg">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
     </div>

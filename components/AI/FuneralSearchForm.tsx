@@ -194,7 +194,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                 .limit(1);
             if (existingRes && existingRes.length > 0) {
                 const willReplace = confirm('이미 접수된 장례 예약이 있습니다.\n새 시설로 변경하시겠습니까? (기존 예약은 자동 취소됩니다)');
-                if (!willReplace) return;
+                if (!willReplace) { setBookingId(null); setConsultFacility(null); return; }
                 await authClient.from('reservations')
                     .update({ status: 'cancelled' })
                     .eq('id', existingRes[0].id);

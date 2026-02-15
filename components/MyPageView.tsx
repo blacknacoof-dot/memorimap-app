@@ -6,7 +6,7 @@ import { ReservationList } from './ReservationList';
 import { ReservationDetailModal } from './ReservationDetailModal';
 import { EditProfileModal } from './EditProfileModal';
 import { LegalModal } from './LegalModal';
-import { Info, Heart, Star } from 'lucide-react';
+import { Info, Heart, Star, ChevronDown } from 'lucide-react';
 import { favoriteService, Favorite } from '../services/favoriteService';
 import { sangjoFavoriteService, SangjoFavorite } from '../services/sangjoFavoriteService';
 import { FUNERAL_COMPANIES, FACILITIES } from '../constants';
@@ -113,7 +113,7 @@ export const MyPageView: React.FC<Props> = ({
                 .select('*')
                 .eq('user_id', user.id)
                 .order('created_at', { ascending: false });
-            if (favError) throw favError;
+            if (favError) { console.error('즐겨찾기 조회 실패:', favError); setIsLoadingFavorites(false); return; }
             const data = (favData || []) as Favorite[];
             setMyFavorites(data);
 
@@ -329,6 +329,25 @@ export const MyPageView: React.FC<Props> = ({
                     </button>
                 )}
             </div>
+
+            {/* 개인 요금제 카드 */}
+            {onNavigate && !['facility_admin', 'facility_manager', 'sangjo_hq_admin', 'sangjo_branch_admin'].includes(userRole || '') && (
+                <button
+                    onClick={() => onNavigate(ViewState.PERSONAL_SUBSCRIPTION)}
+                    className="w-full mb-6 bg-gradient-to-r from-purple-500 to-fuchsia-600 text-white rounded-2xl p-4 flex items-center gap-4 shadow-lg hover:shadow-xl transition-all active:scale-[0.98]"
+                >
+                    <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                        <Star size={20} />
+                    </div>
+                    <div className="flex-1 text-left">
+                        <p className="text-xs font-bold text-white/80">나의 요금제</p>
+                        <p className="text-sm font-black">무료 플랜 이용 중</p>
+                    </div>
+                    <div className="text-white/60">
+                        <ChevronDown size={18} className="rotate-[-90deg]" />
+                    </div>
+                </button>
+            )}
 
             {/* Pending Admin Notice Card */}
             {userRole === 'pending_facility_admin' && (

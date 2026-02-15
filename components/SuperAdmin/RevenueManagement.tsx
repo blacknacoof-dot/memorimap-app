@@ -29,8 +29,8 @@ export const RevenueManagement: React.FC = () => {
                         <div className="p-2 bg-white/20 rounded-xl backdrop-blur-md">
                             <Wallet className="w-6 h-6" />
                         </div>
-                        <span className="flex items-center text-[10px] font-bold bg-green-500/20 px-2 py-0.5 rounded-full border border-green-500/30">
-                            <ArrowUpRight className="w-3 h-3 mr-0.5" /> +12.5%
+                        <span className="flex items-center text-[10px] font-bold bg-blue-500/20 px-2 py-0.5 rounded-full border border-blue-500/30">
+                            누적
                         </span>
                     </div>
                     <p className="text-[11px] font-bold text-blue-100 uppercase tracking-widest opacity-80 mb-1">총 플랫폼 매출 (누적)</p>

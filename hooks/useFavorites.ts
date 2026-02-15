@@ -88,9 +88,6 @@ export function useMyEndingNote() {
     return useQuery({
         queryKey: ['my-ending-note'],
         queryFn: async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return null;
-
             const { data, error } = await supabase.rpc('get_my_ending_note');
             if (error) throw error;
             // 리스트로 반환될 수 있으므로 단일 객체 리턴 처리
@@ -136,9 +133,6 @@ export function useFavoriteAnalysis() {
     return useQuery({
         queryKey: ['favorite-analysis'],
         queryFn: async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return null;
-
             const { data, error } = await supabase.rpc('analyze_favorite_patterns');
             if (error) throw error;
             return data as FavoriteAnalysis;

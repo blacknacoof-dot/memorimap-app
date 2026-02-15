@@ -12,7 +12,7 @@ export type ReservationStatus = 'pending' | 'confirmed' | 'rejected' | 'cancelle
 export type FacilityCategoryType = '장례식장' | '봉안시설' | '자연장' | '공원묘지' | '동물장례' | '해양장' | '상조';
 
 // --- [Phase 4 New Types] ---
-export type SubscriptionPlan = 'starter' | 'pro' | 'enterprise';
+export type SubscriptionPlan = 'free' | 'basic' | 'premium' | 'enterprise';
 export type SubscriptionStatus = 'active' | 'expired' | 'cancelled';
 export type TargetAudience = 'all' | 'facility_admin' | 'user';
 
@@ -105,7 +105,7 @@ export interface Subscription {
     id: string;
     facility_id: number | string;
     facility?: { name: string }; // Joined property
-    plan_name: 'Basic' | 'Premium' | 'Enterprise';
+    plan_name: 'Free' | 'Basic' | 'Premium' | 'Enterprise' | string;
     status: 'active' | 'expired' | 'cancelled';
     start_date: string;
     end_date: string | null;

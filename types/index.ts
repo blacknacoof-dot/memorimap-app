@@ -137,6 +137,7 @@ export enum ViewState {
   FUNERAL_COMPANIES = 'FUNERAL_COMPANIES',
   SANGJO_DASHBOARD = 'SANGJO_DASHBOARD',
   PARTNER_INQUIRY = 'PARTNER_INQUIRY',
+  PERSONAL_SUBSCRIPTION = 'PERSONAL_SUBSCRIPTION',
 }
 
 export interface Partner {
@@ -145,7 +146,7 @@ export interface Partner {
   company_name: string;
   company_logo_url?: string;
   status: 'pending' | 'approved' | 'rejected' | 'suspended';
-  subscription_plan: 'basic' | 'pro' | 'enterprise';
+  subscription_plan: 'free' | 'basic' | 'premium' | 'enterprise';
   subscription_expires_at?: string;
   contact_person?: string;
   contact_phone?: string;
