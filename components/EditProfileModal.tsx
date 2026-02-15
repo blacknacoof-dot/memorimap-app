@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { X, User, Phone, Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateUserProfile } from '../lib/queries';
+import { useSession } from '../lib/auth';
+import { createAuthenticatedClient } from '../lib/supabaseClient';
 
 interface Props {
     user: {
@@ -16,15 +18,12 @@ interface Props {
 }
 
 export const EditProfileModal: React.FC<Props> = ({ user, onClose, onUpdate }) => {
-    const [name, setName] = useState(user.name || '');
-    const [phone, setPhone] = useState(user.phone || '');
+    // 초기값만 사용, 이후 user prop 변경에 리셋되지 않음
+    const initialRef = useRef({ name: user.name || '', phone: user.phone || '' });
+    const [name, setName] = useState(initialRef.current.name);
+    const [phone, setPhone] = useState(initialRef.current.phone);
     const [isSubmitting, setIsSubmitting] = useState(false);
-
-    useEffect(() => {
-        // Always sync state with props when modal is open
-        setName(user.name || '');
-        setPhone(user.phone || '');
-    }, [user]);
+    const { session } = useSession();
 
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let value = e.target.value.replace(/[^0-9]/g, '');
@@ -43,12 +42,18 @@ export const EditProfileModal: React.FC<Props> = ({ user, onClose, onUpdate }) =
         e.preventDefault();
         setIsSubmitting(true);
         try {
+            // Clerk JWT 인증 클라이언트 생성
+            let authClient;
+            if (session) {
+                const token = await session.getToken({ template: 'supabase' });
+                if (token) authClient = createAuthenticatedClient(token);
+            }
             await updateUserProfile(user.id, {
-                full_name: name, // Mapped to correct DB column
+                full_name: name,
                 phone_number: phone
-            });
-            onUpdate(); // Refresh parent data
-            onClose(); // Close modal
+            }, authClient);
+            onUpdate();
+            onClose();
             toast.success('프로필이 성공적으로 수정되었습니다.');
         } catch (error) {
             console.error('Failed to update profile:', error);

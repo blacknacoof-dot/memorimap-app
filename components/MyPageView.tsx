@@ -57,6 +57,7 @@ export const MyPageView: React.FC<Props> = ({
     const [sangjoFavorites, setSangjoFavorites] = useState<SangjoFavorite[]>([]);
     const [isLoadingSangjoFavorites, setIsLoadingSangjoFavorites] = useState(false);
     const [consultationCount, setConsultationCount] = useState(0);
+    const [journeyRefreshKey, setJourneyRefreshKey] = useState(0);
     const { session } = useSession();
 
     /** Clerk JWT 토큰으로 인증된 Supabase 클라이언트 반환 (8초 타임아웃) */
@@ -86,7 +87,8 @@ export const MyPageView: React.FC<Props> = ({
 
     const fetchUserPhone = async () => {
         if (!user) return;
-        const phone = await getUserPhoneNumber(user.id);
+        const client = await getAuthClient();
+        const phone = await getUserPhoneNumber(user.id, client);
         setUserPhone(phone || '');
     };
 
@@ -610,6 +612,7 @@ export const MyPageView: React.FC<Props> = ({
             {/* My Journey (My Story) Integrated View */}
             <div className="mb-12">
                 <IntegratedJourneyView
+                    key={journeyRefreshKey}
                     facilityFavoriteCount={myFavorites.length}
                     sangjoFavoriteCount={sangjoFavorites.length}
                     consultationCount={consultationCount}
@@ -658,6 +661,7 @@ export const MyPageView: React.FC<Props> = ({
                     onClose={() => setShowEditProfile(false)}
                     onUpdate={() => {
                         fetchUserPhone();
+                        setJourneyRefreshKey(k => k + 1);
                         toast.success('프로필이 업데이트되었습니다.');
                     }}
                 />
