@@ -4,7 +4,8 @@ import {
     Calendar, MoreVertical, Plus,
     ChevronRight, CheckCircle, Clock, X
 } from 'lucide-react';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase, createAuthenticatedClient } from '../../lib/supabaseClient';
+import { useSession } from '@clerk/clerk-react';
 import { PartnerOperation } from '../../types';
 import { toast } from 'sonner';
 
@@ -32,6 +33,19 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
     const [showNewModal, setShowNewModal] = useState(false);
     const [form, setForm] = useState<NewOperationForm>(EMPTY_FORM);
     const [isSaving, setIsSaving] = useState(false);
+    const { session } = useSession();
+
+    const getAuthClient = async () => {
+        if (!session) return supabase;
+        try {
+            const token = await Promise.race([
+                session.getToken({ template: 'supabase' }),
+                new Promise<null>((r) => setTimeout(() => r(null), 8000)),
+            ]);
+            if (token) return createAuthenticatedClient(token);
+        } catch { /* fallback */ }
+        return supabase;
+    };
 
     const STAGES: PartnerOperation['operation_stage'][] = ['pending', 'dispatched', 'in_progress', 'completed'];
 
@@ -42,7 +56,8 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
     }, [partnerId]);
 
     const loadOperations = async () => {
-        const { data } = await supabase
+        const client = await getAuthClient();
+        const { data } = await client
             .from('partner_operations')
             .select('*')
             .eq('partner_id', partnerId)
@@ -70,7 +85,8 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
     };
 
     const handleMove = async (id: string, nextStage: PartnerOperation['operation_stage']) => {
-        await supabase
+        const client = await getAuthClient();
+        await client
             .from('partner_operations')
             .update({ operation_stage: nextStage })
             .eq('id', id);
@@ -83,7 +99,8 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
         }
         setIsSaving(true);
         try {
-            const { error } = await supabase.from('partner_operations').insert({
+            const client = await getAuthClient();
+            const { error } = await client.from('partner_operations').insert({
                 partner_id: partnerId,
                 operation_stage: 'pending',
                 deceased_name: form.deceased_name.trim(),

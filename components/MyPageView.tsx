@@ -17,6 +17,7 @@ import { supabase, createAuthenticatedClient } from '../lib/supabaseClient';
 import { useSession } from '../lib/auth';
 
 import IntegratedJourneyView from './IntegratedJourneyView';
+import { normalizeType } from '../utils/facilityNormalizer';
 
 interface Props {
     isLoggedIn: boolean;
@@ -134,11 +135,7 @@ export const MyPageView: React.FC<Props> = ({
                         name: f.name || '이름 없음',
                         address: f.address || '',
                         imageUrl: f.image_url || (f.images && f.images[0]) || null,
-                        type: f.type?.includes('funeral') ? 'funeral' :
-                            f.type?.includes('natural') ? 'natural' :
-                                (f.type?.includes('park') || f.type?.includes('cemetery')) ? 'park' :
-                                    f.type?.includes('pet') ? 'pet' :
-                                        f.type?.includes('sea') ? 'sea' : 'charnel',
+                        type: normalizeType(f.type || '', f.name || ''),
                         rating: Number(f.rating || 0),
                         reviewCount: Number(f.review_count || 0),
                         lat: Number(f.lat || f.latitude || 0),
@@ -211,10 +208,12 @@ export const MyPageView: React.FC<Props> = ({
         if (!user) return;
         if (!confirm('즐겨찾기를 해제하시겠습니까?')) return;
         try {
-            const { error } = await supabase
+            const client = await getAuthClient();
+            const { error } = await client
                 .from('sangjo_favorites')
                 .delete()
-                .eq('id', favId);
+                .eq('id', favId)
+                .eq('user_id', user.id);
 
             if (error) throw error;
             setSangjoFavorites(prev => prev.filter(f => f.id !== favId));

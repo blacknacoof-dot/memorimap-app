@@ -11,7 +11,8 @@ import { OperationsManagement } from './OperationsManagement';
 import { AIConfiguration } from './AIConfiguration';
 import { NotificationCenter } from '../NotificationCenter';
 import { ConsultationList } from '../ConsultationList';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase, createAuthenticatedClient } from '../../lib/supabaseClient';
+import { useSession } from '@clerk/clerk-react';
 import { Consultation, getFacilitySubscription } from '../../lib/queries';
 import { Reservation } from '../../types';
 import { toast } from 'sonner';
@@ -30,16 +31,32 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
     const [reservations, setReservations] = useState<Reservation[]>([]);
     const [subscription, setSubscription] = useState<any>(null);
     const [payments, setPayments] = useState<any[]>([]);
+    const { session } = useSession();
+
+    const getAuthClient = async () => {
+        if (!session) return supabase;
+        try {
+            const token = await Promise.race([
+                session.getToken({ template: 'supabase' }),
+                new Promise<null>((r) => setTimeout(() => r(null), 8000)),
+            ]);
+            if (token) return createAuthenticatedClient(token);
+        } catch (e) {
+            console.error('[PartnerDashboard] auth token error:', e);
+        }
+        return supabase;
+    };
 
     useEffect(() => {
         const fetchPartner = async () => {
+            const client = await getAuthClient();
             // 1차: partners 테이블에서 이름 조회
-            const { data } = await supabase.from('partners').select('name').eq('id', partnerId).single();
+            const { data } = await client.from('partners').select('name').eq('id', partnerId).single();
             let name = data?.name;
 
             if (!name) {
                 // 2차 fallback: sangjo_hq_admins에서 company_name 조회
-                const { data: hqData } = await supabase
+                const { data: hqData } = await client
                     .from('sangjo_hq_admins')
                     .select('company_name, sangjo_id')
                     .eq('sangjo_id', partnerId)
@@ -53,7 +70,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
             }
 
             // facility_id 조회: partner_inquiries.target_facility_id 우선 사용 (approve_partner_transaction이 저장)
-            const { data: inquiry } = await supabase
+            const { data: inquiry } = await client
                 .from('partner_inquiries')
                 .select('target_facility_id')
                 .eq('status', 'approved')
@@ -66,7 +83,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                 setFacilityId(inquiry.target_facility_id);
             } else if (name) {
                 // fallback: 이름으로 시설 조회
-                const { data: facility } = await supabase
+                const { data: facility } = await client
                     .from('facilities')
                     .select('id')
                     .eq('name', name)
@@ -85,11 +102,12 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
         if (!facilityId) return;
 
         const loadFacilityData = async () => {
+            const client = await getAuthClient();
             const [consResult, resResult, subData, payResult] = await Promise.all([
-                supabase.from('consultations').select('*').eq('facility_id', facilityId).order('created_at', { ascending: false }),
-                supabase.from('reservations').select('*').eq('facility_id', facilityId).order('created_at', { ascending: false }),
+                client.from('consultations').select('*').eq('facility_id', facilityId).order('created_at', { ascending: false }),
+                client.from('reservations').select('*').eq('facility_id', facilityId).order('created_at', { ascending: false }),
                 facilityId ? getFacilitySubscription(facilityId) : Promise.resolve(null),
-                supabase.from('subscription_payments').select('*').eq('facility_id', facilityId).order('paid_at', { ascending: false }),
+                client.from('subscription_payments').select('*').eq('facility_id', facilityId).order('paid_at', { ascending: false }),
             ]);
             if (consResult.data) setConsultations(consResult.data as Consultation[]);
             if (resResult.data) setReservations(resResult.data as Reservation[]);
@@ -249,7 +267,8 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                 <ConsultationList
                                     consultations={consultations}
                                     onAnswer={async (id, text) => {
-                                        const { error } = await supabase
+                                        const client = await getAuthClient();
+                                        const { error } = await client
                                             .from('consultations')
                                             .update({ answer: text, answered_at: new Date().toISOString(), status: 'accepted', is_read: true })
                                             .eq('id', id);
@@ -263,7 +282,8 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                         }
                                     }}
                                     onRead={async (id) => {
-                                        await supabase.from('consultations').update({ is_read: true }).eq('id', id);
+                                        const client = await getAuthClient();
+                                        await client.from('consultations').update({ is_read: true }).eq('id', id);
                                         setConsultations(prev => prev.map(c => c.id === id ? { ...c, is_read: true } : c));
                                     }}
                                 />
@@ -329,7 +349,8 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                                     <div className="flex gap-2 mt-4">
                                                         <button
                                                             onClick={async () => {
-                                                                const { error } = await supabase.from('reservations').update({ status: 'confirmed' }).eq('id', res.id);
+                                                                const client = await getAuthClient();
+                                                                const { error } = await client.from('reservations').update({ status: 'confirmed' }).eq('id', res.id);
                                                                 if (!error) {
                                                                     setReservations(prev => prev.map(r => r.id === res.id ? { ...r, status: 'confirmed' as const } : r));
                                                                     toast.success('예약이 승인되었습니다.');
@@ -341,7 +362,8 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                                         </button>
                                                         <button
                                                             onClick={async () => {
-                                                                const { error } = await supabase.from('reservations').update({ status: 'cancelled' }).eq('id', res.id);
+                                                                const client = await getAuthClient();
+                                                                const { error } = await client.from('reservations').update({ status: 'cancelled' }).eq('id', res.id);
                                                                 if (!error) {
                                                                     setReservations(prev => prev.map(r => r.id === res.id ? { ...r, status: 'cancelled' as const } : r));
                                                                     toast.success('예약이 거절되었습니다.');

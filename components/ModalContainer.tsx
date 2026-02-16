@@ -162,7 +162,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
   };
 
   const handleSearchFacilities = (region: string) => {
-    const exactMatches = facilities.filter(f => f.address.includes(region) && f.type === 'funeral');
+    const exactMatches = facilities.filter(f => f.address.includes(region));
     const sorted = exactMatches.sort((a, b) => (b.rating || 0) - (a.rating || 0) || (b.reviewCount || 0) - (a.reviewCount || 0));
     return sorted.slice(0, 3);
   };
