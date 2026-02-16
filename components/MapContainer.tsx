@@ -61,58 +61,32 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
     let isMounted = true;
     let checkInterval: NodeJS.Timeout | null = null;
 
-    // Define global callback for Naver Map SDK
-    (window as any).initNaverMap = () => {
-      console.log('[MapContainer] Naver Map SDK callback triggered');
-      if (isMounted) {
-        initMap();
-      }
-    };
-
-    // SDK 로드 및 초기화 함수
+    // SDK 로드 대기 (index.html에서 미리 로드됨)
     const loadAndInitMap = () => {
-      // 이미 로드되어 있으면 바로 초기화
       if (window.naver && window.naver.maps && window.naver.maps.Map) {
+        console.log('[MapContainer] SDK already loaded, init immediately');
         initMap();
         return;
       }
 
-      // 스크립트가 이미 존재하는지 확인
-      const existingScript = document.getElementById('naver-map-script');
-
-      if (!existingScript) {
-        // 스크립트 로드
-        const script = document.createElement('script');
-        script.id = 'naver-map-script';
-        script.type = 'text/javascript';
-        const clientId = import.meta.env.VITE_NAVER_MAP_CLIENT_ID;
-        console.log('[MapContainer] Loading Naver SDK with Client ID:', clientId);
-
-        // BKIT Fix: Use callback to ensure SDK is authenticated before init
-        script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${clientId || 'MISSING_CLIENT_ID'}&callback=initNaverMap`;
-        script.async = true;
-        script.defer = true;
-        document.head.appendChild(script);
-      } else {
-        // 스크립트는 존재하지만 SDK가 아직 준비되지 않음 - 폴링으로 체크
-        console.log('[MapContainer] Script exists, waiting for SDK...');
-        checkInterval = setInterval(() => {
-          if (window.naver && window.naver.maps && window.naver.maps.Map) {
-            if (checkInterval) clearInterval(checkInterval);
-            if (isMounted) {
-              initMap();
-            }
+      console.log('[MapContainer] Waiting for Naver SDK...');
+      checkInterval = setInterval(() => {
+        if (window.naver && window.naver.maps && window.naver.maps.Map) {
+          if (checkInterval) clearInterval(checkInterval);
+          if (isMounted) {
+            console.log('[MapContainer] SDK loaded via polling');
+            initMap();
           }
-        }, 100);
+        }
+      }, 200);
 
-        // 10초 후 타임아웃
-        setTimeout(() => {
-          if (checkInterval) {
-            clearInterval(checkInterval);
-            console.error('[MapContainer] SDK load timeout');
-          }
-        }, 10000);
-      }
+      // 15초 후 타임아웃
+      setTimeout(() => {
+        if (checkInterval) {
+          clearInterval(checkInterval);
+          console.error('[MapContainer] SDK load timeout after 15s');
+        }
+      }, 15000);
     };
 
     function initMap() {
@@ -158,6 +132,28 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
 
         setIsMapReady(true);
         console.log('[MapContainer] Naver Map Initialized successfully');
+
+        // Fix: 초기 로드 시 지도 빈 화면 방지 - 여러 타이밍에 리사이즈 트리거
+        const triggerResize = () => {
+          if (map && mapElement.current && mapElement.current.clientWidth > 0) {
+            map.setSize(new window.naver.maps.Size(
+              mapElement.current.clientWidth,
+              mapElement.current.clientHeight
+            ));
+            window.naver.maps.Event.trigger(map, 'resize');
+          }
+        };
+        setTimeout(triggerResize, 0);
+        setTimeout(triggerResize, 300);
+        setTimeout(triggerResize, 1000);
+
+        // ResizeObserver로 컨테이너 크기 변경 감지
+        if (mapElement.current && typeof ResizeObserver !== 'undefined') {
+          const ro = new ResizeObserver(() => triggerResize());
+          ro.observe(mapElement.current);
+          // 3초 후 observer 해제 (초기 로드용)
+          setTimeout(() => ro.disconnect(), 3000);
+        }
 
         // Load MarkerClustering script
         if (!window.MarkerClustering) {

@@ -118,7 +118,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
     // 2. Exclude sangjo from general list
     const sangjoSelected = selectedCategories.includes('sangjo' as any);
     if (!sangjoSelected) {
-      result = result.filter(f => f.type !== 'sangjo');
+      result = result.filter(f => f.type !== 'sangjo' && f.type !== '상조' && f.category !== 'sangjo' && f.category !== '상조');
     }
 
     // 3. Filter by Category
