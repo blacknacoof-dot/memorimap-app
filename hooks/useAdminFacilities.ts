@@ -11,6 +11,11 @@ export interface AdminFacility {
     user_id?: string; // v4 schema
     manager_id?: string; // Legacy comp
     owner_user_id?: string; // Legacy comp
+    // 완성도 필드
+    images?: string[] | null;
+    phone?: string | null;
+    description?: string | null;
+    package_count?: number;
 }
 
 export function useAllFacilities() {
@@ -24,7 +29,7 @@ export function useAllFacilities() {
         setLoading(true);
         try {
             // [개선] facilities 대신 memorial_spaces를 기본 참조하도록 변경 (더 정제된 데이터)
-            let query = supabase.from('memorial_spaces').select('*', { count: 'exact' });
+            let query = supabase.from('memorial_spaces').select('id, name, address, category, type, user_id, manager_id, owner_user_id, images, phone, description', { count: 'exact' });
 
             if (term) {
                 query = query.ilike('name', `%${term}%`);
