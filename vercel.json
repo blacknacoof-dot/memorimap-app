@@ -45,7 +45,7 @@
                 },
                 {
                     "key": "Content-Security-Policy",
-                    "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.com https://*.supabase.co https://*.google.com https://*.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co https://*.clerk.com https://api.openai.com https://maps.googleapis.com https://*.pstatic.net; frame-src 'self' https://*.clerk.com https://*.google.com;"
+                    "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.com https://*.clerk.accounts.dev https://*.supabase.co https://*.google.com https://*.gstatic.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co https://*.clerk.com https://*.clerk.accounts.dev https://api.openai.com https://maps.googleapis.com https://*.pstatic.net; frame-src 'self' https://*.clerk.com https://*.clerk.accounts.dev https://*.google.com;"
                 },
                 {
                     "key": "Permissions-Policy",
