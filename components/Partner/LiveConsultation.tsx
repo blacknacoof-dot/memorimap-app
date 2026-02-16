@@ -5,7 +5,8 @@ import {
     MoreHorizontal, Smartphone, Hash, MonitorDot, XCircle
 } from 'lucide-react';
 import { toast } from 'sonner'; // [Phase 2] Error Handler
-import { supabase } from '../../lib/supabaseClient';
+import { supabase, createAuthenticatedClient } from '../../lib/supabaseClient';
+import { useSession } from '@clerk/clerk-react';
 import { PartnerConversation } from '../../types';
 
 interface LiveConsultationProps {
@@ -17,6 +18,19 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [input, setInput] = useState('');
     const scrollRef = useRef<HTMLDivElement>(null);
+    const { session } = useSession();
+
+    const getAuthClient = async () => {
+        if (!session) return supabase;
+        try {
+            const token = await Promise.race([
+                session.getToken({ template: 'supabase' }),
+                new Promise<null>((r) => setTimeout(() => r(null), 8000)),
+            ]);
+            if (token) return createAuthenticatedClient(token);
+        } catch { /* fallback */ }
+        return supabase;
+    };
 
     useEffect(() => {
         loadConversations();
@@ -31,7 +45,8 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
     }, [selectedId, conversations]);
 
     const loadConversations = async () => {
-        const { data } = await supabase
+        const client = await getAuthClient();
+        const { data } = await client
             .from('partner_conversations')
             .select('*')
             .eq('partner_id', partnerId)
@@ -68,7 +83,8 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
 
     const handleHijack = async () => {
         if (!selectedId) return;
-        const { error } = await supabase
+        const client = await getAuthClient();
+        const { error } = await client
             .from('partner_conversations')
             .update({ conversation_status: 'agent_connected', priority: 'high' })
             .eq('id', selectedId);
@@ -89,7 +105,8 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
 
         const updatedMessages = [...selected.messages, newMessage];
 
-        await supabase
+        const client = await getAuthClient();
+        await client
             .from('partner_conversations')
             .update({
                 messages: updatedMessages,
