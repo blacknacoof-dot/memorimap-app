@@ -322,7 +322,7 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
                                 type="text"
                                 value={facility.name}
                                 onChange={e => setFacility({ ...facility, name: e.target.value })}
-                                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                             />
                         </div>
                         <div>
@@ -404,7 +404,7 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
                 </div>
                 <div className="p-6">
                     {facility.images.length > 0 ? (
-                        <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                             {facility.images.map((img, idx) => (
                                 <div key={idx} className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200">
                                     <img src={img} alt={`시설 이미지 ${idx + 1}`} className="w-full h-full object-cover" />
