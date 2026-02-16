@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAllFacilities, AdminFacility } from '../../hooks/useAdminFacilities';
 import { useAllUsers } from '../../hooks/useUsers';
-import { Search, Building2, MapPin, User, Edit2, AlertCircle } from 'lucide-react';
+import { Search, Building2, MapPin, User, Edit2, AlertCircle, Camera, Phone, FileText, DollarSign } from 'lucide-react';
 
 export function FacilityManagement({ initialSearch, onClearSearch }: { initialSearch?: string; onClearSearch?: () => void }) {
     const { facilities, loading, totalCount, page, itemsPerPage, search, updateManager } = useAllFacilities();
@@ -119,6 +119,27 @@ export function FacilityManagement({ initialSearch, onClearSearch }: { initialSe
                                 <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded border shrink-0 ml-2">
                                     {f.category || f.type || '기타'}
                                 </span>
+                            </div>
+
+                            {/* 데이터 완성도 */}
+                            <div className="mt-3 flex items-center gap-2 flex-wrap">
+                                {(() => {
+                                    const hasPhotos = f.images && Array.isArray(f.images) && f.images.length > 0;
+                                    const hasPhone = !!f.phone;
+                                    const hasDesc = !!f.description;
+                                    const score = [hasPhotos, hasPhone, hasDesc].filter(Boolean).length;
+                                    const pct = Math.round((score / 3) * 100);
+                                    return (
+                                        <>
+                                            <Camera size={13} className={hasPhotos ? 'text-green-500' : 'text-red-400'} title={hasPhotos ? '사진 있음' : '사진 없음'} />
+                                            <Phone size={13} className={hasPhone ? 'text-green-500' : 'text-red-400'} title={hasPhone ? '연락처 있음' : '연락처 없음'} />
+                                            <FileText size={13} className={hasDesc ? 'text-green-500' : 'text-red-400'} title={hasDesc ? '설명 있음' : '설명 없음'} />
+                                            <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${pct === 100 ? 'bg-green-100 text-green-700' : pct >= 66 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                                                {pct}%
+                                            </span>
+                                        </>
+                                    );
+                                })()}
                             </div>
 
                             <div className="mt-4 pt-4 border-t border-gray-50">

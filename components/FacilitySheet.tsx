@@ -7,6 +7,7 @@ import { ReviewForm } from './ReviewForm';
 import { ReviewList } from './ReviewList';
 import { ChatInterface } from './AI/ChatInterface';
 import { getSmartFeatures, getSmartDescription } from '../lib/facilityUtils';
+import { supabase } from '../lib/supabaseClient';
 import { toast } from 'sonner';
 
 interface Props {
@@ -53,6 +54,21 @@ export const FacilitySheet: React.FC<Props> = ({
   const [reviewRefreshTrigger, setReviewRefreshTrigger] = useState(0);
 
   const [isFavorite, setIsFavorite] = useState(false);
+  const [dbPackages, setDbPackages] = useState<any[]>([]);
+
+  // Load facility_packages from DB
+  useEffect(() => {
+    const loadPackages = async () => {
+      const { data } = await supabase
+        .from('facility_packages')
+        .select('*')
+        .eq('facility_id', facility.id)
+        .eq('is_active', true)
+        .order('sort_order');
+      if (data && data.length > 0) setDbPackages(data);
+    };
+    loadPackages();
+  }, [facility.id]);
 
   // Check Favorite Status
   useEffect(() => {
@@ -479,7 +495,36 @@ export const FacilitySheet: React.FC<Props> = ({
                 {facility.type === 'funeral' ? '가격표' : '분양 가격표'}
               </h3>
 
-              {facility.priceInfo && facility.priceInfo.items && facility.priceInfo.items.length > 0 ? (
+              {/* DB 패키지 데이터 우선 표시 */}
+              {dbPackages.length > 0 ? (
+                <div className="space-y-3">
+                  {dbPackages.map((pkg: any) => (
+                    <div key={pkg.id} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-sm transition-shadow">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <h4 className="font-bold text-gray-800 text-sm">{pkg.name}</h4>
+                          {pkg.category && (
+                            <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full mt-1 inline-block">{pkg.category}</span>
+                          )}
+                        </div>
+                        <span className="text-blue-600 font-black text-lg">
+                          {pkg.price_label || (pkg.price ? `${(pkg.price / 10000).toLocaleString()}만원` : '문의')}
+                        </span>
+                      </div>
+                      {pkg.description && (
+                        <p className="text-xs text-gray-500 mb-2">{pkg.description}</p>
+                      )}
+                      {pkg.included_items && pkg.included_items.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {pkg.included_items.map((item: string, i: number) => (
+                            <span key={i} className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">{item}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : facility.priceInfo && facility.priceInfo.items && facility.priceInfo.items.length > 0 ? (
                 // New Detailed Price Info Rendering from Public Data
                 <div className="border rounded-xl overflow-hidden text-sm">
                   <div className="bg-gray-50 flex font-bold py-2 border-b text-gray-500 text-xs text-center">

@@ -9,6 +9,7 @@ import {
 import { LiveConsultation } from './LiveConsultation';
 import { OperationsManagement } from './OperationsManagement';
 import { AIConfiguration } from './AIConfiguration';
+import { FacilityInfoEditor } from './FacilityInfoEditor';
 import { NotificationCenter } from '../NotificationCenter';
 import { ConsultationList } from '../ConsultationList';
 import { supabase, createAuthenticatedClient } from '../../lib/supabaseClient';
@@ -577,7 +578,15 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                         {activeTab === 'ops' && <OperationsManagement partnerId={partnerId} />}
                         {activeTab === 'ai_config' && <AIConfiguration partnerId={partnerId} />}
                         {activeTab === 'settings' && (
-                            <div className="p-20 text-center text-slate-400 italic">회사 기본 정보 설정 (추후 구현)</div>
+                            facilityId ? (
+                                <FacilityInfoEditor facilityId={facilityId} />
+                            ) : (
+                                <div className="p-20 text-center text-slate-400">
+                                    <Settings className="mx-auto mb-3 opacity-50" size={48} />
+                                    <p className="text-sm font-medium">연결된 시설이 없습니다.</p>
+                                    <p className="text-xs mt-1">관리자에게 시설 연결을 요청해주세요.</p>
+                                </div>
+                            )
                         )}
                     </div>
                 </div>
