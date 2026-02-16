@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { SangjoContract, Partner, PartnerConversation, PartnerOperation, PlatformNotice } from '../types';
 
@@ -11,26 +12,26 @@ export interface SangjoTimelineEvent {
     created_at: string;
 }
 
-export const saveSangjoContract = async (contract: SangjoContract) => {
+export const saveSangjoContract = async (contract: SangjoContract, client?: SupabaseClient) => {
+    const db = client || supabase;
     // 동일 고객(전화번호) 활성 계약 1건 제한
     if (contract.customer_phone) {
-        const { data: existing } = await supabase
+        const { data: existing } = await db
             .from('sangjo_contracts')
             .select('id, contract_number, sangjo_id')
             .eq('customer_phone', contract.customer_phone)
             .in('status', ['상담신청', '예약대기', '계약진행'])
             .limit(1);
         if (existing && existing.length > 0) {
-            // 기존 활성 계약을 취소하고 새 계약으로 교체
-            await supabase
+            await db
                 .from('sangjo_contracts')
                 .update({ status: '완료' })
                 .eq('id', existing[0].id);
-            console.log(`🔄 기존 상조 계약 자동 종료: ${existing[0].contract_number}`);
+            console.log(`기존 상조 계약 자동 종료: ${existing[0].contract_number}`);
         }
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await db
         .from('sangjo_contracts')
         .insert([contract]);
 
@@ -55,8 +56,9 @@ export const getSangjoContracts = async (sangjoId: string) => {
     return data;
 };
 
-export const updateContractStatus = async (contractNumber: string, status: string, additionalData: any = {}) => {
-    const { data, error } = await supabase
+export const updateContractStatus = async (contractNumber: string, status: string, additionalData: any = {}, client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('sangjo_contracts')
         .update({
             status,
@@ -71,8 +73,9 @@ export const updateContractStatus = async (contractNumber: string, status: strin
     return data;
 };
 
-export const addTimelineEvent = async (contractNumber: string, event: string, notes?: string, photoUrl?: string) => {
-    const { data, error } = await supabase
+export const addTimelineEvent = async (contractNumber: string, event: string, notes?: string, photoUrl?: string, client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('sangjo_contract_timeline')
         .insert([{
             contract_number: contractNumber,
@@ -166,8 +169,9 @@ export const getPartnerConversations = async (partnerId: string) => {
     return data as PartnerConversation[];
 };
 
-export const savePartnerConversation = async (conversation: Partial<PartnerConversation>) => {
-    const { data, error } = await supabase
+export const savePartnerConversation = async (conversation: Partial<PartnerConversation>, client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('partner_conversations')
         .upsert([conversation]);
     if (error) throw error;
@@ -185,8 +189,9 @@ export const getPartnerOperations = async (partnerId: string) => {
     return data as PartnerOperation[];
 };
 
-export const updateOperationStage = async (operationId: string, stage: PartnerOperation['operation_stage']) => {
-    const { data, error } = await supabase
+export const updateOperationStage = async (operationId: string, stage: PartnerOperation['operation_stage'], client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('partner_operations')
         .update({ operation_stage: stage })
         .eq('id', operationId);

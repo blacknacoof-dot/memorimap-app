@@ -33,12 +33,14 @@ function isSangjoByName(name: string): boolean {
 // ── Type Normalization ──
 const TYPE_MAP: Record<string, string> = {
   'funeral_home': 'funeral', 'funeral': 'funeral', 'funeral_hall': 'funeral',
+  '장례식장': 'funeral',
   'charnel_house': 'charnel', 'charnel': 'charnel', 'memorial': 'charnel', 'columbarium': 'charnel',
+  '봉안시설': 'charnel',
   'natural_burial': 'natural', 'natural': 'natural', 'tree_burial': 'natural',
   'park_cemetery': 'park', 'park': 'park', 'complex': 'park', 'cemetery': 'park',
   'pet_funeral': 'pet', 'pet': 'pet', 'pet_memorial': 'pet',
   'sea_burial': 'sea', 'sea': 'sea',
-  'sangjo': 'sangjo',
+  'sangjo': 'sangjo', '상조': 'sangjo',
 };
 
 // fetchFacilities / handleMapBoundsChange 용 (DB 카테고리명 반환)

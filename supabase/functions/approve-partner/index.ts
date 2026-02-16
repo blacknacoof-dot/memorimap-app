@@ -6,9 +6,9 @@ import { z } from 'https://esm.sh/zod@3.22.4'
 const ALLOWED_ORIGINS = [
     'https://memorimap-app.vercel.app',
     'https://memorimap.com',
-    'https://www.memorimap.com'
-    // 'http://localhost:5173',
-    // 'http://localhost:3000'
+    'https://www.memorimap.com',
+    'http://localhost:5173',
+    'http://localhost:3000'
 ];
 
 const getCorsHeaders = (req: Request) => {

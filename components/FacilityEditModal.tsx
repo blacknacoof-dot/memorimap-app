@@ -110,6 +110,20 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
         }
     };
 
+    const handleReplaceGalleryImage = async (e: React.ChangeEvent<HTMLInputElement>, idx: number) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setIsUploading(true);
+        try {
+            const url = await uploadFacilityImage(facility.id, file);
+            setGalleryImages(prev => prev.map((old, i) => i === idx ? url : old));
+        } catch {
+            toast.error('이미지 업로드에 실패했습니다.');
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
     // --- Package helpers ---
     const addPackage = () => {
         if (packages.length >= 5) return;
@@ -323,11 +337,17 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
                                         <label className="text-xs font-bold text-gray-700">대표 이미지</label>
                                         <div className="flex gap-4 items-center">
                                             {imageUrl ? (
-                                                <div className="relative w-32 h-24 rounded-lg overflow-hidden border">
+                                                <div className="relative w-32 h-24 rounded-lg overflow-hidden border group">
                                                     <img src={imageUrl} alt="Main" className="w-full h-full object-cover" />
-                                                    <button type="button" onClick={() => setImageUrl('')} className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600">
-                                                        <Trash2 size={12} />
-                                                    </button>
+                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                        <label className="p-1.5 bg-white text-gray-700 rounded-full cursor-pointer hover:bg-gray-100" title="교체">
+                                                            <ImagePlus size={14} />
+                                                            <input type="file" className="hidden" accept="image/*" onChange={handleMainImageChange} />
+                                                        </label>
+                                                        <button type="button" onClick={() => setImageUrl('')} className="p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600" title="삭제">
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             ) : (
                                                 <label className="w-32 h-24 flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
@@ -347,9 +367,15 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
                                             {galleryImages.map((url, idx) => (
                                                 <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border group">
                                                     <img src={url} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
-                                                    <button type="button" onClick={() => setGalleryImages(prev => prev.filter((_, i) => i !== idx))} className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
-                                                        <Trash2 size={16} />
-                                                    </button>
+                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                        <label className="p-1.5 bg-white text-gray-700 rounded-full cursor-pointer hover:bg-gray-100" title="교체">
+                                                            <ImagePlus size={12} />
+                                                            <input type="file" className="hidden" accept="image/*" onChange={(e) => handleReplaceGalleryImage(e, idx)} />
+                                                        </label>
+                                                        <button type="button" onClick={() => setGalleryImages(prev => prev.filter((_, i) => i !== idx))} className="p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600" title="삭제">
+                                                            <Trash2 size={12} />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             ))}
                                             {galleryImages.length < 3 && (
