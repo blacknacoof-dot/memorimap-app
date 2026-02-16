@@ -528,9 +528,9 @@ export const FacilitySheet: React.FC<Props> = ({
                 // New Detailed Price Info Rendering from Public Data
                 <div className="border rounded-xl overflow-hidden text-sm">
                   <div className="bg-gray-50 flex font-bold py-2 border-b text-gray-500 text-xs text-center">
-                    <div className="w-2/5 px-2">품목</div>
-                    <div className="w-1/5 px-2">카테고리</div>
-                    <div className="w-2/5 px-2">가격</div>
+                    <div className="flex-[2] min-w-0 px-2">품목</div>
+                    <div className="flex-1 min-w-0 px-2">카테고리</div>
+                    <div className="flex-[2] min-w-0 px-2">가격</div>
                   </div>
                   {facility.priceInfo.items.filter((p: any) => {
                     if (facility.type === 'funeral') {
@@ -572,9 +572,9 @@ export const FacilitySheet: React.FC<Props> = ({
 
                     return (
                       <div key={idx} className="flex items-center py-3 border-b last:border-0 hover:bg-gray-50">
-                        <div className="w-2/5 px-2 text-gray-800 font-medium text-center break-keep text-xs">{p.item}</div>
-                        <div className="w-1/5 px-2 text-gray-400 text-[10px] text-center break-all">{(p.category === '1위 기준' ? '기본형' : p.category) || '-'}</div>
-                        <div className="w-2/5 px-2 text-blue-600 text-sm text-center font-bold">
+                        <div className="flex-[2] min-w-0 px-2 text-gray-800 font-medium text-center break-keep text-xs">{p.item}</div>
+                        <div className="flex-1 min-w-0 px-2 text-gray-400 text-[11px] text-center break-all">{(p.category === '1위 기준' ? '기본형' : p.category) || '-'}</div>
+                        <div className="flex-[2] min-w-0 px-2 text-blue-600 text-sm text-center font-bold">
                           {displayPrice}
                         </div>
                       </div>

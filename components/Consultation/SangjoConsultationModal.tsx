@@ -501,7 +501,7 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
                                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage(input)}
                                 placeholder="궁금한 내용을 입력하세요..."
                                 disabled={isLoading}
-                                className="flex-1 bg-gray-100 text-gray-900 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-amber-500/50 transition-all text-sm"
+                                className="flex-1 bg-gray-100 text-gray-900 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-amber-500/50 transition-all text-base"
                             />
                             <button
                                 onClick={() => handleSendMessage(input)}

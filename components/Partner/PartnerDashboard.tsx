@@ -164,7 +164,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
     return (
         <div className="min-h-screen bg-slate-50 flex font-sans">
             {/* Sidebar */}
-            <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-slate-900 transition-all duration-300 flex flex-col z-50`}>
+            <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-slate-900 transition-all duration-300 flex-col z-50 hidden md:flex`}>
                 <div className="p-6 flex items-center gap-3">
                     <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20">
                         <TrendingUp className="text-white w-5 h-5" />
@@ -224,8 +224,23 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
 
             {/* Main Content */}
             <main className="flex-1 flex flex-col h-screen overflow-hidden">
+                {/* Mobile Tab Nav */}
+                <div className="md:hidden flex overflow-x-auto scrollbar-hide bg-slate-900 px-2 py-2 gap-1">
+                    {menuItems.map(item => (
+                        <button
+                            key={item.id}
+                            onClick={() => setActiveTab(item.id as any)}
+                            className={`flex-shrink-0 px-3 py-2 rounded-lg text-xs font-bold transition-colors whitespace-nowrap ${
+                                activeTab === item.id ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
+                            }`}
+                        >
+                            {item.label}
+                        </button>
+                    ))}
+                </div>
+
                 {/* Header */}
-                <header className="h-16 bg-white border-b border-slate-100 px-8 flex items-center justify-between z-40">
+                <header className="h-14 md:h-16 bg-white border-b border-slate-100 px-4 md:px-8 flex items-center justify-between z-40">
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -247,7 +262,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                 </header>
 
                 {/* Content Area */}
-                <div className="flex-1 overflow-y-auto p-10 bg-slate-50">
+                <div className="flex-1 overflow-y-auto p-4 md:p-10 bg-slate-50">
                     <div className="max-w-[1400px] mx-auto">
                         {activeTab === 'consultations' && (
                             <div className="space-y-6">
@@ -500,13 +515,14 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                         </h3>
                                     </div>
                                     {payments.length > 0 ? (
-                                        <table className="w-full text-sm">
+                                        <div className="overflow-x-auto">
+                                        <table className="w-full text-sm min-w-[400px]">
                                             <thead className="bg-slate-50 text-slate-500 text-xs">
                                                 <tr>
-                                                    <th className="text-left px-6 py-3 font-bold">결제일</th>
-                                                    <th className="text-left px-6 py-3 font-bold">내용</th>
-                                                    <th className="text-right px-6 py-3 font-bold">금액</th>
-                                                    <th className="text-right px-6 py-3 font-bold">상태</th>
+                                                    <th className="text-left px-3 md:px-6 py-3 font-bold">결제일</th>
+                                                    <th className="text-left px-3 md:px-6 py-3 font-bold">내용</th>
+                                                    <th className="text-right px-3 md:px-6 py-3 font-bold">금액</th>
+                                                    <th className="text-right px-3 md:px-6 py-3 font-bold">상태</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-slate-50">
@@ -532,6 +548,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                                 ))}
                                             </tbody>
                                         </table>
+                                        </div>
                                     ) : (
                                         <div className="p-12 text-center text-slate-400 text-sm">
                                             결제 내역이 없습니다.

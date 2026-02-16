@@ -376,7 +376,7 @@ export const FuneralCompanyView: React.FC<Props> = ({
 
                                 <div className="flex flex-wrap gap-1">
                                     {company.features.slice(0, 2).map((f: string, i: number) => (
-                                        <span key={i} className="px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded text-[9px] font-medium">
+                                        <span key={i} className="px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded text-[11px] font-medium">
                                             {f}
                                         </span>
                                     ))}
@@ -387,7 +387,7 @@ export const FuneralCompanyView: React.FC<Props> = ({
                         <div className="mt-2.5 pt-2.5 border-t border-gray-50 flex items-center justify-between">
                             <div className="flex items-center gap-1">
                                 <HeartHandshake size={13} className="text-primary" />
-                                <span className="text-[10px] font-bold text-primary truncate max-w-[180px]">
+                                <span className="text-[11px] font-bold text-primary truncate max-w-[200px]">
                                     {company.benefits[0]}
                                 </span>
                             </div>
