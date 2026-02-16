@@ -496,10 +496,6 @@ export const PetChatInterface: React.FC<ComponentProps> = ({ company, onClose, o
                             ? 'bg-amber-800 text-white rounded-2xl rounded-tr-sm'
                             : 'bg-white text-stone-800 border border-stone-200 rounded-2xl rounded-tl-sm'
                             }`}>
-                            import DOMPurify from 'dompurify';
-
-                            // ... (inside the component)
-
                             <div
                                 className="whitespace-pre-wrap"
                                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(msg.text) }}

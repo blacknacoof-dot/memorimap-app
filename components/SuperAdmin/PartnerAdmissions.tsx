@@ -18,6 +18,12 @@ export const PartnerAdmissions: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const confirmModal = useConfirmModal();
 
+    if (adminLoading) {
+        return (
+            <div className="p-6 text-center text-gray-500">권한 확인 중...</div>
+        );
+    }
+
     if (!isSuperAdmin) {
         return (
             <div className="p-6 bg-red-50 border border-red-200 rounded-xl flex items-center justify-center gap-3">

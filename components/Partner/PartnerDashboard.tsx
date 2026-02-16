@@ -50,13 +50,28 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
 
             if (name) {
                 setPartnerName(name);
-                // partner name으로 facility_id 조회
+            }
+
+            // facility_id 조회: partner_inquiries.target_facility_id 우선 사용 (approve_partner_transaction이 저장)
+            const { data: inquiry } = await supabase
+                .from('partner_inquiries')
+                .select('target_facility_id')
+                .eq('status', 'approved')
+                .eq('company_name', name || '')
+                .order('updated_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+            if (inquiry?.target_facility_id) {
+                setFacilityId(inquiry.target_facility_id);
+            } else if (name) {
+                // fallback: 이름으로 시설 조회
                 const { data: facility } = await supabase
                     .from('facilities')
                     .select('id')
                     .eq('name', name)
                     .limit(1)
-                    .single();
+                    .maybeSingle();
                 if (facility) {
                     setFacilityId(facility.id);
                 }

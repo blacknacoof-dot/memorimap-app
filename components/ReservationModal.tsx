@@ -41,6 +41,10 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
       visit_date: reservationMode === 'URGENT' ? format(new Date(), 'yyyy-MM-dd') : '',
       visit_time: reservationMode === 'URGENT' ? '긴급(즉시)' : '',
       purpose: reservationMode === 'URGENT' ? '긴급 장례 접수' : '',
+      visitor_name: '',
+      contact_number: '',
+      visitor_count: 1,
+      request_note: '',
     }
   });
 
@@ -77,7 +81,7 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
     } else {
       if (step === 0) fieldsToValidate = ['visit_date'];
       if (step === 1) fieldsToValidate = ['visit_time'];
-      if (step === 2) fieldsToValidate = ['visitor_name', 'contact_number', 'visitor_count', 'purpose', 'request_note'];
+      if (step === 2) fieldsToValidate = ['visitor_name', 'contact_number', 'visitor_count', 'purpose'];
     }
 
     const isValid = await trigger(fieldsToValidate);

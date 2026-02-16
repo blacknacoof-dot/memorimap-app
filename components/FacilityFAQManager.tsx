@@ -89,28 +89,48 @@ export const FacilityFAQManager: React.FC<Props> = ({ facilityId }) => {
                 setIsSaving(true);
                 try {
                     const client = await getAuthClient();
-                    const upsertData: any = {
-                        facility_id: facilityId,
-                        question: editForm.question,
-                        answer: editForm.answer,
-                        order_index: editingId === 'new' ? faqs.length : undefined,
-                        is_active: true,
-                        updated_at: new Date().toISOString(),
-                    };
-                    if (editingId !== 'new') upsertData.id = editingId;
-                    const { data: result, error } = await client
-                        .from('facility_faqs')
-                        .upsert(upsertData)
-                        .select()
-                        .single();
-                    if (error) {
-                        console.error('[FAQ] upsert error:', error);
+                    let result: any = null;
+                    let error: any = null;
+
+                    if (editingId === 'new') {
+                        // INSERT 새 FAQ
+                        const { data, error: insertErr } = await client
+                            .from('facility_faqs')
+                            .insert({
+                                facility_id: facilityId,
+                                question: editForm.question,
+                                answer: editForm.answer,
+                                order_index: faqs.length,
+                                is_active: true,
+                            })
+                            .select()
+                            .single();
+                        result = data;
+                        error = insertErr;
+                    } else {
+                        // UPDATE 기존 FAQ
+                        const { data, error: updateErr } = await client
+                            .from('facility_faqs')
+                            .update({
+                                question: editForm.question,
+                                answer: editForm.answer,
+                                updated_at: new Date().toISOString(),
+                            })
+                            .eq('id', editingId)
+                            .select()
+                            .single();
+                        result = data;
+                        error = updateErr;
                     }
-                    if (result) {
+
+                    if (error) {
+                        console.error('[FAQ] save error:', error);
+                        toast.error(`FAQ 저장 실패: ${error.message}`);
+                    } else if (result) {
                         toast.success('FAQ가 저장되었습니다.');
                         await loadFaqs();
                     } else {
-                        toast.error('FAQ 저장 실패');
+                        toast.error('FAQ 저장 실패: 응답 없음');
                     }
                 } catch {
                     toast.error('FAQ 저장 중 오류 발생');

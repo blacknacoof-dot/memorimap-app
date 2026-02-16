@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabaseClient';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { Notice, PartnerInquiry, Payment, Subscription } from '@/types/db';
 
 // --- 파트너 승인 API ---
@@ -12,12 +13,17 @@ export const fetchPendingInquiries = async () => {
     return data as PartnerInquiry[];
 };
 
+/**
+ * @deprecated Edge Function 경로 사용 (useAdminActions.ts > useApprovePartner)
+ * PartnerAdmissions.tsx에서 이미 Edge Function을 호출하므로 이 함수는 fallback용
+ */
 export const approvePartner = async (inquiry: PartnerInquiry) => {
-    // 1. [Transaction] RPC를 호출하여 상태 변경 + 역할 승격을 동시에 수행
-    const { error: rpcError } = await supabase
-        .rpc('approve_partner_and_grant_role', {
-            inquiry_id: inquiry.id,
-            target_user_id: inquiry.user_id
+    // Edge Function approve-partner를 통한 승인이 메인 경로입니다.
+    // 이 함수는 Edge Function 접근 불가 시 직접 RPC 호출 fallback입니다.
+    const { data, error: rpcError } = await supabase
+        .rpc('approve_partner_transaction', {
+            p_inquiry_id: inquiry.id,
+            p_admin_id: 'system-fallback'
         });
 
     if (rpcError) {
@@ -25,38 +31,11 @@ export const approvePartner = async (inquiry: PartnerInquiry) => {
         throw rpcError;
     }
 
-    // 2. [Facility Logic] 기존 시설 매핑(Claim) 또는 신규 생성
-    if (inquiry.target_facility_id) {
-        // [Case A] 기존 시설 승계 (Claim)
-        const { error: linkError } = await supabase
-            .from('memorial_spaces')
-            .update({ owner_user_id: inquiry.user_id })
-            .eq('id', inquiry.target_facility_id);
-
-        if (linkError) {
-            console.error('Failed to link facility:', linkError);
-            // Critical error: User approved but facility not linked. 
-            // Should prompt admin to check manually or retry? 
-            // For now, logging error.
-        }
-    } else {
-        // [Case B] 신규 시설 생성 (Create)
-        // RPC 성공 후 수행. 실패하더라도 유저는 시설관리자 권한을 가짐(대시보드 접근 가능).
-        const { error: facilityError } = await supabase
-            .from('memorial_spaces') // Use memorial_spaces table directly
-            .insert([{
-                name: inquiry.company_name,
-                address: inquiry.address || '',
-                category: inquiry.business_type,
-                contact: inquiry.contact_number,
-                description: inquiry.message || '파트너 입점 시설입니다.',
-                owner_user_id: inquiry.user_id || null
-            }]);
-
-        if (facilityError) {
-            console.error('Failed to create facility record:', facilityError);
-        }
+    if (data && data.success === false) {
+        throw new Error(data.error || 'Transaction failed');
     }
+
+    return data;
 };
 
 export const rejectPartner = async (id: string) => {
@@ -87,16 +66,16 @@ export const fetchAllUsers = async () => {
     return data as UserProfile[];
 };
 
-export const updateUserRole = async (userId: string, newRole: string) => {
-    const { error } = await supabase
+export const updateUserRole = async (userId: string, newRole: string, client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { error } = await db
         .from('profiles')
         .update({ role: newRole })
         .eq('id', userId);
 
     if (error) throw error;
 
-    // 활동 로그 기록
-    await supabase.from('audit_logs').insert([{
+    await db.from('audit_logs').insert([{
         action: 'UPDATE_ROLE',
         target_resource: 'profiles',
         target_id: userId,
@@ -115,9 +94,8 @@ export interface MemorialSpace {
 }
 
 export const fetchAllFacilities = async () => {
-    // memorial_spaces 테이블 조회 (Super Admin RLS 정책 적용됨)
     const { data, error } = await supabase
-        .from('memorial_spaces')
+        .from('facilities')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -127,7 +105,7 @@ export const fetchAllFacilities = async () => {
 
 export const searchFacilities = async (query: string) => {
     const { data, error } = await supabase
-        .from('memorial_spaces')
+        .from('facilities')
         .select('*')
         .ilike('name', `%${query}%`)
         .order('created_at', { ascending: false });
@@ -136,11 +114,10 @@ export const searchFacilities = async (query: string) => {
     return data as any[];
 };
 
-export const updateFacilityManager = async (facilityId: number, newManagerId: string | null) => {
-    // manager_id assumed to be the owner column
+export const updateFacilityManager = async (facilityId: string, newManagerId: string | null) => {
     const { error } = await supabase
-        .from('memorial_spaces')
-        .update({ owner_user_id: newManagerId })
+        .from('facilities')
+        .update({ user_id: newManagerId })
         .eq('id', facilityId);
 
     if (error) throw error;
@@ -247,8 +224,9 @@ export const fetchNotices = async () => {
     return data as Notice[];
 };
 
-export const createNotice = async (notice: Partial<Notice>) => {
-    const { data, error } = await supabase
+export const createNotice = async (notice: Partial<Notice>, client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('notices')
         .insert([notice])
         .select()
@@ -257,8 +235,9 @@ export const createNotice = async (notice: Partial<Notice>) => {
     return data;
 };
 
-export const deleteNotice = async (id: string) => {
-    const { error } = await supabase
+export const deleteNotice = async (id: string, client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { error } = await db
         .from('notices')
         .delete()
         .eq('id', id);
@@ -334,8 +313,9 @@ export const fetchSystemSettings = async () => {
     return data;
 };
 
-export const updateSystemSetting = async (key: string, value: any) => {
-    const { error } = await supabase
+export const updateSystemSetting = async (key: string, value: any, client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { error } = await db
         .from('system_settings')
         .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
 
