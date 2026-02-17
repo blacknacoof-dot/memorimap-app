@@ -186,7 +186,7 @@ export const FacilitySheet: React.FC<Props> = ({
         </div>
       )}
 
-      <div className="fixed inset-x-0 bottom-0 z-[210] bg-white rounded-t-3xl shadow-2xl transform transition-transform duration-300 max-h-[90vh] h-[85vh] flex flex-col md:max-w-md md:mx-auto">
+      <div className="fixed inset-x-0 bottom-0 z-[210] bg-white rounded-t-3xl shadow-2xl transform transition-transform duration-300 max-h-[90vh] h-[80vh] md:h-[85vh] flex flex-col md:max-w-md md:mx-auto">
         {/* Handle for dragging (visual only) */}
         <div className="w-full flex justify-center pt-3 pb-1" onClick={onClose}>
           <div className="w-12 h-1.5 bg-gray-300 rounded-full cursor-pointer"></div>

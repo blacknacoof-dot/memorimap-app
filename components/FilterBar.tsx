@@ -21,7 +21,7 @@ export const FilterBar = () => {
     return (
         <div className="w-full pointer-events-auto">
             {/* Smart Search Input */}
-            <div className="mb-2">
+            <div className="mb-3 md:mb-2">
                 <SmartSearchInput compact />
             </div>
 
@@ -44,7 +44,7 @@ export const FilterBar = () => {
                                         toggleCategory(cat.id as FacilityCategoryType);
                                     }
                                 }}
-                                className={`px-4 py-2 rounded-full text-xs font-medium shadow-sm border whitespace-nowrap transition-colors flex-shrink-0 min-h-[36px] ${isSelected
+                                className={`px-4 py-2 rounded-full text-xs font-medium shadow-sm border whitespace-nowrap transition-colors flex-shrink-0 min-h-[44px] md:min-h-[36px] ${isSelected
                                     ? 'bg-primary text-white border-primary'
                                     : 'bg-white/90 backdrop-blur text-gray-900 hover:bg-white border-white/50'
                                     }`}

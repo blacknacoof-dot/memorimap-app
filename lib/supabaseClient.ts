@@ -13,14 +13,8 @@ const getEnv = (key: string): string => {
 const supabaseUrl = getEnv('VITE_SUPABASE_URL');
 const supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY');
 
-// [DEBUG] 환경 변수 로드 확인
-console.log('[SupabaseConfig] URL:', supabaseUrl ? 'OK' : 'MISSING');
-console.log('[SupabaseConfig] AnonKey:', supabaseAnonKey ? (supabaseAnonKey.length > 20 ? 'OK (Length: ' + supabaseAnonKey.length + ')' : 'TOO SHORT') : 'MISSING');
-
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase URL or Key is missing. Check your environment variables.');
-  console.warn('VITE_SUPABASE_URL:', supabaseUrl ? 'SET' : 'MISSING');
-  console.warn('VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'SET' : 'MISSING');
+  console.warn('Supabase URL or Key is missing.');
 }
 
 // 싱글톤 인스턴스 및 상태 관리
@@ -87,13 +81,11 @@ export const supabase = new Proxy({} as SupabaseClient, {
 // auth.setSession은 Supabase User를 fetch하려고 시도하다가 Clerk 토큰에서 400 에러를 발생시킵니다.
 // 따라서 단순히 PostgREST 요청에 필요한 헤더만 교체하는 것이 가장 안전하고 확실합니다.
 export const setSupabaseAuth = async (token: string | null) => {
-  console.log('[SupabaseClient] setSupabaseAuth called. Token exists?', !!token); // [DEBUG]
   if (token === currentAccessToken && supabaseInstance) {
     return;
   }
 
   if (token?.startsWith('mock-')) {
-    console.log('[SupabaseAuth] Skipping mock token');
     return;
   }
 
@@ -102,7 +94,6 @@ export const setSupabaseAuth = async (token: string | null) => {
   // 인스턴스가 없으면 생성 (이 때 토큰이 적용됨)
   if (!supabaseInstance) {
     createSupabaseClient(token);
-    console.log('[SupabaseAuth] Initialized Singleton Client');
   } else {
     // 인스턴스가 있으면 헤더만 갱신 (auth.setSession 호출 X)
     if (token) {

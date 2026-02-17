@@ -29,7 +29,52 @@
 - [x] E2E 테스트 시나리오 문서 작성 (`docs/E2E_TEST_SCENARIOS.md`)
 - [x] 검증 SQL 작성 (`scripts/verify_launch_readiness.sql`)
 
+## DB 검증 결과 (2026-02-17)
+- facilities 테이블: `category` 컬럼 없음, `type` 컬럼 사용
+- 광주광역시 44건 (funeral_home:21, columbarium:8, cemetery:7, natural_burial:4, pet_funeral:4)
+- 경기도 광주시 22건, 축약형 "광주 북구" 2건
+- 주소 형식 혼재: "서울"/"서울특별시", "경기"/"경기도"
+- **검색 버그 근본원인**: `strictFilter`에서 `i.category` 참조 → DB에 없는 필드 → 전부 탈락
+- RPC 함수 정상: search_facilities(4), search_facilities_by_text(2,3), search_facilities_in_view(4), search_facilities_v2(5)
+- 콘솔 디버그 로그 잔류 (프로덕션 제거 필요)
+
 ## 남은 작업
+
+### P0: 검색 로직 버그 수정 (완료 ✓)
+- [x] `strictFilter`에서 `i.category` → `i.type || i.category` 수정 + REGION_ALIASES 추가
+- [x] 주소 정규화: "서울"↔"서울특별시", "경기"↔"경기도" 매핑 (queries.ts, FacilityList.tsx)
+- [x] `FacilityList.tsx` 클라이언트 필터링 → 시/도 단위 우선매칭 + alias 매칭
+- [x] 프로덕션 콘솔 로그 제거 (supabaseClient.ts, queries.ts)
+
+### P1: 모바일 전용 최적화 (완료 ✓, 빌드 검증 통과)
+**원칙**: 노트북/데스크톱 화면은 그대로 유지. 모바일에서만 UI 수정.
+
+#### 모바일 상단 레이아웃 개편 (완료)
+- [x] 모바일 헤더 간소화: 아이콘 축소(18px), 패딩 축소, 검색창 높이 조정 (`TopBar.tsx`)
+- [x] 목록 우측 상단 지도 버튼 모바일 숨김 (`hidden md:flex`)
+- [x] 프로모션 배너 모바일 컴팩트화 (텍스트/패딩 축소)
+- [x] 검색창 여백 개선 (`TopBar.tsx` top-16/md:top-20, `FilterBar.tsx` mb-3/md:mb-2)
+
+#### 모바일 UI 버그 수정 (완료)
+- [x] 모달 스택 z-index 통일 (`SideMenu` z-[60]/z-[70])
+- [x] 엔딩노트 모달 높이 확대 (`max-h-[75vh] md:max-h-[60vh]`)
+- [x] 엔딩노트 공유 화면 하단 잘림 (`IntegratedJourneyView` pb-20/md:pb-8)
+- [x] 상담신청 모달 X 버튼 터치타겟 확대 (min-w/h-[44px], shrink-0)
+- [x] 상조 서비스 "서비스구성" 텍스트 깨짐 (break-words, min-w-0, break-keep)
+- [x] 상조 서비스 탭 텍스트 크기 조정 (text-xs/md:text-sm, truncate)
+- [x] 터치 타겟 44px 확보 (`FilterBar.tsx` min-h-[44px]/md:min-h-[36px])
+
+#### iOS 100vh 대응 (완료)
+- [x] FacilitySheet: h-[80vh]/md:h-[85vh]
+- [x] FuneralCompanySheet: h-[75vh]/md:h-[80vh]
+- [x] SangjoConsultationModal: h-[80vh]
+
+#### 미완료 (수동 확인 필요)
+- [ ] AI 채팅 하단 입력창 조건부 숨김 (현재 isFormActive로 이미 조건부 숨김 동작)
+- [ ] 추모시설 AI 상담 "접수 중 오류" 디버깅 (실 테스트 필요)
+- [ ] iOS Safe Area `env(safe-area-inset-bottom)` 적용 (실기기 테스트 후 판단)
+- [ ] Vercel 이전 빌드 캐시 확인 (배포 후 확인)
+
 ### 출시 전 E2E 검증 (수동 테스트)
 - [ ] 슈퍼관리자 파트너 승인 E2E (코드 완료, 실 테스트 필요)
 - [ ] 상조 관리자 대시보드 예약/상담 표시 확인
