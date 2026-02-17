@@ -131,9 +131,9 @@ export function FacilityManagement({ initialSearch, onClearSearch }: { initialSe
                                     const pct = Math.round((score / 3) * 100);
                                     return (
                                         <>
-                                            <Camera size={13} className={hasPhotos ? 'text-green-500' : 'text-red-400'} title={hasPhotos ? '사진 있음' : '사진 없음'} />
-                                            <Phone size={13} className={hasPhone ? 'text-green-500' : 'text-red-400'} title={hasPhone ? '연락처 있음' : '연락처 없음'} />
-                                            <FileText size={13} className={hasDesc ? 'text-green-500' : 'text-red-400'} title={hasDesc ? '설명 있음' : '설명 없음'} />
+                                            <span title={hasPhotos ? '사진 있음' : '사진 없음'}><Camera size={13} className={hasPhotos ? 'text-green-500' : 'text-red-400'} /></span>
+                                            <span title={hasPhone ? '연락처 있음' : '연락처 없음'}><Phone size={13} className={hasPhone ? 'text-green-500' : 'text-red-400'} /></span>
+                                            <span title={hasDesc ? '설명 있음' : '설명 없음'}><FileText size={13} className={hasDesc ? 'text-green-500' : 'text-red-400'} /></span>
                                             <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${pct === 100 ? 'bg-green-100 text-green-700' : pct >= 66 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
                                                 {pct}%
                                             </span>

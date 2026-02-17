@@ -1,7 +1,6 @@
 import React from 'react';
 import { useFilterStore } from '../stores/useFilterStore';
 import { FacilityCategoryType } from '../types/facility';
-import { SmartSearchInput } from './AI/SmartSearchInput';
 
 const CATEGORIES: { id: FacilityCategoryType | 'all', label: string }[] = [
     { id: 'all', label: '전체' },
@@ -20,11 +19,6 @@ export const FilterBar = () => {
 
     return (
         <div className="w-full pointer-events-auto">
-            {/* Smart Search Input */}
-            <div className="mb-3 md:mb-2">
-                <SmartSearchInput compact />
-            </div>
-
             {/* Category Filters */}
             <div className="overflow-x-auto filter-scroll touch-pan-x no-scrollbar">
                 <div className="flex gap-2 px-1 pb-2 w-max">
