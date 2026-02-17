@@ -18,18 +18,39 @@ export const FacilityList = React.memo<FacilityListProps>(({ facilities, onSelec
 
     // Internal Filtering Logic
     const filteredFacilities = useMemo(() => {
-        return facilities.filter(facility => {
-            // 1. Text Search
-            const matchesSearch = !searchQuery ||
-                facility.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                facility.address.toLowerCase().includes(searchQuery.toLowerCase());
+        // 주소 정규화 매핑 (축약형↔정식명)
+        const REGION_ALIASES: Record<string, string[]> = {
+            '서울': ['서울특별시'], '서울특별시': ['서울'],
+            '경기': ['경기도'], '경기도': ['경기'],
+            '부산': ['부산광역시'], '부산광역시': ['부산'],
+            '광주': ['광주광역시'], '광주광역시': ['광주'],
+            '대전': ['대전광역시'], '대전광역시': ['대전'],
+            '인천': ['인천광역시'], '인천광역시': ['인천'],
+        };
 
-            // 2. Category Filter
+        return facilities.filter(facility => {
+            // 1. Text Search — 시/도 단위 우선매칭
+            let matchesSearch = true;
+            if (searchQuery) {
+                const q = searchQuery.toLowerCase();
+                const nameMatch = facility.name.toLowerCase().includes(q);
+                // 주소 첫 토큰(시/도) 우선 매칭
+                const addrLower = facility.address?.toLowerCase() || '';
+                const firstToken = addrLower.split(' ')[0];
+                const directMatch = firstToken.includes(q) || addrLower.includes(q);
+                // 정규화 매핑: "서울" 검색 시 "서울특별시" 주소도 매칭
+                const aliases = REGION_ALIASES[searchQuery] || [];
+                const aliasMatch = aliases.some(alias => addrLower.startsWith(alias.toLowerCase()));
+                matchesSearch = nameMatch || directMatch || aliasMatch;
+            }
+
+            // 2. Category Filter — DB 필드는 type (category 없음)
+            const facilityType = (facility as any).type || facility.category;
             const matchesCategory = selectedCategories.length === 0 ||
-                (facility.category && selectedCategories.includes(facility.category));
+                (facilityType && selectedCategories.includes(facilityType));
 
             // 3. Exclude 'Sangjo' (handled in separate tab)
-            const isSangjo = (facility.category as string) === 'sangjo' || (facility.category as string) === '상조';
+            const isSangjo = facilityType === 'sangjo' || facilityType === '상조';
 
             return matchesSearch && matchesCategory && !isSangjo;
         });

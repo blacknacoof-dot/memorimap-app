@@ -129,12 +129,6 @@ export const searchFacilities = async (
         throw error;
     }
 
-    // 👇 데이터에 이미지가 들어오는지 콘솔로 확인해보세요
-    if (data && data.length > 0) {
-        // @ts-ignore
-        console.log('📸 첫 번째 시설 이미지:', data[0].image_url ? '있음' : '없음', data[0].image_url);
-    }
-
     return data;
 };
 
@@ -180,42 +174,52 @@ export const getIntelligentRecommendations = async (
     const isMemorialGroup = searchCategory === 'columbarium' || searchCategory === 'natural_burial' || searchCategory === 'cemetery';
 
     // Helper: Strict Filter by Category & Region
+    // 주소 정규화: 축약형↔정식명 매핑
+    const REGION_ALIASES: Record<string, string[]> = {
+        '서울': ['서울특별시'], '서울특별시': ['서울'],
+        '경기': ['경기도'], '경기도': ['경기'],
+        '부산': ['부산광역시'], '부산광역시': ['부산'],
+        '대구': ['대구광역시'], '대구광역시': ['대구'],
+        '인천': ['인천광역시'], '인천광역시': ['인천'],
+        '광주': ['광주광역시'], '광주광역시': ['광주'],
+        '대전': ['대전광역시'], '대전광역시': ['대전'],
+        '울산': ['울산광역시'], '울산광역시': ['울산'],
+        '세종': ['세종특별자치시'], '세종특별자치시': ['세종'],
+        '제주': ['제주특별자치도'], '제주특별자치도': ['제주'],
+    };
+
+    const addressContainsRegion = (address: string, region: string): boolean => {
+        if (address.includes(region)) return true;
+        const aliases = REGION_ALIASES[region];
+        if (aliases) {
+            return aliases.some(alias => address.includes(alias));
+        }
+        return false;
+    };
+
     const strictFilter = (items: any[], targetRegionText?: string) => {
         return items.filter((i: any) => {
-            // 1. Category Filter
+            // 1. Category Filter — DB 필드는 `type` (category 컬럼 없음)
+            const itemType = i.type || i.category;
             let categoryMatch = true;
             if (normalizedCategory === 'funeral') {
-                // [CRITICAL] Exclude Sangjo completely
-                if (i.category === 'sangjo' || i.category === '상조') return false;
-
-                // [FIX] Allow if category matches OR if category is missing but name implies Funeral Home
-                const isFuneralCategory = i.category === 'funeral_home' || i.category === 'funeral' || i.category === '장례식장';
-                const isNameMatch = (!i.category || i.category === null) && i.name && i.name.includes('장례식장');
-
-                return isFuneralCategory || isNameMatch;
+                if (itemType === 'sangjo' || itemType === '상조') return false;
+                const isFuneralType = itemType === 'funeral_home' || itemType === 'funeral' || itemType === '장례식장';
+                const isNameMatch = !itemType && i.name && i.name.includes('장례식장');
+                return isFuneralType || isNameMatch;
             } else if (normalizedCategory === 'pet') {
                 const PET_CATEGORIES = ['pet_memorial', 'pet_funeral', 'pet', '동물장례', '반려동물'];
-                categoryMatch = PET_CATEGORIES.includes(i.category) || PET_CATEGORIES.includes(i.type);
+                categoryMatch = PET_CATEGORIES.includes(itemType) || PET_CATEGORIES.includes(i.type);
             } else if (isMemorialGroup) {
                 const MEMORIAL_CATEGORIES = ['columbarium', 'charnel_house', 'natural_burial', 'tree_burial', 'park_cemetery', 'cemetery', 'complex', 'sea_burial', 'memorial', '봉안시설', '자연장', '공원묘지', '해양장'];
-                categoryMatch = MEMORIAL_CATEGORIES.includes(i.type) || MEMORIAL_CATEGORIES.includes(i.category);
+                categoryMatch = MEMORIAL_CATEGORIES.includes(i.type) || MEMORIAL_CATEGORIES.includes(itemType);
             }
 
-            // 2. Region Filter (Strict Local Matching)
-            // If targetRegionText is provided (e.g. "고양시"), ensure address contains it.
-            // This prevents "Seoul" facilities appearing in "Goyang" search.
+            // 2. Region Filter — 주소 정규화 매핑 적용
             let regionMatch = true;
             if (targetRegionText && i.address) {
-                // We use the 'Parent Region' for the check (e.g. "고양시" check for "식사동" search)
-                // This ensures we don't accidentally filter out the target if the text was specific but the address is standard.
-                // But for strict filtering, we mainly want to avoid "Other City".
-                const safeRegion = targetRegionText.split(' ')[0]; // "고양시" from "고양시 일산동구"
-                if (!i.address.includes(safeRegion)) {
-                    // If address doesn't contain at least the City name, exclude it.
-                    // Exception: If the user searched for "Seoul", and address is "Seoul", it matches.
-                    // If user searched for "Goyang", and address is "Seoul", it fails.
-                    regionMatch = false;
-                }
+                const safeRegion = targetRegionText.split(' ')[0];
+                regionMatch = addressContainsRegion(i.address, safeRegion);
             }
 
             return categoryMatch && regionMatch;
@@ -225,17 +229,13 @@ export const getIntelligentRecommendations = async (
     // 1. Region Search (Primary)
     if (regionText && regionText !== '내 위치 주변') {
         // A. Exact 'Dong' Search (e.g. "식사동")
-        console.log(`🔍 [Recommendation] Searching for: ${regionText}`);
         let regionResults = await searchFacilitiesByRegion(regionText, undefined);
-        console.log(`🔍 [Recommendation] Raw DB results: ${regionResults.length}`, regionResults.map((r: any) => ({ name: r.name, category: r.category, type: r.type })));
         regionResults = strictFilter(regionResults, regionText);
-        console.log(`🔍 [Recommendation] After strictFilter: ${regionResults.length}`);
 
         finalData = [...regionResults];
 
         // B-0. Pet fallback: 지역 검색 결과가 없으면 이름 키워드로 재검색
         if (finalData.length === 0 && normalizedCategory === 'pet') {
-            console.log(`🐾 [Pet Fallback] No pet facilities found by region, trying keyword search...`);
             const petKeywords = ['동물장례', '펫', '반려동물', 'pet'];
             for (const keyword of petKeywords) {
                 if (finalData.length >= 3) break;
@@ -249,7 +249,6 @@ export const getIntelligentRecommendations = async (
                     }
                 }
             }
-            console.log(`🐾 [Pet Fallback] After keyword search: ${finalData.length}`);
         }
 
         // B. 3개 미만이면 좌표 기반 반경 확장 (5km → 10km → 20km)
@@ -276,7 +275,6 @@ export const getIntelligentRecommendations = async (
 
                 for (const radius of radiusList) {
                     if (finalData.length >= 3) break;
-                    console.log(`🔍 [Recommendation] Radius search: ${radius / 1000}km from ${baseLat.toFixed(4)},${baseLng.toFixed(4)}`);
                     const { data: nearbyData } = await searchFacilitiesV2(baseLat, baseLng, radius, undefined, 10);
                     if (nearbyData) {
                         const filtered = strictFilter(nearbyData, regionText);
@@ -303,7 +301,6 @@ export const getIntelligentRecommendations = async (
 
     // 2-b. Pet 최종 fallback: 지역 무관 pet 시설 검색 (결과가 0이면)
     if (finalData.length === 0 && normalizedCategory === 'pet') {
-        console.log(`🐾 [Pet Final Fallback] Searching all pet facilities without region filter...`);
         const petKeywords = ['동물장례', '펫', '반려동물'];
         for (const keyword of petKeywords) {
             if (finalData.length >= 3) break;
@@ -317,7 +314,6 @@ export const getIntelligentRecommendations = async (
                 }
             }
         }
-        console.log(`🐾 [Pet Final Fallback] Found: ${finalData.length}`);
     }
 
     // 3. Final Sort & Limit
@@ -720,9 +716,6 @@ export const createReview = async (
     userName?: string,
     images: string[] = []
 ): Promise<any> => {
-    // 🔍 디버깅 로그
-    console.log('=== [DEBUG] facility_reviews.createReview ===');
-
     const insertData = {
         facility_id: facilityId,
         user_id: userId,
@@ -1805,15 +1798,12 @@ export const getConsultationsByFacility = async (
  */
 export const getConsultationsByUser = async (userId: string): Promise<Consultation[]> => {
     try {
-        console.log('📋 [MyPage] Fetching consultations for user_id:', userId);
         const { data, error } = await supabase
             .from('consultations')
             .select('*')
             .eq('user_id', userId)
             .not('status', 'eq', 'cancelled')
             .order('created_at', { ascending: false });
-
-        console.log('📋 [MyPage] Results:', data?.length, 'Error:', error);
 
         if (error) {
             console.error('getConsultationsByUser error:', error);

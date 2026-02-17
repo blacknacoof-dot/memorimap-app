@@ -91,7 +91,7 @@ export default function EndingNoteEditModal({ isOpen, onClose, currentNote, onSa
                 </div>
 
                 {/* Content - Compact */}
-                <div className="p-5 space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                <div className="p-5 space-y-6 max-h-[75vh] md:max-h-[60vh] overflow-y-auto custom-scrollbar">
                     {/* 1. 선호 방식 */}
                     <div className="space-y-3">
                         <h3 className="text-[11px] font-bold text-pink-500 flex items-center gap-1.5">

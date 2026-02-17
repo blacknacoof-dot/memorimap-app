@@ -137,7 +137,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
     };
 
     return (
-        <div className="fixed inset-x-0 bottom-0 z-[250] bg-white rounded-t-3xl shadow-2xl transform transition-transform duration-300 max-h-[90vh] h-[80vh] flex flex-col md:max-w-md md:mx-auto">
+        <div className="fixed inset-x-0 bottom-0 z-[250] bg-white rounded-t-3xl shadow-2xl transform transition-transform duration-300 max-h-[90vh] h-[75vh] md:h-[80vh] flex flex-col md:max-w-md md:mx-auto">
             {/* Handle */}
             <div className="w-full flex justify-center pt-3 pb-1" onClick={onClose}>
                 <div className="w-12 h-1.5 bg-gray-300 rounded-full cursor-pointer"></div>
@@ -175,7 +175,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as any)}
-                        className={`flex-1 py-4 text-sm font-bold ${activeTab === tab.id
+                        className={`flex-1 py-4 text-xs md:text-sm font-bold truncate ${activeTab === tab.id
                             ? 'text-primary border-b-2 border-primary'
                             : 'text-gray-400'}`}
                     >
@@ -355,15 +355,15 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                                                     {prod.tagline && <span className={`text-xs ${isPremium || isStandard ? 'text-white/70' : 'text-primary'
                                                         }`}>{prod.tagline}</span>}
                                                 </div>
-                                                <p className={`text-xs mt-2 ${isPremium || isStandard ? 'text-white/80' : 'text-gray-500'
+                                                <p className={`text-xs mt-2 break-words ${isPremium || isStandard ? 'text-white/80' : 'text-gray-500'
                                                     }`}>{prod.description}</p>
                                             </div>
 
                                             <div className={`p-4 space-y-4 ${isPremium || isStandard ? 'bg-white' : ''}`}>
                                                 {prod.serviceDetails && prod.serviceDetails.map((detail: any, dIdx: number) => (
                                                     <div key={dIdx} className="flex gap-3 text-sm">
-                                                        <span className="font-bold text-gray-700 w-12 shrink-0 text-xs">{detail.category}</span>
-                                                        <div className="text-gray-600 flex-1 text-xs space-y-1">
+                                                        <span className="font-bold text-gray-700 w-12 shrink-0 text-xs break-keep">{detail.category}</span>
+                                                        <div className="text-gray-600 flex-1 text-xs space-y-1 break-words min-w-0">
                                                             {detail.items.map((item: string, iIdx: number) => (
                                                                 <div key={iIdx} className="flex items-start gap-1.5">
                                                                     <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 text-blue-500 shrink-0" />
@@ -381,8 +381,8 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                                                     <div className="space-y-1">
                                                         {prod.faq.slice(0, 1).map((f: any, fIdx: number) => (
                                                             <div key={fIdx} className="text-[11px]">
-                                                                <div className="font-medium text-gray-800">Q: {f.q}</div>
-                                                                <div className="text-gray-500">A: {f.a}</div>
+                                                                <div className="font-medium text-gray-800 break-words">Q: {f.q}</div>
+                                                                <div className="text-gray-500 break-words">A: {f.a}</div>
                                                             </div>
                                                         ))}
                                                     </div>

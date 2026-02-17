@@ -119,7 +119,7 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
     if (activeCompany?.id.startsWith('pet_')) {
         return (
             <div className="fixed inset-0 bg-black/50 z-[300] flex items-center justify-center p-4">
-                <div className="bg-white rounded-2xl w-full h-[85vh] sm:h-[700px] max-w-md flex flex-col shadow-2xl overflow-hidden relative">
+                <div className="bg-white rounded-2xl w-full h-[80vh] sm:h-[700px] max-w-md flex flex-col shadow-2xl overflow-hidden relative">
                     <PetChatInterface
                         company={activeCompany}
                         onClose={onClose}
@@ -137,7 +137,7 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
     if (company && !company.id.startsWith('pet_')) {
         return (
             <div className="fixed inset-0 bg-black/50 z-[300] flex items-center justify-center p-4">
-                <div className="bg-white rounded-2xl w-full h-[85vh] sm:h-[700px] max-w-md flex flex-col shadow-2xl overflow-hidden relative">
+                <div className="bg-white rounded-2xl w-full h-[80vh] sm:h-[700px] max-w-md flex flex-col shadow-2xl overflow-hidden relative">
                     <BrandChatInterface
                         company={company}
                         onClose={onClose}
@@ -433,7 +433,7 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
                             <p className="text-xs text-amber-400 font-bold">{activeCompany ? '공식 브랜드 상담 채널' : '상조 업체 비교 분석 센터'}</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                    <button onClick={onClose} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-white/10 rounded-full transition-colors shrink-0">
                         ✕
                     </button>
                 </div>

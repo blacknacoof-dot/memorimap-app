@@ -244,7 +244,7 @@ export default function IntegratedJourneyView({
     const percent = journeyPercent;
 
     return (
-        <section className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mx-1 mb-8">
+        <section className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mx-1 mb-8 pb-20 md:pb-8">
             {/* 1. Header & Progress Section */}
             <div className="p-5 bg-gradient-to-r from-pink-50/50 to-purple-50/50">
                 <div className="flex items-center gap-2 mb-3">
