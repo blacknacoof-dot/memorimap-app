@@ -63,7 +63,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
       {/* FilterBar (카테고리만) — 검색창 아래 */}
       {viewState !== ViewState.MY_PAGE && !isMenuOpen && (
-        <div className="absolute top-14 md:top-18 left-0 right-0 z-40 px-3 md:px-4 pointer-events-none animate-in fade-in slide-in-from-top-1 duration-300">
+        <div className="absolute top-[3.5rem] md:top-[4.5rem] left-0 right-0 z-40 px-3 md:px-4 pointer-events-none animate-in fade-in slide-in-from-top-1 duration-300">
           <div className="pointer-events-auto">
             <FilterBar />
           </div>
