@@ -40,7 +40,7 @@ export const ChatBot: React.FC<Props> = ({
         e?.preventDefault();
         // console.log("ChatBot: handleSubmit triggered", { input, isLoading, topic }); // DEBUG
         if (!input.trim() || isLoading) {
-            console.log("ChatBot: Validations failed");
+            // Validations failed
             return;
         }
         onSendMessage(input);
@@ -48,7 +48,7 @@ export const ChatBot: React.FC<Props> = ({
     };
 
     const handleTopicClick = (t: ConsultationTopic) => {
-        console.log("ChatBot: Topic clicked", t); // DEBUG
+        // Topic clicked
         if (onTopicSelect) onTopicSelect(t);
     };
 

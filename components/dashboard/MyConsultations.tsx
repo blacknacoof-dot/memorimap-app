@@ -131,7 +131,7 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
                         filter: `user_id=eq.${userId}`
                     },
                     (payload) => {
-                        console.log('User Realtime update:', payload);
+                        // User Realtime update received
                         fetchConsultations(); // Refresh to see new status and instructions
                     }
                 )

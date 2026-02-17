@@ -90,7 +90,6 @@ export const searchUsers = async (query: string): Promise<AdminUser[]> => {
 };
 
 export const updateUserRole = async (userId: string, newRole: string) => {
-    console.log(`[admin.ts] Updating user ${userId} role to: "${newRole}" (length: ${newRole.length})`);
     const { error } = await supabase
         .from('users')
         .update({ role: newRole })
@@ -117,7 +116,6 @@ export const getAllUsers = async (): Promise<AdminUser[]> => {
 };
 
 export const approveSangjoUser = async (userId: string, clerkId: string, sangjoId: string, role: string, userName: string) => {
-    console.log(`[admin.ts] approveSangjoUser: SupabaseID=${userId}, ClerkID=${clerkId}, role=${role}`);
     // 1. Update general user role using Supabase UUID
     const { error: roleError } = await supabase
         .from('users')

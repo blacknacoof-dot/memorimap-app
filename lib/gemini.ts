@@ -113,7 +113,6 @@ export async function* streamConsultationMessage(
 ): AsyncGenerator<string, void, unknown> {
     // Try real API first, fallback to mock if it fails
     if (!USE_REAL_AI || !genAI || !API_KEY) {
-        console.log("Using Mock AI (Simulation Mode)");
         yield* getMockAIResponse(facility, newMessage, topic);
         return;
     }

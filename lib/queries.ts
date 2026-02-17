@@ -1134,7 +1134,6 @@ export const getUserRole = async (userId: string) => {
             hqAdmin = data;
         } catch (e) {
             // Ignore if table doesn't exist
-            console.log('Sangjo HQ check skipped (table missing or error)');
         }
 
         if (hqAdmin) {
@@ -1152,7 +1151,6 @@ export const getUserRole = async (userId: string) => {
             branchAdmin = data;
         } catch (e) {
             // Ignore if table doesn't exist
-            console.log('Sangjo Branch check skipped (table missing or error)');
         }
 
         if (branchAdmin) {
@@ -1233,8 +1231,6 @@ export const submitPartnerApplication = async (data: any) => {
             const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
             const filePath = `licenses/${fileName}`;
 
-            console.log('[PartnerUpload] Uploading file:', fileName, 'Size:', data.businessLicenseImage.size);
-
             const { error: uploadError, data: uploadData } = await supabase.storage
                 .from('partner_docs')
                 .upload(filePath, data.businessLicenseImage, {
@@ -1247,13 +1243,10 @@ export const submitPartnerApplication = async (data: any) => {
                 throw new Error(`파일 업로드 실패: ${uploadError.message}`);
             }
 
-            console.log('[PartnerUpload] Upload successful:', uploadData);
-
             const { data: urlData } = supabase.storage
                 .from('partner_docs')
                 .getPublicUrl(filePath);
             licenseUrl = urlData.publicUrl;
-            console.log('[PartnerUpload] Public URL:', licenseUrl);
         } catch (uploadErr: any) {
             console.error('[PartnerUpload] Upload exception:', uploadErr);
             // 파일 업로드 실패핏�도 계속 진행 (licenseUrl 없이)

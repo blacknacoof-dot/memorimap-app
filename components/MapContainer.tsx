@@ -64,17 +64,17 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
     // SDK 로드 대기 (index.html에서 미리 로드됨)
     const loadAndInitMap = () => {
       if (window.naver && window.naver.maps && window.naver.maps.Map) {
-        console.log('[MapContainer] SDK already loaded, init immediately');
+        // SDK already loaded, init immediately
         initMap();
         return;
       }
 
-      console.log('[MapContainer] Waiting for Naver SDK...');
+      // Waiting for Naver SDK
       checkInterval = setInterval(() => {
         if (window.naver && window.naver.maps && window.naver.maps.Map) {
           if (checkInterval) clearInterval(checkInterval);
           if (isMounted) {
-            console.log('[MapContainer] SDK loaded via polling');
+            // SDK loaded via polling
             initMap();
           }
         }
@@ -131,7 +131,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
         });
 
         setIsMapReady(true);
-        console.log('[MapContainer] Naver Map Initialized successfully');
+        // Naver Map Initialized successfully
 
         // Fix: 초기 로드 시 지도 빈 화면 방지 - 여러 타이밍에 리사이즈 트리거
         const triggerResize = () => {
@@ -160,7 +160,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
           const clusterScript = document.createElement('script');
           clusterScript.src = '/MarkerClustering.js';
           clusterScript.onload = () => {
-            console.log('[MapContainer] MarkerClustering loaded');
+            // MarkerClustering loaded
             if (isMounted) setIsClusterReady(true);
           };
           clusterScript.onerror = () => {

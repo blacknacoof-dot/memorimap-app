@@ -113,7 +113,7 @@ export const ContractMonitoring: React.FC = () => {
 
     const playEmergencySound = () => {
         // 실제 구현 시 오디오 파일 경로 추가
-        console.log('🚨 긴급 상황 발생 알림음 재생');
+        // Emergency sound notification
     };
 
     /**

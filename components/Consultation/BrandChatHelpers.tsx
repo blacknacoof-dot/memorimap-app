@@ -90,7 +90,7 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log("전송 시도 데이터:", formData); // [DEBUG] User requested log
+        // Form submission
         onSubmit(formData);
     };
 

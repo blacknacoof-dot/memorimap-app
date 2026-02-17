@@ -79,7 +79,7 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
                     filter: `facility_id=eq.${facilityId}`
                 },
                 (payload) => {
-                    console.log('Realtime update received:', payload);
+                    // Realtime update received
                     fetchConsultations(); // Refresh list on change
                 }
             )

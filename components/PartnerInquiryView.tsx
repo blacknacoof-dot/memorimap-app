@@ -142,7 +142,7 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack, onLoginClick }) =>
                 privacyConsent: formData.privacyConsent,    // 추가
                 targetFacilityId: formData.targetFacilityId
             });
-            console.log('Submission success');
+            // Submission success
             setIsSuccess(true);
         } catch (error: any) {
             console.error('Submission failed', error);

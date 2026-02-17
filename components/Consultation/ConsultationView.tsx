@@ -32,7 +32,7 @@ export const ConsultationView: React.FC<Props> = ({
 
     // Initialize from existing consultation if provided
     useEffect(() => {
-        console.log("ConsultationView: Mounted", { facility: facility.name, hasExisting: !!existingConsultation }); // DEBUG
+        // ConsultationView mounted
         if (existingConsultation) {
             setMessages(existingConsultation.messages);
             setTopic(existingConsultation.topic as ConsultationTopic);

@@ -337,7 +337,7 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
                                 created_at: new Date().toISOString()
                             });
 
-                            console.log(`✅ ${isConsult ? '상담 신청' : '가입 신청'} 완료:`, contractNumber);
+                            // Contract saved successfully
 
                             // 대시보드 연동: consultations 테이블에도 INSERT
                             if (activeCompany && currentUser) {
@@ -360,7 +360,7 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
                                             status: 'pending',
                                             category: 'sangjo',
                                         });
-                                        console.log('✅ consultations 테이블 연동 완료');
+                                        // Consultations table sync complete
                                     }
                                 } catch (consultErr) {
                                     console.error('consultations 연동 실패 (비치명적):', consultErr);
