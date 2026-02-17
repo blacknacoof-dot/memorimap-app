@@ -244,7 +244,7 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
                 emergency_level: isUrgent ? 'critical' : 'normal',
                 created_at: new Date().toISOString()
             });
-            console.log(`✅ 상담 접수 저장 완료: ${contractNumber}`);
+            // Consultation saved successfully
         } catch (e) {
             console.error('상담 접수 저장 실패:', e);
         }

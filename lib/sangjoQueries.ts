@@ -27,7 +27,6 @@ export const saveSangjoContract = async (contract: SangjoContract, client?: Supa
                 .from('sangjo_contracts')
                 .update({ status: '완료' })
                 .eq('id', existing[0].id);
-            console.log(`기존 상조 계약 자동 종료: ${existing[0].contract_number}`);
         }
     }
 

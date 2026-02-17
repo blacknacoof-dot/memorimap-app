@@ -67,7 +67,7 @@ export default function IntegratedJourneyView({
                 if (token) {
                     // [Fix] createAuthenticatedClient를 사용하여 확실한 인증 보장
                     authClient = createAuthenticatedClient(token);
-                    console.log('[Journey] Authenticated client created for data loading');
+                    // Authenticated client created for data loading
                 }
             }
 
@@ -95,7 +95,7 @@ export default function IntegratedJourneyView({
 
         try {
             // Clerk JWT 토큰을 명시적으로 가져와서 Supabase에 설정
-            console.log('[Journey] Getting Clerk token...');
+            // Getting Clerk token
             const token = await session.getToken({ template: 'supabase' });
 
             if (!token) {
@@ -106,7 +106,7 @@ export default function IntegratedJourneyView({
 
             // [Fix] createAuthenticatedClient 사용
             const authClient = createAuthenticatedClient(token);
-            console.log('[Journey] Authenticated client ready, saving for user:', user.id);
+            // Authenticated client ready, saving
 
             const { error } = await authClient
                 .from('user_ending_notes')

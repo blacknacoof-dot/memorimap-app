@@ -55,7 +55,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
         setIsLoading(true);
         try {
             const client = await getAuthClient();
-            console.log('[Dashboard] loadData started. user.id:', user.id);
+            // loadData started
 
             // Get the single facility owned by this user (using auth client for RLS)
             const { data: facilityArr } = await client
@@ -64,7 +64,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                 .eq('user_id', user.id)
                 .limit(1);
             const facilityId = facilityArr?.[0]?.id || null;
-            console.log('[Dashboard] facilityId:', facilityId);
+            // facilityId resolved
             setMyFacilityId(facilityId);
 
             if (facilityId) {
@@ -100,7 +100,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                     .order('created_at', { ascending: false });
                 if (consError) console.error('[Dashboard] consultations error:', consError);
                 const cons = (consData || []) as Consultation[];
-                console.log('[Dashboard] consultations:', cons.length);
+                // consultations loaded
                 setConsultations(cons);
             } else {
                 console.warn('[Dashboard] No facilityId found for user:', user.id);
@@ -116,7 +116,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
     useEffect(() => {
         if (!myFacilityId) return;
 
-        console.log('Setting up Realtime subscription for facility:', myFacilityId);
+        // Setting up Realtime subscription
 
         // 1. Consultations Subscription
         const consultationChannel = supabase
@@ -153,7 +153,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                     filter: `facility_id=eq.${myFacilityId}`
                 },
                 (payload) => {
-                    console.log('Realtime Reservation Update:', payload);
+                    // Realtime Reservation Update
                     if (payload.eventType === 'INSERT') {
                         // Map database row to UI Reservation type if needed
                         const newRes: Reservation = {

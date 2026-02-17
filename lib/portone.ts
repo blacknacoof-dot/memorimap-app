@@ -39,17 +39,6 @@ const detectDevice = () => {
 
     const isMobile = isMobileDevice || isInAppBrowser || (isTouchDevice && isSmallScreen);
 
-    console.log('🔍 Device Detection:', {
-        userAgent: ua,
-        isMobileDevice,
-        isInAppBrowser,
-        isTouchDevice,
-        isSmallScreen,
-        screenWidth: window.innerWidth,
-        screenHeight: window.innerHeight,
-        finalDecision: isMobile ? 'MOBILE (POPUP)' : 'PC (IFRAME)'
-    });
-
     return isMobile;
 };
 
@@ -76,15 +65,6 @@ export const requestPayment = async (params: PaymentRequest): Promise<PaymentRes
         mobile: 'POPUP' as const
     };
 
-    console.log('💳 Payment Request:', {
-        device: finalIsMobile ? 'Mobile' : 'PC',
-        windowType: finalIsMobile ? windowType.mobile : windowType.pc,
-        amount: params.totalAmount,
-        orderName: params.orderName,
-        forceMobile,
-        forcePC
-    });
-
     try {
         const response = await window.PortOne.requestPayment({
             storeId: params.storeId,
@@ -98,7 +78,6 @@ export const requestPayment = async (params: PaymentRequest): Promise<PaymentRes
             windowType: windowType, // ✅ 객체 형식으로 전달
         });
 
-        console.log('✅ Payment Response:', response);
         return response;
 
     } catch (error: any) {

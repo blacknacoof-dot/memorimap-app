@@ -139,7 +139,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
         } catch (err: any) {
             console.error('Bot init failed:', err);
             if (retryCount < 2) {
-                console.log(`Retrying init... (${retryCount + 1}/3)`);
+                // Retrying init
                 setTimeout(() => initBot(retryCount + 1), 1000);
             } else {
                 setError('상담 내역을 불러오지 못했습니다. 네트워크 상태를 확인해 주세요.');

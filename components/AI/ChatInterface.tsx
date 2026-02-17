@@ -343,7 +343,7 @@ export const ChatInterface: React.FC<Props> = ({
                 }
             } catch (e) {
                 // Fallback to plain text if parsing fails
-                console.log("Not a JSON response:", e);
+                // Not a JSON response, use plain text
             }
 
             const aiMsg: ChatMessage & { facilities?: Facility[] } = {
@@ -408,7 +408,7 @@ export const ChatInterface: React.FC<Props> = ({
 
                     // [VERIFICATION] Check Pet Region Strictness (Redundant but kept for safety)
                     if ((category === 'pet' || initialIntent === 'pet_funeral') && !regionText) {
-                        console.error('🚫 [Verification] Pet Search BLOCKED: No Region provided');
+                        logToSystem('WARN', 'Pet Search BLOCKED: No Region provided', traceId);
                         aiMsg.action = 'NONE';
                         aiMsg.text = "반려동물 장례식장은 지역 정보가 필수입니다. \n\n어느 지역을 찾으시나요? (예: 일산, 강남구)";
                         aiMsg.facilities = []; // Clear results if any accidental match
@@ -416,7 +416,7 @@ export const ChatInterface: React.FC<Props> = ({
                     }
                 } else {
                     // 2. No results (Mock Data Disabled for 'Maum-i' logic purity, or fallback text)
-                    console.log('ℹ️ [Real DB] No results found.');
+                    // No results found from real DB
                     // Fallback handled by logic below if no facilities attached
                     aiMsg.action = 'NONE';
                     aiMsg.text = '죄송합니다. 해당 조건에 맞는 시설을 찾지 못했습니다.\n다른 지역이나 조건으로 다시 검색해 주세요.';
@@ -440,7 +440,7 @@ export const ChatInterface: React.FC<Props> = ({
                     });
                     if (lead) {
                         setCurrentLeadId(lead.id);
-                        console.log('[ChatInterface] Lead created:', lead.id);
+                        logToSystem('INFO', 'Lead created', traceId, { leadId: lead.id });
                     }
                 } catch (e) {
                     console.error('Lead creation failed:', e);
@@ -490,7 +490,7 @@ export const ChatInterface: React.FC<Props> = ({
                         'AI 긴급 예약'
                     );
 
-                    console.log("Urgent Reservation Confirmed in DB:", visitDate);
+                    logToSystem('INFO', 'Urgent Reservation Confirmed in DB', traceId, { visitDate: visitDate.toISOString() });
 
                 } catch (e) {
                     console.error("Failed to save Urgent Reservation:", e);
@@ -529,7 +529,7 @@ export const ChatInterface: React.FC<Props> = ({
 
             // [VERIFICATION LOG]
             const traceId = generateTraceId();
-            console.log(`[TRACE_ID:${traceId}] [BUTTON_CLICK] intent:${scenario}`);
+            logToSystem('INFO', `Button click: intent=${scenario}`, traceId);
 
             if (scenario === 'funeral') {
                 setActiveScenario('funeral');
@@ -568,7 +568,7 @@ export const ChatInterface: React.FC<Props> = ({
     const handleReserve = async (candidate: Facility) => {
         try {
             if (currentLeadId) {
-                console.log('[ChatInterface] Handing over lead to facility:', candidate.id);
+                // Handing over lead to facility
                 await createConsultationFromLead(currentLeadId, candidate.id);
             }
             onAction('RESERVE', candidate);
@@ -602,7 +602,7 @@ export const ChatInterface: React.FC<Props> = ({
                     mode={formMode}
                     onClose={() => setIsFormOpen(false)}
                     onSubmit={async (data) => {
-                        console.log('Form Submitted (Urgent/Consult):', data);
+                        // Form Submitted (Urgent/Consult)
                         const traceId = generateTraceId();
 
                         try {
@@ -631,7 +631,7 @@ export const ChatInterface: React.FC<Props> = ({
                             });
 
                             if (lead) {
-                                console.log('[ChatInterface] Lead Saved:', lead.id);
+                                // Lead saved successfully
 
                                 // [PDCA] 3. Sync to System Log (Success)
                                 logToSystem('INFO', 'Lead Created Successfully', traceId, { leadId: lead.id });

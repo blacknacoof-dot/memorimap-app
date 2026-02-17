@@ -75,7 +75,7 @@ export const FuneralCompanyView: React.FC<Props> = ({
                         console.error('[FuneralCompanyView] ❌ Review fetch error:', reviewError);
                     }
 
-                    console.log(`[FuneralCompanyView] 🔍 Total reviews fetched from DB: ${allReviews?.length || 0}`);
+                    // Reviews fetched from DB
 
                     // Group reviews by facility_id (ensure string keys and trim whitespace)
                     const reviewsByCompany = new Map<string, any[]>();

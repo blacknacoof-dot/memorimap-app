@@ -202,7 +202,7 @@ const MapView: React.FC<MapViewProps> = ({ viewState, setViewState }) => {
                             currentUser={user ? { id: user.id, name: user.firstName || 'User' } : null}
                             initialIntent={chatIntent}
                             onSearchFacilities={(region) => {
-                                console.log("AI Search region:", region);
+                                // AI Search region
                                 setSearchQuery(region);
                                 return [];
                             }}
