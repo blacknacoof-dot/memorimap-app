@@ -8,6 +8,8 @@ import { getFacilityFaqs } from '../../lib/queries';
 import { FuneralCompany } from '../../types';
 import { FUNERAL_COMPANIES } from '../../constants';
 import { ScenarioBot } from '../AI/ScenarioBot';
+import { useSession } from '../../lib/auth';
+import { supabase, createAuthenticatedClient } from '../../lib/supabaseClient';
 
 interface Props {
     onClose: () => void;
@@ -114,6 +116,7 @@ import { PetChatInterface } from './PetChatInterface';
 
 export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onCompanySelect, currentUser }) => {
     const [activeCompany, setActiveCompany] = useState<FuneralCompany | null | undefined>(company);
+    const { session: clerkSession } = useSession();
 
     // If specific pet company is active, use the dedicated Pet UI
     if (activeCompany?.id.startsWith('pet_')) {
@@ -339,19 +342,24 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
 
                             // Contract saved successfully
 
-                            // 대시보드 연동: consultations 테이블에도 INSERT
+                            // 대시보드 연동: consultations 테이블에도 INSERT (인증 클라이언트 사용)
                             if (activeCompany && currentUser) {
                                 try {
-                                    const { supabase } = await import('../../lib/supabaseClient');
+                                    // 인증 클라이언트 생성
+                                    let client = supabase;
+                                    try {
+                                        const token = await clerkSession?.getToken({ template: 'supabase' });
+                                        if (token) client = createAuthenticatedClient(token);
+                                    } catch (_) { /* fallback to anon */ }
                                     // 상조 회사명으로 facilities UUID 조회
-                                    const { data: facilityRow } = await supabase
+                                    const { data: facilityRow } = await client
                                         .from('facilities')
                                         .select('id')
                                         .eq('name', activeCompany.name)
                                         .limit(1)
-                                        .single();
+                                        .maybeSingle();
                                     if (facilityRow) {
-                                        await supabase.from('consultations').insert({
+                                        await client.from('consultations').insert({
                                             facility_id: facilityRow.id,
                                             user_id: currentUser.id,
                                             user_name: d.name || currentUser.name || '익명',

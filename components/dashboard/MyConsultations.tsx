@@ -77,8 +77,25 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
             legacyData = await getConsultationsByUser(userId); // fallback
         }
 
-        // 2. Fetch AI Consultations (deleted 제외)
-        const aiDataRaw = await aiConsultationService.getUserConsultations(userId);
+        // 2. Fetch AI Consultations (deleted 제외) - 인증 클라이언트 우선
+        let aiDataRaw: any[] = [];
+        try {
+            const token = await session?.getToken({ template: 'supabase' });
+            if (token) {
+                const authClient = createAuthenticatedClient(token);
+                const { data, error } = await authClient
+                    .from('ai_consultations')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .order('updated_at', { ascending: false });
+                if (!error && data) aiDataRaw = data;
+            }
+            if (aiDataRaw.length === 0) {
+                aiDataRaw = await aiConsultationService.getUserConsultations(userId);
+            }
+        } catch (_) {
+            aiDataRaw = await aiConsultationService.getUserConsultations(userId);
+        }
         const aiData = aiDataRaw.filter(ai => ai.status !== 'cancelled' && ai.status !== 'deleted');
 
         // 3. Merge & Adapt
