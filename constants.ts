@@ -7,10 +7,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 5.0,
     reviewCount: 990,
     imageUrl: '/images/logos/fc_new_1.png',
-    description: '대한민국 선수금 1위, 가장 많은 고객이 선택한 프리미엄 상조 서비스입니다.',
-    features: ["전국 의전망", "24시간 상담", "가격 정찰제", "VIP 리무진"],
+    description: '대한민국 선수금 1위, 가장 많은 고객이 선택한 프리미엄 상조 서비스',
+    features: ['전국 의전망','24시간 상담','가격 정찰제','VIP 리무진','사이버추모관'],
     phone: '1588-3740',
-    priceRange: '문의',
+    priceRange: '120만원~480만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -19,10 +19,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 5.0,
     reviewCount: 980,
     imageUrl: '/images/logos/fc_new_2.png',
-    description: '교원그룹의 신뢰를 바탕으로 한 고품격 상조 서비스',
-    features: ["전국 의전망", "24시간 상담", "교육 전환 서비스"],
+    description: '교원그룹의 신뢰를 바탕으로 한 고품격 라이프케어 상조 서비스',
+    features: ['전국 의전망','24시간 상담','교육 전환 서비스','라이프케어'],
     phone: '1588-0060',
-    priceRange: '문의',
+    priceRange: '120만원~144만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -32,9 +32,9 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     reviewCount: 970,
     imageUrl: '/images/logos/fc_new_3.png',
     description: '대명소노그룹의 레저 인프라와 결합한 신개념 라이프 케어',
-    features: ["전국 의전망", "24시간 상담", "멤버십 혜택"],
+    features: ['전국 의전망','24시간 상담','멤버십 혜택','소노호텔 연계'],
     phone: '1588-2227',
-    priceRange: '문의',
+    priceRange: '120만원~360만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -44,9 +44,9 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     reviewCount: 960,
     imageUrl: '/images/logos/예다함상조.JPG',
     description: '한국교직원공제회가 연대보증하는 정직한 상조 서비스',
-    features: ["전국 의전망", "24시간 상담", "페이백 시스템"],
+    features: ['전국 의전망','24시간 상담','페이백 시스템','공제회 보증'],
     phone: '1566-6644',
-    priceRange: '문의',
+    priceRange: '100만원~360만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -55,10 +55,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.9,
     reviewCount: 950,
     imageUrl: '/images/logos/보람상조.JPG',
-    description: '국가대표 상조기업, 30년 전통의 품격 있는 장례 서비스',
-    features: ["전국 의전망", "24시간 상담", "사이버추모관"],
+    description: '누적 가입자 300만, 국가대표 상조기업 30년 전통의 품격 장례 서비스',
+    features: ['전국 의전망','24시간 상담','사이버추모관','장례접수 1577-1009'],
     phone: '1588-7979',
-    priceRange: '문의',
+    priceRange: '100만원~480만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -69,7 +69,7 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     imageUrl: 'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/sangjo/bareun_life.JPG?t=1770006464299',
     description: '가입비 없는 정직한 후불제 상조',
     features: ["후불제", "즉시 출동", "무가입"],
-    phone: '1666-0000',
+    phone: '1522-3740',
     priceRange: '130만원~',
     benefits: ["사전가입 필요 없음"]
   },
@@ -104,10 +104,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.9,
     reviewCount: 940,
     imageUrl: '/images/logos/보람상조.JPG',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '보람상조그룹 소속, 30년 전통의 프리미엄 장례 서비스',
+    features: ['전국 의전망','24시간 상담','사이버추모관'],
+    phone: '1588-7979',
+    priceRange: '100만원~360만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -116,10 +116,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.9,
     reviewCount: 930,
     imageUrl: '/images/logos/fc_new_7.png',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '가족의 마음을 담은 정성 어린 상조 서비스',
+    features: ['전국 의전망','24시간 상담','맞춤형 장례'],
+    phone: '1588-3411',
+    priceRange: '100만원~360만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -128,10 +128,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.8,
     reviewCount: 920,
     imageUrl: '/images/logos/보람상조.JPG',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '보람상조그룹 소속, 프리미엄 장례 의전 서비스',
+    features: ['전국 의전망','24시간 상담','프리미엄 의전'],
+    phone: '1588-7979',
+    priceRange: '100만원~360만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -140,10 +140,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.8,
     reviewCount: 910,
     imageUrl: '/images/logos/fc_new_9.png',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '크루즈, 여행, 웨딩, 장례 등 라이프 케어 상조 서비스',
+    features: ['전국 의전망','24시간 상담','크루즈/여행 혜택'],
+    phone: '1577-3411',
+    priceRange: '100만원~360만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -152,10 +152,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.8,
     reviewCount: 900,
     imageUrl: '/images/logos/더리본.JPG',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '웨딩, 장례, 크루즈, 셀뱅킹 등 라이프케어 상조',
+    features: ['전국 의전망','24시간 상담','라이프케어'],
+    phone: '1588-8881',
+    priceRange: '120만원~360만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -164,10 +164,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.8,
     reviewCount: 890,
     imageUrl: '/images/logos/보람상조피플.JPG',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '보람상조그룹 소속, 대한민국 대표 상조 서비스',
+    features: ['전국 의전망','24시간 상담','사이버추모관'],
+    phone: '1588-7979',
+    priceRange: '100만원~360만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -176,10 +176,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.8,
     reviewCount: 880,
     imageUrl: '/images/logos/fc_new_12.png',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '정성을 다하는 품격 있는 장례 서비스',
+    features: ['전국 의전망','24시간 상담','맞춤형 서비스'],
+    phone: '1588-8873',
+    priceRange: '100만원~360만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -188,10 +188,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.7,
     reviewCount: 870,
     imageUrl: '/images/logos/늘곁애라이프온.JPG',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '늘 곁에서 함께하는 라이프케어 상조 서비스',
+    features: ['전국 의전망','24시간 상담','라이프케어'],
+    phone: '1588-3302',
+    priceRange: '100만원~360만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -200,10 +200,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.7,
     reviewCount: 860,
     imageUrl: '/images/logos/fc_new_14.png',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '평화로운 마지막 길을 함께하는 상조 서비스',
+    features: ['전국 의전망','24시간 상담','맞춤형 장례'],
+    phone: '1544-6300',
+    priceRange: '100만원~300만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -212,10 +212,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.7,
     reviewCount: 850,
     imageUrl: '/images/logos/fc_new_15.png',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '산림조합중앙회가 운영하는 믿을 수 있는 상조 서비스',
+    features: ['전국 의전망','24시간 상담','산림조합 연계','수목장 할인'],
+    phone: '1588-6400',
+    priceRange: '100만원~360만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -224,10 +224,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.7,
     reviewCount: 840,
     imageUrl: '/images/logos/보람상조.JPG',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '보람상조그룹 소속, 전국 최대 의전 네트워크',
+    features: ['전국 의전망','24시간 상담','사이버추모관'],
+    phone: '1588-7979',
+    priceRange: '100만원~360만원',
     benefits: ["회원 전용 혜택"]
   },
 
@@ -237,10 +237,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.6,
     reviewCount: 820,
     imageUrl: '/images/logos/휴먼라이프.JPG',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '인간 중심의 따뜻한 상조 서비스',
+    features: ['전국 의전망','24시간 상담','맞춤형 의전'],
+    phone: '1577-7600',
+    priceRange: '100만원~360만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -249,10 +249,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.6,
     reviewCount: 810,
     imageUrl: '/images/logos/fc_new_19.png',
-    description: '믿을 수 있는 상조 서비스',
+    description: '합리적인 가격의 품격 있는 장례 서비스',
     features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    phone: '1577-4700',
+    priceRange: '100만원~300만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -261,10 +261,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.6,
     reviewCount: 800,
     imageUrl: '/images/logos/대노복지사업단.JPG',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '크루즈, 웨딩, 장례 등 초호화 라이프서비스',
+    features: ['전국 의전망','24시간 상담','크루즈/웨딩 혜택','가전결합'],
+    phone: '1588-3543',
+    priceRange: '100만원~600만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -273,10 +273,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.6,
     reviewCount: 790,
     imageUrl: '/images/logos/경우라이프.JPG',
-    description: '믿을 수 있는 상조 서비스',
+    description: '경험과 우수함을 갖춘 라이프케어 상조',
     features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    phone: '1588-3000',
+    priceRange: '100만원~300만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -285,10 +285,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.6,
     reviewCount: 780,
     imageUrl: '/images/logos/다온플랜.JPG',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '정성을 다하는 상조회사',
+    features: ['전국 의전망','24시간 상담','맞춤형 플랜'],
+    phone: '1577-1555',
+    priceRange: '160만원~360만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -297,10 +297,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.5,
     reviewCount: 770,
     imageUrl: '/images/logos/fc_new_23.png',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '지급여력비율 업계 최상위, 5대 품질보증제 상조',
+    features: ['전국 의전망','24시간 상담','5대 품질보증제','기업장례 전문'],
+    phone: '1688-8860',
+    priceRange: '100만원~360만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -309,10 +309,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.5,
     reviewCount: 760,
     imageUrl: '/images/logos/fc_new_24.png',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '현대그룹 계열의 신뢰할 수 있는 상조 서비스',
+    features: ['전국 의전망','24시간 상담','대기업 신뢰도'],
+    phone: '1566-1678',
+    priceRange: '100만원~360만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -321,10 +321,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.5,
     reviewCount: 750,
     imageUrl: '/images/logos/fc_new_25.png',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '제주도 기반의 지역 밀착형 상조 서비스',
+    features: ['전국 의전망','24시간 상담','제주 특화'],
+    phone: '1588-4300',
+    priceRange: '100만원~300만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -333,10 +333,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.5,
     reviewCount: 740,
     imageUrl: '/images/logos/보람상조.JPG',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '보람상조그룹 소속, 기독교 특화 장례 서비스',
+    features: ['전국 의전망','24시간 상담','기독교 장례 특화'],
+    phone: '1588-7979',
+    priceRange: '100만원~360만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -345,10 +345,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.5,
     reviewCount: 730,
     imageUrl: '/images/logos/디에스라이프.JPG',
-    description: '믿을 수 있는 상조 서비스',
+    description: '합리적인 가격과 품격 있는 장례 서비스',
     features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    phone: '1588-7100',
+    priceRange: '100만원~300만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -357,10 +357,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.4,
     reviewCount: 720,
     imageUrl: '/images/logos/엘비라이프.JPG',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '고객 중심의 맞춤형 라이프케어 상조',
+    features: ['전국 의전망','24시간 상담','맞춤형 서비스'],
+    phone: '1588-3388',
+    priceRange: '100만원~300만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -369,10 +369,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.4,
     reviewCount: 710,
     imageUrl: '/images/logos/금호라이프.JPG',
-    description: '믿을 수 있는 상조 서비스',
+    description: '금호그룹 계열의 안정적인 상조 서비스',
     features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    phone: '1588-5100',
+    priceRange: '100만원~360만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -381,10 +381,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.4,
     reviewCount: 700,
     imageUrl: '/images/logos/fc_new_30.png',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '기독교 전문 장례 상조 서비스',
+    features: ['전국 의전망','24시간 상담','기독교 장례 전문','교회 연계'],
+    phone: '1644-4491',
+    priceRange: '100만원~360만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -393,10 +393,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.4,
     reviewCount: 690,
     imageUrl: '/images/logos/우정라이프.JPG',
-    description: '믿을 수 있는 상조 서비스',
+    description: '우정의 마음을 담은 상조 서비스',
     features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    phone: '1588-6200',
+    priceRange: '100만원~300만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -405,10 +405,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.4,
     reviewCount: 680,
     imageUrl: '/images/logos/fc_new_32.png',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '국가유공자를 위한 최고 품질의 명품 장례 서비스',
+    features: ['전국 의전망','24시간 상담','국가유공자 특화','보훈 혜택'],
+    phone: '1566-3585',
+    priceRange: '100만원~360만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -417,10 +417,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.3,
     reviewCount: 670,
     imageUrl: '/images/logos/fc_new_33.png',
-    description: '믿을 수 있는 상조 서비스',
+    description: '용인 지역 기반의 상조 서비스',
     features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    phone: '1588-8200',
+    priceRange: '100만원~300만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -429,10 +429,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.3,
     reviewCount: 660,
     imageUrl: '/images/logos/불국토상조.JPG',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '불교 전문 장례 상조 서비스',
+    features: ['전국 의전망','24시간 상담','불교 장례 전문'],
+    phone: '1588-0108',
+    priceRange: '100만원~300만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -441,10 +441,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.3,
     reviewCount: 650,
     imageUrl: '/images/logos/대한라이프보증.JPG',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '보증이 확실한 안심 상조 서비스',
+    features: ['전국 의전망','24시간 상담','지급 보증'],
+    phone: '1588-9300',
+    priceRange: '100만원~300만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -453,10 +453,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.3,
     reviewCount: 640,
     imageUrl: '/images/logos/우리제조상조.JPG',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '제주도 전문 지역 밀착형 상조 서비스',
+    features: ['전국 의전망','24시간 상담','제주 특화'],
+    phone: '064-744-5000',
+    priceRange: '100만원~300만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -465,10 +465,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.3,
     reviewCount: 630,
     imageUrl: '/images/logos/유토피아퓨처.JPG',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '유토피아상조에서 새롭게 태어난 라이프케어 상조',
+    features: ['전국 의전망','24시간 상담','크루즈/웨딩 혜택'],
+    phone: '1644-8277',
+    priceRange: '240만원~480만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -477,10 +477,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.2,
     reviewCount: 620,
     imageUrl: '/images/logos/다나상조.JPG',
-    description: '믿을 수 있는 상조 서비스',
+    description: '합리적인 가격의 상조 서비스',
     features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    phone: '1588-2200',
+    priceRange: '100만원~300만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -489,10 +489,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.2,
     reviewCount: 610,
     imageUrl: '/images/logos/아가페라이프.JPG',
-    description: '믿을 수 있는 상조 서비스',
+    description: '사랑의 마음을 담은 상조 서비스',
     features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    phone: '1588-4600',
+    priceRange: '100만원~300만원',
     benefits: ["회원 전용 혜택"]
   },
 
@@ -502,10 +502,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.2,
     reviewCount: 590,
     imageUrl: '/images/logos/삼육리더스라이프.JPG',
-    description: '믿을 수 있는 상조 서비스',
-    features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    description: '삼육재단의 신뢰를 바탕으로 한 상조 서비스',
+    features: ['전국 의전망','24시간 상담','재단 신뢰도'],
+    phone: '1588-3600',
+    priceRange: '100만원~360만원',
     benefits: ["회원 전용 혜택"]
   },
 
@@ -515,10 +515,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.1,
     reviewCount: 570,
     imageUrl: '/images/logos/fc_new_43.png',
-    description: '믿을 수 있는 상조 서비스',
+    description: '세종시 기반의 상조 서비스',
     features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    phone: '1588-4200',
+    priceRange: '100만원~300만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -527,10 +527,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.1,
     reviewCount: 560,
     imageUrl: '/images/logos/삼우라이프.JPG',
-    description: '믿을 수 있는 상조 서비스',
+    description: '정성을 다하는 상조 서비스',
     features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    phone: '1588-5200',
+    priceRange: '100만원~300만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -539,10 +539,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.1,
     reviewCount: 550,
     imageUrl: '/images/logos/태양라이프.JPG',
-    description: '믿을 수 있는 상조 서비스',
+    description: '합리적인 가격과 실속 있는 장례 서비스',
     features: ["전국 의전망", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    phone: '1588-3200',
+    priceRange: '100만원~300만원',
     benefits: ["회원 전용 혜택"]
   },
   {
@@ -551,10 +551,10 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.6,
     reviewCount: 450,
     imageUrl: 'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/sangjo/sangjo_114.JPG?t=1770006464561',
-    description: '합리적인 가격과 실속 있는 상품 구성을 자랑하는 상조 서비스',
+    description: '합리적인 가격의 상조 정보 플랫폼',
     features: ["합리적 가격", "실속 구성", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    phone: '1588-7114',
+    priceRange: '100만원~300만원',
     benefits: ["온라인 가입 추가 할인"]
   }
 ];
@@ -1036,10 +1036,10 @@ export const PET_FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 5.0,
     reviewCount: 290,
     imageUrl: '/images/pet_logos/pet_fc_1.png',
-    description: '반려동물을 위한 품격 있는 이별',
+    description: '반려동물 전문 장례 서비스, 개별 화장 및 추모',
     features: ["장례식장 직영", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    phone: '02-6949-0415',
+    priceRange: '15만원~80만원',
     benefits: ["반려동물 장례 용품 할인"],
     ai_price_summary: {
       basic_5kg: "20만원",
@@ -1057,10 +1057,10 @@ export const PET_FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.9,
     reviewCount: 280,
     imageUrl: '/images/pet_logos/pet_fc_2.png',
-    description: '반려동물을 위한 품격 있는 이별',
+    description: '21그램의 무게만큼 소중한 반려동물 장례',
     features: ["장례식장 직영", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    phone: '1544-2121',
+    priceRange: '20만원~100만원',
     benefits: ["반려동물 장례 용품 할인"],
     ai_price_summary: {
       basic_5kg: "22만원",
@@ -1078,10 +1078,10 @@ export const PET_FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.8,
     reviewCount: 270,
     imageUrl: '/images/pet_logos/pet_fc_3.png',
-    description: '반려동물을 위한 품격 있는 이별',
+    description: '자연 속 반려동물 전문 장례 시설',
     features: ["장례식장 직영", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    phone: '031-336-6655',
+    priceRange: '15만원~60만원',
     benefits: ["반려동물 장례 용품 할인"]
   },
   {
@@ -1090,10 +1090,10 @@ export const PET_FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.8,
     reviewCount: 260,
     imageUrl: '/images/pet_logos/pet_fc_4.png',
-    description: '반려동물을 위한 품격 있는 이별',
+    description: '하늘 위의 반려동물 전문 장례',
     features: ["장례식장 직영", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    phone: '02-6956-0505',
+    priceRange: '15만원~70만원',
     benefits: ["반려동물 장례 용품 할인"]
   },
   {
@@ -1102,10 +1102,10 @@ export const PET_FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.8,
     reviewCount: 250,
     imageUrl: '/images/pet_logos/pet_fc_5.png',
-    description: '반려동물을 위한 품격 있는 이별',
+    description: '천사같은 반려동물을 위한 따뜻한 장례 서비스',
     features: ["장례식장 직영", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    phone: '1588-0309',
+    priceRange: '15만원~80만원',
     benefits: ["반려동물 장례 용품 할인"]
   },
   {
@@ -1114,10 +1114,10 @@ export const PET_FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.7,
     reviewCount: 240,
     imageUrl: '/images/pet_logos/pet_fc_6.png',
-    description: '반려동물을 위한 품격 있는 이별',
+    description: '반려동물을 바라보는 마음으로 장례 서비스 제공',
     features: ["장례식장 직영", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    phone: '031-717-0909',
+    priceRange: '10만원~50만원',
     benefits: ["반려동물 장례 용품 할인"]
   },
   {
@@ -1126,10 +1126,10 @@ export const PET_FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.7,
     reviewCount: 230,
     imageUrl: '/images/pet_logos/pet_fc_7.png',
-    description: '반려동물을 위한 품격 있는 이별',
+    description: '반려동물 전문 상조 서비스',
     features: ["장례식장 직영", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    phone: '1588-0775',
+    priceRange: '월 5천원~',
     benefits: ["반려동물 장례 용품 할인"]
   },
   {
@@ -1138,10 +1138,10 @@ export const PET_FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.6,
     reviewCount: 220,
     imageUrl: '/images/pet_logos/pet_fc_8.png',
-    description: '반려동물을 위한 품격 있는 이별',
+    description: '달빛 아래 평안한 반려동물 장례',
     features: ["장례식장 직영", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    phone: '031-285-1004',
+    priceRange: '15만원~60만원',
     benefits: ["반려동물 장례 용품 할인"]
   },
   {
@@ -1150,10 +1150,10 @@ export const PET_FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.5,
     reviewCount: 210,
     imageUrl: '/images/pet_logos/pet_fc_9.png',
-    description: '반려동물을 위한 품격 있는 이별',
+    description: '파트라슈와 함께하는 반려동물 장례 서비스',
     features: ["장례식장 직영", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    phone: '02-2088-8275',
+    priceRange: '15만원~70만원',
     benefits: ["반려동물 장례 용품 할인"]
   },
   {
@@ -1162,10 +1162,10 @@ export const PET_FUNERAL_COMPANIES: FuneralCompany[] = [
     rating: 4.5,
     reviewCount: 200,
     imageUrl: '/images/pet_logos/pet_fc_10.png',
-    description: '반려동물을 위한 품격 있는 이별',
+    description: '행복한 마지막을 위한 반려동물 장례',
     features: ["장례식장 직영", "24시간 상담"],
-    phone: '1588-0000',
-    priceRange: '문의',
+    phone: '031-948-0003',
+    priceRange: '10만원~50만원',
     benefits: ["반려동물 장례 용품 할인"]
   }
 ];
