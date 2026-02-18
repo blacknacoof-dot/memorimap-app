@@ -166,7 +166,7 @@ export const ContractMonitoring: React.FC = () => {
     const filteredShow = [
         ...contracts.map(c => ({ ...c, type: 'contract' as const })),
         ...aiConsultations.map(a => ({ ...a, type: 'ai' as const }))
-    ].sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime());
+    ].sort((a, b) => (new Date(b.created_at || 0).getTime() || 0) - (new Date(a.created_at || 0).getTime() || 0));
 
     const filteredItems = filteredShow.filter(item => {
         if (activeFilter === 'all') return true;

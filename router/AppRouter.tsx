@@ -4,6 +4,7 @@ import { ViewState } from '../types';
 import LoadingFallback from '../components/ui/LoadingFallback';
 import { useUser } from '../lib/auth';
 import { useFacilities } from '../hooks/useFacilities';
+import { useSuperAdmin } from '../hooks/useSuperAdmin';
 
 /* Placeholder for views not yet implemented */
 const Placeholder: React.FC<{ name: string }> = ({ name }) => (
@@ -97,6 +98,23 @@ const MyPageWrapper: React.FC = () => {
 };
 
 
+/** Guard: only renders children if current user is super_admin */
+const SuperAdminGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { isSuperAdmin, loading } = useSuperAdmin();
+    const navigate = useNavigate();
+    if (loading) return <LoadingFallback />;
+    if (!isSuperAdmin) {
+        return (
+            <div className="h-full flex flex-col items-center justify-center p-4">
+                <p className="text-xl font-bold mb-2 text-red-600">접근 권한이 없습니다</p>
+                <p className="text-gray-600 mb-6">슈퍼관리자만 접근할 수 있습니다.</p>
+                <button onClick={() => navigate('/')} className="px-6 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">메인으로 돌아가기</button>
+            </div>
+        );
+    }
+    return <>{children}</>;
+};
+
 /**
  * AppRouter handles hash‑based routing and maps ViewState values to routes.
  */
@@ -152,7 +170,7 @@ const AppRouter: React.FC = () => {
 
                     {/* Admin Views */}
                     <Route path="/admin" element={<AdminView />} />
-                    <Route path="/super-admin" element={<SuperAdminDashboard />} />
+                    <Route path="/super-admin" element={<SuperAdminGuard><SuperAdminDashboard /></SuperAdminGuard>} />
                     <Route path="/facility-admin" element={<FacilityAdminWrapper />} />
                     <Route path="/funeral-company" element={<FuneralCompanyView />} />
 

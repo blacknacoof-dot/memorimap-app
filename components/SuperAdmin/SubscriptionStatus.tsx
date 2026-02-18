@@ -32,7 +32,7 @@ export const SubscriptionStatus: React.FC = () => {
     };
 
     const filtered = subs.filter(s =>
-        s.facilityName.toLowerCase().includes(searchTerm.toLowerCase())
+        (s.facilityName || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const totalRevenue = filtered.reduce((acc, curr) => acc + (curr.price || 0), 0);

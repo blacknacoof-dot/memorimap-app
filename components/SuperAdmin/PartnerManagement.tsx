@@ -43,7 +43,7 @@ export const PartnerManagement: React.FC = () => {
     };
 
     const filteredPartners = partners.filter(p => {
-        const matchesSearch = p.company_name.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch = (p.company_name || '').toLowerCase().includes(searchTerm.toLowerCase());
         const matchesFilter = filterStatus === 'all' || p.status === filterStatus;
         return matchesSearch && matchesFilter;
     });
@@ -123,7 +123,7 @@ export const PartnerManagement: React.FC = () => {
                                         <span className={`text-[10px] px-2 py-0.5 rounded-full ${partner.status === 'approved' ? 'bg-green-100 text-green-600' :
                                                 partner.status === 'pending' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'
                                             }`}>
-                                            {partner.status.toUpperCase()}
+                                            {(partner.status || 'unknown').toUpperCase()}
                                         </span>
                                     </h3>
                                     <p className="text-xs text-slate-400">{partner.contact_person || '담당자 미정'}</p>

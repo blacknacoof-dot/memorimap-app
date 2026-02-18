@@ -73,8 +73,8 @@ export const PartnerAdmissions: React.FC = () => {
     const [selectedTab, setSelectedTab] = useState('all');
 
     const filtered = facilities.filter(f => {
-        const matchesSearch = f.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            f.contact_person.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch = (f.company_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (f.contact_person || '').toLowerCase().includes(searchTerm.toLowerCase());
 
         if (!matchesSearch) return false;
 

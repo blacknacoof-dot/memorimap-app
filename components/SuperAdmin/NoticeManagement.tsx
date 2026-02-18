@@ -101,7 +101,7 @@ export const NoticeManagement: React.FC = () => {
                                     </div>
                                     <div className="flex items-center gap-1 text-blue-500">
                                         <Eye size={12} />
-                                        <span>42회 열람</span>
+                                        <span>{(notice as any).view_count ?? '-'}회 열람</span>
                                     </div>
                                 </div>
                             </div>

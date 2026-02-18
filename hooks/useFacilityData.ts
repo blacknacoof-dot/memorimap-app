@@ -83,7 +83,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
           });
           setFacilities(mappedFacilities);
         } else {
-          console.log("Supabase DB is empty or RPC error");
+          // DB empty or RPC returned no data
         }
       } catch (err: any) {
         console.error("Failed to fetch facilities:", err);

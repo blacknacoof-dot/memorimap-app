@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase, createAuthenticatedClient, setSupabaseAuth } from '../lib/supabaseClient';
+import { supabase, createAuthenticatedClient } from '../lib/supabaseClient';
 import { useUser, useSession } from '../lib/auth'; // Clerk 연동 지원을 위한 훅 임포트
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';

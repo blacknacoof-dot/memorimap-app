@@ -108,7 +108,7 @@ const App: React.FC = () => {
   useEffect(() => { getCurrentPosition(); }, [getCurrentPosition]);
 
   useEffect(() => {
-    if (session) console.log('✅ [Session Sync] Clerk session active (handled by useAuthSync)');
+    // Session sync handled by useAuthSync
   }, [session, isSignedIn]);
 
   // Route Handling

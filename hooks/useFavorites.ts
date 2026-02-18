@@ -16,14 +16,10 @@ export function useMyFavorites() {
     return useQuery({
         queryKey: ['my-favorites', userId],
         queryFn: async () => {
-            console.log("👀 [useMyFavorites] Starting query for user:", userId);
-
             const { data, error } = await supabase.rpc('get_my_favorites');
             if (error) {
-                console.error('❌ [useMyFavorites] RPC Error:', error);
                 throw error;
             }
-            console.log('✅ [useMyFavorites] Fetched Data:', data);
             return data as UserFavorite[];
         },
         staleTime: 2 * 60 * 1000,

@@ -402,7 +402,7 @@ export const MyPageV2: React.FC<Props> = ({
                 <EditProfileModal
                     user={user}
                     onClose={() => setShowEditProfile(false)}
-                    onUpdate={() => window.location.reload()}
+                    onUpdate={() => setShowEditProfile(false)}
                 />
             )}
             {selectedReservation && (

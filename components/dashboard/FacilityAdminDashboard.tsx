@@ -224,6 +224,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
 
     const handleReject = async (reservationId: string) => {
         const reason = prompt('거절 사유를 입력해주세요 (선택):');
+        if (reason === null) return;
 
         try {
             await rejectReservation(reservationId, reason || undefined);

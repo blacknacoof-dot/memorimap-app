@@ -892,14 +892,20 @@ export const getMyReservations = async (userId: string) => {
 
     return (data || []).map((item: any) => ({
         id: item.id,
-        facilityId: item.facility_id,
-        facilityName: item.facility_name || '시설',
-        date: item.visit_date,
-        timeSlot: item.time_slot,
+        facility_id: item.facility_id,
+        facility_name: item.facility_name || '시설',
+        visit_date: item.visit_date,
+        time_slot: item.time_slot,
         status: item.status,
-        visitorCount: item.visitor_count || 1,
+        visitor_count: item.visitor_count || 1,
+        visitor_name: item.visitor_name || '',
+        contact_number: item.contact_number || '',
+        purpose: item.purpose || '',
+        special_requests: item.special_requests || '',
+        payment_amount: item.payment_amount || 0,
+        user_id: item.user_id,
         message: item.message,
-        createdAt: item.created_at
+        created_at: item.created_at
     }));
 };
 

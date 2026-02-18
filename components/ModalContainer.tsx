@@ -229,7 +229,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
       )}
 
       {/* AI Helper - Maum-i */}
-      {viewState === ViewState.MAP && !selectedFacility && !showComparison && !aiChatFacility && (
+      {viewState === ViewState.MAP && !selectedFacility && !showComparison && !aiChatFacility && !isMenuOpen && (
         <RecommendationStarter
           onSelectIntent={(intent) => {
             setInitialChatIntent(intent);
