@@ -1,0 +1,2311 @@
+{
+  "timestamp": "2026-02-18T12:11:50.394Z",
+  "total": 2149,
+  "verified": 1835,
+  "not_found": 314,
+  "address_exact": 1755,
+  "address_partial": 30,
+  "address_mismatch": 50,
+  "phone_added": 0,
+  "coords_fixed": 1,
+  "details": [],
+  "mismatches": [
+    {
+      "id": "75f08bc5-65ee-4571-a1e0-1b7b1bc14135",
+      "name": "정선군사북장례식장",
+      "type": "funeral_home",
+      "db_address": "강원도 정선군 사북읍 지장천로 727 정선군사북장례식장 (사북리  정선군립병원)",
+      "naver_address": "강원특별자치도 정선군 사북읍 사북중앙로 75",
+      "naver_title": "사북장례복지회 협동조합"
+    },
+    {
+      "id": "dfadf2b6-1b3e-462d-990c-11cbcda1eb4b",
+      "name": "김해한솔재활요양병원장례식장",
+      "type": "funeral_home",
+      "db_address": "경상남도 김해시 김해대로 2379-1",
+      "naver_address": "경상남도 김해시 부원동 621-2 621-2",
+      "naver_title": "김해한솔재활요양병원장례식장주차장"
+    },
+    {
+      "id": "b057f6e5-e85b-46e4-a9f8-0bf17c95da1a",
+      "name": "포항전문장례식장",
+      "type": "funeral_home",
+      "db_address": "경북 포항시 북구 흥해읍 동해대로 997",
+      "naver_address": "경상북도 경주시 원화로 345 성동타워 4층 401호",
+      "naver_title": "경주전문장례식장 근조화환꽃집"
+    },
+    {
+      "id": "92c58c5b-5a81-4684-8673-5e48ed1d8f69",
+      "name": "조암장례식장",
+      "type": "funeral_home",
+      "db_address": "경기도 화성시 장안면 사랑길 111 조암장례식장",
+      "naver_address": "경기도 화성시 만세구 장안면 사랑길 111 조암장례식장",
+      "naver_title": "조암장례식장"
+    },
+    {
+      "id": "bb9e4c0c-cb53-4a5f-aef5-72f5f1040f3a",
+      "name": "가족사랑장례식장",
+      "type": "funeral_home",
+      "db_address": "전북특별자치도 김제시 하동1길 13",
+      "naver_address": "전북특별자치도 전주시 완산구 용머리로 77 효사랑가족요양병원",
+      "naver_title": "효사랑가족요양병원"
+    },
+    {
+      "id": "efb436ac-e3a1-42f5-a09f-40b98fdabd44",
+      "name": "국제성모병원 장례식장",
+      "type": "funeral_home",
+      "db_address": "인천 서구 심곡동 291",
+      "naver_address": "인천광역시 서구 탁옥로 104 1층 106호",
+      "naver_title": "소노아임레디 인천점"
+    },
+    {
+      "id": "4b164600-343a-42fb-a4c7-486f5eee0b76",
+      "name": "경북영천 영천장례식장",
+      "type": "funeral_home",
+      "db_address": "경상북도 영천시 한방로 35",
+      "naver_address": "경상북도 영천시 천문로 596-8",
+      "naver_title": "영천영락원장례식장"
+    },
+    {
+      "id": "51d9ab6f-28e8-4644-a47e-4811a08fe51a",
+      "name": "봉생병원장례식장",
+      "type": "funeral_home",
+      "db_address": "부산광역시 동구 중앙대로 401 봉생병원",
+      "naver_address": "부산광역시 동래구 충렬대로348번길 23 10-15층",
+      "naver_title": "동래봉생병원장례식장"
+    },
+    {
+      "id": "8b32d2d5-4bde-4e50-99df-631a0749a4f0",
+      "name": "한림대학교동탄성심병원 장례식장",
+      "type": "funeral_home",
+      "db_address": "경기도 화성시 큰재봉길 7",
+      "naver_address": "경기도 화성시 동탄구 큰재봉길 7",
+      "naver_title": "한림대학교동탄성심병원 장례식장"
+    },
+    {
+      "id": "5d8de3ff-4ac7-4412-a588-8bbd95c06739",
+      "name": "경주전문장례식장",
+      "type": "funeral_home",
+      "db_address": "경상북도 경주시 유림로97번길 45",
+      "naver_address": "경상북도 경주시 원화로 345 성동타워 4층 401호",
+      "naver_title": "경주전문장례식장 근조화환꽃집"
+    },
+    {
+      "id": "d7d908bf-21fb-4a15-a977-15441c73ffdf",
+      "name": "나주납골당",
+      "type": "columbarium",
+      "db_address": "전라남도 나주시 문평면 월암로 1050",
+      "naver_address": "전라남도 나주시 왕곡면 신포내동길 14-29 번지",
+      "naver_title": "지장사추모관"
+    },
+    {
+      "id": "2363e1b1-f893-466f-8407-819bdc4300b8",
+      "name": "하늘납골당",
+      "type": "columbarium",
+      "db_address": "경기 파주시 광탄면 명봉산로 277",
+      "naver_address": "경기도 양주시 평화로1261번길 372-146",
+      "naver_title": "하늘안추모공원"
+    },
+    {
+      "id": "348874e0-d4f6-485f-8f43-21cb2e18fe25",
+      "name": "천주교비봉추모공원 추모관",
+      "type": "columbarium",
+      "db_address": "경기도 화성시 비봉면 화성로1946번길 26-11",
+      "naver_address": "경기도 화성시 효행구 비봉면 화성로1946번길 26-11",
+      "naver_title": "천주교비봉추모공원 추모관"
+    },
+    {
+      "id": "8f815855-5999-49ad-90bd-1fa3151ebe6d",
+      "name": "부활의집",
+      "type": "columbarium",
+      "db_address": "전라남도 나주시 다도면 다도로 187",
+      "naver_address": "전라남도 담양군 월산면 월광로 512",
+      "naver_title": "(부활의집)재단법인광주구천주교공원묘원"
+    },
+    {
+      "id": "b1ee7805-7239-48f1-a6b3-be242810d19b",
+      "name": "화성유일병원장례식장",
+      "type": "funeral_home",
+      "db_address": "경기도 화성시 남양읍 남양로920번길 6 1층",
+      "naver_address": "경기도 화성시 만세구 남양읍 남양로920번길 6 1층",
+      "naver_title": "화성유일병원장례식장"
+    },
+    {
+      "id": "d358f284-3e5a-4289-a3cc-1ca4950de397",
+      "name": "기독교추모관",
+      "type": "columbarium",
+      "db_address": "충남 금산군 추부면 서대동기길 100",
+      "naver_address": "충청남도 아산시 배방읍 고불로 129-26",
+      "naver_title": "헤븐스추모관"
+    },
+    {
+      "id": "f3fedf9a-dc8c-4f3a-8c48-b70cc59ff055",
+      "name": "납골당",
+      "type": "columbarium",
+      "db_address": "서울특별시 종로구 청진동 208 금강빌딩301호",
+      "naver_address": "서울특별시 은평구 통일로 1093",
+      "naver_title": "흥창사납골당"
+    },
+    {
+      "id": "26a89752-580b-4971-a446-8f994e6d2e1d",
+      "name": "하늘의문성당",
+      "type": "columbarium",
+      "db_address": "인천광역시 서구 당하동 산152",
+      "naver_address": "하늘의 문 성당",
+      "naver_title": "하늘의문성당"
+    },
+    {
+      "id": "584f3da1-a97e-4bac-9f1c-a2fd0c4a205b",
+      "name": "동탄추모관",
+      "type": "columbarium",
+      "db_address": "경기도 화성시 동탄기흥로 64-42",
+      "naver_address": "경기도 화성시 동탄구 동탄기흥로 64-42",
+      "naver_title": "동탄추모관"
+    },
+    {
+      "id": "e2ad3f11-d3fd-489b-8690-2be737e2c299",
+      "name": "푸른솔",
+      "type": "cemetery",
+      "db_address": "광주광역시 서구 운천로 131 에이동 2층 214호",
+      "naver_address": "광주광역시 남구 서문대로 686 교육타워 1층",
+      "naver_title": "푸른솔약국"
+    },
+    {
+      "id": "f14020ac-708a-42fc-bf6d-1e6913bee544",
+      "name": "추모공원",
+      "type": "cemetery",
+      "db_address": "서울특별시 성동구 옥수동",
+      "naver_address": "서울특별시 서초구 양재대로12길 74",
+      "naver_title": "서울추모공원"
+    },
+    {
+      "id": "86c32b9b-efe6-42f6-882c-36d99549d985",
+      "name": "극락사추모공원",
+      "type": "cemetery",
+      "db_address": "대구광역시 남구 명덕로54길 31 (이천동, 서봉극락암)",
+      "naver_address": "극락사 추모공원 주차장",
+      "naver_title": "극락사추모공원"
+    },
+    {
+      "id": "a4af36a9-d537-4c5a-9cdf-542d41943f05",
+      "name": "추모공원휴",
+      "type": "cemetery",
+      "db_address": "서울 송파구 송파대로 167",
+      "naver_address": "서울특별시 송파구 법원로 128 문정역 SKV1 B동 0816호",
+      "naver_title": "하이라이프상조"
+    },
+    {
+      "id": "9b0bdc5c-2845-409d-b0b3-2d2e1089832e",
+      "name": "영신원",
+      "type": "cemetery",
+      "db_address": "경상남도 하동군 적량면 동산리",
+      "naver_address": "경상남도 창원시 마산합포구 월영북로 46",
+      "naver_title": "영신원"
+    },
+    {
+      "id": "3608f16b-c9e9-4c10-b6ae-d9c8ab839889",
+      "name": "내촌면 제2공설묘지",
+      "type": "cemetery",
+      "db_address": "경기도 포천시 내촌면 진목리 산292",
+      "naver_address": "경기도 용인시 처인구 남사읍 진목리 274",
+      "naver_title": "내촌면제2공설묘지"
+    },
+    {
+      "id": "1507c682-a427-4670-96ef-e5639911a215",
+      "name": "노들하늘공원(동작구추모의집)",
+      "type": "cemetery",
+      "db_address": "경기도 화성시 향남읍 서봉로755번길 17-15",
+      "naver_address": "경기도 화성시 만세구 향남읍 서봉로755번길 17-15",
+      "naver_title": "노들하늘공원(동작구추모의집)"
+    },
+    {
+      "id": "d5a53ed8-f341-44de-b41f-365a13fd965c",
+      "name": "처리공원묘지",
+      "type": "cemetery",
+      "db_address": "경기도 여주시 점동면 처리 산6",
+      "naver_address": "경기도 성남시 분당구 새마을로51번길 14",
+      "naver_title": "분당 공원묘지 납골묘 추모공원 안내"
+    },
+    {
+      "id": "c6f6f865-0861-4a12-9869-48217ed2fa54",
+      "name": "함백산추모공원봉안당",
+      "type": "columbarium",
+      "db_address": "경기도 화성시 매송면 서해로 2448-32",
+      "naver_address": "경기도 화성시 효행구 매송면 서해로 2448-32",
+      "naver_title": "함백산추모공원봉안당"
+    },
+    {
+      "id": "5ce47e72-401c-4c7d-af61-2e93bf362462",
+      "name": "내리공설묘지",
+      "type": "cemetery",
+      "db_address": "인천광역시 옹진군 영흥면 내리 산258",
+      "naver_address": "인천광역시 강화군 화도면 내리 산44",
+      "naver_title": "내리공설묘지"
+    },
+    {
+      "id": "2d8b90a1-b4f1-4c90-8888-2990e6dca806",
+      "name": "영북면 제1공설묘지",
+      "type": "cemetery",
+      "db_address": "경기도 포천시 영북면 운천리 산25",
+      "naver_address": "경기도 파주시 문산읍 운천리 산25-8",
+      "naver_title": "영북면제1공설묘지"
+    },
+    {
+      "id": "7a4afd68-02d5-4c81-ae91-aa356eeefdf7",
+      "name": "청파동성당 청파묘원",
+      "type": "cemetery",
+      "db_address": "경기도 양주시 장흥면 호국로 8 (일영리)",
+      "naver_address": "경기도 파주시 탄현면",
+      "naver_title": "천주교청파동성당평화묘원"
+    },
+    {
+      "id": "5dda223d-3642-43eb-80e3-731ff99243f1",
+      "name": "씨랜드참사 추모공원",
+      "type": "cemetery",
+      "db_address": "경기도 화성시 서신면 궁평관광로153번길 39",
+      "naver_address": "경기도 화성시 만세구 서신면 궁평관광로153번길 39",
+      "naver_title": "씨랜드참사 추모공원"
+    },
+    {
+      "id": "1176e750-6c61-46aa-bcdf-798c71fddd66",
+      "name": "화성함백산추모공원",
+      "type": "cemetery",
+      "db_address": "경기도 화성시 매송면 서해로 2448-32",
+      "naver_address": "경기도 화성시 효행구 매송면 서해로 2448-32",
+      "naver_title": "화성함백산추모공원"
+    },
+    {
+      "id": "4df5825b-58b4-4d01-8f65-4a6ed0b0dd6e",
+      "name": "무등장례식장",
+      "type": "funeral_home",
+      "db_address": "광주 북구 서양로 144",
+      "naver_address": "광주광역시 북구 용봉택지로 39",
+      "naver_title": "무등화환"
+    },
+    {
+      "id": "5bd1367e-7cc4-423a-81b9-be539a64a4bf",
+      "name": "창원 제일장례식장",
+      "type": "funeral_home",
+      "db_address": "경상남도 함양군 함양읍 고운로 476-19",
+      "naver_address": "경상남도 김해시 풍유동",
+      "naver_title": "비에스꽃집제일장례식장아산병원온원광대백제종합대송시민조화꽃"
+    },
+    {
+      "id": "db5291a3-0965-4102-a202-0cb05a83069b",
+      "name": "은평성모병원 장례식장",
+      "type": "funeral_home",
+      "db_address": "서울 은평구 통일로 1021",
+      "naver_address": "서울특별시 은평구 진관동",
+      "naver_title": "연세꽃집성모장례식장성애병원녹색삼육혜민동신홍익좋은화환조화"
+    },
+    {
+      "id": "263dfbf7-fc54-4435-b36f-36a75cfda5d0",
+      "name": "봉황장례식장",
+      "type": "funeral_home",
+      "db_address": "전라남도 고흥군 고흥읍 신호산장길 3",
+      "naver_address": "전라남도 목포시 삼학로 154",
+      "naver_title": "봉황장례식장"
+    },
+    {
+      "id": "05897dbc-6ad2-4d05-bc58-218d709e81ab",
+      "name": "애향꽃집나주영산포농협장례식장꽃배달",
+      "type": "funeral_home",
+      "db_address": "전라남도 나주시 상야3길 8 2층 227호",
+      "naver_address": "전라남도 나주시 빛가람로 747 1동 2층 8호 1동 208-6호",
+      "naver_title": "나주 애향장례식장 근조3단화환 당일배송꽃집"
+    },
+    {
+      "id": "ee3356a7-fb07-4219-b36b-23fc3fd99d93",
+      "name": "소망장례식장",
+      "type": "funeral_home",
+      "db_address": "경기도 양주시 평화로 1741",
+      "naver_address": "경기도 성남시 수정구 성남대로 1219 B01",
+      "naver_title": "소망장례식장"
+    },
+    {
+      "id": "ab55de6c-a63c-45a0-81b2-36ae4cfdc813",
+      "name": "한일병원장례식장",
+      "type": "funeral_home",
+      "db_address": "경상남도 진주시 범골로 17",
+      "naver_address": "경상남도 거제시 사등면 지석로 70",
+      "naver_title": "21c한일병원장례식장"
+    },
+    {
+      "id": "966ea650-8550-4129-814a-01ae39fb9ba2",
+      "name": "상신공설묘지",
+      "type": "cemetery",
+      "db_address": "경기도 화성시 향남읍 분향동길 22",
+      "naver_address": "경기도 화성시 만세구 향남읍 분향동길 22",
+      "naver_title": "상신공설묘지"
+    },
+    {
+      "id": "3d56c0fb-fd28-424c-ae1c-8cf24556d994",
+      "name": "미래사",
+      "type": "columbarium",
+      "db_address": "경상남도 함안군 여항면 여항로 75",
+      "naver_address": "경상남도 통영시 산양읍 미륵산길 192",
+      "naver_title": "미래사"
+    },
+    {
+      "id": "c83d867d-03f5-4708-a573-9b53b896674b",
+      "name": "화성나래원 분양사무실",
+      "type": "natural_burial",
+      "db_address": "경기도 화성시 팔탄면 온천로 280-6",
+      "naver_address": "경기도 화성시 만세구 팔탄면 온천로 280-6",
+      "naver_title": "화성나래원 분양사무실"
+    },
+    {
+      "id": "bfa548e8-eaac-4533-8a07-c66e9e867171",
+      "name": "영락원장례식장",
+      "type": "columbarium",
+      "db_address": "경남 창원시 마산회원구 봉양로 152",
+      "naver_address": "경상남도 고성군 고성읍 남해안대로 2607-1",
+      "naver_title": "고성영락원장례식장"
+    },
+    {
+      "id": "decc8cc3-92eb-455d-a725-8e85f8e7dad1",
+      "name": "의정부수목장",
+      "type": "natural_burial",
+      "db_address": "경기도 의정부시 체육로 298-21 2층 2028호",
+      "naver_address": "경기도 의정부시 평화로 471 2층 220-B67호",
+      "naver_title": "의정부수목장 영구안치 상담"
+    },
+    {
+      "id": "b58f1442-a089-410b-a372-5f72fb92fea5",
+      "name": "별그리다",
+      "type": "natural_burial",
+      "db_address": "경기도 양평군 양동면 양동금곡1길 331",
+      "naver_address": "경기도 광명시 신기로 7 골드스타빌딩 2층 204호",
+      "naver_title": "살롱별그리다"
+    },
+    {
+      "id": "84db9da7-0d25-4cd7-be11-0a3f3e70fe97",
+      "name": "화성함백산추모공원 수목장",
+      "type": "natural_burial",
+      "db_address": "경기 화성시 매송면 숙곡리 산 2-2",
+      "naver_address": "경기도 화성시 효행구 매송면 매송로 14 1층 예송",
+      "naver_title": "예송"
+    },
+    {
+      "id": "03297459-1217-46d1-be40-22ca4bb4c56d",
+      "name": "약천사",
+      "type": "natural_burial",
+      "db_address": "경기도 용인시 처인구 양지면 양지로63번길 9-18",
+      "naver_address": "경기도 파주시 교하로681번길 118 약천사",
+      "naver_title": "약천사"
+    },
+    {
+      "id": "a62a2a95-83be-4339-8de1-eb9525f7d75e",
+      "name": "에덴의정원",
+      "type": "natural_burial",
+      "db_address": "전북특별자치도 전주시 완산구 콩쥐팥쥐로 1705-59 1705-62",
+      "naver_address": "전북특별자치도 익산시 계문1길 102",
+      "naver_title": "에덴의 정원"
+    },
+    {
+      "id": "17da24a0-edd3-48b8-9c21-3c3b4a2ac001",
+      "name": "선한목자교회",
+      "type": "natural_burial",
+      "db_address": "광주광역시 광산구 비아로147번길 28",
+      "naver_address": "광주광역시 북구 용봉택지로13번길 15-1",
+      "naver_title": "선한목자교회"
+    }
+  ],
+  "phone_fills": [],
+  "coord_fixes": [
+    {
+      "id": "ec725a14-68a4-4f52-b880-e1df86c2cd48",
+      "name": "인제대학교상계백병원 장례식장",
+      "old_lat": 0,
+      "old_lng": 0,
+      "new_lat": 37.6486359,
+      "new_lng": 127.0629656
+    }
+  ],
+  "not_found_list": [
+    {
+      "id": "e1a4ac94-7a7d-44cf-a924-c934814d45e0",
+      "name": "(유)성인천장례식장",
+      "type": "funeral_home",
+      "address": "인천광역시 미추홀구 석정로 6 성인천장례식장"
+    },
+    {
+      "id": "f750ec6c-2fbe-42ae-95d5-8a01e2eac440",
+      "name": "송학주천장례식장",
+      "type": "funeral_home",
+      "address": "충청북도 제천시 송학주천로 97-1 (고암동)"
+    },
+    {
+      "id": "d8cc7985-5ad3-4969-8d7e-d8d05eaa8c9e",
+      "name": "연세대학교 원주장례식장",
+      "type": "funeral_home",
+      "address": "강원도 원주시 일산로 20,내 (일산동, 연세대학교원주세브란스기독병원)"
+    },
+    {
+      "id": "433fddfd-fa5a-4f0f-bca8-f12483363836",
+      "name": "대한적십자 상주병원 장례식장",
+      "type": "funeral_home",
+      "address": "경북 상주시 상서문로 53"
+    },
+    {
+      "id": "3cc70372-a496-4798-a3fe-39a3fceb1b83",
+      "name": "강릉의료원 장례식장1관",
+      "type": "funeral_home",
+      "address": "강원특별자치도 강릉시 경강로 2007"
+    },
+    {
+      "id": "4c528b9b-7473-44fc-9932-048b3eb9b153",
+      "name": "새하늘 장례식장",
+      "type": "funeral_home",
+      "address": "경남 합천군 적중면 황강옥전로 1913"
+    },
+    {
+      "id": "95bd0714-5580-4fa4-a9c5-35cbe06f08d8",
+      "name": "차의과학대학교부속 구미차병원 장례식장",
+      "type": "funeral_home",
+      "address": "경북 구미시 신시로10길 12"
+    },
+    {
+      "id": "356a2d66-bcc1-4c44-9822-1bd2ed747b51",
+      "name": "성제요양병원 장례식장",
+      "type": "funeral_home",
+      "address": "경북 의성군 안계면 안계길 200"
+    },
+    {
+      "id": "04dc8cec-3470-44bc-aecc-e9cfa8d5f0be",
+      "name": "공동장례식장",
+      "type": "funeral_home",
+      "address": "제주특별자치도 서귀포시 남원읍 서성로 955-24"
+    },
+    {
+      "id": "d72cd419-68c6-482c-9c3d-94d612a029da",
+      "name": "아산참요양병원 장례식장",
+      "type": "funeral_home",
+      "address": "충남 아산시 염치읍 송곡안길 31"
+    },
+    {
+      "id": "ad52e496-c68b-4e3a-82fc-8b687ad34510",
+      "name": "강남요양병원 장례식장",
+      "type": "funeral_home",
+      "address": "대구 동구 동촌로 207"
+    },
+    {
+      "id": "c0a537bf-f7d4-484f-a4c4-c0ae7fbb3cb9",
+      "name": "영주자인병원 장례식장",
+      "type": "funeral_home",
+      "address": "경북 영주시 대동로31번길 9"
+    },
+    {
+      "id": "b2c01bd6-9fa6-4d7d-8b46-8dd358dc4c63",
+      "name": "하늘반려장례식장",
+      "type": "funeral_home",
+      "address": "전북특별자치도 완주군 소양면 전진로 1630"
+    },
+    {
+      "id": "b4d9007e-f328-4f45-814a-62993da23d75",
+      "name": "우도장례식장",
+      "type": "funeral_home",
+      "address": "제주특별자치도 제주시 우도면 영일길 80-10"
+    },
+    {
+      "id": "6bb74f27-560d-4c97-a581-3c3d5a951590",
+      "name": "아라한국병원 장례식장",
+      "type": "funeral_home",
+      "address": "경남 함안군 산인면 학산2길 17-50"
+    },
+    {
+      "id": "c097bf46-e1e1-4572-ac96-d6aa6fc4747e",
+      "name": "정다운요양병원 장례식장",
+      "type": "funeral_home",
+      "address": "경남 창원시 마산회원구 봉양로 160"
+    },
+    {
+      "id": "435d66f7-c693-4e37-a853-f266bfe66d5e",
+      "name": "하나성심병원 장례식장",
+      "type": "funeral_home",
+      "address": "경기 김포시 통진읍 김포대로 2110-44"
+    },
+    {
+      "id": "2cbe09c6-83bf-4765-b223-e43c771f71a5",
+      "name": "당진요양병원 신평장례식장",
+      "type": "funeral_home",
+      "address": "충남 당진시 신평면 말목길 22-13"
+    },
+    {
+      "id": "8a26f946-6c43-410f-bd4f-82883032b512",
+      "name": "표선복합문화센터 장례식장",
+      "type": "funeral_home",
+      "address": "제주특별자치도 서귀포시 표선면 표선관정로 48-36"
+    },
+    {
+      "id": "14b24a29-cc96-4274-9ae1-518210aaac50",
+      "name": "대구연세요양병원장례식장",
+      "type": "funeral_home",
+      "address": "대구광역시 서구 북비산로 156 (평리동)"
+    },
+    {
+      "id": "44d954f4-7e20-43ef-81ca-ce5d4cf06a1e",
+      "name": "(주)광주국빈장례문화원",
+      "type": "funeral_home",
+      "address": "광주광역시 서구 회재로 825 (매월동)"
+    },
+    {
+      "id": "cf4e809a-d9cd-4928-b373-31f9c03f556d",
+      "name": "이편안요양병원 장례문화원",
+      "type": "funeral_home",
+      "address": "경기 평택시 안중읍 서동대로 1831-16"
+    },
+    {
+      "id": "cd5acde8-9ff6-4dce-ab25-3241e83727bf",
+      "name": "(유)은파장례문화원",
+      "type": "funeral_home",
+      "address": "전라북도 군산시 미성로 512 (미룡동)"
+    },
+    {
+      "id": "5ffdf219-2f08-4f01-adc6-93d9581fa508",
+      "name": "청주시장례식장운영회",
+      "type": "funeral_home",
+      "address": "충북 청주시 상당구 목련로 731"
+    },
+    {
+      "id": "cb1e6fc1-3b8d-4e58-ac21-41c8e71a32ac",
+      "name": "오천삼성병원장례식장",
+      "type": "funeral_home",
+      "address": "경상북도 포항시 남구 오천읍 충무로 10 (용덕리)"
+    },
+    {
+      "id": "ef056a93-26c6-4158-aa42-64349aca3290",
+      "name": "남울산국화원 장례식장",
+      "type": "funeral_home",
+      "address": "울산 울주군 온양읍 덕남로 233"
+    },
+    {
+      "id": "3e10b669-a468-467f-a8ea-e09a44148587",
+      "name": "의성성심요양병원장례식장",
+      "type": "funeral_home",
+      "address": "경상북도 의성군 금성면 탑리길 8-2"
+    },
+    {
+      "id": "a61beab4-a896-40cc-84b8-bd3d70e8e003",
+      "name": "매직 의정부 성모장례식장 ATM",
+      "type": "funeral_home",
+      "address": "경기도 의정부시 천보로 271"
+    },
+    {
+      "id": "0483a412-81c9-4a89-a8be-5d8ee2e62a27",
+      "name": "PH장례식장",
+      "type": "funeral_home",
+      "address": "경기 부천시 원미구 조마루로 170"
+    },
+    {
+      "id": "0e6aaa64-ee9e-4fad-949e-ce49ced912c5",
+      "name": "대원장례식장",
+      "type": "funeral_home",
+      "address": "광주 북구 삼소로 133-22"
+    },
+    {
+      "id": "4b213d16-5333-40c0-a500-42dc70f4d4f4",
+      "name": "한마음효요양병원 장례식장",
+      "type": "funeral_home",
+      "address": "세종특별자치시 조치원읍 금이로 53-5"
+    },
+    {
+      "id": "c755cfc7-86b2-4565-828b-9437b120ba11",
+      "name": "울산엘리야병원 장례식장",
+      "type": "funeral_home",
+      "address": "울산 북구 호계로 285"
+    },
+    {
+      "id": "cb4db75e-6562-4948-9977-bc55ef5e1691",
+      "name": "북촌리장례식장",
+      "type": "funeral_home",
+      "address": "제주특별자치도 제주시 조천읍 북선로 144"
+    },
+    {
+      "id": "dd6540e3-c7a7-4e84-b950-d72a75587de7",
+      "name": "자미원스카이장례식장",
+      "type": "funeral_home",
+      "address": "경기도 의정부시 호국로 1342 9  10층"
+    },
+    {
+      "id": "b565e08c-808d-4251-bce2-abc63767b7c9",
+      "name": "시영의료재단 영동병원장례식장",
+      "type": "funeral_home",
+      "address": "경상남도 함안군 칠원읍 용산2길 45-13 (용산리  병원)"
+    },
+    {
+      "id": "67175656-55ae-4e25-af0a-3c78d3ba9587",
+      "name": "아산충무병원 국화원",
+      "type": "funeral_home",
+      "address": "충청남도 아산시 문화로 381"
+    },
+    {
+      "id": "4fedd9b9-06a1-4dd5-9895-1e96cd2bc397",
+      "name": "영주적십자병원장례식장",
+      "type": "funeral_home",
+      "address": "경상북도 영주시 반지미로 260"
+    },
+    {
+      "id": "550fed73-3f5b-4909-8828-b470f7ee3547",
+      "name": "서울시립장례식장",
+      "type": "funeral_home",
+      "address": "경기 파주시 광탄면 진지로 139"
+    },
+    {
+      "id": "7de7b8eb-269b-485f-9864-5dbb0c9ff2a4",
+      "name": "(유)동이리장례식장",
+      "type": "funeral_home",
+      "address": "전북특별자치도 익산시 서동로 5 동이리장례식장"
+    },
+    {
+      "id": "11cf7754-3bbe-4ce3-a0fb-591df258a37d",
+      "name": "영암효병원장례식장",
+      "type": "funeral_home",
+      "address": "전라남도 영암군 덕진면 예향로 1764 (덕진리, 효병원)"
+    },
+    {
+      "id": "ada98e70-d1fd-401e-9899-5b94c28f281c",
+      "name": "(유)현대장례식장",
+      "type": "funeral_home",
+      "address": "서울특별시 중구 세종대로 14 그랜드센트럴 B동 13층"
+    },
+    {
+      "id": "9bcba4bb-1e6a-4124-94af-1e5115a96bb0",
+      "name": "금강문화허브",
+      "type": "columbarium",
+      "address": "전국 서비스"
+    },
+    {
+      "id": "7280524c-6f03-4c9c-aff0-a2647719b9ed",
+      "name": "두레문화",
+      "type": "columbarium",
+      "address": "전국 서비스"
+    },
+    {
+      "id": "321e5aa9-e1ca-4d1e-a620-f26ff0790c30",
+      "name": "(재)미타불교원",
+      "type": "columbarium",
+      "address": "경기도 광주시 용샘길 101"
+    },
+    {
+      "id": "737e22a6-65ac-45cd-a6b7-46d913e08bbe",
+      "name": "보석교회 헤븐스",
+      "type": "columbarium",
+      "address": "충청남도 아산시 배방읍 고불로 129-26 (수철리)"
+    },
+    {
+      "id": "0780069f-3a04-404b-84c5-ad0001491cc3",
+      "name": "천주교명일동성당장례식장",
+      "type": "columbarium",
+      "address": "서울 강동구 양재대로156길 28"
+    },
+    {
+      "id": "d86ae6ae-0829-4566-b70b-45353ff3c5c8",
+      "name": "청양군추모공원(봉안당)",
+      "type": "columbarium",
+      "address": "충청남도 청양군 화성면 신수길 142-18"
+    },
+    {
+      "id": "79174680-0c33-4973-ba30-097e3c7650d2",
+      "name": "유토피아퓨처",
+      "type": "columbarium",
+      "address": "전국 서비스"
+    },
+    {
+      "id": "f8f09b1d-28bf-467d-b1dc-30d0fbdd8f0c",
+      "name": "삼천포시민장례식장입구",
+      "type": "columbarium",
+      "address": "경상남도 사천시 송포동"
+    },
+    {
+      "id": "4bfc04d5-9f06-468e-839b-c081c3f65dc5",
+      "name": "재단법인 에덴낙원",
+      "type": "columbarium",
+      "address": "경기도 이천시 마장면 서이천로 449-82 (목리)"
+    },
+    {
+      "id": "fa04a3e2-2d60-48b7-b5a2-9fa74a890dac",
+      "name": "양우회",
+      "type": "columbarium",
+      "address": "인천광역시 서구 당하동 산161-1"
+    },
+    {
+      "id": "7776f45e-72aa-48be-a099-e70d59cc1792",
+      "name": "청솔공원 봉안묘",
+      "type": "columbarium",
+      "address": "강원특별자치도 강릉시 사천면 석교리 산162"
+    },
+    {
+      "id": "b29a768b-9c1c-4951-aa0b-d83f35e785fb",
+      "name": "하늘원추모관",
+      "type": "columbarium",
+      "address": "강원특별자치도 원주시 흥업면 사제로 539 (사제리, 하늘원장례예식장)"
+    },
+    {
+      "id": "3580510a-8db8-4a67-a789-15b0ebb9263a",
+      "name": "영평사 봉안당",
+      "type": "columbarium",
+      "address": "경기도 안성시 보개면 신장길 79-42 (신장리)"
+    },
+    {
+      "id": "ba7ee096-4483-4927-adb4-7250f209a822",
+      "name": "광주영락공원 제1추모관",
+      "type": "columbarium",
+      "address": "광주광역시 북구 영락공원로 170"
+    },
+    {
+      "id": "8ea8de21-e01a-45c7-bf8a-77c526ad4876",
+      "name": "서흥김씨 납골당",
+      "type": "columbarium",
+      "address": "경기 안성시 고삼면 고삼호수로 229-9"
+    },
+    {
+      "id": "898d2d14-1a97-46c2-acd5-89602faef733",
+      "name": "불국토",
+      "type": "columbarium",
+      "address": "전국 서비스"
+    },
+    {
+      "id": "1d3b8505-47c7-4299-8566-e2f3d36f6ed1",
+      "name": "인천가족공원 호국봉안담",
+      "type": "columbarium",
+      "address": "인천광역시 부평구 평온로 61 (부평동  관리사무소및홍보관)"
+    },
+    {
+      "id": "85c3fb53-e1bb-4bb9-8eb6-3e55f3146f25",
+      "name": "바라밀",
+      "type": "columbarium",
+      "address": "전국 서비스"
+    },
+    {
+      "id": "20941355-bbf3-4673-9aa4-789d529273d2",
+      "name": "다온플랜",
+      "type": "columbarium",
+      "address": "전국 서비스"
+    },
+    {
+      "id": "7b02e206-1aa5-442e-97fa-3e9d36b40ae6",
+      "name": "에스제이산림조합",
+      "type": "columbarium",
+      "address": "전국 서비스"
+    },
+    {
+      "id": "a092ed64-2b1d-49f4-a24f-70b17b8f482b",
+      "name": "향동밀양박씨청제공파납골당",
+      "type": "columbarium",
+      "address": "전남 진도군 고군면 향동리 447"
+    },
+    {
+      "id": "682ede4d-509d-4318-9028-f86cd8c917ee",
+      "name": "완주군 공설공원묘지 봉안당",
+      "type": "columbarium",
+      "address": "전북특별자치도 완주군 봉동읍 우주로 262-121"
+    },
+    {
+      "id": "eb552795-07e1-4ead-9b40-ba7d2524439e",
+      "name": "중앙성당 장례식장",
+      "type": "columbarium",
+      "address": "부산 중구 용두산길 9"
+    },
+    {
+      "id": "5952cef1-5535-4335-a5c3-414e3d98bbea",
+      "name": "군립납골당",
+      "type": "columbarium",
+      "address": "충남 금산군 복수면 다복로 525-35"
+    },
+    {
+      "id": "1b7efbfd-fb04-4e7c-896f-b170b61f335f",
+      "name": "하늘의문(천주교 신곡2동성당)",
+      "type": "columbarium",
+      "address": "경기도 용인시 수지구 대지로 243"
+    },
+    {
+      "id": "ec173a0f-cc68-4cc9-95bd-542db26262be",
+      "name": "청주시목련원목련당",
+      "type": "columbarium",
+      "address": "충청북도 청주시 상당구 목련로 731 (월오동)"
+    },
+    {
+      "id": "b818cb20-830b-4090-8ebe-84e38b777d9a",
+      "name": "봉선사 봉안당",
+      "type": "columbarium",
+      "address": "경기도 남양주시 진접읍 봉선사길 30 (부평리  봉선사)"
+    },
+    {
+      "id": "97f638bf-2aa7-4579-a24d-435e89750b07",
+      "name": "영천만불지장회 사설납골당",
+      "type": "columbarium",
+      "address": "경북 영천시 북안면 내서로 139-17"
+    },
+    {
+      "id": "bdb08317-20af-4031-8dd0-43b1563da1cc",
+      "name": "성주남양공원 봉안당",
+      "type": "columbarium",
+      "address": "경북 성주군 선남면 관용로 401-141"
+    },
+    {
+      "id": "4e8815f4-c9e8-489f-a8d8-7c2ed72bca23",
+      "name": "수도권추모공원 분당납골당",
+      "type": "columbarium",
+      "address": "경기 광주시 오포로 211-49"
+    },
+    {
+      "id": "b6dccf73-b8f8-424a-b602-3b9fd08a15cf",
+      "name": "대구시립공원묘지 납골당",
+      "type": "columbarium",
+      "address": "경북 칠곡군 지천면 낙산로 87"
+    },
+    {
+      "id": "38219b1e-50ef-4dc5-a27d-8a9c098ce584",
+      "name": "주교좌남천성당 추모관",
+      "type": "columbarium",
+      "address": "부산 수영구 수영로427번길 15"
+    },
+    {
+      "id": "169f0243-aaeb-4947-a12e-5398243c3047",
+      "name": "안동추모공원 봉안",
+      "type": "columbarium",
+      "address": "경북 안동시 풍산읍 본마을길 36-69"
+    },
+    {
+      "id": "7fe16026-73a0-4104-9005-45a796cbbdd6",
+      "name": "전농동성당평화묘원 봉안담",
+      "type": "columbarium",
+      "address": "경기 포천시 화현면 지현리 산 27"
+    },
+    {
+      "id": "5cdd413e-9ca0-47f8-a35a-ace1b6653912",
+      "name": "용운사 납골당",
+      "type": "columbarium",
+      "address": "경상북도 칠곡군 동명면 득명2길 110 (득명리)"
+    },
+    {
+      "id": "4ebdf9c1-c86b-4fa1-a827-c34ba8a61558",
+      "name": "광주영락공원 봉안담",
+      "type": "columbarium",
+      "address": "광주광역시 북구 영락공원로 170"
+    },
+    {
+      "id": "afe53245-d2ee-4b47-88dc-2a68bba4763f",
+      "name": "기독교봉안당장례",
+      "type": "columbarium",
+      "address": "서울 구로구 디지털로 306"
+    },
+    {
+      "id": "92be1af2-c211-4a86-b4b8-a3e1bd452477",
+      "name": "대법륜사봉안당",
+      "type": "columbarium",
+      "address": "경남 김해시 금관대로 1088-28"
+    },
+    {
+      "id": "f6400018-226c-409d-b82c-1e6bca87c57a",
+      "name": "대륜사 납골당",
+      "type": "columbarium",
+      "address": "대구 동구 팔공로 1396-11"
+    },
+    {
+      "id": "a7f8cca7-a979-4cd9-b48e-adb122f97d2a",
+      "name": "영호공원봉안당",
+      "type": "columbarium",
+      "address": "경북 경주시 건천읍 단석로 1803-94"
+    },
+    {
+      "id": "4707804e-5aa0-45d2-be44-68407eceeec1",
+      "name": "쌍용사 봉안당",
+      "type": "columbarium",
+      "address": "경상북도 문경시 농암면 칠봉로 755 (율수리, 쌍용사)"
+    },
+    {
+      "id": "6e78d21f-d5a3-4517-856e-d45d441f8b9a",
+      "name": "메모리얼펠리스추모관(실로암)",
+      "type": "columbarium",
+      "address": "부산광역시 기장군 철마면 사등길 181 (고촌리, 실로암공원묘원관리사무소)"
+    },
+    {
+      "id": "0ce1a99a-9bb3-45e7-b332-19d8c3818fb2",
+      "name": "옥천군봉안당 선화원",
+      "type": "columbarium",
+      "address": "충청북도 옥천군 군서면 성왕로 982 (월전리)"
+    },
+    {
+      "id": "488bbb5d-1507-49cf-b9f0-d031070a49ef",
+      "name": "용주사 봉안당",
+      "type": "columbarium",
+      "address": "경상북도 경주시 서면 하늘마루길 328 (도리)"
+    },
+    {
+      "id": "564844a7-fbb0-4a51-84da-511ef2bf8e0f",
+      "name": "의령군공설납골묘",
+      "type": "columbarium",
+      "address": "경상남도 의령군 정곡면 법정로 580-9 (예둔리, 공설묘원)"
+    },
+    {
+      "id": "1859aa80-c64f-4788-afa3-9ae3ac1446bb",
+      "name": "안정사 납골당",
+      "type": "columbarium",
+      "address": "경기도 양주시 장흥면 권율로 169 청련사극락원"
+    },
+    {
+      "id": "f876522a-ce2d-4faf-b79d-1e705798c6a9",
+      "name": "경북도립노인전문요양병원 장례식장",
+      "type": "funeral_home",
+      "address": "경북 안동시 남후면 남일로 1463"
+    },
+    {
+      "id": "b718c1d7-e3f2-4819-8de3-928a04e4f22e",
+      "name": "하늘추모관",
+      "type": "columbarium",
+      "address": "경북 성주군 월항면 지산로 210"
+    },
+    {
+      "id": "5e52da1e-5d5b-4414-b84d-598361282626",
+      "name": "구암사 봉안당",
+      "type": "columbarium",
+      "address": "대전 유성구 북유성대로487번길 130"
+    },
+    {
+      "id": "2c7ad57d-9e0c-40ed-b735-dc294d5e5b1f",
+      "name": "용학사 납골당",
+      "type": "columbarium",
+      "address": "경기 이천시 모가면 진상미로1067번길 271"
+    },
+    {
+      "id": "3d3f33df-34b7-46b5-ad8a-fc02ec57f844",
+      "name": "양양군공설묘원 봉안당",
+      "type": "columbarium",
+      "address": "강원특별자치도 양양군 양양읍 남대천로 251-123 (월리)"
+    },
+    {
+      "id": "34677d38-83bf-467f-a9e0-c03215c59f86",
+      "name": "동천교회 납골묘",
+      "type": "columbarium",
+      "address": "경기도 이천시 설성면 설성로240번길 285 (장천리)"
+    },
+    {
+      "id": "2b01a778-9d50-494b-9f52-f0b1fa923f6e",
+      "name": "군위삼성병원 장례식장",
+      "type": "funeral_home",
+      "address": "대구 군위군 군위읍 중앙길 40"
+    },
+    {
+      "id": "8a5d6316-0a20-4819-aab7-cf0121b4f810",
+      "name": "불조사 휴안추모관",
+      "type": "columbarium",
+      "address": "경상남도 김해시 상동면 상동로 178-54"
+    },
+    {
+      "id": "bd710c88-1d79-4d49-a600-1b05375b6667",
+      "name": "천주교부산교구 하늘공원 봉안당",
+      "type": "columbarium",
+      "address": "경남 양산시 상북면 공원로3길 19"
+    },
+    {
+      "id": "f9911dfc-1a17-4e81-8ba4-045b23c585e3",
+      "name": "연수성당 장례식장",
+      "type": "columbarium",
+      "address": "인천 연수구 청능대로 74"
+    },
+    {
+      "id": "bc3f0b99-605c-42f3-afc7-a2b1c003c5da",
+      "name": "덕수이씨 정의공파종중 납골묘",
+      "type": "columbarium",
+      "address": "충남 아산시 음봉면 쌍암리 5-2"
+    },
+    {
+      "id": "0cda65f9-0ae2-4e7f-9bf0-fb8241f8a4b8",
+      "name": "용봉사 납골당",
+      "type": "columbarium",
+      "address": "서울특별시 동대문구 신설동"
+    },
+    {
+      "id": "0214f47f-ac69-47e5-ab06-ef8b10a251b5",
+      "name": "정음사원추모관",
+      "type": "columbarium",
+      "address": "충청북도 청주시 서원구 3순환로644번길 33 (죽림동)"
+    },
+    {
+      "id": "51b40d4e-b611-4a75-afd1-f0c49931a956",
+      "name": "화곡본동성당 장례식장",
+      "type": "columbarium",
+      "address": "서울 강서구 까치산로2길 43"
+    },
+    {
+      "id": "ac439969-27ec-4097-b943-57708940bef9",
+      "name": "김포시공설봉안당",
+      "type": "columbarium",
+      "address": "경기 김포시 김포한강4로 419-39"
+    },
+    {
+      "id": "80e4e1fe-fd72-4028-a611-fa0386929884",
+      "name": "만인추모관",
+      "type": "columbarium",
+      "address": "충남 금산군 복수면 다복로 525-35"
+    },
+    {
+      "id": "a3904d6b-99a8-4eb5-beef-bc489a9babcf",
+      "name": "번동성당 장례식장",
+      "type": "columbarium",
+      "address": "서울 강북구 한천로 945"
+    },
+    {
+      "id": "c332cbeb-98bc-4b90-bb5f-c4c4485448a7",
+      "name": "인제종합장묘센터 봉안당",
+      "type": "columbarium",
+      "address": "강원특별자치도 인제군 남면 자작나무숲길 444-62"
+    },
+    {
+      "id": "2bab263b-9ace-4a48-9239-2576501aa38b",
+      "name": "휴안수기봉안함",
+      "type": "columbarium",
+      "address": "경기 고양시 덕양구 호국로 1373"
+    },
+    {
+      "id": "8db505d7-b29b-4674-91bd-028f57cc0a5f",
+      "name": "통영시공설봉안당 2관",
+      "type": "columbarium",
+      "address": "경남 통영시 장대길 144"
+    },
+    {
+      "id": "c4479985-0dc2-4643-8c61-a2c8897bcdb5",
+      "name": "옥불사 봉안당",
+      "type": "columbarium",
+      "address": "제주특별자치도 제주시 애월읍 평화로 2018"
+    },
+    {
+      "id": "4281a7f8-95d3-4662-8b16-a0b361a111ba",
+      "name": "전통사찰９５호동도사",
+      "type": "columbarium",
+      "address": "경기도 용인시 처인구 이동읍 어비리 산99-3"
+    },
+    {
+      "id": "06f7bbe7-1bc6-40ce-b3d6-1f70a9dbd3fa",
+      "name": "대한불교조계종 육지장사",
+      "type": "columbarium",
+      "address": "경기도 양주시 백석읍 기산로471번길 190 (기산리)"
+    },
+    {
+      "id": "97b64606-42f4-4e40-b27f-82b732c49c7b",
+      "name": "종로구추모의집",
+      "type": "columbarium",
+      "address": "경기도 화성시 향남읍 서봉로755번길 17-15(동오리)"
+    },
+    {
+      "id": "afbbd3cf-cae5-41fc-abf1-a778d6953fe4",
+      "name": "그린장례문화원주식회사",
+      "type": "columbarium",
+      "address": "광주광역시 북구 하서로663번길 97 (용전동)"
+    },
+    {
+      "id": "2dad1ab8-b976-4c6a-b2dd-ceb5d19b0964",
+      "name": "약사사 하늘재추모원",
+      "type": "columbarium",
+      "address": "경상북도 문경시 문경읍 관음2길 89"
+    },
+    {
+      "id": "97cc3d69-e928-4642-9d70-a36d7ddc60e2",
+      "name": "남원시승화당",
+      "type": "columbarium",
+      "address": "전라북도 남원시 솔터길 40-36 (광치동, 승화원)"
+    },
+    {
+      "id": "7a60e380-b27f-40dc-82e3-77c13f853f3c",
+      "name": "GSH광양서울병원 장례식장",
+      "type": "funeral_home",
+      "address": "전남 광양시 진등길 93"
+    },
+    {
+      "id": "f372eaf7-ec76-4acd-b96b-d41ee2f33412",
+      "name": "계산성당 연도실",
+      "type": "columbarium",
+      "address": "대구광역시 중구 서성로 10 (계산동2가  천주교계산천주교회)"
+    },
+    {
+      "id": "59efab0e-c4fb-4daa-9985-430b0dd98335",
+      "name": "성모암영락원",
+      "type": "columbarium",
+      "address": "전라북도 김제시 만경읍 화포3길 54-9 (화포리)"
+    },
+    {
+      "id": "6bda5d6f-f682-4bb2-a9b7-74673cc27a03",
+      "name": "강화파라다이스 강화지점",
+      "type": "columbarium",
+      "address": "인천광역시 강화군 송해면 강화대로 879-21"
+    },
+    {
+      "id": "9ec4d1a2-ad49-4b98-acd9-71bbf7e99409",
+      "name": "논산시양지추모원",
+      "type": "columbarium",
+      "address": "충청남도 논산시 양촌면 중산길 165-11 (중산리)"
+    },
+    {
+      "id": "e8bfef23-53da-4825-bfc2-4e569534721a",
+      "name": "구미시공설숭조당 제1관",
+      "type": "columbarium",
+      "address": "경상북도 구미시 옥성면 선상동로 419 (초곡리)"
+    },
+    {
+      "id": "49ca3a41-0f6a-4b6a-ba9d-137b2cbe069c",
+      "name": "경춘공원묘원 합동봉안당",
+      "type": "columbarium",
+      "address": "강원특별자치도 춘천시 서면 노동길 181"
+    },
+    {
+      "id": "65166fc0-5caa-4438-8198-a99249e6bd2b",
+      "name": "약사사 추모관 (불교)",
+      "type": "columbarium",
+      "address": "경기도 부천시 성주로 123"
+    },
+    {
+      "id": "91cf6bf4-1965-4dc1-9db0-c24608997a0a",
+      "name": "상락원 지장영묘전",
+      "type": "columbarium",
+      "address": "경기도 파주시 송화로 136 (야동동, 한국불교상락원)"
+    },
+    {
+      "id": "d8467e77-c1b6-4882-9390-7d7c9e6cace5",
+      "name": "광주영락공원 봉안묘",
+      "type": "columbarium",
+      "address": "광주광역시 북구 영락공원로 170"
+    },
+    {
+      "id": "70c26502-2b28-4e3d-8594-069e426490e1",
+      "name": "청암교회(청암동산)",
+      "type": "columbarium",
+      "address": "경기 파주시 조리읍 뇌조리 568-5"
+    },
+    {
+      "id": "f7d060c1-d6cb-4af9-ae3a-da318bca05dd",
+      "name": "부산영락공원 무연고자 납골당",
+      "type": "columbarium",
+      "address": "부산 금정구 금정도서관로 108"
+    },
+    {
+      "id": "19779094-e581-4b9e-87f2-428fc84f666e",
+      "name": "삼호병원 장례식장",
+      "type": "funeral_home",
+      "address": "전남 보성군 벌교읍 남하로 12"
+    },
+    {
+      "id": "1fe07d46-76d5-41c4-92ea-800c04b85f28",
+      "name": "에이치서비스 마린바다장",
+      "type": "columbarium",
+      "address": "부산 해운대구 해운대해변로 84"
+    },
+    {
+      "id": "66e2e966-872a-4312-a091-b4028973beae",
+      "name": "영암군군서공설묘지",
+      "type": "cemetery",
+      "address": "전라남도 영암군 군서면 동구림리 산42"
+    },
+    {
+      "id": "122407b1-2eff-42b7-9d82-91dfaeb656bc",
+      "name": "와동꽃빛공원(공설묘지)",
+      "type": "cemetery",
+      "address": "경기도 안산시 단원구 순환로 390 (와동)"
+    },
+    {
+      "id": "26401a4b-882a-4922-9aa2-7753d0615738",
+      "name": "부안효요양병원 장례식장",
+      "type": "funeral_home",
+      "address": "전북특별자치도 부안군 행안면 염소로 25"
+    },
+    {
+      "id": "e953d1ef-486b-4e38-8c07-540d4a7793aa",
+      "name": "삼계공설묘지",
+      "type": "cemetery",
+      "address": "경상북도 영덕군 영덕읍 삼계리 산66"
+    },
+    {
+      "id": "9453ff13-932e-47e2-96e3-3210838148d6",
+      "name": "김포공원법인묘지(풍무)",
+      "type": "cemetery",
+      "address": "경기도 김포시 장릉로 75 (풍무동)"
+    },
+    {
+      "id": "a8ade84f-6188-4b70-8758-c1591e8248a8",
+      "name": "신북면 제4공설묘지",
+      "type": "cemetery",
+      "address": "경기도 포천시 신북면 고일리 산83"
+    },
+    {
+      "id": "28e187f0-60ff-4169-a230-3191bdb6aa03",
+      "name": "관인면 제1공설묘지",
+      "type": "cemetery",
+      "address": "경기도 포천시 관인면 사정리 산11"
+    },
+    {
+      "id": "03096350-7384-4b09-9986-3a1c8303b902",
+      "name": "혜화동성당 방학동묘원",
+      "type": "cemetery",
+      "address": "서울특별시 도봉구 방학동 산65-1"
+    },
+    {
+      "id": "6ead8fdd-1436-43d1-bef6-e720b3347614",
+      "name": "약수암영탑추모공원",
+      "type": "cemetery",
+      "address": "경기 파주시 파주읍 약수골길 86"
+    },
+    {
+      "id": "e7f5e24a-6bd3-424f-8401-f6253d67d925",
+      "name": "봉안천국",
+      "type": "columbarium",
+      "address": "경기 용인시 처인구 신송로 129"
+    },
+    {
+      "id": "e57fd385-103b-43e7-a603-23c73b5b8c23",
+      "name": "막벨라강화추모공원",
+      "type": "cemetery",
+      "address": "인천 강화군 송해면 강화대로 879-16"
+    },
+    {
+      "id": "8e483a57-9781-492b-8d2e-bb52e62ff5ac",
+      "name": "홍성추모공원 화장장",
+      "type": "cemetery",
+      "address": "충남 홍성군 금마면 금마로516번길 85"
+    },
+    {
+      "id": "a9e684c8-0f88-49cc-99a9-459a12dee821",
+      "name": "신현교회 묘지",
+      "type": "cemetery",
+      "address": "경기도 파주시 탄현면 축현리 산53-1"
+    },
+    {
+      "id": "a5b08e75-dacd-4bc5-bb42-6e594252061b",
+      "name": "법보사추모공원",
+      "type": "cemetery",
+      "address": "경북 영천시 신녕면 장수로 2238-9"
+    },
+    {
+      "id": "1e01881e-2efc-428d-aeb5-67334b426cf3",
+      "name": "보성공설묘지",
+      "type": "cemetery",
+      "address": "전라남도 보성군 보성읍 대야리 1644-1"
+    },
+    {
+      "id": "2559ac97-787c-4c32-a7b8-bbfa824c85d7",
+      "name": "울산하늘공원 추모의집",
+      "type": "cemetery",
+      "address": "울산광역시 울주군 삼동면 보삼길 550"
+    },
+    {
+      "id": "298e66a1-fc30-4bc1-b85a-ac15e8298086",
+      "name": "성주군공설묘지",
+      "type": "cemetery",
+      "address": "경상북도 성주군 선남면 관화리 산31-1"
+    },
+    {
+      "id": "d4411795-0981-4d09-be92-6246bbed6e5b",
+      "name": "은하수공원 봉안당",
+      "type": "columbarium",
+      "address": "세종특별자치시 정안세종로 1527"
+    },
+    {
+      "id": "441cdba9-9710-4c3e-a039-ed0d0608cb2a",
+      "name": "안성맞춤추모공원",
+      "type": "cemetery",
+      "address": "경기 안성시 보개면 신장길 79-42"
+    },
+    {
+      "id": "9f7dc964-b1c7-40b7-973f-321fbb339d25",
+      "name": "(재)원주공원묘원",
+      "type": "cemetery",
+      "address": "강원특별자치도 원주시 귀래면 귀문로 599 (귀래리)"
+    },
+    {
+      "id": "ca56ad44-c321-4605-8eba-75f8ed0bc13d",
+      "name": "고려공원법인묘지",
+      "type": "cemetery",
+      "address": "경기도 김포시 감정동 629-21"
+    },
+    {
+      "id": "7e06d334-7c12-4d64-b945-e22cb1368a42",
+      "name": "동강면공설묘지",
+      "type": "cemetery",
+      "address": "전라남도 나주시 동강면 월양리 15-11"
+    },
+    {
+      "id": "d3e60984-e9d5-46ae-9cf4-5ac1b5407326",
+      "name": "금남동공설묘지",
+      "type": "cemetery",
+      "address": "전라남도 나주시 보산동 산3"
+    },
+    {
+      "id": "13c88b83-b4c2-4534-8691-093582ce0f57",
+      "name": "신북면 제6공설묘지",
+      "type": "cemetery",
+      "address": "경기도 포천시 신북면 삼정리 산179"
+    },
+    {
+      "id": "18d0c154-e0f9-4307-851a-bc566a725ac8",
+      "name": "(재)학명묘원",
+      "type": "cemetery",
+      "address": "경상북도 칠곡군 동명면 학명리 산81-1"
+    },
+    {
+      "id": "3341057c-2edb-45d4-aeea-5858d31bb114",
+      "name": "한국불교원각종 장수사",
+      "type": "columbarium",
+      "address": "대구광역시 달성군 옥포면 옥계길 16-1(본리리, 장수사)"
+    },
+    {
+      "id": "f9e44864-0e50-4568-98c9-54b1dc031c25",
+      "name": "예은 추모공원",
+      "type": "cemetery",
+      "address": "충북 음성군 금왕읍 덕금로 936-61"
+    },
+    {
+      "id": "4d9eeba1-5f66-4412-8efb-d8a81a97c93c",
+      "name": "금강추모공원",
+      "type": "cemetery",
+      "address": "충북 옥천군 동이면 적하길 323-67"
+    },
+    {
+      "id": "e533405e-b3a0-4401-9e07-4c1d4b09c076",
+      "name": "의령4.26추모공원 위령탑",
+      "type": "cemetery",
+      "address": "경남 의령군 궁류면 평촌리 10"
+    },
+    {
+      "id": "fd16b11f-2001-4214-9b99-883bab84ee90",
+      "name": "경신하늘뜰공원 봉안당",
+      "type": "columbarium",
+      "address": "경기도 양주시 남면 화합로430번길 98"
+    },
+    {
+      "id": "6c03747c-672f-4a84-a790-be1395b66976",
+      "name": "삼척추모공원 2단지 국가유공자보훈존",
+      "type": "cemetery",
+      "address": "강원특별자치도 삼척시 강원남부로 4540"
+    },
+    {
+      "id": "cbeb4312-60e5-4c8c-a55d-44dfd9dfd42d",
+      "name": "홍성추모공원 유택동산",
+      "type": "cemetery",
+      "address": "충남 홍성군 금마면 봉서리 117"
+    },
+    {
+      "id": "9cf45449-e375-47e4-989b-505bc2a5f844",
+      "name": "남해추모누리 공설종합묘원",
+      "type": "cemetery",
+      "address": "경상남도 남해군 서면 연죽로 46-77 (연죽리  남해공설종합묘원추모누리)"
+    },
+    {
+      "id": "584ac9b7-ccb8-4e04-bf6d-dbc81e836862",
+      "name": "(재)자하연팔당(묘지)",
+      "type": "cemetery",
+      "address": "경기도 양평군 양서면 목왕로688번길 71 (목왕리)"
+    },
+    {
+      "id": "893087b5-003b-4c30-aa40-dcd4a57f0a5f",
+      "name": "표선면 4.3추모공원",
+      "type": "cemetery",
+      "address": "제주특별자치도 서귀포시 표선면 하천리 1832-4"
+    },
+    {
+      "id": "1a18b7a8-a747-4551-b2c6-38ac1ca0dac9",
+      "name": "재단법인청림공원(봉안당)",
+      "type": "columbarium",
+      "address": "경기도 남양주시 진건읍 사릉로156번길 295"
+    },
+    {
+      "id": "5ce11b38-f7d4-4f53-b70c-783b0d9982dd",
+      "name": "거창사건추모공원 거창사건희생자묘역",
+      "type": "cemetery",
+      "address": "경남 거창군 신원면 신차로 2924"
+    },
+    {
+      "id": "d49c9f83-01bd-4f70-a81d-5fa34e1f2e86",
+      "name": "용문사추모공원",
+      "type": "cemetery",
+      "address": "경기 김포시 월곶면 대곶로 570"
+    },
+    {
+      "id": "1875fce8-e834-4554-b72e-6b70d3647449",
+      "name": "장기공설공원묘원",
+      "type": "cemetery",
+      "address": "경상남도 고성군 동해면 장기리 산209-2"
+    },
+    {
+      "id": "df8c756a-2f89-461a-b731-7a541b113584",
+      "name": "내곡리묘지",
+      "type": "cemetery",
+      "address": "경기도 남양주시 진접읍 내곡리 558-3"
+    },
+    {
+      "id": "f4c4e49e-faa1-4d66-aec4-8054483f4665",
+      "name": "(재)경맥백합공원",
+      "type": "cemetery",
+      "address": "경상북도 경산시 남천면 남천로 188-60 (흥산리)"
+    },
+    {
+      "id": "17f41d8e-2d26-48d9-a82a-5c81e662f743",
+      "name": "덕하2리공설묘지",
+      "type": "cemetery",
+      "address": "인천광역시 강화군 양사면 덕하리 산352"
+    },
+    {
+      "id": "028857e3-bbcc-43b1-952a-315f42cb1ea4",
+      "name": "공산면공설묘지",
+      "type": "cemetery",
+      "address": "전라남도 나주시 공산면 금곡리 317-3"
+    },
+    {
+      "id": "2be9b65e-cb76-466c-831b-35893d04c1e0",
+      "name": "세지면공설묘지",
+      "type": "cemetery",
+      "address": "전라남도 나주시 세지면 대산리 산108"
+    },
+    {
+      "id": "74fd9f14-8853-4dbf-b655-666f19ef117b",
+      "name": "왕곡면공설묘지",
+      "type": "cemetery",
+      "address": "전라남도 나주시 왕곡면 덕산리 산74"
+    },
+    {
+      "id": "efc1e5f4-be69-4a2c-86ed-b9abb5f76305",
+      "name": "삼하리공설묘지",
+      "type": "cemetery",
+      "address": "경기도 양주시 장흥면 삼하리 산35"
+    },
+    {
+      "id": "7ffcfbed-53a3-4fea-834b-affb0f0e38cc",
+      "name": "문평면공설묘지",
+      "type": "cemetery",
+      "address": "전라남도 나주시 문평면 북동리 산119-3"
+    },
+    {
+      "id": "20306f7a-187a-4bbc-9fd8-6380c083bde4",
+      "name": "봉황면공설묘지",
+      "type": "cemetery",
+      "address": "전라남도 나주시 봉황면 철천리 산132"
+    },
+    {
+      "id": "5d51c1b2-dd69-47bb-ae53-33cbad10ba8d",
+      "name": "영강동공설묘지",
+      "type": "cemetery",
+      "address": "전라남도 나주시 안창동 97"
+    },
+    {
+      "id": "72343cb2-d9ee-4612-879d-1169447b6682",
+      "name": "(재)전주공원묘원",
+      "type": "cemetery",
+      "address": "전라북도 진안군 부귀면 모래재로 571 (세동리  모래공원)"
+    },
+    {
+      "id": "e651d728-685b-4f57-a929-563d59c6968e",
+      "name": "천주교서울대교구 비봉103위성인추모공원",
+      "type": "cemetery",
+      "address": "경기 화성시 비봉면 화성로1946번길 26-11"
+    },
+    {
+      "id": "abf19432-a76a-47ac-aee2-f32ea1502ad0",
+      "name": "월곳리공설묘지",
+      "type": "cemetery",
+      "address": "인천광역시 강화군 강화읍 월곳리 산8"
+    },
+    {
+      "id": "53e3b052-4630-470f-ac1b-9f493873b221",
+      "name": "증평군 추모의집",
+      "type": "columbarium",
+      "address": "충청북도 음성군 금왕읍 덕금로 936-61, 예은추모공원 내 (용계리)"
+    },
+    {
+      "id": "9a3c3abc-fec7-40a6-a99e-aca658e68d6b",
+      "name": "북양공설공원묘지",
+      "type": "cemetery",
+      "address": "경기도 화성시 남양읍 북양리 산109-14"
+    },
+    {
+      "id": "95755963-5f5e-4c49-acff-ef6a850b29a0",
+      "name": "(재)성산공원(묘지)",
+      "type": "cemetery",
+      "address": "전라북도 군산시 성산면 왕골로 239-29 (대명리  성산공원)"
+    },
+    {
+      "id": "aaaf96c0-5249-414d-aabf-92f3ec65f7ac",
+      "name": "홍성추모공원 기존화장장",
+      "type": "cemetery",
+      "address": "충남 홍성군 금마면 봉서리 117"
+    },
+    {
+      "id": "688eb0d2-6ce6-4572-9ad5-34c34d44a088",
+      "name": "재단법인 로엠(묘지)",
+      "type": "cemetery",
+      "address": "충청남도 천안시 동남구 광덕면 광덕로 383 (신덕리)"
+    },
+    {
+      "id": "0baf8865-3e0e-4870-803f-92e2e7e1efcb",
+      "name": "ROTC추모공원",
+      "type": "cemetery",
+      "address": "경기 광주시 오포로 211-49"
+    },
+    {
+      "id": "109103cf-a092-4764-b0ce-de263f5d616d",
+      "name": "거창사건추모공원 위령탑",
+      "type": "cemetery",
+      "address": "경남 거창군 신원면 신차로 2924"
+    },
+    {
+      "id": "ddbacfe7-82c2-475a-9f86-bbe70e047f60",
+      "name": "(재)경춘공원묘원",
+      "type": "cemetery",
+      "address": "강원특별자치도 춘천시 서면 노동길 181 (안보리)"
+    },
+    {
+      "id": "e94c041e-ece5-4fd9-87c1-e021c67aee23",
+      "name": "아산유리요양병원 장례식장",
+      "type": "funeral_home",
+      "address": "충청남도 아산시 도고면 도고면로 179,아산유리요양병원 (기곡리)"
+    },
+    {
+      "id": "62ff9b9c-e5d4-4159-8bc1-41e8dd0970ff",
+      "name": "성서효요양병원 장례식장",
+      "type": "funeral_home",
+      "address": "대구 달서구 달구벌대로 1152"
+    },
+    {
+      "id": "9dcac214-6141-48e1-a0ed-b2962d04d55b",
+      "name": "부활동산 추모공원",
+      "type": "cemetery",
+      "address": "경기 광주시 곤지암읍 가마을길 83-19"
+    },
+    {
+      "id": "04b80fb8-76ee-44dc-a138-5bd1b8ccdfdc",
+      "name": "광령1리 추모공원",
+      "type": "cemetery",
+      "address": "제주특별자치도 제주시 애월읍 광령리 1003-2"
+    },
+    {
+      "id": "31062df6-65f7-416b-a751-4c2d08d603dc",
+      "name": "대구시립공원묘지 추모의집",
+      "type": "cemetery",
+      "address": "경북 칠곡군 지천면 낙산로 87"
+    },
+    {
+      "id": "a8b13dca-2bfb-4bf1-ae47-13e95dd73971",
+      "name": "아카시아병원장례식장",
+      "type": "funeral_home",
+      "address": "서울 금천구 시흥대로114길 5"
+    },
+    {
+      "id": "8ba92ff0-b16a-405b-9561-05efa88fe6c5",
+      "name": "신산장례식장",
+      "type": "funeral_home",
+      "address": "제주특별자치도 서귀포시 성산읍 독자봉로 281"
+    },
+    {
+      "id": "7292b1bc-29f5-49a9-9cf8-e3124dbf9363",
+      "name": "재단법인북한강공원",
+      "type": "cemetery",
+      "address": "경기도 남양주시 화도읍 구암리 산12-1"
+    },
+    {
+      "id": "d2fa762d-fa73-4abd-a6ee-eb1387c13c62",
+      "name": "성주효요양병원 장례식장",
+      "type": "funeral_home",
+      "address": "경북 성주군 성주읍 성주순환로 239"
+    },
+    {
+      "id": "237eccf0-c9a9-41f7-979b-4c79289141ba",
+      "name": "고금장례식장 본관",
+      "type": "funeral_home",
+      "address": "전남 완도군 고금면 고금동로 117"
+    },
+    {
+      "id": "5b682b5d-06af-4f9a-bb39-891c5697404e",
+      "name": "고성장례식장화라주식회사",
+      "type": "funeral_home",
+      "address": "경상남도 고성군 고성읍 상정대로 390 (교사리)"
+    },
+    {
+      "id": "226230cf-1185-46d0-a299-bb0f2a7e2d09",
+      "name": "명품병원장례문화원",
+      "type": "funeral_home",
+      "address": "경상북도 영주시 반지미로 260 (가흥동)"
+    },
+    {
+      "id": "0b1e8f58-065c-4c90-bb0a-534e489d339b",
+      "name": "재단법인 솥발산공원묘원",
+      "type": "cemetery",
+      "address": "경상남도 양산시 하북면 삼덕로 288 (답곡리)"
+    },
+    {
+      "id": "6ef562e1-7f6e-47f6-9ff3-4e879d4fac74",
+      "name": "춘천안식공원(안식의집)",
+      "type": "cemetery",
+      "address": "강원특별자치도 춘천시 동산면 군자리 산134-1"
+    },
+    {
+      "id": "cd91bd24-6071-4f69-8643-1aab5d6f3e22",
+      "name": "산청군공설묘지 본향원",
+      "type": "cemetery",
+      "address": "경상남도 산청군 신등면 신등가회로 357-17 (가술리, 본향원)"
+    },
+    {
+      "id": "4e21d8f0-1f15-4557-8b6d-767cd6be7479",
+      "name": "원주추모공원 휴마루",
+      "type": "cemetery",
+      "address": "강원특별자치도 원주시 흥업면 복술길 33"
+    },
+    {
+      "id": "9b10076b-46f1-47e4-b344-c1878b9692fd",
+      "name": "무지개추모공원",
+      "type": "cemetery",
+      "address": "경기도 김포시 통진읍 옹정리 123"
+    },
+    {
+      "id": "7bbed331-b326-48f1-a6bb-8dcce39d702b",
+      "name": "재단법인 세심사하늘공원",
+      "type": "cemetery",
+      "address": "전라남도 구례군 구례읍 섬진강로 348-33"
+    },
+    {
+      "id": "b3bd033e-982b-46fc-989e-2f5537001499",
+      "name": "중림동성당묘원",
+      "type": "cemetery",
+      "address": "경기도 파주시 광탄면 혜음로 818-39 (분수리  천주교중림공동묘지관리실)"
+    },
+    {
+      "id": "c6917294-1f6d-48d0-92a7-b74eb9c999c2",
+      "name": "경상남도립통영노인전문병원 장례식장",
+      "type": "funeral_home",
+      "address": "경남 통영시 도산면 남해안대로 1818"
+    },
+    {
+      "id": "f30b2d1e-7af6-4105-8dd7-a4c45bd7e10e",
+      "name": "한빛요양병원 장례식장",
+      "type": "funeral_home",
+      "address": "부산 사하구 사하로 55"
+    },
+    {
+      "id": "4bc8eef4-fe66-4404-8abe-947887df0abd",
+      "name": "푸디스트 쉴낙원남대전장례식장",
+      "type": "funeral_home",
+      "address": "대전 동구 산서로1660번길 142"
+    },
+    {
+      "id": "13e5f3e3-a210-4899-b491-a0d34880ebde",
+      "name": "재단법인울산공원묘원",
+      "type": "cemetery",
+      "address": "울산광역시 남구 문수로217번길 34 (옥동)"
+    },
+    {
+      "id": "5d245f20-8998-4f77-bbd8-fb1b75e00269",
+      "name": "재단법인선산공원묘원",
+      "type": "cemetery",
+      "address": "경상북도 구미시 옥성면 선상동로 419 (초곡리)"
+    },
+    {
+      "id": "9eb3aced-21f1-47f6-90ff-daece6ab392d",
+      "name": "(재)남양공원묘원",
+      "type": "cemetery",
+      "address": "경상북도 성주군 선남면 관용로 401-41 (오도리)"
+    },
+    {
+      "id": "e1b77228-ad71-4801-a84b-b1fd61761c33",
+      "name": "(재)대지공원묘원",
+      "type": "cemetery",
+      "address": "충청북도 음성군 생극면 오신로 504-63 (신양리)"
+    },
+    {
+      "id": "c32b1de0-ed69-422b-8635-117faa6836f9",
+      "name": "(재)호정공원(묘지)",
+      "type": "cemetery",
+      "address": "전라북도 완주군 화산면 운곡로 381-64 (운곡리)"
+    },
+    {
+      "id": "2e475bbf-6bb0-4e65-81e3-4657fbd1381f",
+      "name": "오창장미공원",
+      "type": "cemetery",
+      "address": "충청북도 청주시 청원구 오창읍 양청3길 88 (양청리)"
+    },
+    {
+      "id": "dd2f2d1c-6dc2-44f7-9de3-33e611265e17",
+      "name": "(재)화신공원묘원",
+      "type": "cemetery",
+      "address": "전라북도 정읍시 옹동면 옹동용호길 110-76 (용호리)"
+    },
+    {
+      "id": "3cc7fdc2-a303-42d3-909c-93ab59585bab",
+      "name": "(재)경주공원묘원",
+      "type": "cemetery",
+      "address": "경상북도 경주시 강동면 오금큰길 505 (왕신리)"
+    },
+    {
+      "id": "f8fe6027-a9e9-4497-853f-712cbc8f5033",
+      "name": "(재)봉황공원묘지",
+      "type": "cemetery",
+      "address": "전라북도 군산시 임피면 미원리 산100-1"
+    },
+    {
+      "id": "b7eaf83b-4962-4a11-835a-501653196c41",
+      "name": "(재)풍산공원묘원",
+      "type": "cemetery",
+      "address": "충청남도 천안시 동남구 병천면 풍산공원길 70 (봉항리  풍산공원묘역)"
+    },
+    {
+      "id": "c51ec4fd-8be5-41a1-b9a3-2b5ebb6f15df",
+      "name": "(재)조양공원",
+      "type": "cemetery",
+      "address": "경상북도 칠곡군 지천면 달방길 215 (달서리)"
+    },
+    {
+      "id": "90504ebf-2a04-4525-9cb2-b86a862530d7",
+      "name": "(재)우성공원묘원",
+      "type": "cemetery",
+      "address": "경상북도 성주군 선남면 관용로 470-54 (용신리  우성공원사무소)"
+    },
+    {
+      "id": "e345dde1-7f55-400a-852d-0fb70ab10cae",
+      "name": "광양시립영세공원 묘지",
+      "type": "cemetery",
+      "address": "전라남도 광양시 광양읍 직동1길 300 (죽림리)"
+    },
+    {
+      "id": "75a143e3-e126-45b7-82e1-77a9b93b4170",
+      "name": "김포성당 매괴의모후 묘원",
+      "type": "cemetery",
+      "address": "경기도 김포시 북변로 29-12 (북변동)"
+    },
+    {
+      "id": "c10b4eab-16a1-4bd8-93ba-569f1452a9aa",
+      "name": "신영복선생 추모공원",
+      "type": "cemetery",
+      "address": "서울 구로구 항동 산 23-1"
+    },
+    {
+      "id": "3b3cdf7f-86f9-4ac7-b394-d5f350c1ec95",
+      "name": "광양시립공원묘지 영세장",
+      "type": "cemetery",
+      "address": "전남 광양시 광양읍 직동1길 300"
+    },
+    {
+      "id": "3ad44a23-2a58-4fe7-b537-2c5b03f60095",
+      "name": "서울추모공원 접수실",
+      "type": "cemetery",
+      "address": "서울 서초구 양재대로12길 74"
+    },
+    {
+      "id": "f03f41f1-9728-4fe3-9378-f3cd3b05395f",
+      "name": "매운이정희선생추모공원",
+      "type": "cemetery",
+      "address": "경북 청도군 화양읍 유등리 산 188"
+    },
+    {
+      "id": "1c6b51fd-8cab-4843-bb19-e3300c1c9a80",
+      "name": "주식회사구민장례식장",
+      "type": "funeral_home",
+      "address": "부산광역시 영도구 절영로 16"
+    },
+    {
+      "id": "b4d58653-1c5c-432f-973a-ed5ab0fc7d51",
+      "name": "영광군공설추모공원(2026년01월예정)",
+      "type": "cemetery",
+      "address": "전라남도 영광군 군남면"
+    },
+    {
+      "id": "7f96b6b7-4e04-46ca-b9e5-497b66a48cf3",
+      "name": "진도한국병원 장례식장",
+      "type": "funeral_home",
+      "address": "전남 진도군 진도읍 남문길 48"
+    },
+    {
+      "id": "05261dce-0f87-4bed-81ad-09c25f705f62",
+      "name": "거창사건추모공원 천유문",
+      "type": "cemetery",
+      "address": "경남 거창군 신원면 신차로 2924"
+    },
+    {
+      "id": "6f5db333-ba61-4c32-a19d-a4778244bcc8",
+      "name": "현대공원 제2묘원 추모의집",
+      "type": "cemetery",
+      "address": "경북 칠곡군 동명면 다부거문1길 51-75"
+    },
+    {
+      "id": "8fa4f85b-c0b0-4ce1-af0c-aaf70a6f8eae",
+      "name": "제주4.3 성산읍 희생자 추모공원",
+      "type": "cemetery",
+      "address": "제주특별자치도 서귀포시 성산읍 고성리 224-1"
+    },
+    {
+      "id": "b849aa08-2edc-467f-bf53-92fd1baa90bf",
+      "name": "함백광업소 추모공원",
+      "type": "cemetery",
+      "address": "강원특별자치도 정선군 신동읍 방제리 산 117-5"
+    },
+    {
+      "id": "6039b8be-ae89-4132-9761-7df3b9e8b760",
+      "name": "금하 서상록 추모공원",
+      "type": "cemetery",
+      "address": "전남 나주시 노안면 영평리 591-16"
+    },
+    {
+      "id": "1d2c930c-640d-4ffe-97c2-eb0aae0c8741",
+      "name": "두운리공동묘지",
+      "type": "cemetery",
+      "address": "인천광역시 강화군 불은면 두운리 산243"
+    },
+    {
+      "id": "450d8ff9-3955-4fbe-afd1-dc52bc9c10df",
+      "name": "도하리공설묘지",
+      "type": "cemetery",
+      "address": "경기도 양주시 은현면 도하리 산47"
+    },
+    {
+      "id": "d62f4adc-b713-4f58-9c9d-e7900f4ffa49",
+      "name": "학교법인영산학원시민장례식장",
+      "type": "funeral_home",
+      "address": "인천광역시 미추홀구 석정로64번길 22 (숭의동  시민장례식장)"
+    },
+    {
+      "id": "8bc87755-9391-448f-8cf7-7307a094e498",
+      "name": "장림중앙장례식장",
+      "type": "funeral_home",
+      "address": "부산 사하구 장림번영로 59"
+    },
+    {
+      "id": "e2e16602-e3b8-4f8b-8294-eaa4ed64be10",
+      "name": "반남면공설묘지",
+      "type": "cemetery",
+      "address": "전라남도 나주시 반남면 흥덕리 302-33"
+    },
+    {
+      "id": "0e373d04-706d-4197-b9ee-458434256f1a",
+      "name": "효성요양병원 장례식장",
+      "type": "funeral_home",
+      "address": "전남 목포시 양을로 456"
+    },
+    {
+      "id": "8c71b5c6-144e-4f18-84be-a97598a10df3",
+      "name": "하패리공설묘지",
+      "type": "cemetery",
+      "address": "경기도 양주시 은현면 하패리 산77"
+    },
+    {
+      "id": "2230834f-b394-46fc-8439-48ace49bfbf0",
+      "name": "단국대학교의과대학부속병원 장례식장",
+      "type": "funeral_home",
+      "address": "충남 천안시 동남구 망향로 201"
+    },
+    {
+      "id": "6b8e7694-2a59-4a22-97b9-71ffd6957e60",
+      "name": "울산국화원장례식장 북울산지점",
+      "type": "funeral_home",
+      "address": "울산 북구 호계로 285"
+    },
+    {
+      "id": "a5dc1269-8990-4f7b-8ee9-067f0fb9dc2a",
+      "name": "울산중앙병원 장례식장",
+      "type": "funeral_home",
+      "address": "울산 남구 문수로480번길 10"
+    },
+    {
+      "id": "616dd48f-474d-4f13-8672-be6fe5d66ace",
+      "name": "선암리공설묘지",
+      "type": "cemetery",
+      "address": "경기도 양주시 은현면 선암리 산66-1"
+    },
+    {
+      "id": "d6b0be0a-bf08-4c1c-a332-91a80e5cd693",
+      "name": "낙안오씨 수옹공 종중 추모공원",
+      "type": "cemetery",
+      "address": "전남 무안군 몽탄면 사창리 621"
+    },
+    {
+      "id": "46286081-f9fc-44e2-9c9e-52dd433e3f16",
+      "name": "(재)서현추모공원",
+      "type": "cemetery",
+      "address": "경기도 파주시 광탄면 명봉산로 277"
+    },
+    {
+      "id": "54d10dab-6490-4c50-8256-a45e0b90a9fe",
+      "name": "(주)장례식장아시아드",
+      "type": "funeral_home",
+      "address": "부산광역시 동래구 여고로 42"
+    },
+    {
+      "id": "46c57fa3-30bb-431b-9b76-18dc1f310712",
+      "name": "약천추모공원",
+      "type": "cemetery",
+      "address": "경기도 평택시 도일로 164-118 (도일동)"
+    },
+    {
+      "id": "44442c42-80e4-4123-b31c-8846b8512c11",
+      "name": "(재)삼덕공원묘원",
+      "type": "cemetery",
+      "address": "울산광역시 울주군 삼동면 삼덕로 426 (조일리  삼덕공원관리사무소)"
+    },
+    {
+      "id": "31024f1b-af93-40c6-b80f-be8eee2ae67b",
+      "name": "거창사건추모공원 안내실",
+      "type": "cemetery",
+      "address": "경남 거창군 신원면 신차로 2924"
+    },
+    {
+      "id": "e74f4376-724f-44a5-aba9-6c3493a06361",
+      "name": "(재)영호공원",
+      "type": "cemetery",
+      "address": "경상북도 경주시 건천읍 내서로 1052"
+    },
+    {
+      "id": "38ae123e-d27f-4093-8ad4-98d800a285ae",
+      "name": "(재)자하연포천(묘지)",
+      "type": "cemetery",
+      "address": "경기도 포천시 영중면 궁들길 84 (금주리)"
+    },
+    {
+      "id": "ec0f3bd7-a786-4305-89aa-cc83884a28c6",
+      "name": "이창동공설묘지",
+      "type": "cemetery",
+      "address": "전라남도 나주시 이창동 산19-1"
+    },
+    {
+      "id": "bd256027-734c-42fb-810a-b13ea21aa775",
+      "name": "오산시공설공원묘지",
+      "type": "cemetery",
+      "address": "경기도 오산시 가장동 산72-2"
+    },
+    {
+      "id": "9a991422-e79b-4d80-bbc8-02b96e7ccf1f",
+      "name": "삼상리공설묘지",
+      "type": "cemetery",
+      "address": "경기도 양주시 장흥면 삼상리 산34-1"
+    },
+    {
+      "id": "f20a791f-b8a7-4210-b919-ed18fad962df",
+      "name": "주식회사하늘정원장례식장",
+      "type": "funeral_home",
+      "address": "강원특별자치도 삼척시 강원남부로 4539"
+    },
+    {
+      "id": "6e680a9d-c29a-49de-8bab-9225fb6483f3",
+      "name": "(재)자하연분당",
+      "type": "cemetery",
+      "address": "경기도 광주시 대명대길 57"
+    },
+    {
+      "id": "1bb0e3b0-fd73-4297-a655-ed34a8828769",
+      "name": "서라벌공원묘원 (불교)",
+      "type": "cemetery",
+      "address": "경상북도 경주시 외동읍 서라벌로 123"
+    },
+    {
+      "id": "585ec058-a86b-47e0-915d-3a6e48b28b8e",
+      "name": "유명추모공원 홍성본점",
+      "type": "cemetery",
+      "address": "충남 홍성군 금마면 금마로516번길 64-22"
+    },
+    {
+      "id": "5a4f0021-2cb2-4717-a667-c11d2ca40139",
+      "name": "열방센터 추모공원",
+      "type": "cemetery",
+      "address": "경북 상주시 화서면 영남제일로 4496"
+    },
+    {
+      "id": "79c27423-f1a6-4253-a044-1c50426851a6",
+      "name": "용인공원라이프",
+      "type": "cemetery",
+      "address": "전국 서비스"
+    },
+    {
+      "id": "44a85cd8-5a7b-46ef-982d-3c542321f118",
+      "name": "청양군추모공원 공설묘지",
+      "type": "cemetery",
+      "address": "충남 청양군 화성면 신수길 142-18"
+    },
+    {
+      "id": "f5d90e1e-8027-4167-9888-64d2498e330a",
+      "name": "휴림원 추모공원",
+      "type": "cemetery",
+      "address": "경북 영천시 금호읍 죽방길 279-57"
+    },
+    {
+      "id": "8540fc6b-7571-49ab-95b7-a3aa7c85d5dd",
+      "name": "청담동성당 장례식장",
+      "type": "columbarium",
+      "address": "서울 강남구 삼성로 720"
+    },
+    {
+      "id": "a6dbdb28-c875-4442-b78b-c93c2c348bee",
+      "name": "한국전쟁전후함양양민희생자추모공원",
+      "type": "cemetery",
+      "address": "경남 함양군 수동면 도북리 764-1"
+    },
+    {
+      "id": "37a4bd8e-1010-4310-859b-a83ab5b0005f",
+      "name": "대원사추모공원 정토원",
+      "type": "cemetery",
+      "address": "경북 경주시 양남면 명주길 864-5"
+    },
+    {
+      "id": "939dc35b-8ef7-4046-b2a9-ec81a5c69443",
+      "name": "증촌추모공원",
+      "type": "cemetery",
+      "address": "대전 서구 평촌동 884-1"
+    },
+    {
+      "id": "bc087857-a734-4866-a90b-b89c9b19fe7a",
+      "name": "대노복지사업단",
+      "type": "columbarium",
+      "address": "전국 서비스"
+    },
+    {
+      "id": "b48dff94-062c-41af-be5e-32a15af70ae6",
+      "name": "삼척시추모공원 자연장",
+      "type": "natural_burial",
+      "address": "강원특별자치도 삼척시 강원남부로 4540 (등봉동)"
+    },
+    {
+      "id": "7ec0df20-288d-4596-aa2b-bede40662e18",
+      "name": "용인평온의숲(예정원)",
+      "type": "natural_burial",
+      "address": "경기도 용인시 처인구 이동읍 평온의숲로 77 용인 평온의 숲"
+    },
+    {
+      "id": "bd13ceef-d6dd-428d-b6a0-f2221e608961",
+      "name": "실로암추모관",
+      "type": "columbarium",
+      "address": "경상북도 영주시 평은면 녹지로 216 (지곡리)"
+    },
+    {
+      "id": "a0fc6cef-b13f-4aec-af69-0c44dba308f0",
+      "name": "서울재활요양병원 장례식장",
+      "type": "funeral_home",
+      "address": "경기 동두천시 천보산로 504"
+    },
+    {
+      "id": "3a8ba753-083d-41ea-af08-37a794fcb8b2",
+      "name": "학천사추모관",
+      "type": "columbarium",
+      "address": "전라남도 화순군 화순읍 덕음로 940-27 (삼천리  학천사)"
+    },
+    {
+      "id": "6fcc9b5c-25e0-430e-b080-39e4df5e6f74",
+      "name": "안성제일교회 수목장",
+      "type": "natural_burial",
+      "address": "경기도 안성시 삼죽면 율곡리 산108-12"
+    },
+    {
+      "id": "be95853e-d890-4746-82e4-5512173c80dc",
+      "name": "동산추모공원 수목장",
+      "type": "natural_burial",
+      "address": "강원특별자치도 춘천시 동산면 군자리 산 133"
+    },
+    {
+      "id": "eb2a7178-9de3-4b17-9e3e-ee91e56f0c3c",
+      "name": "남지장사수목장",
+      "type": "natural_burial",
+      "address": "대구 달성군 가창면 남지장사길 95"
+    },
+    {
+      "id": "2fc68549-99e9-41b6-ab9c-efcecc11a2bb",
+      "name": "청솔공원 자연장지",
+      "type": "natural_burial",
+      "address": "강원특별자치도 강릉시 사천면 석교리 산162"
+    },
+    {
+      "id": "90eb5b20-4e09-4aae-883e-38e403fef0c2",
+      "name": "청주시목련공원자연장",
+      "type": "natural_burial",
+      "address": "충청북도 청주시 상당구 목련로 731 (월오동, 목련공원)"
+    },
+    {
+      "id": "86009454-1bf5-4335-8887-fac7d05bb8f6",
+      "name": "평안교회 자연장지",
+      "type": "natural_burial",
+      "address": "충청북도 청주시 서원구 남이면 구암리 산15-1"
+    },
+    {
+      "id": "2c38014e-d0f9-4115-952f-ba4d961be785",
+      "name": "대승불교법왕종 한광사",
+      "type": "columbarium",
+      "address": "경상북도 영천시 신녕면 권응수길 126 (화남리, 한광사)"
+    },
+    {
+      "id": "3b62bd40-4967-4ce7-a8ee-76f640d05952",
+      "name": "중대공원자연장지",
+      "type": "natural_burial",
+      "address": "경기도 광주시 순암로 192 (중대동)"
+    },
+    {
+      "id": "0b5bebf1-137c-42a7-b08a-7beee56bbd24",
+      "name": "춘천안식공원 잔디장",
+      "type": "natural_burial",
+      "address": "강원특별자치도 춘천시 동산면 군자리 산134-1"
+    },
+    {
+      "id": "f7adf146-eaeb-4311-811d-901a97ce1dcf",
+      "name": "고사자연장지",
+      "type": "natural_burial",
+      "address": "경상남도 남해군 설천면 진목리 산78-2"
+    },
+    {
+      "id": "0476ef34-d229-4c48-8d5a-303aa48265cf",
+      "name": "강촌수목장추모공원",
+      "type": "natural_burial",
+      "address": "강원특별자치도 춘천시 남산면 봉의텃골길 149-10"
+    },
+    {
+      "id": "6fb39298-6e50-4457-8a55-4323bceb6dc6",
+      "name": "서울신흥교회 하늘계단수목장",
+      "type": "natural_burial",
+      "address": "경기도 양주시 평화로1261번길 372-146 (산북동)"
+    },
+    {
+      "id": "1a6beca7-fc28-432e-9f93-c91a8d22f93b",
+      "name": "초계주씨봉안당",
+      "type": "columbarium",
+      "address": "충북 옥천군 안남면 도덕4길 29-35"
+    },
+    {
+      "id": "4e84d11c-a7b9-4077-a4ac-0dcb81f2cd52",
+      "name": "동산추모공원 봉안담",
+      "type": "columbarium",
+      "address": "강원특별자치도 춘천시 동산면 군자리 산 134-1"
+    },
+    {
+      "id": "f668ccfe-5165-4637-b2bd-9a954074df69",
+      "name": "서산시희망공원 봉안당",
+      "type": "columbarium",
+      "address": "충남 서산시 인지면 무학재2길 106"
+    },
+    {
+      "id": "3bcbe80c-c4ad-453f-9b67-51f189b3936f",
+      "name": "일영수목장",
+      "type": "natural_burial",
+      "address": "경기 양주시 장흥면 호국로 156"
+    },
+    {
+      "id": "575492ef-046a-48ed-9806-d0c14cf5574f",
+      "name": "천불사 수목장",
+      "type": "natural_burial",
+      "address": "경상남도 밀양시 삼랑진읍 행곡3길 68-72 (행곡리)"
+    },
+    {
+      "id": "d1e08068-2f25-4562-9bb9-fa409e471b85",
+      "name": "수도권추모공원 용인수목장",
+      "type": "natural_burial",
+      "address": "경기 용인시 처인구 양지면 한터로 432-16"
+    },
+    {
+      "id": "1666f1af-81b8-407a-981f-385aff37b5af",
+      "name": "횡성군공설추모공원 추모관",
+      "type": "columbarium",
+      "address": "강원특별자치도 횡성군 갑천면 태기로구방8길 132 (구방리)"
+    },
+    {
+      "id": "9b2faad9-813d-41cc-b289-faac5132c3f6",
+      "name": "무향사 수목장",
+      "type": "natural_burial",
+      "address": "경기 남양주시 수동면 비룡로 864-17"
+    },
+    {
+      "id": "35e7e663-cd06-4e82-8a1d-8ca4c94f067a",
+      "name": "베다니수목장",
+      "type": "natural_burial",
+      "address": "전라남도 순천시 서면 압곡리 156-2"
+    },
+    {
+      "id": "f12738a2-cadb-4e97-b344-1024353368b9",
+      "name": "진주제일교회 수목장",
+      "type": "natural_burial",
+      "address": "경상남도 진주시 일반성면 운천리 산96"
+    },
+    {
+      "id": "cec88757-c131-42a9-9124-5c740cd42776",
+      "name": "용인평온의숲(평온마루 봉안당)",
+      "type": "natural_burial",
+      "address": "경기도 용인시 처인구 이동읍 평온의숲로 77 용인 평온의 숲"
+    },
+    {
+      "id": "75a19db8-c6e9-4088-a0f1-75855b191c25",
+      "name": "천화수목장",
+      "type": "natural_burial",
+      "address": "충북 영동군 심천면 마곡리 185-3"
+    },
+    {
+      "id": "49049445-555c-4c98-9b87-741b13e53c19",
+      "name": "연천 한맘가족사랑 수목장",
+      "type": "natural_burial",
+      "address": "경기 연천군 연천읍 고문리 산 71"
+    },
+    {
+      "id": "518b0b2f-8bb9-46be-b221-3eeb3490b871",
+      "name": "여여정사 수목장",
+      "type": "natural_burial",
+      "address": "경상남도 밀양시 삼랑진읍 행곡1길 180-158 (행곡리)"
+    },
+    {
+      "id": "3ec7047e-b265-4944-ab02-99e4ec98c32a",
+      "name": "용미리 수목장713",
+      "type": "natural_burial",
+      "address": "경기 파주시 광탄면 용미리 산 107"
+    },
+    {
+      "id": "c8670a06-a86f-4211-8f05-c80b7a720e70",
+      "name": "오룡군립묘원 자연장지",
+      "type": "natural_burial",
+      "address": "전라남도 담양군 무정면 오룡리 산29"
+    },
+    {
+      "id": "f0e92acf-3f54-44dd-bc49-ca0241918c41",
+      "name": "진주대광교회 자연장지",
+      "type": "natural_burial",
+      "address": "경상남도 진주시 대곡면 와룡리 50-1"
+    },
+    {
+      "id": "02cfff3f-393f-47c5-b77b-128acbab08ce",
+      "name": "백양사 수목장",
+      "type": "natural_burial",
+      "address": "전라남도 장성군 북하면 백양로 1239 (약수리, 백양사)"
+    },
+    {
+      "id": "e1f39c3b-6aac-475f-868d-fcf64fb47410",
+      "name": "대전추모공원 자연장지",
+      "type": "natural_burial",
+      "address": "대전광역시 서구 상보안윗길 160 (괴곡동)"
+    },
+    {
+      "id": "d4a1b250-a759-4f31-ad78-305f6a8a2c7b",
+      "name": "천주교 김천공원묘원",
+      "type": "natural_burial",
+      "address": "경상북도 김천시 개령면 황계길 280-41 (황계리)"
+    },
+    {
+      "id": "f86d4205-f1c8-4d8c-99b3-fb236fc43fe6",
+      "name": "휴안추모공원",
+      "type": "natural_burial",
+      "address": "경상남도 김해시 상동면 상동로 178-54 (우계리, 불조사)"
+    },
+    {
+      "id": "7ea7b8a3-a070-4616-b57d-fadbc577cf41",
+      "name": "경남반려동물장례식장 하늘소풍",
+      "type": "pet_funeral",
+      "address": "경남 고성군 회화면 봉오로 145-22"
+    },
+    {
+      "id": "76930ce0-324d-4653-8b60-d16517af8a6c",
+      "name": "21그램 반려동물장례식장 남양주점",
+      "type": "pet_funeral",
+      "address": "경기 남양주시 화도읍 수레로964번길 86"
+    },
+    {
+      "id": "b007c84c-9c50-4529-92ee-7994e593d60d",
+      "name": "부산 연안 해양장",
+      "type": "sea_burial",
+      "address": "부산광역시 해운대구 달맞이길 62"
+    },
+    {
+      "id": "64ceea25-fd2a-4923-bfab-08cd16b8ba43",
+      "name": "장례식장상예원",
+      "type": "funeral_home",
+      "address": "충청남도 서천군 장항읍 장항산단로 344 (옥산리)"
+    },
+    {
+      "id": "760c3143-a658-4728-ac11-3cdff8116778",
+      "name": "위더스요양병원장례식장",
+      "type": "funeral_home",
+      "address": "경상북도 경주시 승삼북길 31 위더스요양병원"
+    }
+  ]
+}

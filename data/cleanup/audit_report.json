@@ -1,0 +1,68 @@
+{
+  "timestamp": "2026-02-18T12:27:03.805Z",
+  "constants": {
+    "sangjo": 46,
+    "pet": 10,
+    "facilities": 30,
+    "dummy_phone": 48,
+    "generic_desc": 37,
+    "price_inquiry": 53,
+    "unsplash": 27
+  },
+  "db_facilities": {
+    "total": 2145,
+    "active": 2145,
+    "types": {},
+    "regions": {},
+    "no_image": 0,
+    "no_gallery": 0,
+    "no_phone": 0,
+    "no_price": 0,
+    "no_rating": 0,
+    "zero_coords": 0,
+    "out_of_korea": 0,
+    "duplicates": 0,
+    "bad_coords": []
+  },
+  "db_other": {
+    "funeral_companies": 61,
+    "partners": 3,
+    "ai_consultations": 32,
+    "consultations": 32
+  },
+  "crosscheck": {
+    "matched": 0,
+    "not_in_db": [
+      "분당메모리얼파크",
+      "시안가족추모공원",
+      "에덴낙원",
+      "용인 평온의 숲",
+      "유토피아 추모관",
+      "국립하늘숲추모원",
+      "청아공원",
+      "용인공원",
+      "분당 스카이캐슬",
+      "인천가족공원",
+      "인천 해양장 (바다장)",
+      "부산 연안 해양장",
+      "서라벌공원묘원 (불교)",
+      "무지개추모공원",
+      "동화경모공원",
+      "양평 무궁화공원",
+      "천안공원묘원",
+      "광주 영락공원",
+      "울산 하늘공원",
+      "약사사 추모관 (불교)",
+      "포포즈",
+      "21그램",
+      "펫포레스트",
+      "스카이펫",
+      "굿바이엔젤",
+      "펫바라기",
+      "모두펫상조",
+      "펫문",
+      "파트라슈",
+      "해피엔딩"
+    ]
+  }
+}
