@@ -83,12 +83,15 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
             const token = await session?.getToken({ template: 'supabase' });
             if (token) {
                 const authClient = createAuthenticatedClient(token);
-                const { data, error } = await authClient
+                const { data, error, status } = await authClient
                     .from('ai_consultations')
                     .select('*')
-                    .eq('user_id', userId)
-                    .order('updated_at', { ascending: false });
-                if (!error && data) aiDataRaw = data;
+                    .eq('user_id', userId);
+                if (!error && data) {
+                    aiDataRaw = data.sort((a: any, b: any) =>
+                        new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+                    );
+                }
             }
             if (aiDataRaw.length === 0) {
                 aiDataRaw = await aiConsultationService.getUserConsultations(userId);

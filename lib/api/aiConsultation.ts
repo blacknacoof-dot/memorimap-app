@@ -141,13 +141,14 @@ export const aiConsultationService = {
         const { data, error } = await supabase
             .from('ai_consultations')
             .select('*')
-            .eq('user_id', userId)
-            .order('updated_at', { ascending: false });
+            .eq('user_id', userId);
 
         if (error) {
             logger.error('Error fetching user consultations:', error);
             return [];
         }
-        return data as AiConsultation[];
+        return (data || []).sort((a: any, b: any) =>
+            new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+        ) as AiConsultation[];
     }
 };
