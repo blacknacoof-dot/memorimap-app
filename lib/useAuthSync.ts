@@ -75,6 +75,9 @@ export const useAuthSync = () => {
                 const { createAuthenticatedClient } = await import('./supabaseClient');
                 const authClient = createAuthenticatedClient(token);
 
+                // [Bug Fix] role: 'user' 제거 — DB 트리거가 role 변경 차단하므로
+                // 기존 partner/super_admin 사용자 로그인 시 500 에러 발생했음
+                // DB DEFAULT가 'user'이므로 신규 생성 시 자동 적용됨
                 const { error: syncError } = await authClient
                     .from('profiles')
                     .upsert({
@@ -82,7 +85,6 @@ export const useAuthSync = () => {
                         email: user.primaryEmailAddress?.emailAddress,
                         full_name: user.fullName || user.username || '사용자',
                         avatar_url: user.imageUrl,
-                        role: 'user',
                         phone_number: user.primaryPhoneNumber?.phoneNumber,
                         updated_at: new Date().toISOString()
                     }, {
@@ -90,9 +92,13 @@ export const useAuthSync = () => {
                     });
 
                 if (syncError) {
+                    // 500: DB 트리거/RLS 충돌, 42501: 권한 없음, 401: 인증 만료
                     // @ts-ignore
-                    if (syncError.code !== '42501' && syncError.status !== 401) {
-                        console.error('Failed to sync profile:', syncError);
+                    const code = syncError.code;
+                    // @ts-ignore
+                    const status = syncError.status;
+                    if (code !== '42501' && status !== 401) {
+                        console.warn('[AuthSync] Profile sync failed (non-critical):', code, syncError.message || syncError);
                     }
                 }
             } catch (err) {

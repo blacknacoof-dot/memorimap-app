@@ -3,6 +3,7 @@ import { ArrowLeft, Building2, Phone, User, Send, CheckCircle, Upload, AlertCirc
 import { useUser } from '../lib/auth';
 
 import { submitPartnerApplication, searchKnownFacilities, PARTNER_CATEGORIES, getFacilitiesByCategory } from '../lib/queries';
+import { useApiRetry } from '../hooks/useApiRetry';
 import { FUNERAL_COMPANIES } from '../constants';
 import { toast } from 'sonner'; // [Phase 2] Error Handler
 
@@ -13,6 +14,7 @@ interface Props {
 
 export const PartnerInquiryView: React.FC<Props> = ({ onBack, onLoginClick }) => {
     const { user, isSignedIn } = useUser();
+    const { callWithRetry } = useApiRetry();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [formData, setFormData] = useState({
@@ -126,22 +128,22 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack, onLoginClick }) =>
         setIsSubmitting(true);
 
         try {
-            await submitPartnerApplication({
+            await callWithRetry((authClient) => submitPartnerApplication({
                 name: formData.companyName,
                 type: formData.type,
                 address: formData.address,
                 phone: formData.phone,
-                companyPhone: formData.companyPhone,        // 추가
+                companyPhone: formData.companyPhone,
                 managerName: formData.managerName,
-                managerPosition: formData.managerPosition,  // 추가
+                managerPosition: formData.managerPosition,
                 managerMobile: formData.managerMobile,
                 companyEmail: formData.companyEmail,
                 email: formData.email,
                 businessLicenseImage: selectedFile,
                 userId: user?.id,
-                privacyConsent: formData.privacyConsent,    // 추가
+                privacyConsent: formData.privacyConsent,
                 targetFacilityId: formData.targetFacilityId
-            });
+            }, authClient));
             // Submission success
             setIsSuccess(true);
         } catch (error: any) {

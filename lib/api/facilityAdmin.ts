@@ -1,9 +1,14 @@
 import { supabase } from '@/lib/supabaseClient';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { MemorialSpace, Reservation } from '@/types/db';
 
+// [Bug Fix] 모든 함수에 authClient 파라미터 추가 — 토큰 만료 시 RLS 차단 방지
+// authClient가 전달되면 인증된 클라이언트 사용, 없으면 기존 싱글톤 fallback
+
 // 1. 내 시설 정보 가져오기 (facilities_id 포함)
-export const fetchMyFacility = async (userId: string) => {
-    const { data, error } = await supabase
+export const fetchMyFacility = async (userId: string, authClient?: SupabaseClient) => {
+    const client = authClient || supabase;
+    const { data, error } = await client
         .from('facilities')
         .select('*, facilities_id')
         .eq('owner_user_id', userId)
@@ -17,8 +22,9 @@ export const fetchMyFacility = async (userId: string) => {
 };
 
 // 2. 내 시설의 예약 목록 가져오기
-export const fetchFacilityReservations = async (facilityId: string | number) => {
-    const { data, error } = await supabase
+export const fetchFacilityReservations = async (facilityId: string | number, authClient?: SupabaseClient) => {
+    const client = authClient || supabase;
+    const { data, error } = await client
         .from('reservations')
         .select('*')
         .eq('facility_id', facilityId)
@@ -38,14 +44,16 @@ export const fetchFacilityReservations = async (facilityId: string | number) => 
 export const updateReservationStatus = async (
     reservationId: string,
     status: Reservation['status'],
-    rejectionReason?: string
+    rejectionReason?: string,
+    authClient?: SupabaseClient
 ) => {
+    const client = authClient || supabase;
     const updatePayload: any = { status };
     if (rejectionReason) {
         updatePayload.rejection_reason = rejectionReason;
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await client
         .from('reservations')
         .update(updatePayload)
         .eq('id', reservationId)
@@ -57,8 +65,9 @@ export const updateReservationStatus = async (
 };
 
 // 4. 시설 정보 수정
-export const updateFacilityInfo = async (facilityId: string | number, updates: Partial<MemorialSpace>) => {
-    const { data, error } = await supabase
+export const updateFacilityInfo = async (facilityId: string | number, updates: Partial<MemorialSpace>, authClient?: SupabaseClient) => {
+    const client = authClient || supabase;
+    const { data, error } = await client
         .from('facilities')
         .update(updates)
         .eq('id', facilityId)

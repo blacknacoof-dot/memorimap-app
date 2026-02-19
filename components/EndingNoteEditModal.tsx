@@ -40,6 +40,13 @@ export default function EndingNoteEditModal({ isOpen, onClose, currentNote, onSa
         }
     }, [isOpen, currentNote]);
 
+    // [Bug Fix] ESC 핸들러를 early return 전에 배치 — Hooks 순서 일관성 유지
+    useEffect(() => {
+        const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', h);
+        return () => document.removeEventListener('keydown', h);
+    }, [onClose]);
+
     if (!isOpen) return null;
 
     const togglePreference = (option: string) => {
@@ -75,12 +82,6 @@ export default function EndingNoteEditModal({ isOpen, onClose, currentNote, onSa
             setSaving(false);
         }
     };
-
-    useEffect(() => {
-        const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-        document.addEventListener('keydown', h);
-        return () => document.removeEventListener('keydown', h);
-    }, [onClose]);
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px] animate-in fade-in duration-200">

@@ -78,10 +78,11 @@ export const setSupabaseAuth = async (token: string | null) => {
     return;
   }
 
-  currentAccessToken = token;
-
-  // [Security Fix] 토큰 변경 시 새 인스턴스를 생성하여 안전하게 적용
+  // [Bug Fix] createSupabaseClient 호출 전에 currentAccessToken을 변경하면
+  // 내부 비교(token === currentAccessToken)가 항상 true → 인스턴스 재생성 안됨
+  // 따라서 호출 후에 업데이트해야 함
   createSupabaseClient(token);
+  currentAccessToken = token;
 };
 
 // [NEW] 캐싱된 인증 클라이언트 및 토큰

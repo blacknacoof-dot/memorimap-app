@@ -24,6 +24,7 @@ import { AdminLogsView } from './AdminLogsView';
 import { AdminCommunication } from '../admin/AdminCommunication';
 import { MessageSquare } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
+import { useApiRetry } from '../../hooks/useApiRetry';
 
 // MOCK_DATA removed. Using real hooks.
 
@@ -110,6 +111,7 @@ import { Calendar } from 'lucide-react';
 
 const AdminSettings = () => {
     const { user } = useUser();
+    const { queryWithRetry } = useApiRetry();
     const [fullName, setFullName] = useState(user?.fullName || '');
     const [phone, setPhone] = useState('');
     const [saving, setSaving] = useState(false);
@@ -118,10 +120,13 @@ const AdminSettings = () => {
         if (!user?.id) return;
         setSaving(true);
         try {
-            const { error } = await supabase
-                .from('profiles')
-                .update({ full_name: fullName, phone })
-                .eq('id', user.id);
+            const { error } = await queryWithRetry(async (authClient) =>
+                (authClient || supabase)
+                    .from('profiles')
+                    .update({ full_name: fullName, phone })
+                    .eq('id', user.id)
+                    .then(res => res)
+            );
             if (error) throw error;
             toast.success('프로필 정보가 저장되었습니다.');
         } catch (e: any) {

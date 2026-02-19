@@ -5,6 +5,7 @@ import { Clock, CheckCircle, XCircle, Check, Phone, MapPin, Users, Calendar, Che
 import { aiConsultationService } from '@/lib/api/aiConsultation';
 import { AiConsultationStatus } from '@/types';
 import { supabase } from '@/lib/supabaseClient'; // [Realtime]
+import { useApiRetry } from '@/hooks/useApiRetry';
 import { ConsultationActionModal } from './facility/ConsultationActionModal';
 
 interface Props {
@@ -48,6 +49,7 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
     const [consultations, setConsultations] = useState<Consultation[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [filter, setFilter] = useState<string>('all');
+    const { callWithRetry } = useApiRetry();
     const [expandedId, setExpandedId] = useState<string | null>(null);
 
     // [Modal Logic]
@@ -102,8 +104,10 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
                 }
                 return; // Stop here, wait for modal confirm
             } else {
-                // Legacy or other statuses
-                await updateConsultationStatus(consultationId, newStatus);
+                // Legacy or other statuses (자동 재시도)
+                await callWithRetry((authClient) =>
+                    updateConsultationStatus(consultationId, newStatus, undefined, authClient)
+                );
             }
 
             // Update UI

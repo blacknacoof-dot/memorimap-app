@@ -943,6 +943,11 @@ export const getUserPhoneNumber = async (userId: string, client?: any): Promise<
  * 시설 FAQ 조회 (실제 테이블이 없으면 빈 배열 반환)
  */
 export const getFacilityFaqs = async (facilityId: string) => {
+    // facility_id가 UUID가 아니면 (정적 ID인 경우) DB 쿼리 스킵
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!facilityId || !UUID_RE.test(facilityId)) {
+        return [];
+    }
     try {
         const { data, error } = await supabase
             .from('facility_faqs')
@@ -952,13 +957,10 @@ export const getFacilityFaqs = async (facilityId: string) => {
             .order('order_index', { ascending: true });
 
         if (error) {
-            // 테이블이 없거나 에러 시 빈 배열 반환
-            console.warn('getFacilityFaqs error (may not exist):', error.message);
             return [];
         }
         return data || [];
     } catch (e) {
-        console.warn('getFacilityFaqs exception:', e);
         return [];
     }
 };
@@ -1222,7 +1224,8 @@ export const getFacilitiesByCategory = async (category: string) => {
 /**
  * [추가] 파트너 입점 신청 제출
  */
-export const submitPartnerApplication = async (data: any) => {
+export const submitPartnerApplication = async (data: any, authClient?: import('@supabase/supabase-js').SupabaseClient) => {
+    const client = authClient || supabase;
     // 1. 파일 업로드
     let licenseUrl = '';
     if (data.businessLicenseImage) {
@@ -1231,7 +1234,7 @@ export const submitPartnerApplication = async (data: any) => {
             const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
             const filePath = `licenses/${fileName}`;
 
-            const { error: uploadError, data: uploadData } = await supabase.storage
+            const { error: uploadError, data: uploadData } = await client.storage
                 .from('partner_docs')
                 .upload(filePath, data.businessLicenseImage, {
                     cacheControl: '3600',
@@ -1243,19 +1246,17 @@ export const submitPartnerApplication = async (data: any) => {
                 throw new Error(`파일 업로드 실패: ${uploadError.message}`);
             }
 
-            const { data: urlData } = supabase.storage
+            const { data: urlData } = client.storage
                 .from('partner_docs')
                 .getPublicUrl(filePath);
             licenseUrl = urlData.publicUrl;
         } catch (uploadErr: any) {
             console.error('[PartnerUpload] Upload exception:', uploadErr);
-            // 파일 업로드 실패핏�도 계속 진행 (licenseUrl 없이)
-            // 또는 throw uploadErr; // 파일 업로드 필수시 에러 발생
         }
     }
 
     // 2. DB Insert
-    const { data: result, error } = await supabase
+    const { data: result, error } = await client
         .from('partner_inquiries')
         .insert([{
             user_id: data.userId,
@@ -1817,15 +1818,17 @@ export const getConsultationsByUser = async (userId: string): Promise<Consultati
 export const updateConsultationStatus = async (
     consultationId: string,
     status: 'pending' | 'accepted' | 'cancelled' | 'completed',
-    notes?: string
+    notes?: string,
+    authClient?: import('@supabase/supabase-js').SupabaseClient
 ): Promise<boolean> => {
     try {
+        const client = authClient || supabase;
         const updateData: any = { status };
         if (notes !== undefined) {
             updateData.notes = notes;
         }
 
-        const { error } = await supabase
+        const { error } = await client
             .from('consultations')
             .update(updateData)
             .eq('id', consultationId);

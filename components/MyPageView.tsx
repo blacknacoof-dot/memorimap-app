@@ -415,7 +415,26 @@ export const MyPageView: React.FC<Props> = ({
 
             <div className="mb-8">
                 {activeTab === 'consultations' ? (
-                    <MyConsultations userId={user.id} onViewFacility={onSelectFacility} />
+                    <MyConsultations
+                        userId={user.id}
+                        onViewFacility={onSelectFacility}
+                        onResumeChat={(consultation) => {
+                            // AI 상담 이어하기: 해당 시설 상세로 이동하여 채팅 재개
+                            if (consultation.facility_id && onSelectFacility) {
+                                const facility = facilities.find(f => String(f.id) === String(consultation.facility_id));
+                                if (facility) {
+                                    onSelectFacility(facility);
+                                    return;
+                                }
+                            }
+                            // 시설 매칭 실패 시 navigate fallback
+                            if (onNavigate) {
+                                onNavigate({ view: 'facility', facilityId: consultation.facility_id });
+                            } else {
+                                toast.info('상담 이어하기: 해당 시설 페이지로 이동합니다.');
+                            }
+                        }}
+                    />
                 ) : isLoadingReservations ? (
                     <div className="text-center py-10">
                         <Loader2 size={32} className="animate-spin text-primary mx-auto" />

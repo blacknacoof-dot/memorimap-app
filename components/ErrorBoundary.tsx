@@ -6,60 +6,110 @@ interface Props {
     children: ReactNode;
     fallback?: ReactNode;
     onError?: (error: Error, errorInfo: ErrorInfo) => void;
+    /** 자동 복구 최대 횟수 (기본 3) */
+    maxAutoRetries?: number;
 }
 
 interface State {
     hasError: boolean;
     error: Error | null;
     errorInfo: ErrorInfo | null;
+    /** 자동 복구 시도 횟수 */
+    retryCount: number;
+    /** 자동 복구 카운트다운 (초) */
+    countdown: number;
 }
 
+const MAX_AUTO_RETRIES = 3;
+
 /**
- * [Phase 2] Global Error Boundary
- * React 컴포넌트 트리에서 발생하는 에러를 캐치하여
- * 사용자 친화적인 fallback UI를 제공
+ * Error Boundary — 자동 복구 기능 포함
+ * 1) 컴포넌트 크래시 감지
+ * 2) 자동 상태 리셋 시도 (최대 3회, 2초 간격)
+ * 3) 자동 복구 실패 시 정적 에러 UI + 수동 버튼
  */
 export class ErrorBoundary extends Component<Props, State> {
+    private countdownTimer: ReturnType<typeof setInterval> | null = null;
+
     constructor(props: Props) {
         super(props);
         this.state = {
             hasError: false,
             error: null,
-            errorInfo: null
+            errorInfo: null,
+            retryCount: 0,
+            countdown: 0,
         };
     }
 
-    static getDerivedStateFromError(error: Error): State {
-        return {
-            hasError: true,
-            error,
-            errorInfo: null
-        };
+    static getDerivedStateFromError(error: Error): Partial<State> {
+        return { hasError: true, error };
     }
 
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-        // 에러 로깅
-        console.error('[ErrorBoundary] 에러 발생:', error);
-        console.error('[ErrorBoundary] 컴포넌트 스택:', errorInfo.componentStack);
+        this.setState({ errorInfo });
 
-        this.setState({
-            error,
-            errorInfo
-        });
-
-        // 부모 컴포넌트에 에러 알림 (선택적)
         if (this.props.onError) {
             this.props.onError(error, errorInfo);
         }
 
-        // 개발 환경이 아닐 때만 토스트 표시
-        if (process.env.NODE_ENV === 'production') {
-            toast.error('일시적인 오류가 발생했습니다.', {
+        const maxRetries = this.props.maxAutoRetries ?? MAX_AUTO_RETRIES;
+
+        // 자동 복구 가능하면 2초 후 리셋 시도
+        if (this.state.retryCount < maxRetries) {
+            this.startAutoRecovery();
+        } else if (process.env.NODE_ENV === 'production') {
+            toast.error('오류가 반복 발생합니다.', {
                 description: '페이지를 새로고침해 주세요.',
-                duration: 5000
+                duration: 5000,
             });
         }
     }
+
+    componentWillUnmount() {
+        this.clearTimer();
+    }
+
+    clearTimer = () => {
+        if (this.countdownTimer) {
+            clearInterval(this.countdownTimer);
+            this.countdownTimer = null;
+        }
+    };
+
+    startAutoRecovery = () => {
+        this.clearTimer();
+        this.setState({ countdown: 2 });
+
+        this.countdownTimer = setInterval(() => {
+            this.setState(prev => {
+                const next = prev.countdown - 1;
+                if (next <= 0) {
+                    this.clearTimer();
+                    return {
+                        hasError: false,
+                        error: null,
+                        errorInfo: null,
+                        retryCount: prev.retryCount + 1,
+                        countdown: 0,
+                    } as State;
+                }
+                return { countdown: next } as State;
+            });
+        }, 1000);
+    };
+
+    /** 수동 다시 시도 (상태 리셋, 새로고침 아님) */
+    handleRetry = () => {
+        this.clearTimer();
+        this.setState({
+            hasError: false,
+            error: null,
+            errorInfo: null,
+            retryCount: 0,
+            countdown: 0,
+        });
+    };
 
     handleRefresh = () => {
         window.location.reload();
@@ -71,14 +121,30 @@ export class ErrorBoundary extends Component<Props, State> {
 
     render() {
         if (this.state.hasError) {
-            // 커스텀 fallback UI 제공 시 사용
             if (this.props.fallback) {
                 return this.props.fallback;
             }
 
-            // 기본 fallback UI
+            const maxRetries = this.props.maxAutoRetries ?? MAX_AUTO_RETRIES;
+            const isAutoRecovering = this.state.retryCount < maxRetries && this.state.countdown > 0;
+
+            // 자동 복구 중: 간단한 로딩 UI
+            if (isAutoRecovering) {
+                return (
+                    <div className="flex items-center justify-center p-8">
+                        <div className="text-center">
+                            <div className="w-8 h-8 border-3 border-gray-200 border-t-primary rounded-full animate-spin mx-auto mb-3" />
+                            <p className="text-sm text-gray-500">
+                                자동 복구 중... ({this.state.countdown}초)
+                            </p>
+                        </div>
+                    </div>
+                );
+            }
+
+            // 자동 복구 실패: 정적 에러 UI
             return (
-                <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+                <div className="min-h-[300px] flex items-center justify-center bg-gray-50 p-4">
                     <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
                         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <AlertTriangle className="w-8 h-8 text-red-500" />
@@ -89,12 +155,11 @@ export class ErrorBoundary extends Component<Props, State> {
                         </h1>
 
                         <p className="text-gray-600 mb-6 text-sm">
-                            죄송합니다. 페이지를 표시하는 중 문제가 발생했습니다.<br />
-                            다시 시도해 주세요.
+                            자동 복구에 실패했습니다. 아래 버튼을 눌러 다시 시도해 주세요.
                         </p>
 
                         {process.env.NODE_ENV === 'development' && this.state.error && (
-                            <div className="mb-6 p-4 bg-gray-100 rounded-lg text-left overflow-auto">
+                            <div className="mb-6 p-4 bg-gray-100 rounded-lg text-left overflow-auto max-h-40">
                                 <p className="text-xs font-mono text-red-600 mb-2">
                                     {this.state.error.toString()}
                                 </p>
@@ -108,10 +173,17 @@ export class ErrorBoundary extends Component<Props, State> {
 
                         <div className="flex gap-3 justify-center">
                             <button
-                                onClick={this.handleRefresh}
+                                onClick={this.handleRetry}
                                 className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors"
                             >
                                 <RefreshCw size={18} />
+                                다시 시도
+                            </button>
+
+                            <button
+                                onClick={this.handleRefresh}
+                                className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                            >
                                 새로고침
                             </button>
 
@@ -120,7 +192,7 @@ export class ErrorBoundary extends Component<Props, State> {
                                 className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
                             >
                                 <Home size={18} />
-                                홈으로
+                                홈
                             </button>
                         </div>
                     </div>
@@ -133,8 +205,7 @@ export class ErrorBoundary extends Component<Props, State> {
 }
 
 /**
- * [Phase 2] Async Error Boundary
- * 비동기 에러를 처리하기 위한 HOC
+ * HOC: 컴포넌트를 ErrorBoundary로 감싸기
  */
 export function withErrorBoundary<P extends object>(
     WrappedComponent: React.ComponentType<P>,
