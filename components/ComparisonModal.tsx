@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Facility, getCategoryLabel, normalizeCategoryValue } from '../types';
 import { X, Star, MapPin, Trash2, AlertCircle } from 'lucide-react';
 
@@ -9,18 +10,24 @@ interface Props {
 }
 
 export const ComparisonModal: React.FC<Props> = ({ facilities, onClose, onRemove, onBook }) => {
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', h);
+    return () => document.removeEventListener('keydown', h);
+  }, [onClose]);
+
   if (facilities.length === 0) return null;
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col shadow-2xl overflow-hidden relative animate-in zoom-in-95 duration-200">
+      <div className="bg-white rounded-2xl w-full max-w-4xl h-[85dvh] flex flex-col shadow-2xl overflow-hidden relative animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="p-4 border-b flex justify-between items-center bg-white z-10">
           <div>
             <h2 className="text-lg font-bold text-gray-900">시설 비교하기</h2>
             <p className="text-xs text-gray-500">최대 3개 시설까지 비교 가능합니다.</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
+          <button onClick={onClose} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-100 rounded-full">
             <X className="text-gray-500" />
           </button>
         </div>

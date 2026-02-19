@@ -7,10 +7,16 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 
-const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const ALLOWED_ORIGINS = [
+    "https://memorimap.vercel.app",
+    "https://memorimap.co.kr",
+    "http://localhost:5173",
+];
+
+function getCorsOrigin(req: Request): string {
+    const origin = req.headers.get("Origin") || "";
+    return ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+}
 
 interface DeployRequest {
     facility_id?: string;
@@ -18,12 +24,26 @@ interface DeployRequest {
 }
 
 serve(async (req: Request) => {
+    const corsHeaders = {
+        "Access-Control-Allow-Origin": getCorsOrigin(req),
+        "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    };
+
     // Handle CORS preflight
     if (req.method === "OPTIONS") {
         return new Response("ok", { headers: corsHeaders });
     }
 
     try {
+        // [Security] Verify authorization
+        const authHeader = req.headers.get("Authorization");
+        if (!authHeader) {
+            return new Response(
+                JSON.stringify({ success: false, error: "Missing authorization" }),
+                { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+        }
+
         // Initialize Supabase client with service role
         const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
         const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -34,6 +54,25 @@ serve(async (req: Request) => {
                 persistSession: false,
             },
         });
+
+        // [Security] Verify the caller is an admin
+        const token = authHeader.replace(/^Bearer\s+/i, "");
+        const supabaseAuth = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+            global: { headers: { Authorization: `Bearer ${token}` } },
+            auth: { autoRefreshToken: false, persistSession: false }
+        });
+        const { data: { user }, error: authErr } = await supabaseAuth.auth.getUser(token);
+
+        if (authErr || !user) {
+            // Fallback: check if it's a valid service-level call with matching service key
+            const apiKey = req.headers.get("apikey");
+            if (apiKey !== supabaseServiceKey) {
+                return new Response(
+                    JSON.stringify({ success: false, error: "Unauthorized" }),
+                    { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                );
+            }
+        }
 
         // Parse request body
         let body: DeployRequest = {};

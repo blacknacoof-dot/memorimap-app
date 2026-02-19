@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Shield, FileText } from 'lucide-react';
 
 interface Props {
@@ -8,13 +8,19 @@ interface Props {
 export const LegalModal: React.FC<Props> = ({ onClose }) => {
     const [activeTab, setActiveTab] = useState<'privacy' | 'license'>('privacy');
 
+    useEffect(() => {
+        const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', h);
+        return () => document.removeEventListener('keydown', h);
+    }, [onClose]);
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
-            <div className="bg-white w-full max-w-2xl max-h-[80vh] rounded-2xl shadow-xl flex flex-col overflow-hidden">
+            <div className="bg-white w-full max-w-2xl max-h-[80dvh] rounded-2xl shadow-xl flex flex-col overflow-hidden">
                 {/* Header */}
                 <div className="p-4 border-b flex justify-between items-center bg-gray-50">
                     <h2 className="font-bold text-lg text-gray-800">서비스 정책 및 정보</h2>
-                    <button onClick={onClose} className="p-1 hover:bg-gray-200 rounded-full transition-colors">
+                    <button onClick={onClose} className="p-1 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-200 rounded-full transition-colors">
                         <X size={24} className="text-gray-500" />
                     </button>
                 </div>

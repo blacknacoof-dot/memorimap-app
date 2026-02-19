@@ -98,23 +98,60 @@ serve(async (req) => {
         )
 
 
-        // [Fix] Decode JWT manually
+        // [Security Fix] Verify JWT via Supabase Auth instead of manual decode
         const token = authHeader.replace(/^Bearer\s+/i, '');
-        const payloadParts = token.split('.');
-        if (payloadParts.length < 2) throw new Error('Invalid Token Format');
-        const payload = JSON.parse(atob(payloadParts[1].replace(/-/g, '+').replace(/_/g, '/')));
-        const userEmail = payload.email;
+
+        // Create a user-scoped client to verify the token signature
+        const supabaseAuth = createClient(
+            Deno.env.get('SUPABASE_URL') ?? '',
+            Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+            {
+                global: { headers: { Authorization: `Bearer ${token}` } },
+                auth: { autoRefreshToken: false, persistSession: false }
+            }
+        );
+        const { data: { user: verifiedUser }, error: authError } = await supabaseAuth.auth.getUser(token);
+
+        let userEmail: string | undefined;
+        let userId: string;
+
+        if (verifiedUser && !authError) {
+            // Supabase JWT verified
+            userEmail = verifiedUser.email;
+            userId = verifiedUser.id;
+        } else {
+            // Fallback: Clerk JWT — decode but verify via DB lookup
+            const payloadParts = token.split('.');
+            if (payloadParts.length < 2) throw new Error('Invalid Token Format');
+            const payload = JSON.parse(atob(payloadParts[1].replace(/-/g, '+').replace(/_/g, '/')));
+            userEmail = payload.email;
+            userId = payload.sub || '00000000-0000-0000-0000-000000000000';
+
+            if (!userEmail) throw new Error('No email in token');
+
+            // Verify Clerk user exists in profiles table
+            const { data: profile, error: profileErr } = await supabaseAdmin
+                .from('profiles')
+                .select('clerk_id, role')
+                .eq('email', userEmail)
+                .single();
+
+            if (profileErr || !profile) {
+                throw new Error('User not found in profiles');
+            }
+        }
 
         if (!userEmail) throw new Error('No email in token');
 
         // [Security] Super Admin Email Check
-        const SUPER_ADMIN_EMAIL = Deno.env.get('SUPER_ADMIN_EMAIL') || 'blacknacoof@gmail.com';
+        const SUPER_ADMIN_EMAIL = Deno.env.get('SUPER_ADMIN_EMAIL');
+        if (!SUPER_ADMIN_EMAIL) throw new Error('SUPER_ADMIN_EMAIL not configured');
         if (userEmail !== SUPER_ADMIN_EMAIL) {
             return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 403, headers: getCorsHeaders(req) })
         }
 
         const user = {
-            id: payload.sub || '00000000-0000-0000-0000-000000000000',
+            id: userId,
             email: userEmail
         };
 

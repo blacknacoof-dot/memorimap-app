@@ -95,7 +95,7 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
     };
 
     return (
-        <div className="absolute inset-0 z-50 flex items-end justify-center sm:items-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
+        <div className="fixed inset-0 z-[500] flex items-end justify-center sm:items-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
             <div className={`bg-white w-full max-w-sm max-h-[calc(100vh-2rem)] rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-slideUp ${isUrgent ? 'border-2 border-red-500' : isMemorial ? 'border-2 border-emerald-500' : ''}`}>
                 {/* Modal Header */}
                 <div className={`${headerColor} text-white p-5 pt-6 shadow-md shrink-0 flex justify-between items-center relative overflow-hidden`}>
@@ -122,7 +122,7 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
                         {isMemorial && <p className="text-xs text-white/80 mt-1">{company.name} 상담 신청서</p>}
                         {isUrgent && <p className="text-xs text-white/80 mt-1">가장 가까운 의전 팀이 즉시 출동합니다.</p>}
                     </div>
-                    <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-full transition-colors z-10">
+                    <button onClick={onClose} className="p-1 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-white/10 rounded-full transition-colors z-10">
                         <X size={24} className="text-white/80 hover:text-white" />
                     </button>
                 </div>
@@ -198,11 +198,10 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
                                         <button
                                             key={opt.id} type="button"
                                             onClick={() => setFormData({ ...formData, memorialType: opt.id })}
-                                            className={`flex flex-col items-center gap-1 py-2.5 rounded-lg border text-xs font-bold transition-all ${
-                                                formData.memorialType === opt.id
+                                            className={`flex flex-col items-center gap-1 py-2.5 rounded-lg border text-xs font-bold transition-all ${formData.memorialType === opt.id
                                                     ? 'bg-emerald-600 text-white border-emerald-600'
                                                     : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-300'
-                                            }`}
+                                                }`}
                                         >
                                             <span className="text-base">{opt.icon}</span>
                                             {opt.id}
@@ -294,11 +293,10 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
                                             <button
                                                 key={b} type="button"
                                                 onClick={() => setFormData({ ...formData, memorialBudget: b })}
-                                                className={`py-2 text-xs rounded-lg border font-bold transition-all ${
-                                                    formData.memorialBudget === b
+                                                className={`py-2 text-xs rounded-lg border font-bold transition-all ${formData.memorialBudget === b
                                                         ? 'bg-emerald-600 text-white border-emerald-600'
                                                         : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-300'
-                                                }`}
+                                                    }`}
                                             >
                                                 {b}
                                             </button>
@@ -425,35 +423,35 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
 
                             {/* Section 4: Preferences (hidden when preStepData provided) */}
                             {!preStepData && (
-                            <div className="space-y-3 pt-2">
-                                <h3 className="text-sm font-bold text-red-700 flex items-center gap-1.5 border-b border-red-100 pb-2">
-                                    <span className="w-5 h-5 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xs border border-red-200">4</span>
-                                    장례 희망 사항
-                                </h3>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="block text-[10px] font-bold text-gray-500 mb-1">종교</label>
-                                        <select
-                                            className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none ${borderColor} focus:ring-1 ${ringColor} bg-white`}
-                                            value={formData.religion} onChange={e => setFormData({ ...formData, religion: e.target.value })}
-                                        >
-                                            <option value="">선택</option>
-                                            <option value="기독교">기독교</option>
-                                            <option value="천주교">천주교</option>
-                                            <option value="불교">불교</option>
-                                            <option value="무교/기타">무교/기타</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-[10px] font-bold text-gray-500 mb-1">장지 (화장/매장)</label>
-                                        <input
-                                            type="text" placeholder="예: 화장"
-                                            className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none ${borderColor} focus:ring-1 ${ringColor}`}
-                                            value={formData.burialMethod} onChange={e => setFormData({ ...formData, burialMethod: e.target.value })}
-                                        />
+                                <div className="space-y-3 pt-2">
+                                    <h3 className="text-sm font-bold text-red-700 flex items-center gap-1.5 border-b border-red-100 pb-2">
+                                        <span className="w-5 h-5 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xs border border-red-200">4</span>
+                                        장례 희망 사항
+                                    </h3>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-gray-500 mb-1">종교</label>
+                                            <select
+                                                className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none ${borderColor} focus:ring-1 ${ringColor} bg-white`}
+                                                value={formData.religion} onChange={e => setFormData({ ...formData, religion: e.target.value })}
+                                            >
+                                                <option value="">선택</option>
+                                                <option value="기독교">기독교</option>
+                                                <option value="천주교">천주교</option>
+                                                <option value="불교">불교</option>
+                                                <option value="무교/기타">무교/기타</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-gray-500 mb-1">장지 (화장/매장)</label>
+                                            <input
+                                                type="text" placeholder="예: 화장"
+                                                className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none ${borderColor} focus:ring-1 ${ringColor}`}
+                                                value={formData.burialMethod} onChange={e => setFormData({ ...formData, burialMethod: e.target.value })}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
                             )}
 
                             {/* Section 4/5: Emergency Contact */}

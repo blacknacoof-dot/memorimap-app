@@ -1174,7 +1174,7 @@ export const searchKnownFacilities = async (query: string, type?: string) => {
     let queryBuilder = supabase
         .from('facilities') // Changed from memorial_spaces
         .select('id, name, address, type, user_id') // [Fix] category -> type, manager_id -> user_id
-        .ilike('name', `%${query}%`);
+        .ilike('name', `%${sanitizeSearchInput(query)}%`);
     // Note: Removed owner_user_id filter - show all facilities, UI will warn if already claimed
 
     if (type) {

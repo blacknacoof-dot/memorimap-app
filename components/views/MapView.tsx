@@ -95,17 +95,18 @@ const MapView: React.FC<MapViewProps> = ({ viewState, setViewState }) => {
     return (
         <div className="relative h-full w-full overflow-hidden flex flex-col">
             {/* Top Bar (Search & Menu) */}
-            <div className="absolute top-0 left-0 right-0 z-[1000] p-4 pointer-events-none">
+            <div className="absolute top-0 left-0 right-0 z-[1000] px-4 pt-3 pb-1 pointer-events-none">
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setIsMenuOpen(true)}
-                        className="pointer-events-auto bg-white p-3 rounded-xl shadow-lg hover:bg-gray-50 active:scale-95 transition-all"
+                        className="pointer-events-auto bg-white p-2.5 rounded-xl shadow-lg hover:bg-gray-50 active:scale-95 transition-all"
                     >
-                        <Menu size={24} className="text-gray-700" />
+                        <Menu size={20} className="text-gray-700" />
                     </button>
 
                     <div className="flex-1 max-w-md pointer-events-auto">
                         <SmartSearchInput
+                            compact
                             value={searchQuery}
                             onChange={setSearchQuery}
                             onAction={(type, region) => {
@@ -190,30 +191,32 @@ const MapView: React.FC<MapViewProps> = ({ viewState, setViewState }) => {
                 />
             )}
 
-            {/* AI Chat Layout (Floating) */}
-            <div className="absolute bottom-4 right-4 z-[999] pointer-events-auto">
-                {isChatOpen ? (
-                    <div className="w-[350px] h-[500px] shadow-2xl rounded-2xl overflow-hidden bg-white border border-gray-200">
-                        <ChatInterface
-                            facility={selectedFacility || { id: 'maum-i', name: 'AI 마음이', type: 'assistant', lat: 37.5, lng: 127, address: '서울', rating: 5, reviewCount: 999 } as Facility}
-                            allFacilities={facilities}
-                            onAction={(action, data) => { }}
-                            onClose={() => setIsChatOpen(false)}
-                            currentUser={user ? { id: user.id, name: user.firstName || 'User' } : null}
-                            initialIntent={chatIntent}
-                            onSearchFacilities={(region) => {
-                                // AI Search region
-                                setSearchQuery(region);
-                                return [];
-                            }}
+            {/* AI Chat Layout (Floating) — hide when side menu is open */}
+            {!isMenuOpen && (
+                <div className="absolute bottom-4 right-4 z-[999] pointer-events-auto">
+                    {isChatOpen ? (
+                        <div className="w-[350px] h-[500px] shadow-2xl rounded-2xl overflow-hidden bg-white border border-gray-200">
+                            <ChatInterface
+                                facility={selectedFacility || { id: 'maum-i', name: 'AI 마음이', type: 'assistant', lat: 37.5, lng: 127, address: '서울', rating: 5, reviewCount: 999 } as Facility}
+                                allFacilities={facilities}
+                                onAction={(action, data) => { }}
+                                onClose={() => setIsChatOpen(false)}
+                                currentUser={user ? { id: user.id, name: user.firstName || 'User' } : null}
+                                initialIntent={chatIntent}
+                                onSearchFacilities={(region) => {
+                                    // AI Search region
+                                    setSearchQuery(region);
+                                    return [];
+                                }}
+                            />
+                        </div>
+                    ) : (
+                        <RecommendationStarter
+                            onSelectIntent={handleSelectIntent}
                         />
-                    </div>
-                ) : (
-                    <RecommendationStarter
-                        onSelectIntent={handleSelectIntent}
-                    />
-                )}
-            </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 };

@@ -131,7 +131,7 @@ const NotificationModal: React.FC<{
                 className={`
                     bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl
                     shadow-2xl flex flex-col
-                    max-h-[85vh] sm:max-h-[80vh]
+                    max-h-[85dvh] sm:max-h-[80dvh]
                     transition-all duration-200
                     ${isClosing
                         ? 'translate-y-full sm:translate-y-0 sm:scale-95 sm:opacity-0'

@@ -55,7 +55,7 @@ export const PhoneNumberModal: React.FC<PhoneNumberModalProps> = ({ isOpen, onCl
             <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
                 <button
                     onClick={handleSkip}
-                    className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    className="absolute top-4 right-4 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors"
                 >
                     <X size={20} className="text-gray-500" />
                 </button>

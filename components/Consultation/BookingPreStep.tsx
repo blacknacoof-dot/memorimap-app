@@ -25,7 +25,7 @@ const BookingPreStep: React.FC<BookingPreStepProps> = ({ facilityName, onNext, o
                         </h3>
                         <p className="text-xs text-white/80 mt-1">빈소 규모와 종교를 선택해 주세요.</p>
                     </div>
-                    <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-full transition-colors">
+                    <button onClick={onClose} className="p-1 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-white/10 rounded-full transition-colors">
                         <X size={24} className="text-white/80 hover:text-white" />
                     </button>
                 </div>

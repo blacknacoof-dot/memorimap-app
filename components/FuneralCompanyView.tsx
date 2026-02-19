@@ -194,8 +194,8 @@ export const FuneralCompanyView: React.FC<Props> = ({
 
                                 return {
                                     id: r.id,
-                                    userId: 'masked', // Security: user_id masking as requested 
-                                    user_id: 'masked',
+                                    userId: r.user_id || '', // Keep original for owner verification
+                                    user_id: r.user_id || '',
                                     userName: r.user_name || r.userName || '익명',
                                     facility_id: r.facility_id,
                                     rating: r.rating || 5,

@@ -133,7 +133,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, ini
                         </button>
                     </div>
                 ) : (
-                    <div className="flex flex-col h-full max-h-[90vh]">
+                    <div className="flex flex-col h-full max-h-[90dvh]">
                         {/* Header Overlay */}
                         <div className="p-8 pb-4 relative overflow-hidden bg-slate-50 border-b border-gray-100">
                             <div className="relative z-10">

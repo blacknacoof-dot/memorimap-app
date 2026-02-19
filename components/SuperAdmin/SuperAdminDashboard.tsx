@@ -48,7 +48,7 @@ const SideMenuDrawer = ({ isOpen, onClose, onNavigate }: { isOpen: boolean; onCl
             <div className="relative w-64 bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-left duration-300">
                 <div className="p-5 border-b border-slate-100 flex items-center justify-between">
                     <h2 className="font-bold text-slate-800 text-lg">전체 메뉴</h2>
-                    <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600">
+                    <button onClick={onClose} className="p-1 min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-400 hover:text-slate-600">
                         <X className="w-6 h-6" />
                     </button>
                 </div>

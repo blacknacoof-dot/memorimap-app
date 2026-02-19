@@ -225,11 +225,11 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 max-h-[90vh] flex flex-col">
+            <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 max-h-[90dvh] flex flex-col">
                 {/* Header */}
                 <div className="flex justify-between items-center p-4 border-b shrink-0">
                     <h2 className="text-lg font-bold text-gray-900">시설 정보 수정</h2>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
+                    <button onClick={onClose} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-100 rounded-full">
                         <X size={20} className="text-gray-500" />
                     </button>
                 </div>

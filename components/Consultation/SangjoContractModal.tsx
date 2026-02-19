@@ -41,7 +41,7 @@ export const SangjoContractModal: React.FC<Props> = ({ company, onClose, onConfi
                         <HeartHandshake className="text-primary" size={20} />
                         <h3 className="font-bold text-gray-900">상조 가입 신청</h3>
                     </div>
-                    <button onClick={onClose} className="p-1 hover:bg-gray-200 rounded-full transition-colors">
+                    <button onClick={onClose} className="p-1 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-200 rounded-full transition-colors">
                         <X size={20} className="text-gray-400" />
                     </button>
                 </div>

@@ -375,7 +375,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                     className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center bg-black/50"
                     onClick={(e) => e.target === e.currentTarget && setShowInquiryModal(false)}
                 >
-                    <div className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl shadow-2xl max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom-4">
+                    <div className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl shadow-2xl max-h-[85dvh] overflow-y-auto animate-in slide-in-from-bottom-4">
                         <div className="flex justify-center pt-2 sm:hidden">
                             <div className="w-10 h-1 bg-gray-300 rounded-full" />
                         </div>

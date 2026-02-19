@@ -277,7 +277,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
 
     return (
         <div className="fixed inset-0 z-[500] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-300">
-            <div className="w-full max-w-md h-full sm:h-[90vh] bg-[#F7F8F9] rounded-none sm:rounded-[32px] shadow-2xl overflow-hidden flex flex-col border-x border-slate-200 animate-in zoom-in-95 duration-300">
+            <div className="w-full max-w-md h-full sm:h-[90dvh] bg-[#F7F8F9] rounded-none sm:rounded-[32px] shadow-2xl overflow-hidden flex flex-col border-x border-slate-200 animate-in zoom-in-95 duration-300">
                 {/* Header: Forest Green */}
                 <div className="p-4 bg-[#006442] text-white flex items-center justify-between shadow-md shrink-0">
                     <div className="flex items-center gap-3">

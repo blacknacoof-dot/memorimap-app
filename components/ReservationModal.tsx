@@ -116,7 +116,7 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
         id: `RES-${Date.now()}`,
         facility_id: facility.id,
         facility_name: facility.name,
-        user_id: 'temp-user',
+        user_id: '', // Will be set by useReservations hook with actual user.id
         visit_date: format(new Date(), 'yyyy-MM-dd'),
         time_slot: '긴급(즉시)',
         visitor_name: data.visitor_name,
@@ -146,7 +146,7 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
       id: `RES-${Date.now()}`,
       facility_id: facility.id,
       facility_name: facility.name, // Joined field
-      user_id: 'temp-user', // Needed for strict type match, will be overwritten by backend or context usually
+      user_id: '', // Will be set by useReservations hook with actual user.id // Needed for strict type match, will be overwritten by backend or context usually
       visit_date: data.visit_date, // Keep as string "YYYY-MM-DD"
       time_slot: data.visit_time,
       visitor_name: data.visitor_name,
@@ -534,7 +534,7 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
           <h2 className="text-lg font-bold flex items-center gap-2">
             {getTitle()}
           </h2>
-          <button onClick={onClose}><X className="text-gray-500" /></button>
+          <button onClick={onClose} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-100 rounded-full"><X className="text-gray-500" /></button>
         </div>
         <div className="p-6 overflow-y-auto flex-1">
           {renderStepIndicator()}

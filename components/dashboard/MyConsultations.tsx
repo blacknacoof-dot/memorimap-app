@@ -82,8 +82,8 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
         const aiData = aiDataRaw.filter(ai => ai.status !== 'cancelled' && ai.status !== 'deleted');
 
         // 3. Merge & Adapt
-        const aiAdapted = aiData.map(ai => ({
-            id: ai.conversation_id, // Use conversation_id as ID
+        const aiAdapted = aiData.map((ai, index) => ({
+            id: ai.conversation_id || `ai_temp_${index}_${Date.now()}`, // Fallback for null conversation_id
             facility_id: ai.facility_id || '',
             user_id: ai.user_id || userId,
             status: mapAiStatusToLegacy(ai.status),
@@ -143,14 +143,48 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
         }
     }, [userId]);
 
-    const handleCancel = async (consultationId: string) => {
+    const handleCancel = async (consultation: any) => {
+        const consultationId = consultation.id;
+        if (!consultationId || consultationId.startsWith('ai_temp_')) {
+            toast.error('상담 ID가 없어 취소할 수 없습니다.');
+            return;
+        }
         if (!confirm('상담을 취소하시겠습니까?')) return;
 
-        const success = await updateConsultationStatus(consultationId, 'cancelled');
-        if (success) {
+        try {
+            if (consultation.isAi) {
+                // AI 상담: ai_consultations 테이블에서 conversation_id로 업데이트
+                if (!consultation.conversation_id) {
+                    toast.error('AI 상담 ID가 유효하지 않습니다.');
+                    return;
+                }
+                const token = await session?.getToken({ template: 'supabase' });
+                const client = token ? createAuthenticatedClient(token) : supabase;
+                const { error } = await client
+                    .from('ai_consultations')
+                    .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+                    .eq('conversation_id', consultation.conversation_id)
+                    .eq('user_id', userId);
+                if (error) {
+                    console.error('AI 상담 취소 실패:', error);
+                    toast.error('취소 중 오류가 발생했습니다.');
+                    return;
+                }
+            } else {
+                // 일반 상담: consultations 테이블에서 id로 업데이트
+                const success = await updateConsultationStatus(consultationId, 'cancelled');
+                if (!success) {
+                    toast.error('취소 중 오류가 발생했습니다.');
+                    return;
+                }
+            }
             setConsultations(prev =>
                 prev.map(c => c.id === consultationId ? { ...c, status: 'cancelled' } : c)
             );
+            toast.success('상담이 취소되었습니다.');
+        } catch (e) {
+            console.error('상담 취소 실패:', e);
+            toast.error('취소 중 오류가 발생했습니다.');
         }
     };
 
@@ -163,6 +197,11 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
             const authClient = createAuthenticatedClient(token);
 
             if (consultation.isAi) {
+                // AI 상담: conversation_id가 null이면 삭제 불가
+                if (!consultation.conversation_id) {
+                    toast.error('AI 상담 ID가 유효하지 않아 삭제할 수 없습니다.');
+                    return;
+                }
                 // AI 상담: cancelled로 상태 변경
                 const { error } = await authClient
                     .from('ai_consultations')
@@ -264,7 +303,7 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
 
                     return (
                         <div
-                            key={consultation.id}
+                            key={consultation.id || `fallback_${consultation.created_at}`}
                             className={`bg-white rounded-2xl border-2 ${statusConfig.color} p-4 transition hover:shadow-md`}
                         >
                             {/* Header */}
@@ -369,7 +408,7 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
 
                             {(['waiting', 'pending'].includes(consultation.status)) && (
                                 <button
-                                    onClick={() => handleCancel(consultation.id)}
+                                    onClick={() => handleCancel(consultation)}
                                     className="w-full py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition font-medium"
                                 >
                                     상담 취소하기

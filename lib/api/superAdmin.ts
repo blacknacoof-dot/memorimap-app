@@ -104,10 +104,11 @@ export const fetchAllFacilities = async () => {
 };
 
 export const searchFacilities = async (query: string) => {
+    const sanitized = query.trim().replace(/[%_\\]/g, '\\$&');
     const { data, error } = await supabase
         .from('facilities')
         .select('*')
-        .ilike('name', `%${query}%`)
+        .ilike('name', `%${sanitized}%`)
         .order('created_at', { ascending: false });
 
     if (error) throw error;

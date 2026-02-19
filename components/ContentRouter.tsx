@@ -106,8 +106,30 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
     adminFacilityId, setAdminFacilityId, adminSangjoId,
   } = props;
 
-  // ADMIN - separate full-page layout
+  // ADMIN - separate full-page layout (with role guard)
   if (viewState === ViewState.ADMIN) {
+    if (isLoadingRole) {
+      return (
+        <div className="h-full flex flex-col items-center justify-center p-4">
+          <Loader2 className="animate-spin text-primary mb-4" size={48} />
+          <p className="text-gray-600 font-medium">관리자 권한 확인 중...</p>
+        </div>
+      );
+    }
+    if (!isSignedIn || !userRole || !['admin', 'super_admin', 'facility_admin', 'facility_manager'].includes(userRole)) {
+      return (
+        <div className="h-full flex flex-col items-center justify-center p-6 bg-gray-50">
+          <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <ShieldAlert className="text-red-500" size={32} />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">접근 권한이 없습니다</h2>
+            <p className="text-gray-500 mb-6">관리자 계정으로 로그인해야 합니다.</p>
+            <button onClick={() => setViewState(ViewState.MAP)} className="px-6 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 font-medium">메인으로 돌아가기</button>
+          </div>
+        </div>
+      );
+    }
     return (
       <Suspense fallback={<LoadingFallback />}>
         <AdminView
@@ -386,6 +408,20 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
       );
 
     case ViewState.SANGJO_DASHBOARD:
+      if (!isSignedIn || !userRole || !['sangjo_hq_admin', 'sangjo_branch_admin', 'super_admin'].includes(userRole)) {
+        return (
+          <div className="h-full flex flex-col items-center justify-center p-6 bg-gray-50">
+            <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <ShieldAlert className="text-red-500" size={32} />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">접근 권한이 없습니다</h2>
+              <p className="text-gray-500 mb-6">상조 관리자 계정으로 로그인해야 합니다.</p>
+              <button onClick={() => setViewState(ViewState.MAP)} className="px-6 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 font-medium">메인으로 돌아가기</button>
+            </div>
+          </div>
+        );
+      }
       return (
         <Suspense fallback={<LoadingFallback />}>
           <SangjoDashboard

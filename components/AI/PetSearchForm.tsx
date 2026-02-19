@@ -274,7 +274,7 @@ const PetSearchForm: React.FC<FormProps> = ({
                 {/* ConsultationForm modal overlay */}
                 {consultFacility && (
                     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50">
-                        <div className="w-full max-w-md max-h-[90vh] overflow-y-auto">
+                        <div className="w-full max-w-md max-h-[90dvh] overflow-y-auto">
                             <ConsultationForm
                                 company={{
                                     id: `pet_${consultFacility.id}`,

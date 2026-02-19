@@ -13,13 +13,13 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
     onSelectCategory,
 }) => {
     return (
-        <div className="flex gap-2 mt-3 overflow-x-auto pb-2 pointer-events-auto no-scrollbar">
+        <div className="flex gap-1.5 mt-2 overflow-x-auto pb-1 pointer-events-auto no-scrollbar">
             {/* '전체' 버튼 */}
             <button
                 onClick={() => onSelectCategory('전체')}
-                className={`px-4 py-2 rounded-full text-sm font-medium shadow-md whitespace-nowrap transition-colors border ${selectedCategory === '전체'
-                        ? 'bg-gray-900 text-white border-gray-900'
-                        : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                className={`px-3 py-1.5 rounded-full text-xs font-medium shadow-sm whitespace-nowrap transition-colors border ${selectedCategory === '전체'
+                    ? 'bg-gray-900 text-white border-gray-900'
+                    : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
                     }`}
             >
                 전체
@@ -30,9 +30,9 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
                 <button
                     key={cat}
                     onClick={() => onSelectCategory(cat)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium shadow-md whitespace-nowrap transition-colors border ${selectedCategory === cat
-                            ? 'bg-blue-600 text-white border-blue-600'
-                            : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium shadow-sm whitespace-nowrap transition-colors border ${selectedCategory === cat
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
                         }`}
                 >
                     {cat}

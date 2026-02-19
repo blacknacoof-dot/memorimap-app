@@ -32,7 +32,7 @@ export const SangjoComparisonModal: React.FC<Props> = ({ companies, onClose, onR
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-0 md:p-4">
-            <div className="bg-white rounded-none md:rounded-3xl w-full max-w-4xl h-full md:h-[85vh] flex flex-col shadow-2xl overflow-hidden relative animate-in slide-in-from-bottom-4 duration-300">
+            <div className="bg-white rounded-none md:rounded-3xl w-full max-w-4xl h-full md:h-[85dvh] flex flex-col shadow-2xl overflow-hidden relative animate-in slide-in-from-bottom-4 duration-300">
                 {/* Header */}
                 <div className="p-4 border-b flex justify-between items-center bg-white z-10 shrink-0">
                     <div className="flex items-center gap-2">
@@ -44,7 +44,7 @@ export const SangjoComparisonModal: React.FC<Props> = ({ companies, onClose, onR
                             <p className="text-[10px] text-gray-500">선택하신 {companies.length}개 업체를 비교합니다 (최대 3개)</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                    <button onClick={onClose} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors">
                         <X className="text-gray-500" />
                     </button>
                 </div>

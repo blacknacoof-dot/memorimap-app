@@ -4,7 +4,7 @@ import { MemorialSpace, Reservation } from '@/types/db';
 // 1. 내 시설 정보 가져오기 (facilities_id 포함)
 export const fetchMyFacility = async (userId: string) => {
     const { data, error } = await supabase
-        .from('memorial_spaces')
+        .from('facilities')
         .select('*, facilities_id')
         .eq('owner_user_id', userId)
         .single();
@@ -59,7 +59,7 @@ export const updateReservationStatus = async (
 // 4. 시설 정보 수정
 export const updateFacilityInfo = async (facilityId: string | number, updates: Partial<MemorialSpace>) => {
     const { data, error } = await supabase
-        .from('memorial_spaces')
+        .from('facilities')
         .update(updates)
         .eq('id', facilityId)
         .select()

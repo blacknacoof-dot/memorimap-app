@@ -22,26 +22,14 @@ let supabaseInstance: SupabaseClient | null = null;
 let currentAccessToken: string | null = null;
 
 // Supabase 클라이언트 생성 함수 (싱글톤 패턴)
+// [Security Fix] 토큰 변경 시 인스턴스를 재생성하여 내부 헤더 직접 조작 제거
 const createSupabaseClient = (token?: string | null): SupabaseClient => {
-  // 이미 인스턴스가 있고, 토큰만 업데이트 하는 경우라면 기존 인스턴스 활용
-  // 하지만 최초 생성 시에는 토큰을 주입해야 함
-
-  if (supabaseInstance) {
-    if (token) {
-      // @ts-ignore - Accessing internal headers for immediate update
-      supabaseInstance.rest.headers['Authorization'] = `Bearer ${token}`;
-
-      // Also update global headers for future requests if possible (v2 style)
-      // Note: supabase-js v2 doesn't expose global headers easily after creation.
-      // But updating rest.headers is usually sufficient for data queries.
-    } else {
-      // @ts-ignore
-      delete supabaseInstance.rest.headers['Authorization'];
-    }
+  // 토큰이 동일하면 기존 인스턴스 재사용
+  if (supabaseInstance && token === currentAccessToken) {
     return supabaseInstance;
   }
 
-  // 인스턴스 최초 생성
+  // 토큰 변경 또는 최초 생성 — 새 인스턴스 생성
   const client = createClient(
     supabaseUrl || 'https://placeholder.supabase.co',
     supabaseAnonKey || 'placeholder-key',
@@ -50,6 +38,7 @@ const createSupabaseClient = (token?: string | null): SupabaseClient => {
         persistSession: false, // 로컬 스토리지 사용 금지 (Clerk 연동)
         autoRefreshToken: false, // Clerk이 관리하므로 자동 갱신 불필요
         detectSessionInUrl: false,
+        storageKey: `memorimap-auth-${Date.now()}`, // Prevent "Multiple GoTrueClient" warning
       },
       global: {
         headers: token ? {
@@ -91,21 +80,8 @@ export const setSupabaseAuth = async (token: string | null) => {
 
   currentAccessToken = token;
 
-  // 인스턴스가 없으면 생성 (이 때 토큰이 적용됨)
-  if (!supabaseInstance) {
-    createSupabaseClient(token);
-  } else {
-    // 인스턴스가 있으면 헤더만 갱신 (auth.setSession 호출 X)
-    if (token) {
-      // @ts-ignore - Direct header manipulation
-      supabaseInstance.rest.headers['Authorization'] = `Bearer ${token}`;
-      // console.log('[SupabaseAuth] Updated Headers');
-    } else {
-      // @ts-ignore
-      delete supabaseInstance.rest.headers['Authorization'];
-      // console.log('[SupabaseAuth] Cleared Headers');
-    }
-  }
+  // [Security Fix] 토큰 변경 시 새 인스턴스를 생성하여 안전하게 적용
+  createSupabaseClient(token);
 };
 
 // [NEW] 캐싱된 인증 클라이언트 및 토큰

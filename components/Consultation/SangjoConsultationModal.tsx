@@ -115,48 +115,21 @@ import { PetChatInterface } from './PetChatInterface';
 export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onCompanySelect, currentUser }) => {
     const [activeCompany, setActiveCompany] = useState<FuneralCompany | null | undefined>(company);
 
-    // If specific pet company is active, use the dedicated Pet UI
-    if (activeCompany?.id.startsWith('pet_')) {
-        return (
-            <div className="fixed inset-0 bg-black/50 z-[300] flex items-center justify-center p-4">
-                <div className="bg-white rounded-2xl w-full h-[80vh] sm:h-[700px] max-w-md flex flex-col shadow-2xl overflow-hidden relative">
-                    <PetChatInterface
-                        company={activeCompany}
-                        onClose={onClose}
-                        onBack={onClose}
-                    />
-                </div>
-            </div>
-        );
-    }
-
-    // Existing prop-based redirect for Human companies
-    // Use the new Genius ScenarioBot for individual companies
-    // Existing prop-based redirect for Human companies
-    // Use BrandChatInterface (Button Form Style) instead of ScenarioBot
-    if (company && !company.id.startsWith('pet_')) {
-        return (
-            <div className="fixed inset-0 bg-black/50 z-[300] flex items-center justify-center p-4">
-                <div className="bg-white rounded-2xl w-full h-[80vh] sm:h-[700px] max-w-md flex flex-col shadow-2xl overflow-hidden relative">
-                    <BrandChatInterface
-                        company={company}
-                        onClose={onClose}
-                        onBack={onClose}
-                    />
-                </div>
-            </div>
-        );
-    }
-
+    // [HOOKS FIX] All hooks MUST be declared before any conditional return
     const [step, setStep] = useState<ConsultationStep>('GUIDE');
     const [contractData, setContractData] = useState<ContractData>({});
 
     const [faqs, setFaqs] = useState<any[]>([]);
-    // ... activeCompany로 변경
     const systemPrompt = getSystemPrompt(step, contractData, activeCompany?.name);
     const aiName = activeCompany ? `${activeCompany.name} AI 상담사` : "마음이";
 
     const [messages, setMessages] = useState<Message[]>([]);
+
+    const [input, setInput] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [streamingText, setStreamingText] = useState('');
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [topic, setTopic] = useState<string | null>(null);
 
     // Initialize/Reset Chat when activeCompany changes
     useEffect(() => {
@@ -172,20 +145,11 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
         setStep('GUIDE'); // Reset step
     }, [activeCompany]);
 
-    const [input, setInput] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const [streamingText, setStreamingText] = useState('');
-    const scrollRef = useRef<HTMLDivElement>(null);
-    const [topic, setTopic] = useState<string | null>(null);
-
     // Event Listener for 'connectToPartner' from ChatMessage
     useEffect(() => {
         const handleConnect = (e: CustomEvent<FuneralCompany>) => {
             if (e.detail) {
-                // Switch to the selected partner (Maum-i -> Specific Company)
                 setActiveCompany(e.detail);
-
-                // Notify parent if handler exists (For Room Switching)
                 if (onCompanySelect) {
                     onCompanySelect(e.detail);
                 }
@@ -198,7 +162,6 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
     // Load FAQs
     useEffect(() => {
         const loadFaqs = async () => {
-            // Only load FAQs if specific company selected
             if (activeCompany?.id) {
                 const data = await getFacilityFaqs(activeCompany.id);
                 setFaqs(data);
@@ -213,6 +176,35 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
     }, [messages, streamingText]);
+
+    // [HOOKS FIX] Early returns AFTER all hooks — prevents React Hooks order violation
+    if (activeCompany?.id.startsWith('pet_')) {
+        return (
+            <div className="fixed inset-0 bg-black/50 z-[300] flex items-center justify-center p-4">
+                <div className="bg-white rounded-2xl w-full h-[80dvh] sm:h-[700px] max-w-md flex flex-col shadow-2xl overflow-hidden relative">
+                    <PetChatInterface
+                        company={activeCompany}
+                        onClose={onClose}
+                        onBack={onClose}
+                    />
+                </div>
+            </div>
+        );
+    }
+
+    if (company && !company.id.startsWith('pet_')) {
+        return (
+            <div className="fixed inset-0 bg-black/50 z-[300] flex items-center justify-center p-4">
+                <div className="bg-white rounded-2xl w-full h-[80dvh] sm:h-[700px] max-w-md flex flex-col shadow-2xl overflow-hidden relative">
+                    <BrandChatInterface
+                        company={company}
+                        onClose={onClose}
+                        onBack={onClose}
+                    />
+                </div>
+            </div>
+        );
+    }
 
     const handleSendMessage = async (text: string) => {
         const userMsg: Message = { role: 'user', text, timestamp: new Date() };
@@ -421,7 +413,7 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
 
     return (
         <div className="fixed inset-0 bg-black/50 z-[300] flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl w-full max-w-md h-[80vh] flex flex-col shadow-2xl overflow-hidden relative">
+            <div className="bg-white rounded-2xl w-full max-w-md h-[80dvh] flex flex-col shadow-2xl overflow-hidden relative">
                 {/* Header */}
                 <div className="bg-gray-900 text-white p-4 flex justify-between items-center shrink-0">
                     <div className="flex items-center gap-3">

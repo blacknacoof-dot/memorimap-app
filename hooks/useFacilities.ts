@@ -101,7 +101,7 @@ export function useFacilities(options: UseFacilitiesOptions = {}): UseFacilities
                 const categoryCode = normalizeCategoryValue(filter.category);
 
                 // Normal filtering
-                query = query.eq('category', categoryCode);
+                query = query.eq('type', categoryCode);
 
                 // [Step 3 Fix] Explicitly exclude PET audience for General Funeral Homes
                 // This ensures that even if a pet facility is misclassified as 'funeral_home', it won't show up.
@@ -110,9 +110,12 @@ export function useFacilities(options: UseFacilitiesOptions = {}): UseFacilities
                 }
             }
 
-            // Apply search filter
+            // Apply search filter (sanitize wildcards)
             if (filter?.searchQuery) {
-                query = query.or(`name.ilike.%${filter.searchQuery}%,address.ilike.%${filter.searchQuery}%`);
+                const sanitized = filter.searchQuery.trim().replace(/[%_\\]/g, '\\$&');
+                if (sanitized) {
+                    query = query.or(`name.ilike.%${sanitized}%,address.ilike.%${sanitized}%`);
+                }
             }
 
             // Apply verification filter
@@ -133,7 +136,7 @@ export function useFacilities(options: UseFacilitiesOptions = {}): UseFacilities
 
             // Normalize data: ensure facility_type is standardized
             const normalizedData = (data || []).map(facility => {
-                const type = normalizeCategoryValue(facility.facility_type || facility.category);
+                const type = normalizeCategoryValue(facility.type || facility.facility_type || facility.category);
 
                 // DB has lat, lng. Ensure we have valid numbers.
                 const lat = Number(facility.lat);
@@ -276,7 +279,7 @@ export function useFacility(id: string | null) {
                 const normalizedFacility = {
                     ...data,
                     facility_type: normalizeCategoryValue(
-                        data.facility_type || data.category
+                        data.type || data.facility_type || data.category
                     ),
                     latitude: Number(data.latitude),
                     longitude: Number(data.longitude),
@@ -328,7 +331,7 @@ export function useFacilityStats() {
             try {
                 let query = supabase
                     .from('facilities')
-                    .select('facility_type, category'); // Select both to be safe
+                    .select('type');
 
                 // if (query.abortSignal) {
                 //     query = query.abortSignal(controller.signal);
@@ -340,7 +343,7 @@ export function useFacilityStats() {
 
                 if (data) {
                     const counts = data.reduce((acc, facility) => {
-                        const type = normalizeCategoryValue(facility.facility_type || facility.category);
+                        const type = normalizeCategoryValue(facility.type);
                         acc[type] = (acc[type] || 0) + 1;
                         return acc;
                     }, {} as Record<FacilityCategoryType, number>);

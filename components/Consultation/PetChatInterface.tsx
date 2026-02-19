@@ -82,7 +82,7 @@ const ReservationForm = ({ onClose, companyName }: { onClose: () => void, compan
             {/* Form Header */}
             <div className="bg-amber-900 text-white p-5 pt-6 shadow-md shrink-0 flex justify-between items-center sm:rounded-t-[32px]">
                 <h2 className="font-bold text-lg">장례 예약 신청</h2>
-                <button onClick={onClose} className="p-1 hover:bg-amber-800 rounded-full">
+                <button onClick={onClose} className="p-1 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-amber-800 rounded-full">
                     <X className="w-6 h-6 text-amber-200" />
                 </button>
             </div>
@@ -467,7 +467,7 @@ export const PetChatInterface: React.FC<ComponentProps> = ({ company, onClose, o
                             </p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-amber-800 rounded-full transition-colors" title="닫기">
+                    <button onClick={onClose} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-amber-800 rounded-full transition-colors" title="닫기">
                         <X className="w-6 h-6 text-amber-200 hover:text-white" />
                     </button>
                 </div>

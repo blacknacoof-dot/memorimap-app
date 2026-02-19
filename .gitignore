@@ -28,15 +28,32 @@ fuzzy_matches.json
 full_price_update.json
 .vercel
 
-# Environment variables
+# Environment variables (CRITICAL: never commit secrets)
+.env
 .env.local
 .env.local.temp
 .env.*.local
-.env
 !.env.template
+!.env.local.template
 
-types_schema.ts  # Invalid file - ignore
+# Data files (CSV, JSON backups)
+*.csv
+data/*.csv
+scripts/*.csv
+
+# Debug/temporary files
+debug_*.json
+queries.ts_temp_append
+
+# Loose SQL files in root (migrations are in supabase/migrations/)
+/*.sql
+
+# Invalid/temp files
+types_schema.ts
 nul
+
+# Supabase temp
+supabase/.temp/
 
 # Claude Code
 .claude/

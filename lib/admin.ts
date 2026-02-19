@@ -21,7 +21,7 @@ const enrichUsersWithPlans = async (users: any[]): Promise<AdminUser[]> => {
     try {
         // 1. Fetch Facility Plans
         const { data: facilitySubs, error: facilityError } = await supabase
-            .from('memorial_spaces')
+            .from('facilities')
             .select(`
                 owner_user_id,
                 facility_subscriptions (
@@ -76,7 +76,14 @@ export const searchUsers = async (query: string): Promise<AdminUser[]> => {
         .select('id, clerk_id, email, name, role, phone_number, created_at, image_url');
 
     if (query) {
-        queryBuilder = queryBuilder.or(`email.ilike.%${query}%,name.ilike.%${query}%,phone_number.ilike.%${query}%,id.eq.${query}`);
+        const sanitized = query.trim().replace(/[%_\\]/g, '\\$&');
+        // Only use id.eq filter if query looks like a UUID
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sanitized);
+        if (isUUID) {
+            queryBuilder = queryBuilder.or(`email.ilike.%${sanitized}%,name.ilike.%${sanitized}%,id.eq.${sanitized}`);
+        } else {
+            queryBuilder = queryBuilder.or(`email.ilike.%${sanitized}%,name.ilike.%${sanitized}%,phone_number.ilike.%${sanitized}%`);
+        }
     }
 
     const { data, error } = await queryBuilder.limit(20);

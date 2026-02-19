@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X, User, Phone, Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateUserProfile } from '../lib/queries';
@@ -24,6 +24,12 @@ export const EditProfileModal: React.FC<Props> = ({ user, onClose, onUpdate }) =
     const [phone, setPhone] = useState(initialRef.current.phone);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { session } = useSession();
+
+    useEffect(() => {
+        const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', h);
+        return () => document.removeEventListener('keydown', h);
+    }, [onClose]);
 
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let value = e.target.value.replace(/[^0-9]/g, '');
@@ -68,7 +74,7 @@ export const EditProfileModal: React.FC<Props> = ({ user, onClose, onUpdate }) =
             <div className="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95">
                 <div className="flex justify-between items-center p-4 border-b">
                     <h2 className="text-lg font-bold text-gray-900">프로필 수정</h2>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
+                    <button onClick={onClose} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-100 rounded-full">
                         <X size={20} className="text-gray-500" />
                     </button>
                 </div>

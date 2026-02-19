@@ -4,29 +4,15 @@ import { koKR } from '@clerk/localizations';
 
 // --- Configuration ---
 // Safer check for environment variables in browser without global 'process'
-const getPublishableKey = () => {
-  try {
-    // 1. Vite / Modern Standard
-    if (import.meta.env && import.meta.env.REACT_APP_CLERK_PUBLISHABLE_KEY) {
-      return import.meta.env.REACT_APP_CLERK_PUBLISHABLE_KEY;
-    }
-    // 2. Node / Legacy Shim
-    if (typeof process !== 'undefined' && process.env && process.env.REACT_APP_CLERK_PUBLISHABLE_KEY) {
-      return process.env.REACT_APP_CLERK_PUBLISHABLE_KEY;
-    }
-    // 3. Window Shim
-    if (typeof window !== 'undefined' && (window as any).process?.env?.REACT_APP_CLERK_PUBLISHABLE_KEY) {
-      return (window as any).process.env.REACT_APP_CLERK_PUBLISHABLE_KEY;
-    }
-    // 4. Vite Direct (Correct Variable Name Check)
-    if (import.meta.env && import.meta.env.VITE_CLERK_PUBLISHABLE_KEY) {
-      return import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-    }
-  } catch (e) {
-    console.warn("Error reading env vars:", e);
-  }
-  // Fallback: Hardcode the key to ensure it works
-  return "pk_test_cmVuZXdpbmctZ29waGVyLTEuY2xlcmsuYWNjb3VudHMuZGV2JA";
+const getPublishableKey = (): string => {
+  // Vite environment variable (standard)
+  const key = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+  if (key) return key;
+
+  // [Security] No hardcoded fallback — fail fast if env var missing
+  throw new Error(
+    'VITE_CLERK_PUBLISHABLE_KEY is not set. Please configure it in .env.local'
+  );
 };
 
 const PUBLISHABLE_KEY = getPublishableKey();

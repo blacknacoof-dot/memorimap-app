@@ -31,10 +31,11 @@ export const FacilityMappingModal: React.FC<Props> = ({ isOpen, onClose, inquiry
         if (!query) return;
         setIsLoading(true);
         try {
+            const sanitized = query.trim().replace(/[%_\\]/g, '\\$&');
             const { data, error } = await supabase
-                .from('memorial_spaces')
+                .from('facilities')
                 .select('id, name, address, type, owner_user_id')
-                .ilike('name', `%${query}%`)
+                .ilike('name', `%${sanitized}%`)
                 .limit(10);
 
             if (error) throw error;

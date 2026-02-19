@@ -76,6 +76,12 @@ export default function EndingNoteEditModal({ isOpen, onClose, currentNote, onSa
         }
     };
 
+    useEffect(() => {
+        const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', h);
+        return () => document.removeEventListener('keydown', h);
+    }, [onClose]);
+
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px] animate-in fade-in duration-200">
             <div className="bg-white w-full max-w-sm rounded-[24px] shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 border border-gray-100">
@@ -85,13 +91,13 @@ export default function EndingNoteEditModal({ isOpen, onClose, currentNote, onSa
                         <div className="w-1.5 h-4 bg-pink-500 rounded-full" />
                         <h2 className="text-sm font-bold text-gray-900">나의 엔딩 노트 작성</h2>
                     </div>
-                    <button onClick={onClose} className="p-1.5 hover:bg-gray-50 rounded-full transition-colors text-gray-400">
+                    <button onClick={onClose} className="p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-50 rounded-full transition-colors text-gray-400">
                         <X size={18} />
                     </button>
                 </div>
 
                 {/* Content - Compact */}
-                <div className="p-5 space-y-6 max-h-[75vh] md:max-h-[60vh] overflow-y-auto custom-scrollbar">
+                <div className="p-5 space-y-6 max-h-[75dvh] md:max-h-[60dvh] overflow-y-auto custom-scrollbar">
                     {/* 1. 선호 방식 */}
                     <div className="space-y-3">
                         <h3 className="text-[11px] font-bold text-pink-500 flex items-center gap-1.5">

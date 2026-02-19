@@ -318,14 +318,7 @@ const App: React.FC = () => {
             />
           </div>
 
-          {/* Global Toast (outer) */}
-          {toast && (
-            <div className={`fixed bottom-24 left-1/2 -translate-x-1/2 z-[10001] px-6 py-3 rounded-xl shadow-2xl animate-in slide-in-from-bottom-2 ${
-              toast.type === 'success' ? 'bg-green-500' : toast.type === 'error' ? 'bg-red-500' : 'bg-blue-500'
-            } text-white font-medium max-w-md`}>
-              {toast.message}
-            </div>
-          )}
+          {/* [Removed] Duplicate toast rendering — single toast already rendered inside layout */}
         </div>
       </ErrorBoundary>
     </HashRouter>
