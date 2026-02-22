@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Star, Send, Loader2, Image as ImageIcon, X } from 'lucide-react';
 import { createReview } from '../lib/queries';
-import { useUser } from '../lib/auth';
+import { useUser, useSession } from '../lib/auth';
+import { supabase, createAuthenticatedClient } from '../lib/supabaseClient';
 import { toast } from 'sonner'; // [Phase 2] Error Handler
 
 import { Reservation } from '../types';
@@ -15,6 +16,7 @@ interface Props {
 
 export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequired, reservations = [] }) => {
     const { isSignedIn, user } = useUser();
+    const { session } = useSession();
     const [rating, setRating] = useState(5);
     const [content, setContent] = useState('');
     const [images, setImages] = useState<File[]>([]);
@@ -29,11 +31,24 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
     const [hasExistingReview, setHasExistingReview] = useState(false);
     const [isChecking, setIsChecking] = useState(true);
 
+    const getAuthClient = async () => {
+        if (!session) return supabase;
+        try {
+            const token = await Promise.race([
+                session.getToken({ template: 'supabase' }),
+                new Promise<null>((r) => setTimeout(() => r(null), 8000)),
+            ]);
+            if (token) return createAuthenticatedClient(token);
+        } catch { /* fallback */ }
+        return supabase;
+    };
+
     // Initial Requirement Check
     useEffect(() => {
         const checkRequirements = async () => {
             if (isSignedIn && user && hasConfirmedReservation) {
-                const checked = await import('../lib/queries').then(m => m.checkExistingReview(user.id, spaceId));
+                const client = await getAuthClient();
+                const checked = await import('../lib/queries').then(m => m.checkExistingReview(user.id, spaceId, client));
                 setHasExistingReview(checked);
             }
             setIsChecking(false);
@@ -88,12 +103,13 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
 
         setIsSubmitting(true);
         try {
+            const authClient = await getAuthClient();
             // 1. 이미지 업로드
             const imageUrls: string[] = [];
             if (images.length > 0) {
                 const { uploadReviewImage } = await import('../lib/queries');
                 for (const file of images) {
-                    const url = await uploadReviewImage(user!.id, file);
+                    const url = await uploadReviewImage(user!.id, file, authClient);
                     imageUrls.push(url);
                 }
             }
@@ -105,7 +121,8 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
                 rating,
                 content,
                 user!.firstName || user!.username || '사용자',
-                imageUrls
+                imageUrls,
+                authClient
             );
 
             // Reset form

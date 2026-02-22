@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { FuneralCompany, Review } from '../types';
-import { supabase } from '../lib/supabaseClient';
+import { supabase, createAuthenticatedClient } from '../lib/supabaseClient';
+import { useSession } from '../lib/auth';
 import { X, Star, Phone, MessageCircleQuestion, Heart, Share2, CheckCircle2, ShieldCheck, CreditCard, Gift, Bot, ChevronRight, Camera, User, ClipboardCheck, Trash2 } from 'lucide-react';
 import { ReviewCard } from './ReviewCard';
 import { useSangjoFavoriteStore } from '../stores/useSangjoFavoriteStore';
@@ -18,6 +19,19 @@ interface Props {
 }
 
 export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenAIConsult, onOpenContract, currentUser, isLoggedIn = false, onOpenLogin }) => {
+    const { session } = useSession();
+
+    const getAuthClient = async () => {
+        if (!session) return supabase;
+        try {
+            const token = await Promise.race([
+                session.getToken({ template: 'supabase' }),
+                new Promise<null>((r) => setTimeout(() => r(null), 8000)),
+            ]);
+            if (token) return createAuthenticatedClient(token);
+        } catch { /* fallback */ }
+        return supabase;
+    };
     const [activeTab, setActiveTab] = useState<'info' | 'gallery' | 'reviews' | 'benefits' | 'price'>('info');
 
     // 기본 후기 생성 (company별 안정적 시드)
@@ -87,15 +101,8 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
 
         setIsSubmittingReview(true);
         try {
+            const authClient = await getAuthClient();
             const { createReview } = await import('../lib/queries');
-
-            // ⭐ createReview 호출 전 로그
-            // console.log('🔍 [DEBUG] createReview 호출:', {
-            //     facilityId: company.id,
-            //     userId: currentUser.id,
-            //     rating: reviewRating,
-            //     content: reviewContent
-            // });
 
             const newReview = await createReview(
                 company.id,
@@ -103,7 +110,8 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                 reviewRating,
                 reviewContent,
                 currentUser.fullName || currentUser.firstName || '익명',
-                [] // images array
+                [], // images array
+                authClient
             );
 
             // [FIX] Instant UI update + Toast
@@ -183,7 +191,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
 
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 bg-black/30 p-2 rounded-full text-white backdrop-blur-sm"
+                    className="absolute top-4 right-4 bg-black/30 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-white backdrop-blur-sm"
                 >
                     <X size={20} />
                 </button>
@@ -218,7 +226,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar">
+            <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 md:space-y-8 no-scrollbar">
                 {activeTab === 'info' && (
                     <>
                         <div className="flex justify-between items-start">
@@ -236,13 +244,13 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                             <div className="flex gap-2">
                                 <button
                                     onClick={handleShare}
-                                    className="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 transition-colors"
+                                    className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 transition-colors"
                                 >
                                     <Share2 size={18} />
                                 </button>
                                 <button
                                     onClick={handleToggleLike}
-                                    className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                                    className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
                                 >
                                     <Heart size={18} className={isLiked ? "fill-red-500 text-red-500" : "text-gray-500"} />
                                 </button>
@@ -259,7 +267,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                         <div>
                             <h3 className="font-bold text-lg mb-3">주요 특징</h3>
                             <div className="grid grid-cols-2 gap-3">
-                                {company.features.map((feature, idx) => (
+                                {(company.features || []).map((feature, idx) => (
                                     <div key={idx} className="flex items-center gap-2 bg-gray-50 p-3 rounded-xl border border-gray-100">
                                         <CheckCircle2 size={16} className="text-green-500 shrink-0" />
                                         <span className="text-xs font-medium text-gray-700">{feature}</span>
@@ -303,7 +311,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                             추모맵 회원 단독 혜택
                         </h3>
 
-                        {company.benefits.map((benefit, idx) => (
+                        {(company.benefits || []).map((benefit, idx) => (
                             <div key={idx} className="p-4 bg-amber-50 rounded-2xl border border-amber-100 flex items-center gap-4">
                                 <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm shrink-0">
                                     <span className="text-amber-600 font-bold text-sm">{idx + 1}</span>
@@ -349,7 +357,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                                 // Fallback Logic
                                 const products = company.products && company.products.length > 0
                                     ? company.products
-                                    : (company as any).priceInfo?.products || (company as any).price_info?.products || [];
+                                    : (company as any).priceInfo?.products || (company as any).packages || [];
 
                                 if (products.length === 0) {
                                     return (
@@ -447,7 +455,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                                     <div
                                         key={idx}
                                         className="aspect-square rounded-2xl overflow-hidden border border-gray-100 shadow-sm"
-                                        onClick={() => window.open(img, '_blank')}
+                                        onClick={() => window.open(img, '_blank', 'noopener,noreferrer')}
                                     >
                                         <img src={img} alt={`Gallery ${idx}`} className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer" />
                                     </div>
@@ -494,13 +502,13 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                             <div className="bg-gray-50 p-4 rounded-2xl border border-gray-200 animate-in fade-in zoom-in-95">
                                 <div className="flex justify-between items-center mb-3">
                                     <h4 className="font-bold text-sm">후기 작성</h4>
-                                    <button onClick={() => setIsWritingReview(false)} className="text-gray-400 hover:text-gray-600">
-                                        <X size={16} />
+                                    <button onClick={() => setIsWritingReview(false)} className="text-gray-400 hover:text-gray-600 min-w-[44px] min-h-[44px] flex items-center justify-center">
+                                        <X size={18} />
                                     </button>
                                 </div>
                                 <div className="flex mb-3 gap-1">
                                     {[1, 2, 3, 4, 5].map((s) => (
-                                        <button key={s} onClick={() => setReviewRating(s)}>
+                                        <button key={s} onClick={() => setReviewRating(s)} className="min-w-[44px] min-h-[44px] flex items-center justify-center">
                                             <Star size={24} className={s <= reviewRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'} />
                                         </button>
                                     ))}
@@ -541,8 +549,9 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                                             isOwner={currentUser && (review.userId === currentUser.id || review.user_id === currentUser.id)}
                                             onDelete={async (reviewId) => {
                                                 try {
+                                                    const delClient = await getAuthClient();
                                                     const { deleteReview } = await import('../lib/queries');
-                                                    await deleteReview(reviewId);
+                                                    await deleteReview(reviewId, delClient);
 
                                                     // [FIX] Instant UI update + Toast
                                                     toast.success('리뷰가 삭제되었습니다.');
@@ -573,7 +582,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
             </div>
 
             {/* Footer CTA */}
-            <div className="p-4 border-t bg-white safe-area-pb flex gap-3 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] z-20">
+            <div className="p-4 border-t bg-white pb-safe flex gap-3 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] z-20">
                 <button
                     onClick={onOpenAIConsult}
                     className="flex-1 bg-gray-100 text-gray-700 py-4 rounded-2xl font-bold active:scale-95 transition-transform flex items-center justify-center gap-2"

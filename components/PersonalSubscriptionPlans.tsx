@@ -4,7 +4,7 @@ import {
     Heart, MessageCircle, FileText, Shield, Users, Gift,
     Star, Ban, ShieldCheck
 } from 'lucide-react';
-import { requestPayment, PORTONE_CONFIG } from '../lib/portone';
+import { requestPayment, verifyPayment, PORTONE_CONFIG } from '../lib/portone';
 import { toast } from 'sonner';
 import { useSession } from '../lib/auth';
 import { supabase, createAuthenticatedClient } from '../lib/supabaseClient';
@@ -139,7 +139,24 @@ export default function PersonalSubscriptionPlans({ onBack }: PersonalSubscripti
         if (plan.id === currentPlan) return;
 
         if (plan.id === 'personal_free') {
-            // 무료 전환 = 구독 취소
+            // 무료 전환 = 기존 구독 취소 + DB 반영
+            if (session) {
+                try {
+                    const token = await session.getToken({ template: 'supabase' });
+                    if (token) {
+                        const client = createAuthenticatedClient(token);
+                        const userId = session.user?.id;
+                        if (userId) {
+                            await client.from('user_subscriptions')
+                                .update({ status: 'cancelled' })
+                                .eq('user_id', userId)
+                                .eq('status', 'active');
+                        }
+                    }
+                } catch (e) {
+                    console.error('구독 취소 DB 업데이트 실패:', e);
+                }
+            }
             setSelectedPlan(plan.id);
             setCurrentPlan(plan.id);
             toast.success('무료 플랜으로 변경되었습니다.');
@@ -152,23 +169,34 @@ export default function PersonalSubscriptionPlans({ onBack }: PersonalSubscripti
         }
 
         try {
+            const paymentId = `psub_${Date.now()}`;
             const response = await requestPayment({
                 storeId: PORTONE_CONFIG.STORE_ID,
                 channelKey: PORTONE_CONFIG.CHANNEL_KEY,
-                paymentId: `psub_${Date.now()}`,
+                paymentId,
                 orderName: `[추모맵] 개인 ${plan.name} 플랜`,
                 totalAmount: plan.price,
                 currency: "CURRENCY_KRW",
                 payMethod: "CARD",
                 customer: {
-                    fullName: "개인 사용자",
-                    phoneNumber: "010-0000-0000",
-                    email: "user@memorimap.com",
+                    fullName: session?.user?.fullName || session?.user?.firstName || "개인 사용자",
+                    phoneNumber: session?.user?.primaryPhoneNumber?.phoneNumber || "",
+                    email: session?.user?.primaryEmailAddress?.emailAddress || "",
                 }
             });
 
             if (response.code !== undefined) {
                 toast.error(`결제 실패: ${response.message}`);
+                return;
+            }
+
+            // 서버사이드 결제 검증
+            const verification = await verifyPayment({
+                paymentId: response.paymentId || paymentId,
+                expectedAmount: plan.price,
+            });
+            if (!verification.verified) {
+                toast.error(verification.error || '결제 검증에 실패했습니다. 고객센터에 문의해주세요.');
                 return;
             }
 
@@ -178,7 +206,10 @@ export default function PersonalSubscriptionPlans({ onBack }: PersonalSubscripti
                     const token = await session.getToken({ template: 'supabase' });
                     if (token) {
                         const client = createAuthenticatedClient(token);
+                        const userId = session.user?.id;
+                        if (!userId) throw new Error('사용자 정보를 찾을 수 없습니다.');
                         await client.from('user_subscriptions').upsert({
+                            user_id: userId,
                             plan_id: plan.id,
                             plan_name: plan.nameEn,
                             status: 'active',
@@ -228,11 +259,11 @@ export default function PersonalSubscriptionPlans({ onBack }: PersonalSubscripti
             <div className="px-4 py-4">
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
                     <div className="grid grid-cols-4 text-center border-b border-slate-100">
-                        <div className="p-3 bg-slate-50">
+                        <div className="p-2 md:p-3 bg-slate-50">
                             <p className="text-[10px] font-bold text-slate-400">기능</p>
                         </div>
                         {personalPlans.map(plan => (
-                            <div key={plan.id} className={`p-3 ${plan.id === currentPlan ? 'bg-primary/5' : ''}`}>
+                            <div key={plan.id} className={`p-2 md:p-3 ${plan.id === currentPlan ? 'bg-primary/5' : ''}`}>
                                 <p className="text-[10px] font-bold text-slate-600">{plan.name}</p>
                                 <p className="text-xs font-black text-slate-900">
                                     {plan.price === 0 ? '무료' : `${plan.price.toLocaleString()}원`}
@@ -250,11 +281,11 @@ export default function PersonalSubscriptionPlans({ onBack }: PersonalSubscripti
                         { label: '가족 공유', values: ['X', 'X', '3명'] },
                     ].map((row, idx) => (
                         <div key={idx} className="grid grid-cols-4 text-center border-b border-slate-50 last:border-0">
-                            <div className="p-2.5 bg-slate-50 text-left">
+                            <div className="p-1.5 md:p-2.5 bg-slate-50 text-left">
                                 <p className="text-[10px] font-medium text-slate-500">{row.label}</p>
                             </div>
                             {row.values.map((val, vi) => (
-                                <div key={vi} className={`p-2.5 ${personalPlans[vi].id === currentPlan ? 'bg-primary/5' : ''}`}>
+                                <div key={vi} className={`p-1.5 md:p-2.5 ${personalPlans[vi].id === currentPlan ? 'bg-primary/5' : ''}`}>
                                     <p className={`text-[10px] font-bold ${val === 'X' ? 'text-slate-300' : val === '무제한' || val === 'PDF' ? 'text-purple-600' : 'text-slate-700'}`}>
                                         {val}
                                     </p>

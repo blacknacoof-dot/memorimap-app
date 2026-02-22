@@ -1,18 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import { fetchAuditLogs, AuditLog } from '../../lib/api/superAdmin';
 import { History, User, ExternalLink, Clock } from 'lucide-react';
+import { toast } from 'sonner';
+import { createAuthenticatedClient } from '../../lib/supabaseClient';
+import { useSession } from '../../lib/auth';
 
 export const AdminLogsView: React.FC = () => {
     const [logs, setLogs] = useState<AuditLog[]>([]);
     const [loading, setLoading] = useState(true);
+    const { session } = useSession();
+
+    const getAuthClient = async () => {
+        try {
+            const token = await session?.getToken?.({ template: 'supabase' });
+            if (token) return createAuthenticatedClient(token);
+        } catch { /* fallback */ }
+        return null;
+    };
 
     const loadLogs = async () => {
         setLoading(true);
         try {
-            const data = await fetchAuditLogs();
+            const client = await getAuthClient();
+            if (!client) { setLoading(false); return; }
+            const data = await fetchAuditLogs(client);
             setLogs(data);
         } catch (error) {
-            console.error(error);
+            toast.error('활동 로그 로딩 실패');
         } finally {
             setLoading(false);
         }
@@ -20,7 +34,7 @@ export const AdminLogsView: React.FC = () => {
 
     useEffect(() => {
         loadLogs();
-    }, []);
+    }, [session]);
 
     const getActionLabel = (action: string) => {
         switch (action) {
@@ -82,7 +96,7 @@ export const AdminLogsView: React.FC = () => {
                                     </div>
                                     <div className="flex items-center gap-1">
                                         <ExternalLink size={12} className="text-gray-400" />
-                                        <span>Target: {log.target_resource} ({log.target_id.slice(0, 8)})</span>
+                                        <span>Target: {log.target_resource} ({log.target_id?.slice(0, 8) || 'N/A'})</span>
                                     </div>
                                 </div>
                             </div>

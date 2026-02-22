@@ -3,24 +3,29 @@
  * Phase 4-2: mapBounds, targetMapCenter, targetMapZoom, handleMapBoundsChange
  */
 import React, { useState, useRef } from 'react';
-import L from 'leaflet';
 import { Facility } from '../types';
+
+/** Leaflet-compatible bounds interface (Leaflet 라이브러리 제거 후 대체) */
+interface LatLngBounds {
+  getSouthWest(): { lat: number; lng: number };
+  getNorthEast(): { lat: number; lng: number };
+}
 import { fetchFacilitiesInView } from '../lib/queries';
 import { normalizeType, getCategoryDb, selectFacilityImage, formatPriceRange } from '../utils/facilityNormalizer';
 
 interface UseMapViewportParams {
   setFacilities: React.Dispatch<React.SetStateAction<Facility[]>>;
-  setCurrentBounds: React.Dispatch<React.SetStateAction<L.LatLngBounds | null>>;
+  setCurrentBounds: React.Dispatch<React.SetStateAction<LatLngBounds | null>>;
   session: any;
 }
 
 export function useMapViewport({ setFacilities, setCurrentBounds, session }: UseMapViewportParams) {
-  const [mapBounds, setMapBounds] = useState<L.LatLngBounds | null>(null);
+  const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
   const [targetMapCenter, setTargetMapCenter] = useState<[number, number] | undefined>(undefined);
   const [targetMapZoom, setTargetMapZoom] = useState<number | undefined>(undefined);
   const mapDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleMapBoundsChange = (bounds: L.LatLngBounds) => {
+  const handleMapBoundsChange = (bounds: LatLngBounds) => {
     setMapBounds(bounds);
     setCurrentBounds(bounds);
 

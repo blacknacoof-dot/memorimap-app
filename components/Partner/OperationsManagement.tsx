@@ -5,7 +5,7 @@ import {
     ChevronRight, CheckCircle, Clock, X
 } from 'lucide-react';
 import { supabase, createAuthenticatedClient } from '../../lib/supabaseClient';
-import { useSession } from '@clerk/clerk-react';
+import { useSession } from '../../lib/auth';
 import { PartnerOperation } from '../../types';
 import { toast } from 'sonner';
 
@@ -85,11 +85,17 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
     };
 
     const handleMove = async (id: string, nextStage: PartnerOperation['operation_stage']) => {
-        const client = await getAuthClient();
-        await client
-            .from('partner_operations')
-            .update({ operation_stage: nextStage })
-            .eq('id', id);
+        try {
+            const client = await getAuthClient();
+            const { error } = await client
+                .from('partner_operations')
+                .update({ operation_stage: nextStage })
+                .eq('id', id);
+            if (error) throw error;
+            toast.success('단계가 변경되었습니다.');
+        } catch (err) {
+            toast.error('단계 변경에 실패했습니다.');
+        }
     };
 
     const handleNewOperation = async () => {
@@ -124,7 +130,7 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
         <div key={op.id} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all group mb-3">
             <div className="flex justify-between items-start mb-3">
                 <h5 className="font-bold text-slate-800 text-sm">{op.deceased_name || '성함 미상'}</h5>
-                <button className="p-1 text-slate-300 hover:text-slate-500"><MoreVertical size={14} /></button>
+                <button onClick={() => toast.info('추가 기능은 준비 중입니다.')} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-300 hover:text-slate-500 -mr-2 -mt-2"><MoreVertical size={16} /></button>
             </div>
 
             <div className="space-y-2 mb-4">
@@ -146,7 +152,7 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
                 {op.operation_stage === 'pending' && (
                     <button
                         onClick={() => handleMove(op.id, 'dispatched')}
-                        className="w-full bg-slate-800 text-white py-1.5 rounded-lg text-[10px] font-bold hover:bg-slate-900 transition-all flex items-center justify-center gap-1"
+                        className="w-full bg-slate-800 text-white py-2.5 rounded-lg text-xs font-bold min-h-[44px] hover:bg-slate-900 transition-all flex items-center justify-center gap-1"
                     >
                         <Truck size={12} /> 배정/출동
                     </button>
@@ -154,7 +160,7 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
                 {op.operation_stage === 'dispatched' && (
                     <button
                         onClick={() => handleMove(op.id, 'in_progress')}
-                        className="w-full bg-blue-600 text-white py-1.5 rounded-lg text-[10px] font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-1"
+                        className="w-full bg-blue-600 text-white py-2.5 rounded-lg text-xs font-bold min-h-[44px] hover:bg-blue-700 transition-all flex items-center justify-center gap-1"
                     >
                         <Clock size={12} /> 진행 중 전환
                     </button>
@@ -162,7 +168,7 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
                 {op.operation_stage === 'in_progress' && (
                     <button
                         onClick={() => handleMove(op.id, 'completed')}
-                        className="w-full bg-green-600 text-white py-1.5 rounded-lg text-[10px] font-bold hover:bg-green-700 transition-all flex items-center justify-center gap-1"
+                        className="w-full bg-green-600 text-white py-2.5 rounded-lg text-xs font-bold min-h-[44px] hover:bg-green-700 transition-all flex items-center justify-center gap-1"
                     >
                         <CheckCircle size={12} /> 장례 완료
                     </button>
@@ -219,7 +225,7 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
 
             {/* 신규 작업 접수 모달 */}
             {showNewModal && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px]">
+                <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px]">
                     <div className="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden">
                         <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
                             <h3 className="font-bold text-slate-800 text-sm">신규 작업 접수</h3>

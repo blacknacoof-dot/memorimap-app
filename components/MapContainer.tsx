@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useImperativeHandle, forwardRef, useState } from 'react';
 import { Facility } from '../types';
-import { useFilterStore } from '../stores/useFilterStore';
 import { getMarkerHtml, LeafletCompatibleBounds } from '../utils/naverMapHelper';
 import { toast } from 'sonner';
 
@@ -34,25 +33,8 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
   const [myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null);
   const locationMarkerRef = useRef<any>(null);
 
-  // Store State for Filtering (Same logic as legacy)
-  const searchQuery = useFilterStore(s => s.searchQuery);
-  const selectedCategories = useFilterStore(s => s.selectedCategories);
-
-  // Internal Filtering Logic (Preserved from legacy)
-  const filteredFacilities = React.useMemo(() => {
-    return facilities.filter(facility => {
-      const matchesSearch = !searchQuery ||
-        facility.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        facility.address.toLowerCase().includes(searchQuery.toLowerCase());
-
-      const matchesCategory = selectedCategories.length === 0 ||
-        (facility.category && selectedCategories.includes(facility.category));
-
-      const isSangjo = (facility.category as string) === 'sangjo' || (facility.category as string) === '상조';
-
-      return matchesSearch && matchesCategory && !isSangjo;
-    });
-  }, [facilities, searchQuery, selectedCategories]);
+  // facilities prop은 useFacilityData에서 이미 카테고리/검색 필터링 완료
+  const filteredFacilities = facilities;
 
   // 1. Initialize Map
   useEffect(() => {
@@ -210,7 +192,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
           map: useCluster ? null : mapInstance.current,
           title: facility.name,
           icon: {
-            content: getMarkerHtml(facility.category as string, false),
+            content: getMarkerHtml(((facility as any).type || facility.category || 'funeral_home') as string, false),
             size: new window.naver.maps.Size(24, 24),
             anchor: new window.naver.maps.Point(12, 12)
           }

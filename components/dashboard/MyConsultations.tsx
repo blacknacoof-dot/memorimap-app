@@ -6,6 +6,7 @@ import { aiConsultationService } from '@/lib/api/aiConsultation';
 import { AiConsultationStatus } from '@/types';
 import { supabase } from '@/lib/supabaseClient'; // [Realtime]
 import { useApiRetry } from '@/hooks/useApiRetry';
+import { confirmAsync } from '@/src/components/common/ConfirmModal';
 
 interface Props {
     userId: string;
@@ -165,7 +166,7 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
             toast.error('상담 ID가 없어 취소할 수 없습니다.');
             return;
         }
-        if (!confirm('상담을 취소하시겠습니까?')) return;
+        if (!await confirmAsync('상담을 취소하시겠습니까?')) return;
 
         try {
             if (consultation.isAi) {
@@ -208,7 +209,7 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
     };
 
     const handleDelete = async (consultation: any) => {
-        if (!confirm('상담 내역을 삭제하시겠습니까?')) return;
+        if (!await confirmAsync('상담 내역을 삭제하시겠습니까?')) return;
 
         try {
             if (consultation.isAi) {

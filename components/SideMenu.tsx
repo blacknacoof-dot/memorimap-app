@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, User, Calendar, Heart, Settings, HelpCircle, LogOut, ChevronRight, Bell, BookOpen, LogIn, Building2 } from 'lucide-react';
 import { ViewState } from '../types';
+import { confirmAsync } from '../src/components/common/ConfirmModal';
 
 interface Props {
   isOpen: boolean;
@@ -26,9 +27,9 @@ export const SideMenu: React.FC<Props> = ({
   onLogout
 }) => {
 
-  const handleProtectedAction = (action: () => void) => {
+  const handleProtectedAction = async (action: () => void) => {
     if (!isLoggedIn) {
-      if (confirm('로그인이 필요한 서비스입니다. 로그인 하시겠습니까?')) {
+      if (await confirmAsync('로그인이 필요한 서비스입니다. 로그인 하시겠습니까?')) {
         onLogin();
       }
     } else {
@@ -57,7 +58,7 @@ export const SideMenu: React.FC<Props> = ({
         <div className="bg-primary px-6 pt-12 pb-12 text-white relative transition-all">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-white/80 hover:text-white"
+            className="absolute top-4 right-4 text-white/80 hover:text-white min-w-[44px] min-h-[44px] flex items-center justify-center"
           >
             <X size={24} />
           </button>
@@ -167,11 +168,11 @@ export const SideMenu: React.FC<Props> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t bg-gray-50">
+        <div className="p-6 border-t bg-gray-50 pb-safe">
           {isLoggedIn && (
             <button
               onClick={() => { onLogout(); onClose(); }}
-              className="flex items-center gap-2 text-gray-500 text-sm hover:text-red-500 transition-colors w-full mb-4"
+              className="flex items-center gap-2 text-gray-500 text-sm hover:text-red-500 transition-colors w-full mb-4 min-h-[44px]"
             >
               <LogOut size={16} />
               로그아웃

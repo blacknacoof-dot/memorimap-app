@@ -208,7 +208,7 @@ export const FacilitySheet: React.FC<Props> = ({
             {facility.subscription && facility.subscription.plan && (
               <button
                 onClick={() => onOpenAiChat?.()}
-                className="bg-primary/20 p-2 rounded-full text-primary backdrop-blur-sm hover:bg-primary/30 transition-colors"
+                className="bg-primary/20 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-primary backdrop-blur-sm hover:bg-primary/30 transition-colors"
                 title="AI 상담"
               >
                 <Bot size={20} />
@@ -216,7 +216,7 @@ export const FacilitySheet: React.FC<Props> = ({
             )}
             <button
               onClick={onClose}
-              className="bg-black/30 p-2 rounded-full text-white backdrop-blur-sm"
+              className="bg-black/30 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-white backdrop-blur-sm"
             >
               <X size={20} />
             </button>
@@ -224,7 +224,7 @@ export const FacilitySheet: React.FC<Props> = ({
 
           <div className="absolute bottom-4 left-4 text-white">
             <div className="bg-accent px-2 py-0.5 text-xs font-bold rounded mb-1 inline-block uppercase tracking-wider">
-              {facility.category}
+              {facility.type || facility.category}
             </div>
             <div className="flex items-center gap-2">
               <h2 className="text-2xl font-bold shadow-sm">{facility.name}</h2>
@@ -635,7 +635,7 @@ export const FacilitySheet: React.FC<Props> = ({
         */}
         <div className="p-4 border-t bg-white pb-safe flex gap-3 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] z-20">
           <button
-            onClick={() => window.open(`https://map.naver.com/v5/search/${facility.name}`, '_blank')}
+            onClick={() => window.open(`https://map.naver.com/v5/search/${facility.name}`, '_blank', 'noopener,noreferrer')}
             className="flex flex-col items-center justify-center min-w-[50px] text-gray-500 hover:text-primary transition-colors"
           >
             <Navigation size={20} />
@@ -660,9 +660,9 @@ export const FacilitySheet: React.FC<Props> = ({
             <span className="text-[10px] mt-1 font-medium">공유</span>
           </button>
 
-          {facility.naverBookingUrl && facility.naverBookingUrl.length > 10 && String(facility.id) !== '3' && (
+          {facility.naverBookingUrl && facility.naverBookingUrl.length > 10 && String(facility.id) !== '3' && /^https?:\/\//i.test(facility.naverBookingUrl) && (
             <button
-              onClick={() => window.open(facility.naverBookingUrl, '_blank')}
+              onClick={() => window.open(facility.naverBookingUrl, '_blank', 'noopener,noreferrer')}
               className="flex-1 bg-[#03C75A] text-white py-3 rounded-xl font-bold shadow-lg shadow-green-600/20 active:scale-95 transition-transform flex items-center justify-center gap-2"
             >
               <span className="bg-white text-[#03C75A] w-5 h-5 rounded-sm flex items-center justify-center text-[10px] font-black">N</span>

@@ -13,8 +13,8 @@ import { FacilityInfoEditor } from './FacilityInfoEditor';
 import { NotificationCenter } from '../NotificationCenter';
 import { ConsultationList } from '../ConsultationList';
 import { supabase, createAuthenticatedClient } from '../../lib/supabaseClient';
-import { useSession } from '@clerk/clerk-react';
-import { Consultation, getFacilitySubscription } from '../../lib/queries';
+import { useSession } from '../../lib/auth';
+import { Consultation, getFacilitySubscription, approveReservation, rejectReservation } from '../../lib/queries';
 import { Reservation } from '../../types';
 import { toast } from 'sonner';
 
@@ -51,48 +51,50 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
     useEffect(() => {
         const fetchPartner = async () => {
             const client = await getAuthClient();
-            // 1차: partners 테이블에서 이름 조회
-            const { data } = await client.from('partners').select('name').eq('id', partnerId).single();
+
+            // partnerId는 실제로 facility UUID (sangjo_hq_admins.sangjo_id에서 가져온 값)
+            // 바로 facilityId로 설정
+            const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(partnerId);
+
+            if (isUUID) {
+                setFacilityId(partnerId);
+                // 시설 이름으로 파트너명 설정
+                const { data: facility } = await client
+                    .from('facilities')
+                    .select('name')
+                    .eq('id', partnerId)
+                    .maybeSingle();
+                if (facility?.name) {
+                    setPartnerName(facility.name);
+                    return;
+                }
+            }
+
+            // fallback: partners 테이블 조회 (TEXT ID인 경우)
+            const { data } = await client.from('partners').select('name').eq('id', partnerId).maybeSingle();
             let name = data?.name;
 
             if (!name) {
-                // 2차 fallback: sangjo_hq_admins에서 company_name 조회
                 const { data: hqData } = await client
                     .from('sangjo_hq_admins')
                     .select('company_name, sangjo_id')
                     .eq('sangjo_id', partnerId)
                     .limit(1)
-                    .single();
+                    .maybeSingle();
                 if (hqData) name = hqData.company_name;
             }
 
-            if (name) {
-                setPartnerName(name);
-            }
+            if (name) setPartnerName(name);
 
-            // facility_id 조회: partner_inquiries.target_facility_id 우선 사용 (approve_partner_transaction이 저장)
-            const { data: inquiry } = await client
-                .from('partner_inquiries')
-                .select('target_facility_id')
-                .eq('status', 'approved')
-                .eq('company_name', name || '')
-                .order('updated_at', { ascending: false })
-                .limit(1)
-                .maybeSingle();
-
-            if (inquiry?.target_facility_id) {
-                setFacilityId(inquiry.target_facility_id);
-            } else if (name) {
-                // fallback: 이름으로 시설 조회
+            // facility_id가 아직 없으면 이름으로 조회
+            if (!isUUID && name) {
                 const { data: facility } = await client
                     .from('facilities')
                     .select('id')
                     .eq('name', name)
                     .limit(1)
                     .maybeSingle();
-                if (facility) {
-                    setFacilityId(facility.id);
-                }
+                if (facility) setFacilityId(facility.id);
             }
         };
         fetchPartner();
@@ -103,17 +105,29 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
         if (!facilityId) return;
 
         const loadFacilityData = async () => {
-            const client = await getAuthClient();
-            const [consResult, resResult, subData, payResult] = await Promise.all([
-                client.from('consultations').select('*').eq('facility_id', facilityId).order('created_at', { ascending: false }),
-                client.from('reservations').select('*').eq('facility_id', facilityId).order('created_at', { ascending: false }),
-                facilityId ? getFacilitySubscription(facilityId) : Promise.resolve(null),
-                client.from('subscription_payments').select('*').eq('facility_id', facilityId).order('paid_at', { ascending: false }),
-            ]);
-            if (consResult.data) setConsultations(consResult.data as Consultation[]);
-            if (resResult.data) setReservations(resResult.data as Reservation[]);
-            if (subData) setSubscription(subData);
-            if (payResult.data) setPayments(payResult.data);
+            try {
+                const client = await getAuthClient();
+                const [consResult, resResult, subData] = await Promise.all([
+                    client.from('consultations').select('*').eq('facility_id', facilityId).order('created_at', { ascending: false }),
+                    client.from('reservations').select('*').eq('facility_id', facilityId).order('created_at', { ascending: false }),
+                    getFacilitySubscription(facilityId, client),
+                ]);
+                if (consResult.data) setConsultations(consResult.data as Consultation[]);
+                if (resResult.data) setReservations(resResult.data as Reservation[]);
+                if (subData) {
+                    setSubscription(subData);
+                    // subscription_payments는 subscription_id로 조회 (facility_id 컬럼 없음)
+                    const { data: payData } = await client
+                        .from('subscription_payments')
+                        .select('*')
+                        .eq('subscription_id', subData.id)
+                        .order('paid_at', { ascending: false });
+                    if (payData) setPayments(payData);
+                }
+            } catch (err) {
+                console.error('[PartnerDashboard] 데이터 로드 실패:', err);
+                toast.error('데이터를 불러오지 못했습니다.');
+            }
         };
         loadFacilityData();
 
@@ -223,9 +237,15 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col h-screen overflow-hidden">
+            <main className="flex-1 flex flex-col h-[100dvh] md:h-screen overflow-hidden">
                 {/* Mobile Tab Nav */}
                 <div className="md:hidden flex overflow-x-auto scrollbar-hide bg-slate-900 px-2 py-2 gap-1">
+                    <button
+                        onClick={onLogout}
+                        className="flex-shrink-0 px-3 py-2 rounded-lg text-xs font-bold transition-colors whitespace-nowrap text-slate-400 hover:text-white"
+                    >
+                        ← 메인
+                    </button>
                     {menuItems.map(item => (
                         <button
                             key={item.id}
@@ -237,6 +257,12 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                             {item.label}
                         </button>
                     ))}
+                    <button
+                        onClick={onLogout}
+                        className="flex-shrink-0 px-3 py-2 rounded-lg text-xs font-bold transition-colors whitespace-nowrap text-red-400 hover:text-red-300"
+                    >
+                        로그아웃
+                    </button>
                 </div>
 
                 {/* Header */}
@@ -365,11 +391,14 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                                     <div className="flex gap-2 mt-4">
                                                         <button
                                                             onClick={async () => {
-                                                                const client = await getAuthClient();
-                                                                const { error } = await client.from('reservations').update({ status: 'confirmed' }).eq('id', res.id);
-                                                                if (!error) {
+                                                                if (!res.id) return;
+                                                                try {
+                                                                    const client = await getAuthClient();
+                                                                    await approveReservation(res.id, client);
                                                                     setReservations(prev => prev.map(r => r.id === res.id ? { ...r, status: 'confirmed' as const } : r));
                                                                     toast.success('예약이 승인되었습니다.');
+                                                                } catch {
+                                                                    toast.error('예약 승인 중 오류가 발생했습니다.');
                                                                 }
                                                             }}
                                                             className="flex-1 py-2 bg-green-600 text-white rounded-xl text-xs font-bold hover:bg-green-700 transition-all flex items-center justify-center gap-1"
@@ -378,11 +407,14 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                                         </button>
                                                         <button
                                                             onClick={async () => {
-                                                                const client = await getAuthClient();
-                                                                const { error } = await client.from('reservations').update({ status: 'cancelled' }).eq('id', res.id);
-                                                                if (!error) {
+                                                                if (!res.id) return;
+                                                                try {
+                                                                    const client = await getAuthClient();
+                                                                    await rejectReservation(res.id, undefined, client);
                                                                     setReservations(prev => prev.map(r => r.id === res.id ? { ...r, status: 'cancelled' as const } : r));
                                                                     toast.success('예약이 거절되었습니다.');
+                                                                } catch {
+                                                                    toast.error('예약 거절 중 오류가 발생했습니다.');
                                                                 }
                                                             }}
                                                             className="flex-1 py-2 bg-red-500 text-white rounded-xl text-xs font-bold hover:bg-red-600 transition-all flex items-center justify-center gap-1"
@@ -456,7 +488,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                         <TrendingUp size={18} className="text-blue-600" />
                                         월별 상담/예약 추이
                                     </h3>
-                                    <div className="grid grid-cols-6 gap-3">
+                                    <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
                                         {(() => {
                                             const months: { label: string; cons: number; res: number }[] = [];
                                             for (let i = 5; i >= 0; i--) {
@@ -528,16 +560,18 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                             <tbody className="divide-y divide-slate-50">
                                                 {payments.map((p: any) => (
                                                     <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
-                                                        <td className="px-6 py-3.5 text-slate-600 text-xs">
+                                                        <td className="px-3 md:px-6 py-3.5 text-slate-600 text-xs">
                                                             {p.paid_at ? new Date(p.paid_at).toLocaleDateString() : '-'}
                                                         </td>
-                                                        <td className="px-6 py-3.5 text-slate-800 font-medium text-xs">
-                                                            {p.description || '구독 결제'}
+                                                        <td className="px-3 md:px-6 py-3.5 text-slate-800 font-medium text-xs">
+                                                            {p.billing_period_start && p.billing_period_end
+                                                                ? `${new Date(p.billing_period_start).toLocaleDateString()} ~ ${new Date(p.billing_period_end).toLocaleDateString()}`
+                                                                : '구독 결제'}
                                                         </td>
-                                                        <td className="px-6 py-3.5 text-right font-black text-slate-800 text-xs">
-                                                            {(p.amount || 0).toLocaleString()}원
+                                                        <td className="px-3 md:px-6 py-3.5 text-right font-black text-slate-800 text-xs">
+                                                            {(p.final_amount || p.amount || 0).toLocaleString()}원
                                                         </td>
-                                                        <td className="px-6 py-3.5 text-right">
+                                                        <td className="px-3 md:px-6 py-3.5 text-right">
                                                             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                                                                 p.status === 'paid' || p.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
                                                             }`}>
@@ -577,7 +611,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                             <div className="bg-slate-50 rounded-2xl p-4">
                                                 <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">시작일</p>
                                                 <p className="font-black text-slate-800">
-                                                    {subscription.start_date ? new Date(subscription.start_date).toLocaleDateString() : '-'}
+                                                    {(subscription.started_at || subscription.start_date) ? new Date(subscription.started_at || subscription.start_date).toLocaleDateString() : '-'}
                                                 </p>
                                             </div>
                                             <div className="bg-slate-50 rounded-2xl p-4">

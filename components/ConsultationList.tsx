@@ -110,11 +110,11 @@ export const ConsultationList: React.FC<Props> = ({ consultations, onAnswer, onR
                                         <span className="font-medium text-gray-900">{item.user_phone || '미입력'}</span>
                                     </div>
                                     <div className="bg-white rounded-lg p-2 border">
-                                        <span className="text-[10px] text-gray-400 block">카테고리</span>
-                                        <span className="font-medium text-gray-900">
-                                            {(item as any).category === 'funeral' ? '장례식장' :
-                                             (item as any).category === 'pet' ? '반려동물' :
-                                             (item as any).category === 'memorial' ? '추모시설' : '일반'}
+                                        <span className="text-[10px] text-gray-400 block">긴급도</span>
+                                        <span className={`font-medium ${item.urgency === 'immediate' ? 'text-red-600' : item.urgency === 'within_week' ? 'text-amber-600' : 'text-gray-900'}`}>
+                                            {item.urgency === 'immediate' ? '긴급(즉시)' :
+                                             item.urgency === 'within_week' ? '1주 이내' :
+                                             item.urgency === 'planning' ? '사전 준비' : item.urgency || '일반'}
                                         </span>
                                     </div>
                                     <div className="bg-white rounded-lg p-2 border">
@@ -133,6 +133,18 @@ export const ConsultationList: React.FC<Props> = ({ consultations, onAnswer, onR
                                              item.status === 'completed' ? '완료' : '취소'}
                                         </span>
                                     </div>
+                                    {item.scale && (
+                                        <div className="bg-white rounded-lg p-2 border">
+                                            <span className="text-[10px] text-gray-400 block">규모</span>
+                                            <span className="font-medium text-gray-900">{item.scale}</span>
+                                        </div>
+                                    )}
+                                    {item.religion && (
+                                        <div className="bg-white rounded-lg p-2 border">
+                                            <span className="text-[10px] text-gray-400 block">종교</span>
+                                            <span className="font-medium text-gray-900">{item.religion}</span>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="bg-white p-2.5 rounded-lg border mb-3">

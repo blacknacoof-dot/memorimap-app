@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useUser } from '@clerk/clerk-react';
+import React, { useState, useEffect } from 'react';
+import { useUser } from '../../lib/auth';
 import {
     Building2, CheckCircle2, AlertCircle, Search,
     TrendingUp, Wallet, CreditCard, Users,
@@ -15,16 +15,16 @@ import { NoticeManagement } from './NoticeManagement';
 import { useLeads } from '../../hooks/useLeads';
 import { useSubscriptions } from '../../hooks/useFinancials';
 import { toast } from 'sonner'; // [Phase 2] Error Handler
-import { useSuperAdmin } from '../../hooks/useSuperAdmin';
 import { UserManagement } from './UserManagement';
 import { FacilityManagement } from './FacilityManagement';
-import { ConfirmModal } from '../../src/components/common/ConfirmModal';
+import { confirmAsync } from '../../src/components/common/ConfirmModal';
 import { NotificationCenter } from '../NotificationCenter';
 import { AdminLogsView } from './AdminLogsView';
 import { AdminCommunication } from '../admin/AdminCommunication';
 import { MessageSquare } from 'lucide-react';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase, createAuthenticatedClient } from '../../lib/supabaseClient';
 import { useApiRetry } from '../../hooks/useApiRetry';
+import { useSession } from '../../lib/auth';
 
 // MOCK_DATA removed. Using real hooks.
 
@@ -111,10 +111,24 @@ import { Calendar } from 'lucide-react';
 
 const AdminSettings = () => {
     const { user } = useUser();
+    const { session } = useSession();
     const { queryWithRetry } = useApiRetry();
     const [fullName, setFullName] = useState(user?.fullName || '');
     const [phone, setPhone] = useState('');
     const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        if (!user?.id || !session) return;
+        const loadPhone = async () => {
+            try {
+                const token = await session.getToken?.({ template: 'supabase' });
+                const client = token ? createAuthenticatedClient(token) : supabase;
+                const { data } = await client.from('profiles').select('phone').eq('clerk_id', user.id).single();
+                if (data?.phone) setPhone(data.phone);
+            } catch { /* fallback */ }
+        };
+        loadPhone();
+    }, [user?.id, session]);
 
     const handleSaveProfile = async () => {
         if (!user?.id) return;
@@ -124,7 +138,7 @@ const AdminSettings = () => {
                 (authClient || supabase)
                     .from('profiles')
                     .update({ full_name: fullName, phone })
-                    .eq('id', user.id)
+                    .eq('clerk_id', user.id)
                     .then(res => res)
             );
             if (error) throw error;
@@ -137,8 +151,21 @@ const AdminSettings = () => {
         }
     };
 
-    const handleChangePassword = () => {
-        toast.info('비밀번호 변경 기능은 Clerk 대시보드에서 관리 가능합니다.');
+    const handleChangePassword = async () => {
+        const email = user?.primaryEmailAddress?.emailAddress;
+        if (!email) {
+            toast.error('이메일 정보를 찾을 수 없습니다.');
+            return;
+        }
+        const { supabase } = await import('../../lib/supabaseClient');
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/#/reset-password`,
+        });
+        if (error) {
+            toast.error('비밀번호 재설정 이메일 발송에 실패했습니다.');
+        } else {
+            toast.success('비밀번호 재설정 이메일이 발송되었습니다.');
+        }
     };
 
     return (
@@ -175,20 +202,13 @@ const AdminSettings = () => {
                     <Lock className="w-5 h-5 text-blue-600" />
                     보안 설정
                 </h3>
-                <div className="space-y-3">
-                    <div>
-                        <label className="block text-xs font-medium text-slate-500 mb-1">현재 비밀번호</label>
-                        <input type="password" placeholder="********" className="w-full text-sm p-2 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500" />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-medium text-slate-500 mb-1">새 비밀번호</label>
-                        <input type="password" placeholder="새 비밀번호 입력" className="w-full text-sm p-2 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500" />
-                    </div>
+                <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
+                    <p className="text-sm text-slate-600">이메일로 비밀번호 재설정 링크를 발송합니다.</p>
                     <button
                         onClick={handleChangePassword}
-                        className="w-full mt-2 bg-slate-800 text-white py-2 rounded-lg text-sm font-medium hover:bg-slate-700 transition-colors"
+                        className="mt-3 bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-700 transition-colors"
                     >
-                        비밀번호 변경
+                        비밀번호 재설정 이메일 발송
                     </button>
                 </div>
             </div>
@@ -225,10 +245,21 @@ const AdminSettings = () => {
 /** [Settings] System Settings View */
 const SystemSettings = () => {
     const [commission, setCommission] = useState('3.5');
+    const { session } = useSession();
+
+    const getAuthClient = async () => {
+        try {
+            const token = await session?.getToken?.({ template: 'supabase' });
+            if (token) return createAuthenticatedClient(token);
+        } catch { /* fallback */ }
+        return null;
+    };
 
     const handleSaveSystemSettings = async () => {
         try {
-            await updateSystemSetting('commission_rate', commission);
+            const client = await getAuthClient();
+            if (!client) { toast.error('인증 세션이 필요합니다.'); return; }
+            await updateSystemSetting('commission_rate', commission, client);
             toast.success('시스템 설정이 저장되었습니다.');
         } catch (e) {
             console.error(e);
@@ -250,9 +281,15 @@ const SystemSettings = () => {
                         <p className="text-[10px] text-red-600 mt-0.5">활성화 시 일반 사용자의 접속이 차단됩니다.</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" className="sr-only peer" onChange={(e) => {
-                            updateSystemSetting('maintenance_mode', e.target.checked);
-                            toast.success(`점검 모드가 ${e.target.checked ? '활성화' : '비활성화'} 되었습니다.`);
+                        <input type="checkbox" className="sr-only peer" onChange={async (e) => {
+                            try {
+                                const client = await getAuthClient();
+                                if (!client) { toast.error('인증 세션이 필요합니다.'); return; }
+                                await updateSystemSetting('maintenance_mode', e.target.checked, client);
+                                toast.success(`점검 모드가 ${e.target.checked ? '활성화' : '비활성화'} 되었습니다.`);
+                            } catch {
+                                toast.error('점검 모드 설정 실패');
+                            }
                         }} />
                         <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
                     </label>
@@ -303,7 +340,7 @@ const SystemSettings = () => {
                 </div>
                 <button
                     onClick={async () => {
-                        if (confirm('데이터베이스를 스캔하여 누락된 매출 기록을 생성하시겠습니까?')) {
+                        if (await confirmAsync('데이터베이스를 스캔하여 누락된 매출 기록을 생성하시겠습니까?')) {
                             toast.warning('SQL 패치(fix_revenue_and_billing_date.sql)를 데이터베이스에서 실행해주세요.', { duration: 8000 });
                         }
                     }}
@@ -490,7 +527,7 @@ export default function SuperAdminDashboard({ onBack }: { onBack?: () => void })
     const [facilitySearchTerm, setFacilitySearchTerm] = useState('');
 
     return (
-        <div className="min-h-screen bg-slate-50 pb-20 font-sans relative">
+        <div className="min-h-[100dvh] bg-slate-50 pb-20 font-sans relative">
             {/* Side Menu Drawer Component */}
             <SideMenuDrawer
                 isOpen={isMenuOpen}
@@ -544,7 +581,7 @@ export default function SuperAdminDashboard({ onBack }: { onBack?: () => void })
                                     : 'border-transparent text-slate-400 hover:text-slate-600'
                                     }`}
                             >
-                                <tab.icon className="w-3.5 h-3.5 md:w-4 h-4" />
+                                <tab.icon className="w-3.5 h-3.5 md:w-4 md:h-4" />
                                 {tab.label}
                             </button>
                         ))}
@@ -597,7 +634,6 @@ export default function SuperAdminDashboard({ onBack }: { onBack?: () => void })
                 {activeTab === 'communication' && <AdminCommunication />}
                 {activeTab === 'admin_settings' && <AdminSettings />}
                 {activeTab === 'system_settings' && <SystemSettings />}
-                <ConfirmModal />
             </main>
         </div>
     );

@@ -14,8 +14,8 @@ const streamPipeline = promisify(pipeline);
 const envPath = path.resolve(process.cwd(), '.env.local');
 dotenv.config({ path: envPath });
 
-const NAVER_CLIENT_ID = process.env.VITE_NAVER_CLIENT_ID || '';
-const NAVER_CLIENT_SECRET = process.env.VITE_NAVER_CLIENT_SECRET || '';
+const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID || '';
+const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET || '';
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || '';
 
@@ -77,7 +77,7 @@ async function main() {
     console.log('='.repeat(60));
 
     if (!NAVER_CLIENT_ID || !NAVER_CLIENT_SECRET) {
-        console.error('[오류] VITE_NAVER_CLIENT_ID, VITE_NAVER_CLIENT_SECRET 환경변수가 필요합니다.');
+        console.error('[오류] NAVER_CLIENT_ID, NAVER_CLIENT_SECRET 환경변수가 필요합니다.');
         return;
     }
 

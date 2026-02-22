@@ -1,6 +1,7 @@
 import React from 'react';
 import { Star, User, Trash2 } from 'lucide-react';
 import { Review } from '../types';
+import { confirmAsync } from '../src/components/common/ConfirmModal';
 
 interface Props {
     review: Review;
@@ -66,15 +67,15 @@ export const ReviewCard: React.FC<Props> = ({ review, isOwner, onDelete, facilit
 
                 {isOwner && (
                     <button
-                        onClick={() => {
-                            if (confirm('리뷰를 삭제하시겠습니까?')) {
+                        onClick={async () => {
+                            if (await confirmAsync('리뷰를 삭제하시겠습니까?')) {
                                 onDelete(review.id);
                             }
                         }}
-                        className="text-gray-400 hover:text-red-500 p-1"
+                        className="text-gray-400 hover:text-red-500 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2 -mt-2"
                         title="삭제"
                     >
-                        <Trash2 size={16} />
+                        <Trash2 size={18} />
                     </button>
                 )}
             </div>
@@ -97,7 +98,7 @@ export const ReviewCard: React.FC<Props> = ({ review, isOwner, onDelete, facilit
                             src={img}
                             alt={`Review img ${idx}`}
                             className="w-20 h-20 object-cover rounded-lg border cursor-pointer hover:opacity-90"
-                            onClick={() => window.open(img, '_blank')}
+                            onClick={() => window.open(img, '_blank', 'noopener,noreferrer')}
                         />
                     ))}
                 </div>

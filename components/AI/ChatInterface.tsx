@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import { sendMessageToGemini, ChatMessage } from '../../services/geminiService';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase, createAuthenticatedClient } from '../../lib/supabaseClient';
 import { getFacilityLatestInfo } from '../../lib/queries';
 import { X, Send, MapPin, Phone, CalendarCheck, Loader2, Bot, Sparkles, Check } from 'lucide-react';
 import { ActionType, Message, Facility } from '../../types';
@@ -12,7 +12,7 @@ import { RecommendList } from './RecommendList';
 import FuneralSearchForm from './FuneralSearchForm';
 import MemorialSearchForm from './MemorialSearchForm';
 import PetSearchForm from './PetSearchForm';
-import { useClerk } from '../../lib/auth'; // For login modal
+import { useClerk, useSession } from '../../lib/auth'; // For login modal + auth client
 import { logger } from '../../utils/logger';
 
 interface Props {
@@ -36,7 +36,8 @@ interface Props {
 // Safe Highlighting Component
 const SafeHighlight = ({ text, highlight }: { text: string, highlight: string }) => {
     if (!highlight.trim()) return <span>{text}</span>;
-    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+    const escaped = highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const parts = text.split(new RegExp(`(${escaped})`, 'gi'));
     return (
         <span>
             {parts.map((part, i) =>
@@ -66,7 +67,17 @@ export const ChatInterface: React.FC<Props> = ({
 }) => {
 
     const { openSignIn } = useClerk(); // For login modal
+    const { session } = useSession();
     const isPetFacility = facility.type === 'pet' || initialIntent === 'pet_funeral';
+
+    // Auth client helper for DB operations
+    const getAuthClient = async () => {
+        try {
+            const token = await session?.getToken?.({ template: 'supabase' });
+            if (token) return createAuthenticatedClient(token);
+        } catch { /* fallback */ }
+        return supabase;
+    };
 
     // [HOOKS FIX] All hooks MUST be declared before any conditional return
     const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -89,8 +100,9 @@ export const ChatInterface: React.FC<Props> = ({
     // [PDCA] System Logging Helper
     const logToSystem = async (level: 'INFO' | 'WARN' | 'ERROR', message: string, traceId?: string, meta: any = {}) => {
         try {
+            const client = await getAuthClient();
             // Fire and forget - don't await execution to avoid blocking UI
-            supabase.from('system_logs').insert({
+            client.from('system_logs').insert({
                 level,
                 message,
                 trace_id: traceId || 'UNKNOWN_TRACE',
@@ -429,6 +441,7 @@ export const ChatInterface: React.FC<Props> = ({
 
                 // [Phase 5] 리드 저장 (DB 연동)
                 try {
+                    const authClient = await getAuthClient();
                     const lead = await createLead({
                         userId: currentUser?.id,
                         contactName: currentUser?.name || '익명 고객',
@@ -442,7 +455,7 @@ export const ChatInterface: React.FC<Props> = ({
                             ...searchData,
                             notes: searchData.notes || ''
                         }
-                    });
+                    }, authClient);
                     if (lead) {
                         setCurrentLeadId(lead.id);
                         logToSystem('INFO', 'Lead created', traceId, { leadId: lead.id });
@@ -484,6 +497,7 @@ export const ChatInterface: React.FC<Props> = ({
                     visitDate.setHours(hours, minutes, 0, 0);
 
                     // Call DB
+                    const urgentClient = await getAuthClient();
                     // @ts-ignore
                     await createUrgentReservation(
                         facility.id.toString(),
@@ -492,7 +506,8 @@ export const ChatInterface: React.FC<Props> = ({
                         currentUser?.phone,
                         visitDate,
                         urgentBookingContext.type?.replace('type_', '') as 'single' | 'couple' || 'single',
-                        'AI 긴급 예약'
+                        'AI 긴급 예약',
+                        urgentClient
                     );
 
                     logToSystem('INFO', 'Urgent Reservation Confirmed in DB', traceId, { visitDate: visitDate.toISOString() });
@@ -619,6 +634,7 @@ export const ChatInterface: React.FC<Props> = ({
                             });
 
                             // [PDCA] 2. Save to DB (Leads)
+                            const formClient = await getAuthClient();
                             const lead = await createLead({
                                 userId: currentUser?.id,
                                 facilityId: facility.id.toString(), // Ensure string
@@ -633,7 +649,7 @@ export const ChatInterface: React.FC<Props> = ({
                                     source: 'ConsultationForm'
                                 },
                                 notes: `[${data.type}] ${data.requests || ''} (Relation: ${data.relation || 'N/A'})`
-                            });
+                            }, formClient);
 
                             if (lead) {
                                 // Lead saved successfully
@@ -684,7 +700,7 @@ export const ChatInterface: React.FC<Props> = ({
                     {/* Close button */}
                     <button
                         onClick={onClose}
-                        className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                        className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-white/20 rounded-full transition-colors"
                         title="상담 종료"
                     >
                         <X className="w-5 h-5 text-slate-300 hover:text-white" />
@@ -703,7 +719,7 @@ export const ChatInterface: React.FC<Props> = ({
                                 setFormMode('phone'); // [MODIFIED] Open detailed form ("General Reservation") by default
                                 setIsFormOpen(true);
                             }}
-                            className={`bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-full text-xs font-bold transition flex items-center gap-1 shadow-lg active:scale-95`}
+                            className={`bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 min-h-[44px] rounded-full text-xs font-bold transition flex items-center gap-1 shadow-lg active:scale-95`}
                         >
                             <CalendarCheck size={14} />
                             바로 예약하기
@@ -849,7 +865,7 @@ export const ChatInterface: React.FC<Props> = ({
                                         <button
                                             key={idx}
                                             onClick={() => handleSend(faq.question)}
-                                            className="bg-white border border-slate-200 hover:border-indigo-400 text-slate-700 text-[11px] py-1.5 px-3 rounded-full shadow-sm transition-all active:scale-95 flex items-center gap-1.5 font-medium"
+                                            className="bg-white border border-slate-200 hover:border-indigo-400 text-slate-700 text-[11px] py-1.5 px-3 min-h-[44px] md:min-h-0 rounded-full shadow-sm transition-all active:scale-95 flex items-center gap-1.5 font-medium"
                                         >
                                             <span>{faq.icon}</span> {faq.label}
                                         </button>
@@ -859,7 +875,7 @@ export const ChatInterface: React.FC<Props> = ({
                         )}
 
                         {/* Input Area */}
-                        <div className="bg-white p-4 pt-2 pb-6">
+                        <div className="bg-white p-4 pt-2 pb-safe">
                             <div className="flex gap-2 items-end">
                                 <div className="flex-1 bg-slate-100 rounded-2xl border border-transparent focus-within:border-slate-300 focus-within:bg-white transition-all px-4 py-3">
                                     <input
@@ -883,7 +899,7 @@ export const ChatInterface: React.FC<Props> = ({
                             </div>
                             <div className="text-center mt-2">
                                 <p className="text-[10px] text-slate-400 flex items-center justify-center gap-1">
-                                    <Sparkles size={10} /> Powered by Gemini 2.0 Flash
+                                    <Sparkles size={10} /> AI 상담 비서
                                 </p>
                             </div>
                         </div>

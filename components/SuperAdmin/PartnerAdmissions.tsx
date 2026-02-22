@@ -9,13 +9,11 @@ import { toast } from 'sonner'; // [Phase 2] Error Handler
 
 export const PartnerAdmissions: React.FC = () => {
     const { isSuperAdmin, loading: adminLoading } = useSuperAdmin();
-
-
     const { data: inquiryData, isLoading, refetch } = usePartnerInquiries({ status: 'pending' });
     const facilities = inquiryData?.data || [];
-
     const { approvePartner } = useApprovePartner();
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedTab, setSelectedTab] = useState('all');
     const confirmModal = useConfirmModal();
 
     if (adminLoading) {
@@ -70,11 +68,9 @@ export const PartnerAdmissions: React.FC = () => {
         });
     };
 
-    const [selectedTab, setSelectedTab] = useState('all');
-
     const filtered = facilities.filter(f => {
         const matchesSearch = f.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            f.contact_person.toLowerCase().includes(searchTerm.toLowerCase());
+            (f.contact_person || '').toLowerCase().includes(searchTerm.toLowerCase());
 
         if (!matchesSearch) return false;
 
@@ -144,7 +140,7 @@ export const PartnerAdmissions: React.FC = () => {
                                         <p className="text-gray-400">Email: {f.company_email}</p>
                                         <p className="text-gray-400">신청일: {new Date(f.created_at).toLocaleDateString()}</p>
                                     </div>
-                                    {f.business_license_url && (
+                                    {f.business_license_url && /^https?:\/\//i.test(f.business_license_url) && (
                                         <div className="mt-2">
                                             <a href={f.business_license_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 text-xs hover:underline flex items-center gap-1">
                                                 <FileText size={12} /> 사업자등록증 보기

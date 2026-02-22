@@ -1,8 +1,7 @@
 import React, { useMemo } from 'react';
 import { Virtuoso } from 'react-virtuoso';
 import { FacilityItem } from './FacilityItem';
-import { Facility, FacilityCategoryType } from '../types';
-import { useFilterStore } from '../stores/useFilterStore';
+import { Facility } from '../types';
 
 interface FacilityListProps {
     facilities: Facility[];
@@ -12,49 +11,8 @@ interface FacilityListProps {
 }
 
 export const FacilityList = React.memo<FacilityListProps>(({ facilities, onSelect, compareList, onToggleCompare }) => {
-    // Store State
-    const searchQuery = useFilterStore(s => s.searchQuery);
-    const selectedCategories = useFilterStore(s => s.selectedCategories);
-
-    // Internal Filtering Logic
-    const filteredFacilities = useMemo(() => {
-        // 주소 정규화 매핑 (축약형↔정식명)
-        const REGION_ALIASES: Record<string, string[]> = {
-            '서울': ['서울특별시'], '서울특별시': ['서울'],
-            '경기': ['경기도'], '경기도': ['경기'],
-            '부산': ['부산광역시'], '부산광역시': ['부산'],
-            '광주': ['광주광역시'], '광주광역시': ['광주'],
-            '대전': ['대전광역시'], '대전광역시': ['대전'],
-            '인천': ['인천광역시'], '인천광역시': ['인천'],
-        };
-
-        return facilities.filter(facility => {
-            // 1. Text Search — 시/도 단위 우선매칭
-            let matchesSearch = true;
-            if (searchQuery) {
-                const q = searchQuery.toLowerCase();
-                const nameMatch = facility.name.toLowerCase().includes(q);
-                // 주소 첫 토큰(시/도) 우선 매칭
-                const addrLower = facility.address?.toLowerCase() || '';
-                const firstToken = addrLower.split(' ')[0];
-                const directMatch = firstToken.includes(q) || addrLower.includes(q);
-                // 정규화 매핑: "서울" 검색 시 "서울특별시" 주소도 매칭
-                const aliases = REGION_ALIASES[searchQuery] || [];
-                const aliasMatch = aliases.some(alias => addrLower.startsWith(alias.toLowerCase()));
-                matchesSearch = nameMatch || directMatch || aliasMatch;
-            }
-
-            // 2. Category Filter — DB 필드는 type (category 없음)
-            const facilityType = (facility as any).type || facility.category;
-            const matchesCategory = selectedCategories.length === 0 ||
-                (facilityType && selectedCategories.includes(facilityType));
-
-            // 3. Exclude 'Sangjo' (handled in separate tab)
-            const isSangjo = facilityType === 'sangjo' || facilityType === '상조';
-
-            return matchesSearch && matchesCategory && !isSangjo;
-        });
-    }, [facilities, searchQuery, selectedCategories]);
+    // facilities prop은 useFacilityData에서 이미 카테고리/검색/상조제외 필터링 완료
+    const filteredFacilities = facilities;
 
     // compareList를 Set으로 변환하여 빠른 조회 성능 확보 (O(n) -> O(1))
     const compareIdSet = useMemo(

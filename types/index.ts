@@ -94,7 +94,7 @@ export interface Message {
   options?: { label: string; value: string }[];
 }
 
-export type { FacilityCategoryType } from './facility';
+export type { FacilityCategoryType, PhysicalFacilityType, SangjoServiceType } from './facility';
 // ============================================================
 // RE-EXPORT FROM FACILITY TYPES (Single Source of Truth)
 // ============================================================
@@ -118,7 +118,14 @@ export {
   normalizeCategoryValue
 } from './facility';
 
-export type { Reservation } from './db';
+export type {
+  Reservation,
+  DBConsultation,
+  BotData,
+  TimelineEvent,
+  SangjoFavorite,
+  Favorite,
+} from './db';
 
 export enum ViewState {
   MAP = 'MAP',

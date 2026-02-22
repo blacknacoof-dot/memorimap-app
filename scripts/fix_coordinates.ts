@@ -9,8 +9,8 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL || '';
 const supabaseKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
-const naverClientId = process.env.VITE_NAVER_CLIENT_ID || '';
-const naverClientSecret = process.env.VITE_NAVER_CLIENT_SECRET || '';
+const naverClientId = process.env.NAVER_CLIENT_ID || '';
+const naverClientSecret = process.env.NAVER_CLIENT_SECRET || '';
 
 if (!supabaseUrl || !supabaseKey || !naverClientId || !naverClientSecret) {
     console.error('❌ 필수 설정 누락 (.env.local 확인)');

@@ -41,10 +41,8 @@
   <title>추모맵 - 추모 공간 지도</title>
   <!-- Tailwind CSS via CDN for quick setup (can be replaced with local install) -->
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <!-- Naver Maps preload -->
-  <script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=ctgpughi0h" async defer></script>
+  <script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=%VITE_NAVER_MAP_CLIENT_ID%" async defer></script>
   <script src="https://cdn.portone.io/v2/browser-sdk.js" async></script>
   <script>
     // Shim for process.env
@@ -65,12 +63,6 @@
       overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: #f3f4f6;
-    }
-
-    .leaflet-container {
-      width: 100%;
-      height: 100%;
-      z-index: 0;
     }
 
     .no-scrollbar::-webkit-scrollbar {

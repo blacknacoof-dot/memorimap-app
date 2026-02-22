@@ -97,8 +97,83 @@ export const requestPayment = async (params: PaymentRequest): Promise<PaymentRes
 };
 
 export const PORTONE_CONFIG = {
-    STORE_ID: "store-64d04ed2-8945-4d77-b160-aba423285aa1",
-    CHANNEL_KEY: "channel-key-63cd5e3b-b887-4910-9bfa-bca1d4644ae8",
+    STORE_ID: import.meta.env.VITE_PORTONE_STORE_ID ?? '',
+    CHANNEL_KEY: import.meta.env.VITE_PORTONE_CHANNEL_KEY ?? '',
+} as const;
+
+if (!PORTONE_CONFIG.STORE_ID || !PORTONE_CONFIG.CHANNEL_KEY) {
+    console.warn('[PortOne] VITE_PORTONE_STORE_ID 또는 VITE_PORTONE_CHANNEL_KEY가 설정되지 않았습니다.');
+}
+
+/**
+ * 서버사이드 결제 검증 (Edge Function 호출)
+ * 클라이언트에서 결제 완료 후 반드시 호출하여 금액/상태 위변조 검증
+ */
+export const verifyPayment = async (params: {
+    paymentId: string;
+    expectedAmount: number;
+    orderId?: string;
+}): Promise<{ verified: boolean; error?: string }> => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl) {
+        return { verified: false, error: 'Supabase URL not configured' };
+    }
+
+    try {
+        // [AUTH-14 FIX] 사용자 JWT를 Authorization 헤더로 전송
+        // Edge Function이 인증된 사용자 + 예약 소유권을 검증하도록 변경됨
+        const { getCurrentAccessToken } = await import('./supabaseClient');
+        const userToken = await getCurrentAccessToken();
+        if (!userToken) {
+            return { verified: false, error: '인증 토큰이 없습니다. 로그인 후 다시 시도해주세요.' };
+        }
+
+        const response = await fetch(`${supabaseUrl}/functions/v1/verify-payment`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': supabaseKey,
+                'Authorization': `Bearer ${userToken}`,
+            },
+            body: JSON.stringify(params),
+        });
+
+        const result = await response.json();
+        return result;
+    } catch (error: any) {
+        return { verified: false, error: error.message || '결제 검증 실패' };
+    }
+};
+
+/**
+ * 환불 요청 (서버사이드 Edge Function 필요)
+ * 현재는 DB에 환불 요청 플래그만 기록 (수동 처리)
+ */
+export const requestRefund = async (params: {
+    paymentId: string;
+    reason: string;
+    reservationId: string;
+}): Promise<{ success: boolean; error?: string }> => {
+    // Edge Function 배포 전에는 DB 플래그만 기록
+    try {
+        const { supabase } = await import('./supabaseClient');
+
+        const { error } = await supabase.from('reservations').update({
+            refund_status: 'requested',
+            refund_reason: params.reason,
+            payment_id: params.paymentId,
+        }).eq('id', params.reservationId);
+
+        if (error) {
+            return { success: false, error: error.message || '환불 요청 실패' };
+        }
+
+        return { success: true };
+    } catch (error: any) {
+        return { success: false, error: error.message || '환불 요청 실패' };
+    }
 };
 
 declare global {

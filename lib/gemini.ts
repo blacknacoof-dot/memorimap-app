@@ -1,25 +1,13 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Message } from "../types/consultation";
 import { Facility } from "../types";
 import { getMockAIResponse } from "./mockAI";
 
-// Initialize Gemini Client
-// NOTE: Ideally this should be server-side or via a proxy to protect the API key in production.
-// For this MVP/Demo, client-side usage is acceptable with restrictions.
-const API_KEY = import.meta.env.VITE_GOOGLE_GENAI_API_KEY;
-const USE_REAL_AI = !!API_KEY; // Only enable if key is present
-
-let genAI: any = null;
-
-try {
-    if (API_KEY) {
-        genAI = new GoogleGenerativeAI(API_KEY);
-    } else {
-        console.warn("[Gemini] VITE_GOOGLE_GENAI_API_KEY is missing. basic AI features will not work.");
-    }
-} catch (e) {
-    console.error("Failed to initialize Gemini Client", e);
-}
+// Gemini API는 Edge Function (gemini-proxy)을 통해 호출
+// 클라이언트에 API 키를 노출하지 않음
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const GEMINI_PROXY_URL = SUPABASE_URL ? `${SUPABASE_URL}/functions/v1/gemini-proxy` : '';
+const USE_REAL_AI = !!GEMINI_PROXY_URL;
 
 export interface StreamResponse {
     text: string;
@@ -111,34 +99,12 @@ export async function* streamConsultationMessage(
     topic: string,
     faqs: any[] = []
 ): AsyncGenerator<string, void, unknown> {
-    // Try real API first, fallback to mock if it fails
-    if (!USE_REAL_AI || !genAI || !API_KEY) {
+    if (!USE_REAL_AI) {
         yield* getMockAIResponse(facility, newMessage, topic);
         return;
     }
 
-    // Retry initialization just in case
-    if (!genAI) {
-        try {
-            // @ts-ignore
-            const { GoogleGenerativeAI: GenAI } = await import("@google/generative-ai");
-            genAI = new GenAI(API_KEY);
-        } catch (e) {
-            console.error("Re-init failed, using Mock AI", e);
-            yield* getMockAIResponse(facility, newMessage, topic);
-            return;
-        }
-    }
-
-    const model = genAI.getGenerativeModel({
-        model: MODEL_CONFIG.model,
-        generationConfig: {
-            ...MODEL_CONFIG.generationConfig,
-            responseMimeType: "application/json" // Force JSON output
-        }
-    });
-
-    // Construct System Prompt
+    // System prompt 구성
     const systemPrompt = `
 # Role: Facility AI Concierge (Urgent Direct Booking Mode)
 You are '마음이', the AI concierge for **${facility.name}**.
@@ -203,7 +169,7 @@ AI Output:
     {"label": "📍 내비게이션 실행", "value": "open_navi"},
     {"label": "📄 예약증 보기 (바코드)", "value": "show_ticket"}
   ],
-  "action_trigger": "URGENT_RESERVATION_CONFIRM" 
+  "action_trigger": "URGENT_RESERVATION_CONFIRM"
 }
 
 ## Default / General Inquiry
@@ -223,33 +189,72 @@ ${faqs.map((f, i) => `${i + 1}. Q: ${f.question}\n   A: ${f.answer}`).join('\n')
 ` : ''}
 `;
 
-    // Transform history to Gemini format
     const chatHistory = history.map(msg => ({
         role: msg.role === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.text }]
+        text: msg.text,
     }));
 
     try {
-        const chat = model.startChat({
-            history: [
-                {
-                    role: "user",
-                    parts: [{ text: systemPrompt }]
-                },
-                ...chatHistory
-            ]
+        // [AUTH-13 FIX] 사용자 JWT를 Authorization 헤더로 전송
+        // Edge Function이 인증된 사용자만 허용하도록 변경됨
+        const { getCurrentAccessToken } = await import('./supabaseClient');
+        const userToken = await getCurrentAccessToken();
+        if (!userToken) {
+            throw new Error('인증 토큰이 없습니다. 로그인 후 다시 시도해주세요.');
+        }
+
+        const response = await fetch(GEMINI_PROXY_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${userToken}`,
+            },
+            body: JSON.stringify({
+                systemPrompt,
+                history: chatHistory,
+                message: newMessage,
+            }),
         });
 
-        const result = await chat.sendMessageStream(newMessage);
+        if (!response.ok) {
+            throw new Error(`Gemini proxy error: ${response.status}`);
+        }
 
-        for await (const chunk of result.stream) {
-            const chunkText = chunk.text();
-            if (chunkText) {
-                yield chunkText;
+        const reader = response.body?.getReader();
+        if (!reader) {
+            throw new Error('No response body');
+        }
+
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+
+            // SSE 파싱: data: {...} 형태
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+                if (!line.startsWith('data: ')) continue;
+                const jsonStr = line.slice(6).trim();
+                if (!jsonStr || jsonStr === '[DONE]') continue;
+
+                try {
+                    const parsed = JSON.parse(jsonStr);
+                    const text = parsed?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (text) yield text;
+                } catch {
+                    // JSON 파싱 실패 시 무시
+                }
             }
         }
     } catch (error: any) {
-        console.error("Gemini Streaming Error, falling back to Mock AI:", error);
+        console.error("Gemini Proxy Error, falling back to Mock AI:", error);
         yield* getMockAIResponse(facility, newMessage, topic);
     }
 }

@@ -9,7 +9,9 @@
 export type UserRole = 'user' | 'facility_admin' | 'sangjo_hq_admin' | 'super_admin';
 export type ReservationStatus = 'pending' | 'confirmed' | 'rejected' | 'cancelled' | 'completed' | 'no_show' | 'urgent'; // Added 'urgent' to support existing logic
 // export type FacilityType = 'charnel_house' | 'natural_burial' | 'funeral_home' | 'complex' | 'pet'; // DEPRECATED
-export type FacilityCategoryType = '장례식장' | '봉안시설' | '자연장' | '공원묘지' | '동물장례' | '해양장' | '상조';
+// FacilityCategoryType → facility.ts에서 Single Source of Truth로 관리
+import type { FacilityCategoryType } from './facility';
+export type { FacilityCategoryType };
 
 // --- [Phase 4 New Types] ---
 export type SubscriptionPlan = 'free' | 'basic' | 'premium' | 'enterprise';
@@ -19,7 +21,14 @@ export type TargetAudience = 'all' | 'facility_admin' | 'user';
 export interface Favorite {
     id: string;
     user_id: string;
-    facility_id: number | string;
+    facility_id: string; // UUID
+    created_at: string;
+}
+
+export interface SangjoFavorite {
+    id: string;
+    user_id: string;
+    company_id: string;
     created_at: string;
 }
 
@@ -47,7 +56,7 @@ export interface Reservation {
     special_requests?: string; // DB Column (was request_note)
     request_note?: string; // Alias/Legacy
     purpose?: string;
-    facility_id: number | string;
+    facility_id: string; // UUID
     facility_name?: string; // Joined field (UI compatibility)
     user_id: string;
     status: ReservationStatus;
@@ -55,6 +64,7 @@ export interface Reservation {
     manager_note?: string | null;
     payment_amount?: number; // Re-added for logic
     payment_id?: string; // PortOne Payment ID (UI compatibility)
+    payment_verified?: boolean; // Edge Function verify-payment에서 설정
     paid_at?: string; // ISO String (UI compatibility)
     funeral_company_id?: string; // (UI compatibility)
     funeral_company_name?: string; // (UI compatibility)
@@ -73,7 +83,7 @@ export interface MemorialSpace {
     image_urls?: string[];
     ai_context?: string | null;
     ai_features?: string[]; // Kept for logic
-    is_verified: boolean;
+    verified: boolean;
     subscription_tier?: SubscriptionPlan; // Updated type
     facilities_id?: string | null; // [Added] Link to facilities table (UUID)
 }
@@ -166,4 +176,61 @@ export interface UserNotification {
     created_at: string;
 }
 
-export type Database = any;
+// ==========================================
+// 3. DB 전용 테이블 (코드에서 직접 매핑 안 되던 테이블)
+// ==========================================
+
+/** consultations 테이블 (DB 매핑) */
+export interface DBConsultation {
+    id: string;
+    facility_id: string;
+    user_id: string | null;
+    user_name: string | null;
+    user_phone: string | null;
+    urgency: string | null;
+    location: string | null;
+    needs_ambulance: boolean;
+    scale: string | null;
+    religion: string | null;
+    schedule: string | null;
+    status: 'pending' | 'waiting' | 'accepted' | 'cancelled' | 'completed';
+    notes: string | null;
+    category: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+/** bot_data 테이블 */
+export interface BotData {
+    id: string;
+    facility_id: number;
+    welcome_message: string | null;
+    faq_items: Array<{ question: string; answer: string }>;
+    ai_context: string | null;
+    ai_features: string[];
+    price_info: Record<string, unknown>;
+    bot_last_updated_at: string;
+    created_at: string;
+    updated_at: string;
+}
+
+/** timeline_events 테이블 */
+export interface TimelineEvent {
+    id: string;
+    facility_id: number;
+    reservation_id: string | null;
+    user_id: string | null;
+    event_type: string;
+    event_title: string;
+    scheduled_at: string;
+    completed_at: string | null;
+    status: 'scheduled' | 'completed' | 'cancelled';
+    notes: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+// ==========================================
+// 4. Supabase Database 타입 (제네릭용)
+// ==========================================
+export type Database = Record<string, unknown>;

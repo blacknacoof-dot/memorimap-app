@@ -8,8 +8,8 @@ import * as path from 'path';
 
 dotenv.config({ path: path.join(process.cwd(), '.env.local') });
 
-const NAVER_CLIENT_ID = process.env.VITE_NAVER_CLIENT_ID;
-const NAVER_CLIENT_SECRET = process.env.VITE_NAVER_CLIENT_SECRET;
+const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID;
+const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET;
 
 async function testNaverAuth() {
     console.log('🔍 Testing Naver API Authentication...\n');

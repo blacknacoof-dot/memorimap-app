@@ -6,7 +6,7 @@ import { ReservationSchema, ReservationFormValues } from '../lib/schemas';
 import { format, addDays, startOfToday } from 'date-fns';
 
 import { Check, X, Clock, CreditCard, AlertCircle, Loader2, Landmark, Phone, PawPrint } from 'lucide-react';
-import { requestPayment, PORTONE_CONFIG } from '../lib/portone';
+import { requestPayment, verifyPayment, PORTONE_CONFIG } from '../lib/portone';
 import { FUNERAL_COMPANIES } from '../constants';
 
 interface Props {
@@ -197,6 +197,15 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
       });
 
       if (response.code != null) throw new Error(response.message || 'Payment failed');
+
+      // 서버사이드 결제 검증
+      const verification = await verifyPayment({
+        paymentId: response.paymentId || paymentId,
+        expectedAmount: depositAmount,
+      });
+      if (!verification.verified) {
+        throw new Error(verification.error || '결제 검증에 실패했습니다. 고객센터에 문의해주세요.');
+      }
 
       const legacy = mapToLegacy(data, 'pending', depositAmount, response.paymentId || paymentId);
       legacy.special_requests = `[연락처: ${data.contact_number}] ${legacy.special_requests}`;
@@ -528,8 +537,8 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
   };
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-lg sm:rounded-2xl rounded-t-3xl max-h-[90dvh] h-auto flex flex-col shadow-2xl">
+    <div className="fixed inset-0 z-[300] flex items-end md:items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="bg-white w-full max-w-lg md:rounded-2xl rounded-t-3xl max-h-[90dvh] h-auto flex flex-col shadow-2xl">
         <div className="p-4 border-b flex justify-between items-center sticky top-0 bg-white z-10">
           <h2 className="text-lg font-bold flex items-center gap-2">
             {getTitle()}

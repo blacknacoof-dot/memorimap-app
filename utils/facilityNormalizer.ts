@@ -24,7 +24,7 @@ function isOnlyMissing(url: string): boolean {
 }
 
 // ── Sangjo Detection ──
-const SANGJO_KEYWORDS = ['프리드라이프', '대명스테이션', '보람상조', '교원라이프', '상조', '라이프'];
+const SANGJO_KEYWORDS = ['프리드라이프', '대명스테이션', '보람상조', '교원라이프', '상조'];
 
 function isSangjoByName(name: string): boolean {
   return SANGJO_KEYWORDS.some(keyword => name.includes(keyword));
@@ -37,9 +37,13 @@ const TYPE_MAP: Record<string, string> = {
   'charnel_house': 'charnel', 'charnel': 'charnel', 'memorial': 'charnel', 'columbarium': 'charnel',
   '봉안시설': 'charnel',
   'natural_burial': 'natural', 'natural': 'natural', 'tree_burial': 'natural',
+  '자연장': 'natural',
   'park_cemetery': 'park', 'park': 'park', 'complex': 'park', 'cemetery': 'park',
+  '공원묘지': 'park',
   'pet_funeral': 'pet', 'pet': 'pet', 'pet_memorial': 'pet',
+  '동물장례': 'pet',
   'sea_burial': 'sea', 'sea': 'sea',
+  '해양장': 'sea',
   'sangjo': 'sangjo', '상조': 'sangjo',
 };
 
@@ -66,8 +70,11 @@ const CATEGORY_LABEL_MAP: Record<string, string> = {
 };
 
 export function normalizeType(rawType: string, name: string): string {
-  if (rawType === 'sangjo' || isSangjoByName(name)) return 'sangjo';
-  return TYPE_MAP[rawType] || 'charnel';
+  if (rawType === 'sangjo' || rawType === '상조') return 'sangjo';
+  const mapped = TYPE_MAP[rawType];
+  if (mapped) return mapped;
+  if (isSangjoByName(name)) return 'sangjo';
+  return 'charnel';
 }
 
 export function getCategoryDb(type: string): FacilityCategoryType {

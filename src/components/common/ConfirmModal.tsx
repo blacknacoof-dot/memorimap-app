@@ -45,7 +45,7 @@ export const ConfirmModal: React.FC = () => {
     const isButtonDisabled = requireCheckbox && !isConfirmed;
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/30 z-50 p-4" data-testid="confirm-modal">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/30 z-[10000] p-4" data-testid="confirm-modal">
             <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
                 <h2 className="text-xl font-semibold mb-4">{title}</h2>
                 <p className="mb-6">{message}</p>
@@ -85,4 +85,15 @@ export const ConfirmModal: React.FC = () => {
             </div>
         </div>
     );
+};
+
+export const confirmAsync = (message: string, title = '확인'): Promise<boolean> => {
+    return new Promise<boolean>((resolve) => {
+        useConfirmModal.getState().open({
+            title,
+            message,
+            onConfirm: () => resolve(true),
+            onCancel: () => resolve(false),
+        });
+    });
 };

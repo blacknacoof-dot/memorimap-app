@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase, createAuthenticatedClient } from '../lib/supabaseClient';
+import { useSession } from '../lib/auth';
 import { Reservation, ViewState } from '../types';
 
 interface UseReservationsReturn {
@@ -13,13 +14,6 @@ interface UseReservationsReturn {
 
 /**
  * 예약 관리 Hook
- * @param isSignedIn 로그인 여부
- * @param user 현재 사용자
- * @param showToast 토스트 표시 함수
- * @param setShowLoginModal 로그인 모달 표시 함수
- * @param setSelectedFacility 선택된 시설 설정 함수
- * @param setViewState 뷰 상태 설정 함수
- * @returns 예약 상태 및 제어 함수
  */
 export const useReservations = (
   isSignedIn: boolean,
@@ -31,6 +25,19 @@ export const useReservations = (
 ): UseReservationsReturn => {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [isBooking, setIsBooking] = useState(false);
+  const { session } = useSession();
+
+  const getAuthClient = async () => {
+    if (!session) return supabase;
+    try {
+      const token = await Promise.race([
+        session.getToken({ template: 'supabase' }),
+        new Promise<null>((r) => setTimeout(() => r(null), 8000)),
+      ]);
+      if (token) return createAuthenticatedClient(token);
+    } catch { /* fallback */ }
+    return supabase;
+  };
 
   /**
    * 예약 확정 처리
@@ -43,29 +50,42 @@ export const useReservations = (
       return;
     }
 
+    if (!user?.id) {
+      showToast("사용자 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.", 'error');
+      return;
+    }
+
     try {
-      // Save to Supabase
-      const { data, error } = await supabase
+      const client = await getAuthClient();
+      const { data, error } = await client
         .from('reservations')
         .insert({
-          user_id: user?.id,
+          user_id: user.id,
           facility_id: reservation.facility_id,
           facility_name: reservation.facility_name,
           visit_date: reservation.visit_date,
           time_slot: reservation.time_slot,
           visitor_name: reservation.visitor_name,
           visitor_count: reservation.visitor_count,
+          contact_number: reservation.contact_number || null,
           purpose: reservation.purpose,
           special_requests: reservation.special_requests,
           status: reservation.status,
-          payment_amount: reservation.payment_amount
+          payment_amount: reservation.payment_amount,
+          payment_id: reservation.payment_id || null
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      setReservations(prev => [...prev, reservation]);
+      // DB에서 반환된 실제 데이터 사용 (가짜 ID 방지)
+      const savedReservation: Reservation = {
+        ...reservation,
+        id: data.id,
+        created_at: data.created_at,
+      };
+      setReservations(prev => [...prev, savedReservation]);
       setIsBooking(false);
       setSelectedFacility(null);
       setViewState(ViewState.MY_PAGE);
@@ -74,14 +94,26 @@ export const useReservations = (
       console.error('Reservation error:', err);
       showToast("예약 중 오류가 발생했습니다.", 'error');
     }
-  }, [isSignedIn, user?.id, showToast, setShowLoginModal, setSelectedFacility, setViewState]);
+  }, [isSignedIn, user?.id, showToast, setShowLoginModal, setSelectedFacility, setViewState, session]);
 
   /**
    * 예약 상태 업데이트
    */
-  const handleUpdateReservation = useCallback((id: string, status: 'confirmed' | 'cancelled') => {
-    setReservations(prev => prev.map(r => r.id === id ? { ...r, status } : r));
-  }, []);
+  const handleUpdateReservation = useCallback(async (id: string, status: 'confirmed' | 'cancelled') => {
+    try {
+      const client = await getAuthClient();
+      const { error } = await client
+        .from('reservations')
+        .update({ status })
+        .eq('id', id);
+
+      if (error) throw error;
+      setReservations(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+    } catch (err) {
+      console.error('Reservation update error:', err);
+      showToast('예약 상태 업데이트 중 오류가 발생했습니다.', 'error');
+    }
+  }, [showToast, session]);
 
   return {
     reservations,

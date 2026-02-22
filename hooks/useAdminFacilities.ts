@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabaseClient';
+import { useSession } from '@/lib/auth';
+import { supabase, createAuthenticatedClient } from '@/lib/supabaseClient';
 
 export interface AdminFacility {
     id: string;
@@ -18,7 +19,16 @@ export interface AdminFacility {
     package_count?: number;
 }
 
+async function getAuthClient(session: any) {
+    try {
+        const token = await session?.getToken?.({ template: 'supabase' });
+        if (token) return createAuthenticatedClient(token);
+    } catch { /* fallback */ }
+    return supabase;
+}
+
 export function useAllFacilities() {
+    const { session } = useSession();
     const [facilities, setFacilities] = useState<AdminFacility[]>([]);
     const [loading, setLoading] = useState(false);
     const [totalCount, setTotalCount] = useState(0);
@@ -28,14 +38,13 @@ export function useAllFacilities() {
     const search = useCallback(async (term: string, targetPage: number = 0) => {
         setLoading(true);
         try {
-            // [개선] facilities 대신 memorial_spaces를 기본 참조하도록 변경 (더 정제된 데이터)
-            let query = supabase.from('memorial_spaces').select('id, name, address, category, type, user_id, manager_id, owner_user_id, images, phone, description', { count: 'exact' });
+            const client = await getAuthClient(session);
+            let query = client.from('facilities').select('id, name, address, type, user_id, images, phone, description', { count: 'exact' });
 
             if (term) {
                 query = query.ilike('name', `%${term}%`);
             }
 
-            // 페이지네이션 계산
             const start = targetPage * itemsPerPage;
             const end = start + itemsPerPage - 1;
 
@@ -53,18 +62,18 @@ export function useAllFacilities() {
         } finally {
             setLoading(false);
         }
-    }, [itemsPerPage]);
+    }, [itemsPerPage, session]);
 
     const updateManager = useCallback(async (facilityId: string, userId: string | null) => {
         try {
-            const { error } = await supabase
-                .from('memorial_spaces')
-                .update({ owner_user_id: userId })
+            const client = await getAuthClient(session);
+            const { error } = await client
+                .from('facilities')
+                .update({ user_id: userId })
                 .eq('id', facilityId);
 
             if (error) throw error;
 
-            // Update local state
             setFacilities(prev => prev.map(f =>
                 f.id === facilityId ? { ...f, user_id: userId || undefined } : f
             ));
@@ -73,7 +82,7 @@ export function useAllFacilities() {
             console.error('Update manager failed:', error);
             toast.error('업데이트 실패: ' + error.message);
         }
-    }, []);
+    }, [session]);
 
     return {
         facilities,

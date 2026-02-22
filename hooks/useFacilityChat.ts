@@ -5,8 +5,6 @@ export const useFacilityChat = () => {
 
     const handleFunctionCall = async (functionCall: any, currentUser: any) => {
         const { name, args } = functionCall;
-        console.log(`[Function Calling] Executing ${name} with args:`, args);
-
         try {
             switch (name) {
                 case 'book_facility_visit': {

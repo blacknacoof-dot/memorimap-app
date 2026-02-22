@@ -3,8 +3,8 @@ import * as dotenv from 'dotenv';
 
 dotenv.config({ path: '.env.local' });
 
-const naverClientId = process.env.VITE_NAVER_CLIENT_ID!;
-const naverClientSecret = process.env.VITE_NAVER_CLIENT_SECRET!;
+const naverClientId = process.env.NAVER_CLIENT_ID!;
+const naverClientSecret = process.env.NAVER_CLIENT_SECRET!;
 
 async function searchNaver(query: string) {
     const url = `https://openapi.naver.com/v1/search/local.json?query=${encodeURIComponent(query)}&display=5`;

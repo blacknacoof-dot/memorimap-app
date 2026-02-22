@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth } from '../lib/auth';
 import { logger } from '../utils/logger';
 
 interface ApprovePartnerParams {
@@ -25,17 +25,13 @@ export function useApprovePartner() {
         setError(null);
 
         try {
-            // Clerk JWT 토큰 가져오기 (Supabase 템플릿 사용)
-            const token = await getToken({ template: 'supabase' });
+            const token = await getToken();
 
             if (!token) {
                 logger.error('[approvePartner] No auth token available');
                 throw new Error('인증 토큰을 가져올 수 없습니다');
             }
 
-            // Edge Function 호출
-            // Note: VITE_SUPABASE_URL assumes strict naming. If previously it was something else, update accordingly.
-            // Usually VITE_SUPABASE_URL is correct for standard setups.
             const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/approve-partner`;
 
             logger.debug('[approvePartner] Token retrieved, sending request to:', functionUrl);
@@ -44,9 +40,8 @@ export function useApprovePartner() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`, // Some Supabase setups expect it here
-                    'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY, // Required for Supabase Gateway
-                    'X-Clerk-Auth': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
                 },
                 body: JSON.stringify(params)
             });

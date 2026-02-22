@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner'; // [Phase 2] Error Handler
 import { supabase, createAuthenticatedClient } from '../../lib/supabaseClient';
-import { useSession } from '@clerk/clerk-react';
+import { useSession } from '../../lib/auth';
 import { Partner } from '../../types';
 
 interface AIConfigurationProps {

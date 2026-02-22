@@ -9,8 +9,8 @@ const supabase = createClient(
     process.env.VITE_SUPABASE_SERVICE_ROLE_KEY!
 );
 
-const naverClientId = process.env.VITE_NAVER_CLIENT_ID!;
-const naverClientSecret = process.env.VITE_NAVER_CLIENT_SECRET!;
+const naverClientId = process.env.NAVER_CLIENT_ID!;
+const naverClientSecret = process.env.NAVER_CLIENT_SECRET!;
 
 async function investigate() {
     // 1. DB에서 서라벌 검색

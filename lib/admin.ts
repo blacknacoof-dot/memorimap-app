@@ -5,7 +5,9 @@ export interface AdminUser {
     clerk_id: string;
     email: string;
     name: string;
+    full_name?: string;
     role: string;
+    avatar_url?: string;
     image_url?: string;
     phone_number?: string;
     created_at?: string;
@@ -23,12 +25,12 @@ const enrichUsersWithPlans = async (users: any[]): Promise<AdminUser[]> => {
         const { data: facilitySubs, error: facilityError } = await supabase
             .from('facilities')
             .select(`
-                owner_user_id,
+                user_id,
                 facility_subscriptions (
                     subscription_plans (name)
                 )
             `)
-            .in('owner_user_id', clerkIds);
+            .in('user_id', clerkIds);
 
         if (facilityError) console.error('[admin.ts] Facility sub fetch error:', facilityError);
 
@@ -44,7 +46,7 @@ const enrichUsersWithPlans = async (users: any[]): Promise<AdminUser[]> => {
             let planName = undefined;
 
             // Facility lookup
-            const fSub = facilitySubs?.find(s => s.owner_user_id === user.clerk_id);
+            const fSub = facilitySubs?.find(s => s.user_id === user.clerk_id);
             // facility_subscriptions is an array when joined
             const subs = fSub?.facility_subscriptions;
             if (Array.isArray(subs) && subs.length > 0 && subs[0].subscription_plans) {
@@ -72,17 +74,18 @@ const enrichUsersWithPlans = async (users: any[]): Promise<AdminUser[]> => {
 
 export const searchUsers = async (query: string): Promise<AdminUser[]> => {
     let queryBuilder = supabase
-        .from('users')
-        .select('id, clerk_id, email, name, role, phone_number, created_at, image_url');
+        .from('profiles')
+        .select('id, clerk_id, email, full_name, role, phone_number, created_at, avatar_url');
 
     if (query) {
-        const sanitized = query.trim().replace(/[%_\\]/g, '\\$&');
-        // Only use id.eq filter if query looks like a UUID
+        // PostgREST .or() 필터 주입 방어: SQL 와일드카드 + PostgREST 구분자(, . ( )) 제거
+        const sanitized = query.trim().replace(/[%_\\]/g, '\\$&').replace(/[,.()"']/g, '');
+        if (!sanitized) return enrichUsersWithPlans([]);
         const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sanitized);
         if (isUUID) {
-            queryBuilder = queryBuilder.or(`email.ilike.%${sanitized}%,name.ilike.%${sanitized}%,id.eq.${sanitized}`);
+            queryBuilder = queryBuilder.or(`email.ilike.%${sanitized}%,full_name.ilike.%${sanitized}%,id.eq.${sanitized}`);
         } else {
-            queryBuilder = queryBuilder.or(`email.ilike.%${sanitized}%,name.ilike.%${sanitized}%,phone_number.ilike.%${sanitized}%`);
+            queryBuilder = queryBuilder.or(`email.ilike.%${sanitized}%,full_name.ilike.%${sanitized}%,phone_number.ilike.%${sanitized}%`);
         }
     }
 
@@ -93,14 +96,14 @@ export const searchUsers = async (query: string): Promise<AdminUser[]> => {
         throw error;
     }
 
-    return enrichUsersWithPlans(data || []);
+    return enrichUsersWithPlans((data || []).map((u: any) => ({ ...u, name: u.full_name || '', image_url: u.avatar_url })));
 };
 
 export const updateUserRole = async (userId: string, newRole: string) => {
     const { error } = await supabase
-        .from('users')
+        .from('profiles')
         .update({ role: newRole })
-        .eq('id', userId);
+        .eq('clerk_id', userId);
 
     if (error) {
         console.error('Error updating user role:', error);
@@ -110,8 +113,8 @@ export const updateUserRole = async (userId: string, newRole: string) => {
 
 export const getAllUsers = async (): Promise<AdminUser[]> => {
     const { data, error } = await supabase
-        .from('users')
-        .select('id, clerk_id, email, name, role, phone_number, created_at, image_url')
+        .from('profiles')
+        .select('id, clerk_id, email, full_name, role, phone_number, created_at, avatar_url')
         .order('created_at', { ascending: false })
         .limit(50);
 
@@ -119,15 +122,15 @@ export const getAllUsers = async (): Promise<AdminUser[]> => {
         console.error('Error fetching users:', error);
         throw error;
     }
-    return data || [];
+    return (data || []).map((u: any) => ({ ...u, name: u.full_name || '', image_url: u.avatar_url }));
 };
 
 export const approveSangjoUser = async (userId: string, clerkId: string, sangjoId: string, role: string, userName: string) => {
-    // 1. Update general user role using Supabase UUID
+    // 1. Update general user role using profile id (clerk_id)
     const { error: roleError } = await supabase
-        .from('users')
+        .from('profiles')
         .update({ role })
-        .eq('id', userId);
+        .eq('clerk_id', clerkId);
 
     if (roleError) {
         console.error('[admin.ts] Role update failed:', roleError);

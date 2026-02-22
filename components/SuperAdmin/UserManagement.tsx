@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAllUsers } from '../../hooks/useUsers';
 import { Search, Shield, User, RefreshCw, UserCheck } from 'lucide-react';
+import { confirmAsync } from '../../src/components/common/ConfirmModal';
 
 export const UserManagement: React.FC = () => {
     const { users, loading, refresh, updateRole } = useAllUsers();
@@ -101,10 +102,13 @@ export const UserManagement: React.FC = () => {
                                             <div className="flex items-center gap-2">
                                                 <select
                                                     value={user.role}
-                                                    onChange={(e) => {
+                                                    onChange={async (e) => {
                                                         const newRole = e.target.value;
-                                                        if (confirm(`${user.email}님의 권한을 ${newRole}(으)로 변경하시겠습니까?`)) {
-                                                            updateRole(user.id, newRole);
+                                                        const el = e.target;
+                                                        if (await confirmAsync(`${user.email}님의 권한을 ${newRole}(으)로 변경하시겠습니까?`)) {
+                                                            await updateRole(user.id, newRole);
+                                                        } else {
+                                                            el.value = user.role;
                                                         }
                                                     }}
                                                     className="px-2 py-1 bg-white border rounded text-xs outline-none focus:ring-1 focus:ring-primary cursor-pointer hover:border-gray-400 transition-colors"

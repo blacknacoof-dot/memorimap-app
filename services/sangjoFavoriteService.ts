@@ -1,4 +1,4 @@
-import { supabase, createAuthenticatedClient, getCurrentAccessToken } from '../lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient';
 import { FuneralCompany } from '../types';
 
 export interface SangjoFavorite {
@@ -9,16 +9,10 @@ export interface SangjoFavorite {
     created_at: string;
 }
 
-/** 인증된 클라이언트 반환 (토큰 있으면 authClient, 없으면 싱글톤) */
-function getClient() {
-    const token = getCurrentAccessToken();
-    return token ? createAuthenticatedClient(token) : supabase;
-}
-
 export const sangjoFavoriteService = {
     async getFavorites(userId: string): Promise<SangjoFavorite[]> {
         try {
-            const { data, error } = await getClient()
+            const { data, error } = await supabase
                 .from('sangjo_favorites')
                 .select('*')
                 .eq('user_id', userId)
@@ -37,7 +31,7 @@ export const sangjoFavoriteService = {
 
     async checkFavorite(userId: string, companyId: string): Promise<boolean> {
         try {
-            const { data, error } = await getClient()
+            const { data, error } = await supabase
                 .from('sangjo_favorites')
                 .select('id')
                 .eq('user_id', userId)
@@ -62,11 +56,11 @@ export const sangjoFavoriteService = {
         company: FuneralCompany
     ): Promise<boolean> {
         try {
-            const client = getClient();
+            
             const isFav = await this.checkFavorite(userId, company.id);
 
             if (isFav) {
-                const { error } = await client
+                const { error } = await supabase
                     .from('sangjo_favorites')
                     .delete()
                     .eq('user_id', userId)
@@ -78,7 +72,7 @@ export const sangjoFavoriteService = {
                 }
                 return false;
             } else {
-                const { error } = await client
+                const { error } = await supabase
                     .from('sangjo_favorites')
                     .insert({
                         user_id: userId,

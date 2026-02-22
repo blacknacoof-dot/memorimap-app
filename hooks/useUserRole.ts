@@ -48,11 +48,24 @@ export function useUserRole({ isSignedIn, userInfo, viewState, setViewState, sho
           } else {
             setRoleError(null);
 
-            // Auto-route based on role
+            // Auto-route based on role + set adminFacilityId for facility admins
             if ((result.role === 'facility_admin' || result.role === 'facility_manager') && viewState === ViewState.MAP) {
               setViewState(ViewState.FACILITY_ADMIN);
+              // facility_admin의 시설 ID 조회
+              try {
+                const { supabase } = await import('../lib/supabaseClient');
+                const { data: facilityData } = await supabase
+                  .from('facilities')
+                  .select('id')
+                  .eq('user_id', userInfo.id)
+                  .limit(1)
+                  .maybeSingle();
+                if (facilityData) {
+                  setAdminFacilityId(facilityData.id);
+                }
+              } catch { /* facility ID lookup failed, non-blocking */ }
             } else if (result.role.startsWith('sangjo_') && viewState === ViewState.MAP) {
-              setViewState(ViewState.FACILITY_ADMIN);
+              setViewState(ViewState.SANGJO_DASHBOARD);
             }
           }
 

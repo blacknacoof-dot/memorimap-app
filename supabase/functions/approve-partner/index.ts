@@ -18,7 +18,7 @@ const getCorsHeaders = (req: Request) => {
     return {
         'Access-Control-Allow-Origin': allowedOrigin,
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-clerk-auth, X-Clerk-Auth',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
         'Access-Control-Allow-Credentials': 'true',
     };
 };
@@ -85,7 +85,7 @@ serve(async (req) => {
     }
 
     try {
-        const authHeader = req.headers.get('x-clerk-auth') || req.headers.get('Authorization')
+        const authHeader = req.headers.get('Authorization')
         if (!authHeader) {
             throw new Error('Missing authorization header')
         }
@@ -97,11 +97,8 @@ serve(async (req) => {
             { auth: { autoRefreshToken: false, persistSession: false } }
         )
 
-
-        // [Security Fix] Verify JWT via Supabase Auth instead of manual decode
+        // Verify JWT via Supabase Auth (native)
         const token = authHeader.replace(/^Bearer\s+/i, '');
-
-        // Create a user-scoped client to verify the token signature
         const supabaseAuth = createClient(
             Deno.env.get('SUPABASE_URL') ?? '',
             Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -112,41 +109,24 @@ serve(async (req) => {
         );
         const { data: { user: verifiedUser }, error: authError } = await supabaseAuth.auth.getUser(token);
 
-        let userEmail: string | undefined;
-        let userId: string;
-
-        if (verifiedUser && !authError) {
-            // Supabase JWT verified
-            userEmail = verifiedUser.email;
-            userId = verifiedUser.id;
-        } else {
-            // Fallback: Clerk JWT — decode but verify via DB lookup
-            const payloadParts = token.split('.');
-            if (payloadParts.length < 2) throw new Error('Invalid Token Format');
-            const payload = JSON.parse(atob(payloadParts[1].replace(/-/g, '+').replace(/_/g, '/')));
-            userEmail = payload.email;
-            userId = payload.sub || '00000000-0000-0000-0000-000000000000';
-
-            if (!userEmail) throw new Error('No email in token');
-
-            // Verify Clerk user exists in profiles table
-            const { data: profile, error: profileErr } = await supabaseAdmin
-                .from('profiles')
-                .select('clerk_id, role')
-                .eq('email', userEmail)
-                .single();
-
-            if (profileErr || !profile) {
-                throw new Error('User not found in profiles');
-            }
+        if (!verifiedUser || authError) {
+            throw new Error('Invalid or expired token');
         }
+
+        const userEmail = verifiedUser.email;
+        const userId = verifiedUser.id;
 
         if (!userEmail) throw new Error('No email in token');
 
-        // [Security] Super Admin Email Check
-        const SUPER_ADMIN_EMAIL = Deno.env.get('SUPER_ADMIN_EMAIL');
-        if (!SUPER_ADMIN_EMAIL) throw new Error('SUPER_ADMIN_EMAIL not configured');
-        if (userEmail !== SUPER_ADMIN_EMAIL) {
+        // [Security] Super Admin Role Check via DB (profiles 테이블 기준)
+        const { data: adminCheck, error: adminCheckError } = await supabaseAdmin
+            .from('profiles')
+            .select('role')
+            .eq('clerk_id', userId)
+            .eq('role', 'super_admin')
+            .maybeSingle();
+
+        if (adminCheckError || !adminCheck) {
             return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 403, headers: getCorsHeaders(req) })
         }
 
@@ -183,7 +163,6 @@ serve(async (req) => {
 
         if (action === 'reject') {
             // [Fix] Update ALL pending inquiries for this company to 'rejected'
-            // This solves the issue where duplicate applications stay in the list
             const { error: updateError } = await supabaseAdmin
                 .from('partner_inquiries')
                 .update({
@@ -195,7 +174,7 @@ serve(async (req) => {
 
             if (updateError) throw updateError
 
-            // [Fix] Direct log insert instead of crashing RPC
+            // Direct log insert
             await supabaseAdmin.from('audit_logs').insert([{
                 actor_id: user.id || 'SYSTEM',
                 actor_email: user.email,
@@ -255,8 +234,7 @@ serve(async (req) => {
         if (rpcError) throw rpcError
         if (rpcResult && rpcResult.success === false) throw new Error(rpcResult.error || 'Transaction failed')
 
-        // [Fix] Automatically archive/reject OTHER pending inquiries for the same company
-        // This ensures the pending list stays clean after an approval
+        // Automatically archive/reject OTHER pending inquiries for the same company
         await supabaseAdmin
             .from('partner_inquiries')
             .update({
@@ -308,9 +286,6 @@ serve(async (req) => {
 
     } catch (error: any) {
         console.error('Edge Function Error:', error);
-        // We can't log to DB here easily if supabaseAdmin was created inside try block, 
-        // but we can try to re-create it or just rely on console logs for fatal setup errors.
-        // If we want accurate DB logging for errors, we should broaden the scope of supabaseAdmin or create a fresh client.
 
         try {
             const supabaseErrorClient = createClient(
@@ -323,6 +298,6 @@ serve(async (req) => {
             console.error('Failed to log error to DB', logErr);
         }
 
-        return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } })
     }
 })

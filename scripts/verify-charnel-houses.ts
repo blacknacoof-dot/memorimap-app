@@ -15,8 +15,8 @@ const supabase = createClient(
 );
 
 // API Config
-const NAVER_CLIENT_ID = process.env.VITE_NAVER_CLIENT_ID || '';
-const NAVER_CLIENT_SECRET = process.env.VITE_NAVER_CLIENT_SECRET || '';
+const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID || '';
+const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET || '';
 const KAKAO_API_KEY = process.env.VITE_KAKAO_REST_API_KEY || '';
 
 // CSV Parsing

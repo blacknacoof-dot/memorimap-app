@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabaseClient';
 
 import { SangjoConsultationModal } from './Consultation/SangjoConsultationModal';
 import { sangjoFavoriteService } from '../services/sangjoFavoriteService';
-import { useUser } from '@clerk/clerk-react';
+import { useUser } from '../lib/auth';
 import { useSangjoFavoriteStore } from '../stores/useSangjoFavoriteStore';
 
 // 기본 후기 생성 (DB 리뷰가 없는 상조 회사용)
@@ -337,7 +337,7 @@ export const FuneralCompanyView: React.FC<Props> = ({
     };
 
     const filteredCompanies = companies.filter(c =>
-        (c.name.includes(searchQuery) || c.description.includes(searchQuery)) &&
+        (c.name.includes(searchQuery) || (c.description || '').includes(searchQuery)) &&
         !c.name.includes('새부산상조') // [FIX] Exclude Sae Busan Sangjo as requested
     );
 

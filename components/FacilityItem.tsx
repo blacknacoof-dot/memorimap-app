@@ -37,7 +37,7 @@ export const FacilityItem = React.memo(({ facility, onClick, isCompared, onToggl
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                         <div className="text-xs text-primary font-bold shrink-0">
-                            {facility.category}
+                            {facility.type || facility.category}
                         </div>
                         {facility.subscription?.plan?.name_en === 'premium' && (
                             <div className="bg-gradient-to-r from-gray-300 to-gray-400 text-white p-0.5 rounded-full shadow-sm" title="프리미엄 실버">
@@ -69,7 +69,7 @@ export const FacilityItem = React.memo(({ facility, onClick, isCompared, onToggl
                             e.stopPropagation();
                             onToggleCompare(facility);
                         }}
-                        className={`p-2 rounded-full transition-colors border shadow-sm ${isCompared
+                        className={`p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full transition-colors border shadow-sm ${isCompared
                             ? 'bg-primary text-white border-primary'
                             : 'bg-white text-gray-400 border-gray-200 hover:border-primary hover:text-primary'
                             }`}

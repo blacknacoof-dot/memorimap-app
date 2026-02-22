@@ -4,8 +4,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { MemorialSpaceSchema, MemorialSpaceFormValues } from '../../lib/schemas';
 import { MemorialSpace } from '../../types/db';
 
+// 상조는 시설 편집 폼 대상이 아님 → 물리적 시설 카테고리만 허용
+const toPhysicalCategory = (cat: string | undefined): MemorialSpaceFormValues['category'] => {
+    if (!cat || cat === 'sangjo' || cat === '상조') return 'funeral_home';
+    return cat as MemorialSpaceFormValues['category'];
+};
+
 interface Props {
-    initialData?: MemorialSpace; // Mock Data injection
+    initialData?: MemorialSpace;
     onSubmit: (data: MemorialSpaceFormValues) => void;
     onCancel: () => void;
 }
@@ -17,8 +23,8 @@ export const FacilityEditForm: React.FC<Props> = ({ initialData, onSubmit, onCan
             id: initialData?.id,
             name: initialData?.name || '',
             address: initialData?.address || '',
-            category: initialData?.category || '봉안시설',
-            is_verified: initialData?.is_verified ?? false,
+            category: toPhysicalCategory(initialData?.category),
+            verified: initialData?.verified ?? false,
             ai_context: initialData?.ai_context || undefined,
             ai_features: initialData?.ai_features || []
         }
@@ -30,8 +36,8 @@ export const FacilityEditForm: React.FC<Props> = ({ initialData, onSubmit, onCan
                 id: initialData.id,
                 name: initialData.name,
                 address: initialData.address,
-                category: initialData.category,
-                is_verified: initialData.is_verified,
+                category: toPhysicalCategory(initialData.category),
+                verified: initialData.verified,
                 ai_context: initialData.ai_context || undefined,
                 ai_features: initialData.ai_features || []
             });
@@ -60,12 +66,12 @@ export const FacilityEditForm: React.FC<Props> = ({ initialData, onSubmit, onCan
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">시설 유형</label>
                         <select {...register('category')} className="w-full p-3 border rounded-lg focus:ring-2 outline-none bg-white">
-                            <option value="장례식장">장례식장</option>
-                            <option value="봉안시설">봉안시설</option>
-                            <option value="자연장">수목장/자연장</option>
-                            <option value="공원묘지">복합 추모공원</option>
-                            <option value="동물장례">반려동물 장례식장</option>
-                            <option value="상조">상조</option>
+                            <option value="funeral_home">장례식장</option>
+                            <option value="columbarium">봉안시설</option>
+                            <option value="natural_burial">수목장/자연장</option>
+                            <option value="cemetery">복합 추모공원</option>
+                            <option value="pet_funeral">반려동물 장례식장</option>
+                            <option value="sea_burial">해양장</option>
                         </select>
                     </div>
                 </div>

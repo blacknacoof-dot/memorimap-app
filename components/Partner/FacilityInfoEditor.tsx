@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase, createAuthenticatedClient } from '../../lib/supabaseClient';
-import { useSession } from '@clerk/clerk-react';
+import { useSession } from '../../lib/auth';
 
 interface FacilityInfoEditorProps {
     facilityId: string;

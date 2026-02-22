@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase, createAuthenticatedClient } from '@/lib/supabaseClient';
+import { useSession } from '@/lib/auth';
 import { PartnerInquiry } from '@/types/db';
 
 interface UsePartnerInquiriesOptions {
@@ -10,14 +11,21 @@ interface UsePartnerInquiriesOptions {
 
 export function usePartnerInquiries(options: UsePartnerInquiriesOptions = {}) {
     const { status, page = 1, pageSize = 20 } = options;
+    const { session } = useSession();
 
     return useQuery({
-        queryKey: ['partner-inquiries', status, page],
+        queryKey: ['partner-inquiries', status, page, !!session],
         queryFn: async () => {
-            let query = supabase
+            let client = supabase;
+            try {
+                const token = await session?.getToken?.({ template: 'supabase' });
+                if (token) client = createAuthenticatedClient(token);
+            } catch { /* fallback */ }
+
+            let query = client
                 .from('partner_inquiries')
                 .select('*', { count: 'exact' })
-                .order('created_at', { ascending: false }); // Changed from submitted_at to created_at based on typical schema
+                .order('created_at', { ascending: false });
 
             if (status) {
                 query = query.eq('status', status);
@@ -46,10 +54,11 @@ export function usePartnerInquiries(options: UsePartnerInquiriesOptions = {}) {
 
             return {
                 data: uniqueData,
-                totalCount: uniqueData.length, // Adjust count to reflect unique items
+                totalCount: uniqueData.length,
                 totalPages: Math.ceil(uniqueData.length / pageSize),
                 currentPage: page
             };
-        }
+        },
+        enabled: !!session,
     });
 }

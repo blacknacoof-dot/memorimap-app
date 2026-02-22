@@ -6,8 +6,9 @@ import { Facility, ViewState } from './types';
 import { Consultation } from './types/consultation';
 import { AlertCircle, X } from 'lucide-react';
 import { Toaster } from 'sonner';
+import { ConfirmModal } from './src/components/common/ConfirmModal';
 import { useUser, useClerk, useSession } from './lib/auth';
-import { useAuthSync } from './lib/useAuthSync';
+import { useProfileSync } from './hooks/useProfileSync';
 import { useLocation } from './hooks/useLocation';
 import { useFilterStore } from './stores/useFilterStore';
 import { useToast } from './hooks/useToast';
@@ -29,7 +30,7 @@ import { BottomNav } from './components/BottomNav';
 import { ModalContainer } from './components/ModalContainer';
 
 const App: React.FC = () => {
-  useAuthSync();
+  useProfileSync();
 
   const mapRef = React.useRef<MapRef>(null);
   const { location: userLocation, getCurrentPosition } = useLocation();
@@ -107,9 +108,6 @@ const App: React.FC = () => {
 
   useEffect(() => { getCurrentPosition(); }, [getCurrentPosition]);
 
-  useEffect(() => {
-    if (session) console.log('✅ [Session Sync] Clerk session active (handled by useAuthSync)');
-  }, [session, isSignedIn]);
 
   // Route Handling
   useEffect(() => {
@@ -171,27 +169,30 @@ const App: React.FC = () => {
     setViewState(ViewState.MAP);
   };
 
-  // ADMIN - full page (no layout chrome)
-  if (viewState === ViewState.ADMIN) {
+  // ADMIN / SUPER_ADMIN - full page (no layout chrome)
+  if (viewState === ViewState.ADMIN || viewState === ViewState.SUPER_ADMIN) {
     return (
-      <Suspense fallback={<LoadingFallback />}>
-        <ContentRouter
-          viewState={viewState} setViewState={setViewState}
-          mapRef={mapRef} filteredFacilities={filteredFacilities}
-          handleFacilitySelect={handleFacilitySelect} handleMapBoundsChange={handleMapBoundsChange}
-          targetMapCenter={targetMapCenter} targetMapZoom={targetMapZoom} userLocation={userLocation}
-          compareList={compareList} setShowComparison={setShowComparison} toggleCompare={toggleCompare}
-          sangjoCompareList={sangjoCompareList} toggleSangjoCompare={toggleSangjoCompare} setShowSangjoComparison={setShowSangjoComparison}
-          facilities={facilities} isDataLoading={isDataLoading} showPromo={showPromo}
-          isSignedIn={isSignedIn} userInfo={userInfo} userRole={userRole} isLoadingRole={isLoadingRole}
-          reservations={reservations} handleUpdateReservation={handleUpdateReservation}
-          handleReviewDeleted={handleReviewDeleted} handleCompanySelect={handleCompanySelect}
-          handleLoginClick={handleLoginClick} showToast={showToast} setShowLoginModal={setShowLoginModal}
-          consultingFacility={consultingFacility} setConsultingFacility={setConsultingFacility}
-          selectedConsultation={selectedConsultation} setSelectedConsultation={setSelectedConsultation}
-          adminFacilityId={adminFacilityId} setAdminFacilityId={setAdminFacilityId} adminSangjoId={adminSangjoId}
-        />
-      </Suspense>
+      <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <Suspense fallback={<LoadingFallback />}>
+          <ContentRouter
+            viewState={viewState} setViewState={setViewState}
+            mapRef={mapRef} filteredFacilities={filteredFacilities}
+            handleFacilitySelect={handleFacilitySelect} handleMapBoundsChange={handleMapBoundsChange}
+            targetMapCenter={targetMapCenter} targetMapZoom={targetMapZoom} userLocation={userLocation}
+            compareList={compareList} setShowComparison={setShowComparison} toggleCompare={toggleCompare}
+            sangjoCompareList={sangjoCompareList} toggleSangjoCompare={toggleSangjoCompare} setShowSangjoComparison={setShowSangjoComparison}
+            facilities={facilities} isDataLoading={isDataLoading} showPromo={showPromo}
+            isSignedIn={isSignedIn} userInfo={userInfo} userRole={userRole} isLoadingRole={isLoadingRole}
+            reservations={reservations} handleUpdateReservation={handleUpdateReservation}
+            handleReviewDeleted={handleReviewDeleted} handleCompanySelect={handleCompanySelect}
+            handleLoginClick={handleLoginClick} showToast={showToast} setShowLoginModal={setShowLoginModal}
+            consultingFacility={consultingFacility} setConsultingFacility={setConsultingFacility}
+            selectedConsultation={selectedConsultation} setSelectedConsultation={setSelectedConsultation}
+            adminFacilityId={adminFacilityId} setAdminFacilityId={setAdminFacilityId} adminSangjoId={adminSangjoId}
+          />
+        </Suspense>
+        <Toaster richColors position="top-center" closeButton />
+      </HashRouter>
     );
   }
 
@@ -214,7 +215,7 @@ const App: React.FC = () => {
   return (
     <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ErrorBoundary>
-        <div className="h-full w-full relative bg-gray-100 flex justify-center overflow-hidden">
+        <div className="app-mobile-shell h-full w-full relative bg-gray-100 flex justify-center overflow-hidden">
           <div className="w-full h-full md:max-w-md bg-white relative shadow-2xl flex flex-col">
 
             {/* Share Route */}
@@ -320,6 +321,7 @@ const App: React.FC = () => {
 
           {/* [Removed] Duplicate toast rendering — single toast already rendered inside layout */}
         </div>
+      <ConfirmModal />
       </ErrorBoundary>
     </HashRouter>
   );

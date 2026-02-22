@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useUser } from '@clerk/clerk-react';
+import { useUser } from '../lib/auth';
 import { toast } from 'sonner';
 import * as api from '@/lib/api/facilityAdmin';
 import { MemorialSpace, Reservation } from '@/types/db';

@@ -25,17 +25,26 @@ export interface FacilityManager {
 // ============================================================
 
 /**
- * Standardized facility category codes (English)
- * These match the database enum values
+ * 물리적 시설 타입 (상조 제외)
  */
-export type StandardFacilityCategoryType =
+export type PhysicalFacilityType =
     | 'funeral_home'    // 장례식장
     | 'columbarium'     // 봉안시설
     | 'natural_burial'  // 자연장
     | 'cemetery'        // 공원묘지
     | 'pet_funeral'     // 동물장례
-    | 'sea_burial'      // 해양장
-    | 'sangjo';         // 상조
+    | 'sea_burial';     // 해양장
+
+/**
+ * 상조 서비스 타입 (물리적 시설이 아닌 서비스 업체)
+ */
+export type SangjoServiceType = 'sangjo';
+
+/**
+ * 전체 표준 카테고리 (시설 + 상조)
+ * DB/UI 필터 호환용
+ */
+export type StandardFacilityCategoryType = PhysicalFacilityType | SangjoServiceType;
 
 /**
  * Standardized facility category codes
@@ -282,7 +291,8 @@ export function isValidCategory(value: string): value is FacilityCategoryType {
         'natural_burial',
         'cemetery',
         'pet_funeral',
-        'sea_burial'
+        'sea_burial',
+        'sangjo'
     ].includes(value);
 }
 

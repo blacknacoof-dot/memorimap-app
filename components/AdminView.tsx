@@ -31,13 +31,13 @@ export const AdminView: React.FC<Props> = ({ facilities, reservations, onUpdateR
   };
 
   const filteredReservations = reservations.filter(r =>
-    r.visitor_name.includes(searchTerm) ||
+    (r.visitor_name || '').includes(searchTerm) ||
     (r.facility_name || '').includes(searchTerm) ||
     (r.id || '').includes(searchTerm)
   );
 
   return (
-    <div className="bg-gray-100 min-h-screen flex flex-col text-gray-800 absolute inset-0 z-50 overflow-hidden">
+    <div className="bg-gray-100 flex flex-col text-gray-800 absolute inset-0 z-50 overflow-hidden">
       {/* Admin Header */}
       <div className="bg-slate-900 text-white p-4 flex items-center justify-between shadow-md shrink-0">
         <div className="flex items-center gap-3">
@@ -54,7 +54,7 @@ export const AdminView: React.FC<Props> = ({ facilities, reservations, onUpdateR
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Nav (Desktop style even on mobile for admin) */}
-        <div className="w-16 md:w-64 bg-white border-r flex flex-col shrink-0">
+        <div className="w-12 md:w-64 bg-white border-r flex flex-col shrink-0">
           {[
             { id: 'dashboard', label: '대시보드', icon: PieChart },
             { id: 'reservations', label: '예약 관리', icon: Calendar },
@@ -160,7 +160,7 @@ export const AdminView: React.FC<Props> = ({ facilities, reservations, onUpdateR
                       <tr>
                         <th className="p-4 font-medium">예약번호/일시</th>
                         <th className="p-4 font-medium">시설/방문목적</th>
-                        <th className="p-4 font-medium">방문자</th>
+                        <th className="p-4 font-medium hidden md:table-cell">방문자</th>
                         <th className="p-4 font-medium">상태</th>
                         <th className="p-4 font-medium text-right">관리</th>
                       </tr>
@@ -176,7 +176,7 @@ export const AdminView: React.FC<Props> = ({ facilities, reservations, onUpdateR
                             <div className="font-medium text-gray-800">{r.facility_name}</div>
                             <span className="inline-block bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.5 rounded mt-1">{r.purpose}</span>
                           </td>
-                          <td className="p-4">
+                          <td className="p-4 hidden md:table-cell">
                             <div>{r.visitor_name}</div>
                             <div className="text-xs text-gray-500">{r.visitor_count}명</div>
                           </td>
@@ -188,15 +188,15 @@ export const AdminView: React.FC<Props> = ({ facilities, reservations, onUpdateR
                               <div className="flex justify-end gap-2">
                                 <button
                                   onClick={() => r.id && onUpdateReservationStatus(r.id, 'confirmed')}
-                                  className="p-1.5 bg-green-50 text-green-600 rounded hover:bg-green-100 border border-green-200" title="승인"
+                                  className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center bg-green-50 text-green-600 rounded-lg hover:bg-green-100 border border-green-200" title="승인"
                                 >
-                                  <Check size={16} />
+                                  <Check size={18} />
                                 </button>
                                 <button
                                   onClick={() => r.id && onUpdateReservationStatus(r.id, 'cancelled')}
-                                  className="p-1.5 bg-red-50 text-red-600 rounded hover:bg-red-100 border border-red-200" title="거절"
+                                  className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center bg-red-50 text-red-600 rounded-lg hover:bg-red-100 border border-red-200" title="거절"
                                 >
-                                  <X size={16} />
+                                  <X size={18} />
                                 </button>
                               </div>
                             )}

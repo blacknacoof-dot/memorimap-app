@@ -7,6 +7,8 @@ html,
 body,
 #root {
   height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 /* STRICT RULE: Cursor MUST ALWAYS be default arrow */
@@ -68,37 +70,8 @@ body {
 }
 
 #root {
-  /* Safe Area �е� ���� */
-  padding-top: var(--safe-area-inset-top);
-  padding-bottom: var(--safe-area-inset-bottom);
-  padding-left: var(--safe-area-inset-left);
-  padding-right: var(--safe-area-inset-right);
-  
   min-height: 100vh;
   min-height: -webkit-fill-available;
-}
-
-/* �ϴ� ���� �׺���̼� (Safe Area ���� ����) */
-.bottom-nav-fixed {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding-bottom: calc(0.75rem + var(--safe-area-inset-bottom));
-  background: white;
-  border-top: 1px solid #e5e7eb;
-}
-
-/* ��� ���� ��� (Safe Area ���� ����) */
-.top-header-fixed {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  padding-top: calc(0.5rem + var(--safe-area-inset-top));
-  background: white;
-  border-bottom: 1px solid #e5e7eb;
-  z-index: 50;
 }
 
 /* Safe Area Utility Classes */
@@ -106,10 +79,4 @@ body {
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
 }
 
-/* Fullscreen Modal (Safe Area) */
-.fullscreen-modal {
-  position: fixed;
-  inset: 0;
-  padding: var(--safe-area-inset-top) var(--safe-area-inset-right) var(--safe-area-inset-bottom) var(--safe-area-inset-left);
-}
 

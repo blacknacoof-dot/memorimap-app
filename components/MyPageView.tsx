@@ -8,9 +8,9 @@ import { EditProfileModal } from './EditProfileModal';
 import { LegalModal } from './LegalModal';
 import { Info, Heart, Star, ChevronDown } from 'lucide-react';
 import { favoriteService, Favorite } from '../services/favoriteService';
+import { confirmAsync } from '../src/components/common/ConfirmModal';
 import { sangjoFavoriteService, SangjoFavorite } from '../services/sangjoFavoriteService';
-import { FUNERAL_COMPANIES, FACILITIES } from '../constants';
-import { useNavigate } from 'react-router-dom';
+import { FUNERAL_COMPANIES } from '../constants';
 import { toast } from 'sonner';
 import { MyConsultations } from './dashboard/MyConsultations';
 import { supabase, createAuthenticatedClient } from '../lib/supabaseClient';
@@ -54,7 +54,6 @@ export const MyPageView: React.FC<Props> = ({
     const [myFavorites, setMyFavorites] = useState<Favorite[]>([]);
     const [isLoadingFavorites, setIsLoadingFavorites] = useState(false);
     const [extraFacilities, setExtraFacilities] = useState<Map<string, Facility>>(new Map());
-    const [myConsultations, setMyConsultations] = useState<any[]>([]);
     const [sangjoFavorites, setSangjoFavorites] = useState<SangjoFavorite[]>([]);
     const [isLoadingSangjoFavorites, setIsLoadingSangjoFavorites] = useState(false);
     const [consultationCount, setConsultationCount] = useState(0);
@@ -97,7 +96,8 @@ export const MyPageView: React.FC<Props> = ({
         if (!user) return;
         setIsLoadingReservations(true);
         try {
-            const data = await getMyReservations(user.id);
+            const client = await getAuthClient();
+            const data = await getMyReservations(user.id, client);
             setMyReservations(data as unknown as Reservation[]);
         } catch (err) {
             console.error(err);
@@ -123,7 +123,7 @@ export const MyPageView: React.FC<Props> = ({
             // Always fetch facility details from DB for all favorites
             const facilityIds = data.map(fav => String(fav.facility_id)).filter(Boolean);
             if (facilityIds.length > 0) {
-                const { data: facData } = await supabase
+                const { data: facData } = await client
                     .from('facilities')
                     .select('*')
                     .in('id', facilityIds);
@@ -161,7 +161,7 @@ export const MyPageView: React.FC<Props> = ({
 
     const handleRemoveFavorite = async (facilityId: string) => {
         if (!user) return;
-        if (!confirm('즐겨찾기를 해제하시겠습니까?')) return;
+        if (!await confirmAsync('즐겨찾기를 해제하시겠습니까?')) return;
         try {
             await favoriteService.toggleFavorite(user.id, facilityId);
             setMyFavorites(prev => prev.filter(f => f.facility_id !== facilityId));
@@ -206,7 +206,7 @@ export const MyPageView: React.FC<Props> = ({
 
     const handleRemoveSangjoFavorite = async (favId: string, companyId: string) => {
         if (!user) return;
-        if (!confirm('즐겨찾기를 해제하시겠습니까?')) return;
+        if (!await confirmAsync('즐겨찾기를 해제하시겠습니까?')) return;
         try {
             const client = await getAuthClient();
             const { error } = await client
@@ -225,10 +225,11 @@ export const MyPageView: React.FC<Props> = ({
     };
 
     const handleCancelReservation = async (reservationId: string) => {
-        if (!confirm('정말로 예약을 취소하시겠습니까?')) return;
+        if (!await confirmAsync('정말로 예약을 취소하시겠습니까?')) return;
 
         try {
-            await cancelReservation(reservationId);
+            const client = await getAuthClient();
+            await cancelReservation(reservationId, client);
             setMyReservations(prev => prev.map(r =>
                 r.id === reservationId ? { ...r, status: 'cancelled' as const } : r
             ));
@@ -295,10 +296,10 @@ export const MyPageView: React.FC<Props> = ({
                         <h2 className="font-bold text-xl">{user.name || '이름 없음'}님</h2>
                         <button
                             onClick={() => setShowEditProfile(true)}
-                            className="text-gray-400 hover:text-primary transition-colors"
+                            className="text-gray-400 hover:text-primary transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                             title="프로필 수정"
                         >
-                            <Settings2 size={16} />
+                            <Settings2 size={18} />
                         </button>
                     </div>
                     <p className="text-sm text-gray-500">{user.email}</p>
@@ -323,7 +324,7 @@ export const MyPageView: React.FC<Props> = ({
                 )}
                 {(userRole === 'sangjo_hq_admin' || userRole === 'sangjo_branch_admin') && onNavigate && (
                     <button
-                        onClick={() => onNavigate(ViewState.FACILITY_ADMIN)}
+                        onClick={() => onNavigate(ViewState.SANGJO_DASHBOARD)}
                         className="ml-auto bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-md hover:bg-indigo-600 transition-colors whitespace-nowrap"
                     >
                         상조 대시보드
@@ -372,7 +373,7 @@ export const MyPageView: React.FC<Props> = ({
             <div className="flex gap-1.5 mb-4 overflow-x-auto no-scrollbar">
                 <button
                     onClick={() => setActiveTab('consultations')}
-                    className={`min-w-0 py-2 px-2.5 rounded-lg font-medium transition-colors flex items-center justify-center gap-1 text-xs sm:text-sm ${activeTab === 'consultations'
+                    className={`min-w-0 py-2.5 px-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-1 text-xs sm:text-sm min-h-[44px] ${activeTab === 'consultations'
                         ? 'bg-primary text-white'
                         : 'bg-white text-gray-600 hover:bg-gray-50'
                         }`}
@@ -383,7 +384,7 @@ export const MyPageView: React.FC<Props> = ({
                 </button>
                 <button
                     onClick={() => setActiveTab('pending')}
-                    className={`min-w-0 py-2 px-2.5 rounded-lg font-medium transition-colors flex items-center justify-center gap-1 text-xs sm:text-sm ${activeTab === 'pending'
+                    className={`min-w-0 py-2.5 px-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-1 text-xs sm:text-sm min-h-[44px] ${activeTab === 'pending'
                         ? 'bg-primary text-white'
                         : 'bg-white text-gray-600 hover:bg-gray-50'
                         }`}
@@ -393,7 +394,7 @@ export const MyPageView: React.FC<Props> = ({
                 </button>
                 <button
                     onClick={() => setActiveTab('confirmed')}
-                    className={`min-w-0 py-2 px-2.5 rounded-lg font-medium transition-colors flex items-center justify-center gap-1 text-xs sm:text-sm ${activeTab === 'confirmed'
+                    className={`min-w-0 py-2.5 px-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-1 text-xs sm:text-sm min-h-[44px] ${activeTab === 'confirmed'
                         ? 'bg-primary text-white'
                         : 'bg-white text-gray-600 hover:bg-gray-50'
                         }`}
@@ -403,7 +404,7 @@ export const MyPageView: React.FC<Props> = ({
                 </button>
                 <button
                     onClick={() => setActiveTab('cancelled')}
-                    className={`min-w-0 py-2 px-2.5 rounded-lg font-medium transition-colors flex items-center justify-center gap-1 text-xs sm:text-sm ${activeTab === 'cancelled'
+                    className={`min-w-0 py-2.5 px-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-1 text-xs sm:text-sm min-h-[44px] ${activeTab === 'cancelled'
                         ? 'bg-primary text-white'
                         : 'bg-white text-gray-600 hover:bg-gray-50'
                         }`}
@@ -427,12 +428,8 @@ export const MyPageView: React.FC<Props> = ({
                                     return;
                                 }
                             }
-                            // 시설 매칭 실패 시 navigate fallback
-                            if (onNavigate) {
-                                onNavigate({ view: 'facility', facilityId: consultation.facility_id });
-                            } else {
-                                toast.info('상담 이어하기: 해당 시설 페이지로 이동합니다.');
-                            }
+                            // 시설 매칭 실패 시 toast 안내
+                            toast.info('해당 시설을 찾을 수 없습니다. 지도에서 직접 검색해주세요.');
                         }}
                     />
                 ) : isLoadingReservations ? (
@@ -531,7 +528,7 @@ export const MyPageView: React.FC<Props> = ({
                                                             e.stopPropagation();
                                                             handleRemoveFavorite(facility!.id);
                                                         }}
-                                                        className="text-red-500 hover:bg-red-50 p-1 rounded-full absolute top-3 right-3 z-10"
+                                                        className="text-red-500 hover:bg-red-50 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full absolute top-1 right-1 z-10"
                                                         title="즐겨찾기 해제"
                                                     >
                                                         <Heart size={18} fill="currentColor" />
@@ -600,7 +597,7 @@ export const MyPageView: React.FC<Props> = ({
                                                                 e.stopPropagation();
                                                                 handleRemoveSangjoFavorite(fav.id, company.id);
                                                             }}
-                                                            className="text-red-500 hover:bg-red-50 p-1 rounded-full absolute top-3 right-3 z-10"
+                                                            className="text-red-500 hover:bg-red-50 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full absolute top-1 right-1 z-10"
                                                             title="즐겨찾기 해제"
                                                         >
                                                             <Heart size={18} fill="currentColor" />
@@ -650,7 +647,7 @@ export const MyPageView: React.FC<Props> = ({
                     <span>개인정보 처리방침 및 오픈소스 라이선스</span>
                 </button>
                 <div className="flex flex-col gap-1 mt-4 px-2 text-xs text-gray-400">
-                    <p>© 2024 (주)아톰케어</p>
+                    <p>© {new Date().getFullYear()} (주)아톰케어</p>
                     <p>Version 1.0.0</p>
                 </div>
             </div>
@@ -660,7 +657,15 @@ export const MyPageView: React.FC<Props> = ({
                 selectedReservation && (
                     <ReservationDetailModal
                         reservation={selectedReservation}
-                        facility={facilities.find(f => f.id === selectedReservation.facility_id)}
+                        facility={facilities.find(f => f.id === selectedReservation.facility_id) || {
+                          id: selectedReservation.facility_id,
+                          name: selectedReservation.facility_name || '시설 정보 없음',
+                          category: '',
+                          type: '',
+                          address: '',
+                          lat: 0,
+                          lng: 0,
+                        } as any}
                         onClose={() => setSelectedReservation(null)}
                         onCancel={(selectedReservation.status === 'pending' || selectedReservation.status === 'urgent') ? () => selectedReservation.id && handleCancelReservation(selectedReservation.id) : undefined}
                     />

@@ -10,8 +10,8 @@ export const fetchMyFacility = async (userId: string, authClient?: SupabaseClien
     const client = authClient || supabase;
     const { data, error } = await client
         .from('facilities')
-        .select('*, facilities_id')
-        .eq('owner_user_id', userId)
+        .select('*')
+        .eq('user_id', userId)
         .single();
 
     if (error && error.code !== 'PGRST116') {
@@ -50,7 +50,7 @@ export const updateReservationStatus = async (
     const client = authClient || supabase;
     const updatePayload: any = { status };
     if (rejectionReason) {
-        updatePayload.rejection_reason = rejectionReason;
+        updatePayload.message = rejectionReason;
     }
 
     const { data, error } = await client

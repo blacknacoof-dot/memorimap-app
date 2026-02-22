@@ -3,8 +3,13 @@
  * Phase 4-2: facilities, selectedFacility, fetchFacilities, filteredFacilities, fetchFacilityDetails, handleFacilitySelect
  */
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import L from 'leaflet';
 import { Facility, ViewState } from '../types';
+
+/** Leaflet-compatible bounds interface (Leaflet 라이브러리 제거 후 대체) */
+interface LatLngBounds {
+  getSouthWest(): { lat: number; lng: number };
+  getNorthEast(): { lat: number; lng: number };
+}
 import { FACILITIES } from '../constants';
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 import { normalizeType, getCategoryDb, getCategoryLabel, selectFacilityImage, formatPriceRange } from '../utils/facilityNormalizer';
@@ -21,7 +26,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
   const [facilities, setFacilities] = useState<Facility[]>(FACILITIES);
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(false);
-  const [currentBounds, setCurrentBounds] = useState<L.LatLngBounds | null>(null);
+  const [currentBounds, setCurrentBounds] = useState<LatLngBounds | null>(null);
 
   const { searchQuery, selectedCategories } = useFilterStore();
 
@@ -35,7 +40,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
         const { data, error } = await supabase
           .from('facilities')
           .select('*')
-          .eq('status', 'active');
+          .eq('verified', true);
 
         if (error) throw error;
 
@@ -77,13 +82,13 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
               isDetailLoaded: false,
               isVerified: true,
               dataSource: 'db',
-              priceInfo: item.price_info || null,
-              products: item.price_info?.products || []
+              priceInfo: null,
+              products: item.packages || []
             };
           });
           setFacilities(mappedFacilities);
         } else {
-          console.log("Supabase DB is empty or RPC error");
+          // DB empty or RPC error
         }
       } catch (err: any) {
         console.error("Failed to fetch facilities:", err);
@@ -104,12 +109,9 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
     if (viewState === ViewState.MAP && currentBounds) {
       result = result.filter(f => {
         if (f.lat && f.lng) {
-          try {
-            const latLng = L.latLng(f.lat, f.lng);
-            return currentBounds.contains(latLng);
-          } catch (e) {
-            return true;
-          }
+          const sw = currentBounds.getSouthWest();
+          const ne = currentBounds.getNorthEast();
+          return f.lat >= sw.lat && f.lat <= ne.lat && f.lng >= sw.lng && f.lng <= ne.lng;
         }
         return false;
       });
@@ -118,12 +120,12 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
     // 2. Exclude sangjo from general list
     const sangjoSelected = selectedCategories.includes('sangjo' as any);
     if (!sangjoSelected) {
-      result = result.filter(f => f.type !== 'sangjo' && f.type !== '상조' && f.category !== 'sangjo' && f.category !== '상조');
+      result = result.filter(f => f.type !== 'sangjo' && f.type !== '상조');
     }
 
     // 3. Filter by Category
     if (selectedCategories.length > 0) {
-      result = result.filter(f => selectedCategories.includes(f.category as any) || selectedCategories.includes(f.type as any));
+      result = result.filter(f => selectedCategories.includes(f.category as any));
     }
 
     // 4. Filter by Search Query
@@ -174,7 +176,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
 
         const resolvedCategory = data.type || data.category || 'charnel';
         const type = normalizeType(resolvedCategory, data.name || '');
-        const mappedCategory = getCategoryLabel(type);
+        const mappedCategory = getCategoryDb(type);
 
         const selectedImage = selectFacilityImage(
           data.images || [], data.image_url || '', type, String(data.id || ''), true
@@ -201,10 +203,10 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
           reviews: reviews.length > 0 ? reviews : [],
           naverBookingUrl: data.naver_booking_url,
           isDetailLoaded: true,
-          isVerified: data.is_verified || false,
+          isVerified: data.verified || false,
           dataSource: 'db',
-          priceInfo: data.price_info || null,
-          products: data.price_info?.products || [],
+          priceInfo: null,
+          products: data.packages || [],
           aiContext: data.ai_context || '',
           subscription: subscription || undefined
         };

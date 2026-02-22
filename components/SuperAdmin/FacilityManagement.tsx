@@ -117,7 +117,7 @@ export function FacilityManagement({ initialSearch, onClearSearch }: { initialSe
                                     </div>
                                 </div>
                                 <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded border shrink-0 ml-2">
-                                    {f.category || f.type || '기타'}
+                                    {f.type || f.category || '기타'}
                                 </span>
                             </div>
 

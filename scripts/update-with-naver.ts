@@ -10,8 +10,8 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL || '';
 // ... existing code ...
 
 const supabaseKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
-const naverClientId = process.env.VITE_NAVER_CLIENT_ID || '';
-const naverClientSecret = process.env.VITE_NAVER_CLIENT_SECRET || '';
+const naverClientId = process.env.NAVER_CLIENT_ID || '';
+const naverClientSecret = process.env.NAVER_CLIENT_SECRET || '';
 
 if (!supabaseUrl || !supabaseKey) {
     console.error('Missing Supabase credentials');
@@ -20,7 +20,7 @@ if (!supabaseUrl || !supabaseKey) {
 
 if (!naverClientId || !naverClientSecret) {
     console.error('Missing Naver API credentials in .env');
-    console.log('Ensure VITE_NAVER_CLIENT_ID and VITE_NAVER_CLIENT_SECRET are set.');
+    console.log('Ensure NAVER_CLIENT_ID and NAVER_CLIENT_SECRET are set.');
     process.exit(1);
 }
 

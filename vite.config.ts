@@ -49,7 +49,8 @@ export default defineConfig({
   // ✅ [Security Fix] 프로덕션 빌드에서 console.log/debugger 제거
   // Note: vite build는 항상 production 모드이므로 조건문 불필요
   esbuild: {
-    drop: ['console', 'debugger'],
+    drop: ['debugger'],
+    pure: ['console.log', 'console.debug'],
   },
   optimizeDeps: {
     force: false,
@@ -64,7 +65,6 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
-          leaflet: ['leaflet', 'react-leaflet-cluster', 'react-leaflet'],
           ui: ['lucide-react', 'framer-motion']
         }
       }

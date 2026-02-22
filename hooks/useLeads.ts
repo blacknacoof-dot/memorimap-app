@@ -1,5 +1,15 @@
 import { useState, useEffect } from 'react';
+import { useSession } from '@/lib/auth';
+import { supabase, createAuthenticatedClient } from '@/lib/supabaseClient';
 import { fetchLeads } from '@/lib/api/superAdmin';
+
+async function getAuthClient(session: any) {
+    try {
+        const token = await session?.getToken?.({ template: 'supabase' });
+        if (token) return createAuthenticatedClient(token);
+    } catch { /* fallback */ }
+    return supabase;
+}
 
 export interface Lead {
     id: string;
@@ -14,13 +24,15 @@ export interface Lead {
 }
 
 export function useLeads() {
+    const { session } = useSession();
     const [leads, setLeads] = useState<Lead[]>([]);
     const [loading, setLoading] = useState(true);
 
     const loadLeads = async () => {
         setLoading(true);
         try {
-            const data = await fetchLeads();
+            const client = await getAuthClient(session);
+            const data = await fetchLeads(client);
             setLeads(data as any || []);
         } catch (error) {
             console.error('Fetch leads failed:', error);
@@ -31,8 +43,8 @@ export function useLeads() {
     };
 
     useEffect(() => {
-        loadLeads();
-    }, []);
+        if (session) loadLeads();
+    }, [session]);
 
     return {
         leads,

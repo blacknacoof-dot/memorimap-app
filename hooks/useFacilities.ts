@@ -120,7 +120,7 @@ export function useFacilities(options: UseFacilitiesOptions = {}): UseFacilities
 
             // Apply verification filter
             if (filter?.isVerified !== undefined) {
-                query = query.eq('is_verified', filter.isVerified);
+                query = query.eq('verified', filter.isVerified);
             }
 
             // Execute query

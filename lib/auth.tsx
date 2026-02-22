@@ -1,63 +1,132 @@
-import React from 'react';
-import { ClerkProvider as RealClerkProvider, useUser as useRealUser, useClerk as useRealClerk, useSignIn as useRealSignIn, useSignUp as useRealSignUp, useSession as useRealSession } from '@clerk/clerk-react';
-import { koKR } from '@clerk/localizations';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { supabase } from './supabaseClient';
+import type { Session } from '@supabase/supabase-js';
 
-// --- Configuration ---
-// Safer check for environment variables in browser without global 'process'
-const getPublishableKey = (): string => {
-  // Vite environment variable (standard)
-  const key = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-  if (key) return key;
+// --- Clerk-compatible user interface ---
+interface WrappedUser {
+  id: string;
+  primaryEmailAddress: { emailAddress: string } | undefined;
+  fullName: string | null;
+  firstName: string | null;
+  username: string | null;
+  imageUrl: string | undefined;
+  primaryPhoneNumber: { phoneNumber: string } | undefined;
+}
 
-  // [Security] No hardcoded fallback — fail fast if env var missing
-  throw new Error(
-    'VITE_CLERK_PUBLISHABLE_KEY is not set. Please configure it in .env.local'
-  );
-};
+interface AuthContextType {
+  user: WrappedUser | null;
+  session: Session | null;
+  isSignedIn: boolean;
+  isLoaded: boolean;
+  signOut: () => Promise<void>;
+}
 
-const PUBLISHABLE_KEY = getPublishableKey();
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  session: null,
+  isSignedIn: false,
+  isLoaded: false,
+  signOut: async () => {},
+});
 
+function wrapUser(session: Session | null): WrappedUser | null {
+  const raw = session?.user;
+  if (!raw) return null;
+  const meta = raw.user_metadata || {};
+  return {
+    id: raw.id,
+    primaryEmailAddress: raw.email ? { emailAddress: raw.email } : undefined,
+    fullName: meta.full_name || null,
+    firstName: meta.full_name?.split(' ')[0] || null,
+    username: meta.username || raw.email?.split('@')[0] || null,
+    imageUrl: meta.avatar_url || undefined,
+    primaryPhoneNumber: meta.phone ? { phoneNumber: meta.phone } : undefined,
+  };
+}
 
+// --- Provider ---
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
-// --- Mock Context Removed for Security Hardening ---
-// Mock logic has been stripped to enforce production security.
-// Use Supabase Auth + Clerk exclusively.
+  useEffect(() => {
+    // Initial session
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s);
+      setIsLoaded(true);
+    });
 
-// --- Exported Wrapper Components & Hooks ---
+    // Listen for auth changes (login, logout, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s);
+      setIsLoaded(true);
+    });
 
-export const ClerkProviderWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Production Security Hardening: Mock Mode Removed
-  // All auth is handled by RealClerkProvider
+    return () => subscription.unsubscribe();
+  }, []);
 
+  const signOut = useCallback(async () => {
+    await supabase.auth.signOut();
+  }, []);
+
+  const user = wrapUser(session);
 
   return (
-    <RealClerkProvider
-      publishableKey={PUBLISHABLE_KEY!}
-      afterSignOutUrl="/"
-      localization={koKR}
-    >
+    <AuthContext.Provider value={{ user, session, isSignedIn: !!session, isLoaded, signOut }}>
       {children}
-    </RealClerkProvider>
+    </AuthContext.Provider>
   );
 };
 
+// Backward-compatible alias
+export const ClerkProviderWrapper = AuthProvider;
+
+// --- Hooks ---
+
 export const useUser = () => {
-  return useRealUser();
+  const { user, isSignedIn, isLoaded } = useContext(AuthContext);
+  return { user, isSignedIn, isLoaded };
 };
 
 export const useClerk = () => {
-  return useRealClerk();
-};
-
-export const useSignIn = () => {
-  return useRealSignIn();
-};
-
-export const useSignUp = () => {
-  return useRealSignUp();
+  const { signOut } = useContext(AuthContext);
+  return {
+    signOut,
+    openSignIn: () => {
+      window.dispatchEvent(new Event('open-login-modal'));
+    },
+  };
 };
 
 export const useSession = () => {
-  return useRealSession();
+  const { session, user } = useContext(AuthContext);
+  const wrappedSession = session
+    ? {
+        ...session,
+        // Clerk-compatible user on session
+        user: {
+          ...session.user,
+          ...user,
+        },
+        getToken: async (_opts?: any): Promise<string | null> => session.access_token || null,
+      }
+    : null;
+  return { session: wrappedSession, isLoaded: true };
 };
 
+/**
+ * Clerk useAuth compatibility.
+ * getToken returns the current Supabase access_token (auto-refreshed).
+ */
+export const useAuth = () => {
+  const { user, isSignedIn, session } = useContext(AuthContext);
+  return {
+    userId: user?.id || null,
+    isSignedIn,
+    getToken: async (_opts?: any): Promise<string | null> => session?.access_token || null,
+  };
+};
+
+// No longer needed (LoginModal/SignUpModal rewritten with direct Supabase calls)
+export const useSignIn = () => ({ signIn: null as any, setActive: null as any, isLoaded: true });
+export const useSignUp = () => ({ signUp: null as any, isLoaded: true });

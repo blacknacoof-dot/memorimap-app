@@ -1,40 +1,57 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Users, Search, Filter, CheckCircle2,
-    XCircle, AlertCircle, MoreVertical,
-    Building2, Mail, Phone, Calendar, ExternalLink
+    Users, Search, CheckCircle2,
+    XCircle, AlertCircle,
+    Building2, Mail, Phone, Calendar, ExternalLink, X
 } from 'lucide-react';
 import { toast } from 'sonner'; // [Phase 2] Error Handler
 import { getPartners, updatePartnerStatus } from '../../lib/sangjoQueries';
+import { confirmAsync } from '../../src/components/common/ConfirmModal';
 import { Partner } from '../../types';
+import { createAuthenticatedClient } from '../../lib/supabaseClient';
+import { useSession } from '../../lib/auth';
 
 export const PartnerManagement: React.FC = () => {
     const [partners, setPartners] = useState<Partner[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState<string>('all');
+    const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
+    const { session } = useSession();
+
+    const getAuthClient = async () => {
+        try {
+            const token = await session?.getToken?.({ template: 'supabase' });
+            if (token) return createAuthenticatedClient(token);
+        } catch { /* fallback */ }
+        return null;
+    };
 
     useEffect(() => {
         loadPartners();
-    }, []);
+    }, [session]);
 
     const loadPartners = async () => {
         setLoading(true);
         try {
-            const data = await getPartners();
+            const client = await getAuthClient();
+            if (!client) { setLoading(false); return; }
+            const data = await getPartners(client);
             setPartners(data);
         } catch (err) {
-            console.error('파트너 로딩 실패:', err);
+            toast.error('파트너 목록 로딩에 실패했습니다.');
         } finally {
             setLoading(false);
         }
     };
 
     const handleStatusChange = async (id: string, status: Partner['status']) => {
-        if (!confirm(`상태를 ${status === 'approved' ? '승인' : '반려/정지'} 하시겠습니까?`)) return;
+        if (!await confirmAsync(`상태를 ${status === 'approved' ? '승인' : '반려/정지'} 하시겠습니까?`)) return;
 
         try {
-            await updatePartnerStatus(id, status);
+            const client = await getAuthClient();
+            if (!client) { toast.error('인증 세션이 필요합니다.'); return; }
+            await updatePartnerStatus(id, status, undefined, client);
             toast.success('상태가 업데이트되었습니다.');
             loadPartners();
         } catch (err) {
@@ -129,8 +146,12 @@ export const PartnerManagement: React.FC = () => {
                                     <p className="text-xs text-slate-400">{partner.contact_person || '담당자 미정'}</p>
                                 </div>
                             </div>
-                            <button className="p-2 text-slate-400 hover:bg-slate-50 rounded-lg">
-                                <MoreVertical size={18} />
+                            <button
+                                onClick={() => setSelectedPartner(partner)}
+                                className="p-2 text-slate-400 hover:bg-slate-50 rounded-lg"
+                                title="상세보기"
+                            >
+                                <ExternalLink size={18} />
                             </button>
                         </div>
 
@@ -178,13 +199,121 @@ export const PartnerManagement: React.FC = () => {
                                     서비스 일시정지
                                 </button>
                             )}
-                            <button className="flex-1 bg-slate-100 text-slate-700 py-2 rounded-xl text-xs font-bold hover:bg-slate-200 transition-all flex items-center justify-center gap-1.5">
+                            <button
+                                onClick={() => setSelectedPartner(partner)}
+                                className="flex-1 bg-slate-100 text-slate-700 py-2 rounded-xl text-xs font-bold hover:bg-slate-200 transition-all flex items-center justify-center gap-1.5"
+                            >
                                 <ExternalLink size={14} /> 상세보기
                             </button>
                         </div>
                     </div>
                 ))}
             </div>
+
+            {/* Partner Detail Modal */}
+            {selectedPartner && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80dvh] overflow-y-auto">
+                        <div className="flex items-center justify-between p-5 border-b sticky top-0 bg-white rounded-t-2xl">
+                            <h3 className="font-bold text-lg text-slate-800">파트너 상세 정보</h3>
+                            <button onClick={() => setSelectedPartner(null)} className="p-2 hover:bg-slate-100 rounded-lg">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="p-5 space-y-5">
+                            <div className="flex items-center gap-4">
+                                <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center overflow-hidden border">
+                                    {selectedPartner.company_logo_url ? (
+                                        <img src={selectedPartner.company_logo_url} alt={selectedPartner.company_name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <Building2 className="text-slate-400" size={28} />
+                                    )}
+                                </div>
+                                <div>
+                                    <h4 className="text-lg font-bold text-slate-800">{selectedPartner.company_name}</h4>
+                                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${selectedPartner.status === 'approved' ? 'bg-green-100 text-green-600' :
+                                            selectedPartner.status === 'pending' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'
+                                        }`}>
+                                        {selectedPartner.status === 'approved' ? '승인됨' :
+                                            selectedPartner.status === 'pending' ? '대기중' : '정지/반려'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-3 bg-slate-50 p-4 rounded-xl">
+                                <div className="flex items-center gap-3">
+                                    <Mail className="w-4 h-4 text-slate-400" />
+                                    <div>
+                                        <p className="text-[10px] text-slate-400 font-bold">이메일</p>
+                                        <p className="text-sm text-slate-700">{selectedPartner.contact_email}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <Phone className="w-4 h-4 text-slate-400" />
+                                    <div>
+                                        <p className="text-[10px] text-slate-400 font-bold">연락처</p>
+                                        <p className="text-sm text-slate-700">{selectedPartner.contact_phone}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <Users className="w-4 h-4 text-slate-400" />
+                                    <div>
+                                        <p className="text-[10px] text-slate-400 font-bold">담당자</p>
+                                        <p className="text-sm text-slate-700">{selectedPartner.contact_person || '미정'}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <Calendar className="w-4 h-4 text-slate-400" />
+                                    <div>
+                                        <p className="text-[10px] text-slate-400 font-bold">가입일</p>
+                                        <p className="text-sm text-slate-700">{new Date(selectedPartner.created_at).toLocaleDateString()}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <AlertCircle className="w-4 h-4 text-blue-500" />
+                                    <div>
+                                        <p className="text-[10px] text-slate-400 font-bold">구독 플랜</p>
+                                        <p className="text-sm text-blue-600 font-bold capitalize">{selectedPartner.subscription_plan}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-2 pt-2">
+                                {selectedPartner.status === 'pending' && (
+                                    <>
+                                        <button
+                                            onClick={async () => { await handleStatusChange(selectedPartner.id, 'approved'); setSelectedPartner(null); }}
+                                            className="flex-1 bg-blue-600 text-white py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-1.5"
+                                        >
+                                            <CheckCircle2 size={16} /> 승인
+                                        </button>
+                                        <button
+                                            onClick={async () => { await handleStatusChange(selectedPartner.id, 'rejected'); setSelectedPartner(null); }}
+                                            className="flex-1 bg-white text-red-500 border border-red-200 py-2.5 rounded-xl text-sm font-bold hover:bg-red-50 transition-all flex items-center justify-center gap-1.5"
+                                        >
+                                            <XCircle size={16} /> 거절
+                                        </button>
+                                    </>
+                                )}
+                                {selectedPartner.status === 'approved' && (
+                                    <button
+                                        onClick={async () => { await handleStatusChange(selectedPartner.id, 'suspended'); setSelectedPartner(null); }}
+                                        className="flex-1 bg-white text-slate-600 border border-slate-200 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-50 transition-all"
+                                    >
+                                        서비스 일시정지
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => setSelectedPartner(null)}
+                                    className="flex-1 bg-slate-100 text-slate-600 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-200 transition-all"
+                                >
+                                    닫기
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

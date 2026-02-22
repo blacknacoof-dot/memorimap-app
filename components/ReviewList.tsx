@@ -3,7 +3,8 @@ import { ReviewCard } from './ReviewCard';
 import { getReviewsBySpace, deleteReview } from '../lib/queries';
 import { Review } from '../types';
 import { Loader2 } from 'lucide-react';
-import { useUser } from '../lib/auth';
+import { useUser, useSession } from '../lib/auth';
+import { supabase, createAuthenticatedClient } from '../lib/supabaseClient';
 import { toast } from 'sonner'; // [NEW]
 
 interface Props {
@@ -24,6 +25,19 @@ export const ReviewList: React.FC<Props> = ({ spaceId, refreshTrigger }) => {
     const [reviews, setReviews] = useState<Review[]>([]);
     const [loading, setLoading] = useState(false);
     const { user } = useUser();
+    const { session } = useSession();
+
+    const getAuthClient = async () => {
+        if (!session) return supabase;
+        try {
+            const token = await Promise.race([
+                session.getToken({ template: 'supabase' }),
+                new Promise<null>((r) => setTimeout(() => r(null), 8000)),
+            ]);
+            if (token) return createAuthenticatedClient(token);
+        } catch { /* fallback */ }
+        return supabase;
+    };
 
     const fetchReviews = async () => {
         setLoading(true);
@@ -43,7 +57,8 @@ export const ReviewList: React.FC<Props> = ({ spaceId, refreshTrigger }) => {
 
     const handleDelete = async (id: string) => {
         try {
-            await deleteReview(id); // Fixed: deleteReview only takes id
+            const client = await getAuthClient();
+            await deleteReview(id, client);
             setReviews(prev => prev.filter(r => r.id !== id));
             toast.success('리뷰가 삭제되었습니다.');
         } catch (err) {

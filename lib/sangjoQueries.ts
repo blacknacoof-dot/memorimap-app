@@ -32,7 +32,8 @@ export const saveSangjoContract = async (contract: SangjoContract, client?: Supa
 
     const { data, error } = await db
         .from('sangjo_contracts')
-        .insert([contract]);
+        .insert([contract])
+        .select();
 
     if (error) {
         console.error('Error saving sangjo contract:', error);
@@ -41,8 +42,9 @@ export const saveSangjoContract = async (contract: SangjoContract, client?: Supa
     return data;
 };
 
-export const getSangjoContracts = async (sangjoId: string) => {
-    const { data, error } = await supabase
+export const getSangjoContracts = async (sangjoId: string, client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('sangjo_contracts')
         .select('*')
         .eq('sangjo_id', sangjoId)
@@ -55,15 +57,21 @@ export const getSangjoContracts = async (sangjoId: string) => {
     return data;
 };
 
-export const updateContractStatus = async (contractNumber: string, status: string, additionalData: any = {}, client?: SupabaseClient) => {
+export const updateContractStatus = async (contractNumber: string, status: string, additionalData: Record<string, unknown> = {}, client?: SupabaseClient) => {
     const db = client || supabase;
+    const ALLOWED_FIELDS = ['approved_at', 'rejected_at', 'rejection_reason', 'notes', 'updated_by'];
+    const safeData: Record<string, unknown> = {};
+    for (const key of ALLOWED_FIELDS) {
+        if (key in additionalData) safeData[key] = additionalData[key];
+    }
     const { data, error } = await db
         .from('sangjo_contracts')
         .update({
             status,
-            ...additionalData
+            ...safeData
         })
-        .eq('contract_number', contractNumber);
+        .eq('contract_number', contractNumber)
+        .select();
 
     if (error) {
         console.error('Error updating contract status:', error);
@@ -82,7 +90,8 @@ export const addTimelineEvent = async (contractNumber: string, event: string, no
             notes,
             photo_url: photoUrl,
             created_at: new Date().toISOString()
-        }]);
+        }])
+        .select();
 
     if (error) {
         console.error('Error adding timeline event:', error);
@@ -91,8 +100,9 @@ export const addTimelineEvent = async (contractNumber: string, event: string, no
     return data;
 };
 
-export const getTimelineEvents = async (contract_number: string) => {
-    const { data, error } = await supabase
+export const getTimelineEvents = async (contract_number: string, client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('sangjo_contract_timeline')
         .select('*')
         .eq('contract_number', contract_number)
@@ -105,19 +115,19 @@ export const getTimelineEvents = async (contract_number: string) => {
     return data as SangjoTimelineEvent[];
 };
 
-export const getSangjoUser = async (userId: string) => {
+export const getSangjoUser = async (userId: string, client?: SupabaseClient) => {
+    const db = client || supabase;
     // 1차: sangjo_dashboard_users 조회
-    const { data, error } = await supabase
+    const { data, error } = await db
         .from('sangjo_dashboard_users')
         .select('sangjo_id, role, name')
         .eq('id', userId)
         .maybeSingle();
 
     if (data) return data;
-    if (error) console.error('Error fetching sangjo_dashboard_users:', error);
 
     // 2차 fallback: sangjo_hq_admins 조회 (마이그레이션 전 기존 데이터 호환)
-    const { data: hqData, error: hqError } = await supabase
+    const { data: hqData, error: hqError } = await db
         .from('sangjo_hq_admins')
         .select('sangjo_id, role, company_name')
         .eq('user_id', userId)
@@ -134,8 +144,9 @@ export const getSangjoUser = async (userId: string) => {
 };
 
 // --- Partners ---
-export const getPartners = async () => {
-    const { data, error } = await supabase
+export const getPartners = async (client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('partners')
         .select('*')
         .order('created_at', { ascending: false });
@@ -143,23 +154,26 @@ export const getPartners = async () => {
     return data as Partner[];
 };
 
-export const updatePartnerStatus = async (partnerId: string, status: Partner['status'], approvedBy?: string) => {
+export const updatePartnerStatus = async (partnerId: string, status: Partner['status'], approvedBy?: string, client?: SupabaseClient) => {
+    const db = client || supabase;
     const updateData: any = { status };
     if (status === 'approved') {
         updateData.approved_at = new Date().toISOString();
         updateData.approved_by = approvedBy;
     }
-    const { data, error } = await supabase
+    const { data, error } = await db
         .from('partners')
         .update(updateData)
-        .eq('id', partnerId);
+        .eq('id', partnerId)
+        .select();
     if (error) throw error;
     return data;
 };
 
 // --- Conversations ---
-export const getPartnerConversations = async (partnerId: string) => {
-    const { data, error } = await supabase
+export const getPartnerConversations = async (partnerId: string, client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('partner_conversations')
         .select('*')
         .eq('partner_id', partnerId)
@@ -172,14 +186,16 @@ export const savePartnerConversation = async (conversation: Partial<PartnerConve
     const db = client || supabase;
     const { data, error } = await db
         .from('partner_conversations')
-        .upsert([conversation]);
+        .upsert([conversation])
+        .select();
     if (error) throw error;
     return data;
 };
 
 // --- Operations ---
-export const getPartnerOperations = async (partnerId: string) => {
-    const { data, error } = await supabase
+export const getPartnerOperations = async (partnerId: string, client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('partner_operations')
         .select('*')
         .eq('partner_id', partnerId)
@@ -193,19 +209,42 @@ export const updateOperationStage = async (operationId: string, stage: PartnerOp
     const { data, error } = await db
         .from('partner_operations')
         .update({ operation_stage: stage })
-        .eq('id', operationId);
+        .eq('id', operationId)
+        .select();
     if (error) throw error;
     return data;
 };
 
 // --- Notices ---
-export const getPlatformNotices = async (partnerId?: string) => {
-    let query = supabase.from('platform_notices').select('*').eq('is_active', true);
+export const getPlatformNotices = async (partnerId?: string, client?: SupabaseClient) => {
+    const db = client || supabase;
+    let query = db.from('platform_notices').select('*').eq('is_active', true);
     if (partnerId) {
         // 특정 파트너 대상 또는 전체 대상 공지
-        query = query.or(`target_partner_ids.is.null,target_partner_ids.cs.{${partnerId}}`);
+        const sanitizedId = partnerId.replace(/[^a-zA-Z0-9_-]/g, '');
+        query = query.or(`target_partner_ids.is.null,target_partner_ids.cs.{${sanitizedId}}`);
     }
     const { data, error } = await query.order('created_at', { ascending: false });
     if (error) throw error;
     return data as PlatformNotice[];
+};
+
+export const createPlatformNotice = async (notice: { title: string; content: string; notice_type: string; target_partner_ids?: string[] }, client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db.from('platform_notices').insert({ ...notice, is_active: true }).select().single();
+    if (error) throw error;
+    return data;
+};
+
+export const updatePlatformNotice = async (id: string, updates: Partial<{ title: string; content: string; notice_type: string; is_active: boolean }>, client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db.from('platform_notices').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+    return data;
+};
+
+export const deletePlatformNotice = async (id: string, client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { error } = await db.from('platform_notices').update({ is_active: false }).eq('id', id);
+    if (error) throw error;
 };

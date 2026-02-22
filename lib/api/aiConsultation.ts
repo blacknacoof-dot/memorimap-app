@@ -103,9 +103,9 @@ export const aiConsultationService = {
             .eq('conversation_id', conversationId);
 
         // [Atomic Lock] 상담 개입 시 동시성 제어
-        // 이미 다른 상담사가 연결된 경우(status != IA_HANDLING) 업데이트가 0 rows가 되도록 함
+        // AGENT_REQUESTED 상태에서만 연결 가능 (이미 연결된 경우 0 rows → 에러)
         if (status === AiConsultationStatus.AGENT_CONNECTED) {
-            query = query.eq('status', AiConsultationStatus.AI_HANDLING);
+            query = query.eq('status', AiConsultationStatus.AGENT_REQUESTED);
         }
 
         const { data, error } = await query.select().single();

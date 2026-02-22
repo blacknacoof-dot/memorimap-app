@@ -11,8 +11,8 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL || '';
 const supabaseServiceKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-const NAVER_CLIENT_ID = process.env.VITE_NAVER_CLIENT_ID || '';
-const NAVER_CLIENT_SECRET = process.env.VITE_NAVER_CLIENT_SECRET || '';
+const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID || '';
+const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET || '';
 const KAKAO_API_KEY = process.env.VITE_KAKAO_REST_API_KEY || '';
 
 const RAW_TEXT = `봉안시설

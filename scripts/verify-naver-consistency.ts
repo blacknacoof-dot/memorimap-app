@@ -14,8 +14,8 @@ const supabase = createClient(
     process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || ''
 );
 
-const NAVER_CLIENT_ID = process.env.VITE_NAVER_CLIENT_ID;
-const NAVER_CLIENT_SECRET = process.env.VITE_NAVER_CLIENT_SECRET;
+const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID;
+const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET;
 
 async function searchNaver(query: string) {
     try {
@@ -41,7 +41,7 @@ async function verifyNaverConsistency() {
 
     if (!NAVER_CLIENT_ID || !NAVER_CLIENT_SECRET) {
         console.error("❌ Naver API Credentials Missing in .env.local");
-        console.error("   Please add VITE_NAVER_CLIENT_ID and VITE_NAVER_CLIENT_SECRET");
+        console.error("   Please add NAVER_CLIENT_ID and NAVER_CLIENT_SECRET");
         return;
     }
 

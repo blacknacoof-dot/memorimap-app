@@ -235,18 +235,20 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
 
     case ViewState.MY_PAGE:
       return (
-        <MyPageView
-          isLoggedIn={!!isSignedIn}
-          user={userInfo}
-          userRole={userRole ?? undefined}
-          reservations={reservations}
-          facilities={facilities}
-          onLoginClick={handleLoginClick}
-          onNavigate={setViewState}
-          onReviewDeleted={handleReviewDeleted}
-          onSelectFacility={handleFacilitySelect}
-          onSelectCompany={handleCompanySelect}
-        />
+        <Suspense fallback={<LoadingFallback />}>
+          <MyPageView
+            isLoggedIn={!!isSignedIn}
+            user={userInfo}
+            userRole={userRole ?? undefined}
+            reservations={reservations}
+            facilities={facilities}
+            onLoginClick={handleLoginClick}
+            onNavigate={setViewState}
+            onReviewDeleted={handleReviewDeleted}
+            onSelectFacility={handleFacilitySelect}
+            onSelectCompany={handleCompanySelect}
+          />
+        </Suspense>
       );
 
     case ViewState.GUIDE:
@@ -259,7 +261,14 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
       return <Suspense fallback={<LoadingFallback />}><SettingsView onBack={() => setViewState(ViewState.MAP)} user={userInfo} /></Suspense>;
 
     case ViewState.CONSULTATION:
-      if (!consultingFacility) return null;
+      if (!consultingFacility) {
+        return (
+          <div className="h-full flex flex-col items-center justify-center p-4 text-center">
+            <p className="text-gray-600 mb-4">상담할 시설 정보가 없습니다.</p>
+            <button onClick={() => setViewState(ViewState.MAP)} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold">지도로 돌아가기</button>
+          </div>
+        );
+      }
       return (
         <Suspense fallback={<LoadingFallback />}>
           <ConsultationView
@@ -293,7 +302,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
       );
 
     case ViewState.FACILITY_ADMIN:
-      if (userRole !== 'facility_admin' && userRole !== 'facility_manager' && userRole !== 'sangjo_hq_admin' && userRole !== 'sangjo_branch_admin') {
+      if (userRole !== 'facility_admin' && userRole !== 'facility_manager' && userRole !== 'sangjo_hq_admin' && userRole !== 'sangjo_branch_admin' && userRole !== 'super_admin') {
         return (
           <div className="h-full flex flex-col items-center justify-center p-6 bg-gray-50">
             <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
@@ -431,8 +440,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
         </Suspense>
       );
 
-    // @ts-ignore
-    case 'SUPER_ADMIN':
+    case ViewState.SUPER_ADMIN:
       if (isLoadingRole) {
         return (
           <div className="h-full flex flex-col items-center justify-center p-4">
@@ -462,7 +470,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
         );
       }
       return (
-        <div className="h-full relative">
+        <div className="h-[100dvh] overflow-auto">
           <SuperAdminDashboard onBack={() => setViewState(ViewState.MAP)} />
         </div>
       );

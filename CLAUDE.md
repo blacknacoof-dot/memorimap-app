@@ -1,5 +1,9 @@
 # Memorimap 프로젝트
 
+## 🔴 코드 작성 원칙 (전역 규칙)
+- **코드 생략 절대 금지**: `...`, `// rest of code`, `// 이전과 동일` 등 placeholder 사용 금지
+- 모든 코드 수정 시 완전하고 동작하는 구현을 작성할 것 (Do not truncate any code)
+
 ## 🔴 보안 절대 규칙 (최우선 — 모든 작업에 항상 적용)
 - **git commit/push 전 반드시 확인**: `.env`, `.env.local`, `.env.*.temp`, API 키가 포함된 파일이 스테이징되지 않았는지 확인
 - **`git add .` 또는 `git add -A` 절대 금지**: 반드시 파일명을 지정하여 `git add <파일명>`으로 추가
@@ -21,7 +25,16 @@
 - 파일 전체 읽기 대신 필요한 부분만 offset/limit으로 읽기
 - 중간 확인 질문 최소화. 명확하면 바로 실행
 
+## 인증 (Supabase Auth)
+- Clerk 제거 완료 → Supabase Auth 사용
+- `clerk_user_id()` SQL 함수는 내부만 `auth.uid()::text`로 변경 (RLS 정책 호환)
+- `lib/auth.tsx`: AuthProvider + useUser/useClerk/useSession/useAuth 래핑 훅
+- `lib/supabaseClient.ts`: 단일 클라이언트, `createAuthenticatedClient`는 `supabase` 반환 (하위호환)
+- `hooks/useProfileSync.ts`: 로그인 시 profiles upsert
+- `profiles.clerk_id`에 `auth.uid()::text` (UUID를 TEXT로) 저장
+
 ## 완료
+- [x] Clerk → Supabase Auth 전환 (빌드 성공)
 - [x] 슈퍼관리자 이메일 하드코딩 보안 수정
 - [x] MyPage V1/V2 중복 통합
 - [x] FacilityAdmin 레거시/신규 중복 정리
@@ -85,17 +98,19 @@
 
 #### 미완료 (수동 확인 필요)
 - [ ] AI 채팅 하단 입력창 조건부 숨김 (현재 isFormActive로 이미 조건부 숨김 동작)
-- [ ] 추모시설 AI 상담 "접수 중 오류" 디버깅 (실 테스트 필요)
+- [x] 추모시설 AI 상담 "접수 중 오류" — auth client 수정 완료
 - [ ] iOS Safe Area `env(safe-area-inset-bottom)` 적용 (실기기 테스트 후 판단)
 - [ ] Vercel 이전 빌드 캐시 확인 (배포 후 확인)
 
 ### 출시 전 E2E 검증 (수동 테스트)
 - [ ] 슈퍼관리자 파트너 승인 E2E (코드 완료, 실 테스트 필요)
-- [ ] 상조 관리자 대시보드 예약/상담 표시 확인
-- [ ] 상조 대시보드 구독/매출 확인
-- [ ] 요금제 체계 검증
-- [ ] 모바일 UI 점검
-- [ ] 시설별 대시보드 (장례/동물/추모/수목/공원) 확인
-- [ ] 마이페이지 검증
+- [x] 상조 관리자 대시보드 예약/상담 — 코드 검증 + anon→auth client 수정 완료
+- [x] 상조 대시보드 구독/매출 — getFacilitySubscription auth client 수정 완료
+- [x] 요금제 체계 검증 — SubscriptionPlans auth client 수정 완료
+- [ ] 모바일 UI 점검 (실기기 확인 필요)
+- [x] 시설별 대시보드 — FacilityAdminDashboard auth client 수정 완료
+- [x] 마이페이지 검증 — MyPageView 코드 정상 확인
+- [x] 리뷰/상담 함수 anon→auth client 수정 (queries.ts 8함수, 4컴포넌트)
+- [x] 프로덕션 console.log 제거 (useFacilityData, useFavorites, useFacilityChat)
 - [ ] Edge Function `approve-partner` 재배포 (Supabase Dashboard)
 - [ ] 최종 빌드 + 배포

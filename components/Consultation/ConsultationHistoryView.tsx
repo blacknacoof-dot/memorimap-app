@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { useUser } from '../../lib/auth';
+import { useUser, useSession } from '../../lib/auth';
+import { supabase, createAuthenticatedClient } from '../../lib/supabaseClient';
 import { getConsultationHistory, deleteConsultation } from '../../lib/queries';
 import { Consultation } from '../../types/consultation';
 import { MessageSquare, Clock, Trash2, ArrowLeft, Loader2 } from 'lucide-react';
 import { Facility } from '../../types';
+import { confirmAsync } from '../../src/components/common/ConfirmModal';
 
 interface Props {
     facilities: Facility[];
@@ -14,8 +16,21 @@ interface Props {
 
 export const ConsultationHistoryView: React.FC<Props> = ({ facilities, onBack, onSelectConsultation }) => {
     const { user } = useUser();
+    const { session } = useSession();
     const [history, setHistory] = useState<Consultation[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const getAuthClient = async () => {
+        if (!session) return supabase;
+        try {
+            const token = await Promise.race([
+                session.getToken({ template: 'supabase' }),
+                new Promise<null>((r) => setTimeout(() => r(null), 8000)),
+            ]);
+            if (token) return createAuthenticatedClient(token);
+        } catch { /* fallback */ }
+        return supabase;
+    };
 
     useEffect(() => {
         if (user) {
@@ -27,7 +42,8 @@ export const ConsultationHistoryView: React.FC<Props> = ({ facilities, onBack, o
         if (!user) return;
         setLoading(true);
         try {
-            const data = await getConsultationHistory(user.id);
+            const client = await getAuthClient();
+            const data = await getConsultationHistory(user.id, client);
             setHistory(data);
         } finally {
             setLoading(false);
@@ -36,9 +52,10 @@ export const ConsultationHistoryView: React.FC<Props> = ({ facilities, onBack, o
 
     const handleDelete = async (e: React.MouseEvent, id: string) => {
         e.stopPropagation();
-        if (!confirm('정말 이 상담 내역을 삭제하시겠습니까?')) return;
+        if (!await confirmAsync('정말 이 상담 내역을 삭제하시겠습니까?')) return;
         try {
-            await deleteConsultation(id);
+            const client = await getAuthClient();
+            await deleteConsultation(id, undefined, client);
             setHistory(prev => prev.filter(c => c.id !== id));
         } catch (err) {
             toast.error('삭제 중 오류가 발생했습니다.');
@@ -77,9 +94,9 @@ export const ConsultationHistoryView: React.FC<Props> = ({ facilities, onBack, o
                                 </div>
                                 <button
                                     onClick={(e) => handleDelete(e, item.id)}
-                                    className="text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-red-50"
+                                    className="text-gray-400 hover:text-red-500 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-red-50 -mr-2"
                                 >
-                                    <Trash2 size={16} />
+                                    <Trash2 size={18} />
                                 </button>
                             </div>
                             <h3 className="font-bold text-gray-900 mb-1">{item.facilityName}</h3>
@@ -88,7 +105,7 @@ export const ConsultationHistoryView: React.FC<Props> = ({ facilities, onBack, o
                             </p>
                             <div className="flex items-center gap-1 text-xs text-gray-400 mt-3">
                                 <Clock size={12} />
-                                <span>{item.updatedAt.toLocaleDateString()} {item.updatedAt.toLocaleTimeString()}</span>
+                                <span>{item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : ''} {item.updatedAt ? new Date(item.updatedAt).toLocaleTimeString() : ''}</span>
                             </div>
                         </div>
                     ))

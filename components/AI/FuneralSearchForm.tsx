@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
+import { confirmAsync } from '../../src/components/common/ConfirmModal';
 import {
     MapPin,
     Check,
@@ -22,7 +23,8 @@ import { ConsultationForm } from '../Consultation/BrandChatHelpers';
 // Safe Highlighting Component
 const SafeHighlight = ({ text, highlight }: { text: string, highlight: string }) => {
     if (!highlight.trim()) return <span>{text}</span>;
-    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+    const escaped = highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const parts = text.split(new RegExp(`(${escaped})`, 'gi'));
     return (
         <span>
             {parts.map((part, i) =>
@@ -193,7 +195,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                 .in('status', ['pending', 'urgent'])
                 .limit(1);
             if (existingRes && existingRes.length > 0) {
-                const willReplace = confirm('이미 접수된 장례 예약이 있습니다.\n새 시설로 변경하시겠습니까? (기존 예약은 자동 취소됩니다)');
+                const willReplace = await confirmAsync('이미 접수된 장례 예약이 있습니다.\n새 시설로 변경하시겠습니까? (기존 예약은 자동 취소됩니다)');
                 if (!willReplace) { setBookingId(null); setConsultFacility(null); return; }
                 await authClient.from('reservations')
                     .update({ status: 'cancelled' })
@@ -379,7 +381,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                 <div className="flex flex-wrap gap-1.5">
                     {FUNERAL_URGENCY_OPTIONS.map(opt => (
                         <button key={opt.id} onClick={() => setUrgency(opt.id)}
-                            className={`px-3 py-2 rounded-lg text-xs font-bold border transition-all ${urgency === opt.id
+                            className={`px-3 py-2 min-h-[44px] md:min-h-0 rounded-lg text-xs font-bold border transition-all ${urgency === opt.id
                                 ? 'bg-indigo-600 border-indigo-600 text-white'
                                 : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300'}`}>
                             {opt.label}
@@ -395,7 +397,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                 <div className="flex flex-wrap gap-1.5 mb-2">
                     {REGION_CHIPS.map(reg => (
                         <button key={reg} onClick={() => { setLocation(reg); setShowSuggestions(false); }}
-                            className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all ${location === reg
+                            className={`px-3 py-2 rounded-full text-xs font-bold border transition-all min-h-[44px] md:min-h-[36px] ${location === reg
                                 ? 'bg-indigo-600 border-indigo-600 text-white'
                                 : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-300'}`}>
                             {reg}
@@ -432,7 +434,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                 <div className="flex flex-wrap gap-1.5">
                     {FUNERAL_SCALE_OPTIONS.map(opt => (
                         <button key={opt.id} onClick={() => setScale(scale === opt.id ? '' : opt.id)}
-                            className={`px-3 py-2 rounded-lg text-xs font-bold border transition-all ${scale === opt.id
+                            className={`px-3 py-2 min-h-[44px] md:min-h-0 rounded-lg text-xs font-bold border transition-all ${scale === opt.id
                                 ? 'bg-indigo-600 border-indigo-600 text-white'
                                 : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300'}`}>
                             {opt.label}
@@ -448,7 +450,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                     <div className="flex flex-wrap gap-1.5">
                         {FUNERAL_RELIGION_OPTIONS.map(opt => (
                             <button key={opt.id} onClick={() => setReligion(religion === opt.id ? '' : opt.id)}
-                                className={`px-3 py-2 rounded-lg text-xs font-bold border transition-all ${religion === opt.id
+                                className={`px-3 py-2 min-h-[44px] md:min-h-0 rounded-lg text-xs font-bold border transition-all ${religion === opt.id
                                     ? 'bg-indigo-600 border-indigo-600 text-white'
                                     : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300'}`}>
                                 {opt.label}

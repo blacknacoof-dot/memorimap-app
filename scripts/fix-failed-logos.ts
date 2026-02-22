@@ -10,8 +10,8 @@ const streamPipeline = promisify(pipeline);
 const envPath = path.resolve(process.cwd(), '.env.local');
 dotenv.config({ path: envPath });
 
-const NAVER_CLIENT_ID = process.env.VITE_NAVER_CLIENT_ID || '';
-const NAVER_CLIENT_SECRET = process.env.VITE_NAVER_CLIENT_SECRET || '';
+const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID || '';
+const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET || '';
 
 const TARGETS = [
     { id: 'fc8', name: '더리본 상조' }, // More specific

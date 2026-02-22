@@ -17,19 +17,24 @@ export const AdminCommunication: React.FC = () => {
 
     const loadData = async () => {
         setIsLoading(true);
-        if (activeTab === 'notices') {
-            const data = await getNotices();
-            setNotices(data);
-        } else if (activeTab === 'customer_support') {
-            const data = await getInquiries();
-            const all = data as unknown as any[];
-            setSupportInquiries(all.filter((i: any) => i.type === 'customer_support' || i.inquiryType === 'customer_support'));
-        } else {
-            const data = await getInquiries();
-            const all = data as unknown as any[];
-            setInquiries(all.filter((i: any) => i.type !== 'customer_support' && i.inquiryType !== 'customer_support') as Inquiry[]);
+        try {
+            if (activeTab === 'notices') {
+                const data = await getNotices();
+                setNotices(data);
+            } else if (activeTab === 'customer_support') {
+                const data = await getInquiries();
+                const all = data as unknown as any[];
+                setSupportInquiries(all.filter((i: any) => i.type === 'customer_support' || i.inquiryType === 'customer_support'));
+            } else {
+                const data = await getInquiries();
+                const all = data as unknown as any[];
+                setInquiries(all.filter((i: any) => i.type !== 'customer_support' && i.inquiryType !== 'customer_support') as Inquiry[]);
+            }
+        } catch (err: any) {
+            toast.error('데이터 로딩 실패: ' + (err?.message || '네트워크 오류'));
+        } finally {
+            setIsLoading(false);
         }
-        setIsLoading(false);
     };
 
     useEffect(() => {
@@ -38,11 +43,15 @@ export const AdminCommunication: React.FC = () => {
 
     const handleNoticeSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        await createNotice(noticeTitle, noticeContent);
-        toast.success('공지사항이 등록되었습니다.');
-        setNoticeTitle('');
-        setNoticeContent('');
-        loadData();
+        try {
+            await createNotice(noticeTitle, noticeContent);
+            toast.success('공지사항이 등록되었습니다.');
+            setNoticeTitle('');
+            setNoticeContent('');
+            loadData();
+        } catch (err: any) {
+            toast.error('공지사항 등록 실패: ' + (err?.message || '권한 오류'));
+        }
     };
 
     return (

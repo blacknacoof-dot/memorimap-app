@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSession } from '@clerk/clerk-react';
+import { useSession } from '../../lib/auth';
 import { Reservation, ViewState, Facility } from '../../types';
 import { getFacilityReservations, approveReservation, rejectReservation, getUserFacility, getFacilitySubscription, getFacilityConsultations, answerConsultation, Consultation, markConsultationAsRead, supabase } from '../../lib/queries';
 import { createAuthenticatedClient } from '../../lib/supabaseClient';
@@ -8,7 +8,7 @@ import { ConsultationList } from '../ConsultationList';
 import { ReservationDetailModal } from '../ReservationDetailModal';
 import { FacilityEditModal } from '../FacilityEditModal';
 import { FacilityFAQManager } from '../FacilityFAQManager';
-import { ConfirmModal } from '../../src/components/common/ConfirmModal';
+import { confirmAsync } from '../../src/components/common/ConfirmModal';
 import { Loader2, CheckCircle, XCircle, Clock, ArrowLeft, Home, Edit, Building2, MapPin, Phone, ArrowRight, Siren, HelpCircle, MessageSquare, Calendar } from 'lucide-react';
 import { toast } from 'sonner'; // [Phase 2] Error Handler
 
@@ -89,7 +89,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                 setReservations(res);
 
                 // Get subscription info
-                const sub = await getFacilitySubscription(facilityId);
+                const sub = await getFacilitySubscription(facilityId, client);
                 setSubscription(sub);
 
                 // Get consultations (using auth client for RLS)
@@ -208,10 +208,11 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
     }, [myFacilityId]);
 
     const handleApprove = async (reservationId: string) => {
-        if (!confirm('이 예약을 승인하시겠습니까?')) return;
+        if (!await confirmAsync('이 예약을 승인하시겠습니까?')) return;
 
         try {
-            await approveReservation(reservationId);
+            const client = await getAuthClient();
+            await approveReservation(reservationId, client);
             setReservations(prev => prev.map(r =>
                 r.id === reservationId ? { ...r, status: 'confirmed' as const } : r
             ));
@@ -226,7 +227,8 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
         const reason = prompt('거절 사유를 입력해주세요 (선택):');
 
         try {
-            await rejectReservation(reservationId, reason || undefined);
+            const client = await getAuthClient();
+            await rejectReservation(reservationId, reason || undefined, client);
             setReservations(prev => prev.map(r =>
                 r.id === reservationId ? { ...r, status: 'cancelled' as const } : r
             ));
@@ -264,7 +266,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                 <div className="flex gap-2">
                     <button
                         onClick={() => onNavigate(ViewState.SUBSCRIPTION_PLANS, { facilityId: myFacility?.id })}
-                        className="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg font-medium hover:from-purple-600 hover:to-purple-700 transition-all shadow-md text-sm"
+                        className="px-3 md:px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg font-medium hover:from-purple-600 hover:to-purple-700 transition-all shadow-md text-xs md:text-sm"
                     >
                         💎 구독 관리
                     </button>
@@ -278,7 +280,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                 </div>
             </div>
 
-            {(!subscription || !subscription.plan_id) && myFacility && (
+            {(!subscription || !subscription.plan_name) && myFacility && (
                 <div
                     onClick={() => onNavigate(ViewState.SUBSCRIPTION_PLANS, { facilityId: myFacility.id })}
                     className="mb-6 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-4 text-white shadow-lg cursor-pointer transform transition-transform hover:scale-[1.01] flex justify-between items-center group"
@@ -305,12 +307,12 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                                 <div className="flex items-center gap-2 mb-2">
                                     <Building2 size={18} className="text-primary" />
                                     <h3 className="font-bold text-gray-900">{myFacility.name}</h3>
-                                    {subscription?.plan_id === 'premium' && (
+                                    {(subscription?.plan_name === '프리미엄' || subscription?.plan_name?.toLowerCase() === 'premium') && (
                                         <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold border border-purple-200">
                                             PREMIUM
                                         </span>
                                     )}
-                                    {subscription?.plan_id === 'enterprise' && (
+                                    {(subscription?.plan_name === '엔터프라이즈' || subscription?.plan_name?.toLowerCase() === 'enterprise') && (
                                         <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold border border-amber-200">
                                             ENTERPRISE
                                         </span>
@@ -398,7 +400,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                     <button
                         key={tab.key}
                         onClick={() => setActiveTab(tab.key as any)}
-                        className={`flex-1 min-w-[60px] py-2 px-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap flex items-center justify-center gap-1 ${activeTab === tab.key
+                        className={`flex-shrink-0 md:flex-1 min-w-[60px] py-2 px-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap flex items-center justify-center gap-1 ${activeTab === tab.key
                             ? 'bg-primary text-white shadow-sm'
                             : 'bg-white text-gray-600 hover:bg-gray-50 border'
                             }`}
@@ -474,8 +476,6 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                     }
                 />
             ) : null}
-
-            <ConfirmModal />
 
             {/* Reservation Detail Modal with Admin Actions */}
             {selectedReservation && (

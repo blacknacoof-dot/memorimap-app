@@ -11,8 +11,8 @@ const streamPipeline = promisify(pipeline);
 const envPath = path.resolve(process.cwd(), '.env.local');
 dotenv.config({ path: envPath });
 
-const NAVER_CLIENT_ID = process.env.VITE_NAVER_CLIENT_ID || '';
-const NAVER_CLIENT_SECRET = process.env.VITE_NAVER_CLIENT_SECRET || '';
+const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID || '';
+const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET || '';
 
 const RAW_DATA = `1,프리드라이프,https://www.freedlife.com,https://logo.clearbit.com/freedlife.com
 2,교원라이프,https://www.kyowonlife.co.kr,https://logo.clearbit.com/kyowonlife.co.kr

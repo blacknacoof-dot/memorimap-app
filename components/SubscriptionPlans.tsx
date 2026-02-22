@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Check, X, Sparkles, Crown, Zap, ChevronDown, ChevronUp, MessageCircle, Mail, BarChart3, Star, ShieldCheck } from 'lucide-react';
-import { requestPayment, PORTONE_CONFIG } from '../lib/portone';
+import { requestPayment, verifyPayment, PORTONE_CONFIG } from '../lib/portone';
 import { toast } from 'sonner'; // [Phase 2] Error Handler
+import { useUser, useSession } from '../lib/auth';
+import { supabase, createAuthenticatedClient } from '../lib/supabaseClient';
 
 interface Plan {
     id: string;
@@ -156,19 +158,35 @@ interface SubscriptionPlansProps {
 }
 
 export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityId, type = 'facility' }: SubscriptionPlansProps) {
+    const { user } = useUser();
+    const { session } = useSession();
     const plans = type === 'sangjo' ? sangjoPlans : facilityPlans;
     const [selectedPlan, setSelectedPlan] = useState<string | null>(currentPlan || null);
     const [expandedPlan, setExpandedPlan] = useState<string | null>(type === 'sangjo' ? 'sj_professional' : 'premium');
     const [showInquiryModal, setShowInquiryModal] = useState(false);
     const [inquiryForm, setInquiryForm] = useState({ name: '', phone: '', email: '', message: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    const getAuthClient = async () => {
+        if (!session) return supabase;
+        try {
+            const token = await Promise.race([
+                session.getToken({ template: 'supabase' }),
+                new Promise<null>((r) => setTimeout(() => r(null), 8000)),
+            ]);
+            if (token) return createAuthenticatedClient(token);
+        } catch { /* fallback */ }
+        return supabase;
+    };
 
     React.useEffect(() => {
         const loadSub = async () => {
             if (facilityId) {
                 try {
+                    const authClient = await getAuthClient();
                     const { getFacilitySubscription } = await import('../lib/queries');
-                    const sub = await getFacilitySubscription(facilityId);
+                    const sub = await getFacilitySubscription(facilityId, authClient);
                     if (sub && sub.plan_id) {
                         setSelectedPlan(sub.plan_id);
                     }
@@ -181,6 +199,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
     }, [facilityId]);
 
     const handleSelectPlan = async (plan: Plan) => {
+        if (isProcessing) return;
         if (plan.id === 'free') {
             setSelectedPlan(plan.id);
             onSelectPlan?.(plan.id);
@@ -193,19 +212,21 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
             return;
         }
 
+        setIsProcessing(true);
         try {
+            const paymentId = `sub_${Date.now()}`;
             const response = await requestPayment({
                 storeId: PORTONE_CONFIG.STORE_ID,
                 channelKey: PORTONE_CONFIG.CHANNEL_KEY,
-                paymentId: `sub_${Date.now()}`,
+                paymentId,
                 orderName: `[추모맵] ${plan.name} 플랜`,
                 totalAmount: plan.price,
                 currency: "CURRENCY_KRW",
                 payMethod: "CARD",
                 customer: {
-                    fullName: "업체 관리자",
-                    phoneNumber: "010-0000-0000",
-                    email: "admin@facility.com",
+                    fullName: user?.fullName || user?.firstName || "업체 관리자",
+                    phoneNumber: user?.primaryPhoneNumber?.phoneNumber || "",
+                    email: user?.primaryEmailAddress?.emailAddress || "",
                 }
             });
 
@@ -214,11 +235,22 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                 return;
             }
 
+            // 서버사이드 결제 검증
+            const verification = await verifyPayment({
+                paymentId: response.paymentId || paymentId,
+                expectedAmount: plan.price,
+            });
+            if (!verification.verified) {
+                toast.error(verification.error || '결제 검증에 실패했습니다. 고객센터에 문의해주세요.');
+                return;
+            }
+
             // 결제 성공 → DB 구독 업데이트
             if (facilityId) {
                 try {
+                    const subClient = await getAuthClient();
                     const { updateFacilitySubscription } = await import('../lib/queries');
-                    await updateFacilitySubscription(facilityId, plan.nameEn);
+                    await updateFacilitySubscription(facilityId, plan.nameEn, subClient);
                 } catch (e) {
                     console.error('구독 DB 업데이트 실패:', e);
                     toast.error('결제는 완료되었으나 구독 정보 업데이트에 실패했습니다. 고객센터에 문의해주세요.');
@@ -231,6 +263,8 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
         } catch (error) {
             console.error('Payment error:', error);
             toast.error('결제 중 오류가 발생했습니다.');
+        } finally {
+            setIsProcessing(false);
         }
     };
 
@@ -322,12 +356,13 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
 
                                     <button
                                         onClick={() => handleSelectPlan(plan)}
-                                        className={`w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${isSelected
+                                        disabled={isSelected || isProcessing}
+                                        className={`w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${isSelected || isProcessing
                                             ? 'bg-slate-100 text-slate-400 cursor-default'
                                             : `bg-gradient-to-r ${plan.color} text-white shadow-lg shadow-blue-500/20`
                                             }`}
                                     >
-                                        {isSelected ? '현재 적용 중인 플랜' : `${plan.name} 시작하기`}
+                                        {isProcessing ? '결제 처리 중...' : isSelected ? '현재 적용 중인 플랜' : `${plan.name} 시작하기`}
                                     </button>
                                 </div>
                             )}
@@ -347,7 +382,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                         />
                         <FAQItem
                             question="플랜 변경이나 해지는 언제든 가능한가요?"
-                            answer="네, 가능합니다. 대시보드 설정에서 언제든 해지하실 수 있으며 남은 기간에 대해 환불 절차를 진행해 드립니다."
+                            answer="네, 가능합니다. 대시보드 설정에서 언제든 해지하실 수 있습니다. 환불 관련 문의는 고객센터(1:1 문의)로 연락 주시면 안내해 드립니다."
                         />
                         <FAQItem
                             question="AI 상담 데이터는 어떻게 학습되나요?"
@@ -386,7 +421,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                             </div>
                             <button
                                 onClick={() => setShowInquiryModal(false)}
-                                className="p-1.5 hover:bg-gray-100 rounded-full text-gray-400"
+                                className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-100 rounded-full text-gray-400"
                             >
                                 <X size={20} />
                             </button>
@@ -444,12 +479,14 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                                     try {
                                         const { supabase } = await import('../lib/supabaseClient');
                                         await supabase.from('partner_inquiries').insert({
-                                            name: inquiryForm.name,
+                                            user_id: 'anonymous',
+                                            contact_person: inquiryForm.name,
                                             phone: inquiryForm.phone,
                                             email: inquiryForm.email || null,
                                             message: inquiryForm.message || null,
-                                            inquiry_type: 'subscription',
-                                            facility_id: facilityId || null,
+                                            type: 'subscription',
+                                            target_facility_id: facilityId || null,
+                                            status: 'pending',
                                         });
                                         toast.success('문의가 접수되었습니다. 빠른 시일 내 연락드리겠습니다.');
                                         setShowInquiryModal(false);

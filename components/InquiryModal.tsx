@@ -3,7 +3,7 @@ import { X, Send, CheckCircle, MessageSquare, Building2, User, Phone, Mail, Spar
 import { toast } from 'sonner';
 import { supabase, createAuthenticatedClient } from '../lib/supabaseClient';
 import { useUser } from '../lib/auth';
-import { useSession } from '@clerk/clerk-react';
+import { useSession } from '../lib/auth';
 import { FUNERAL_COMPANIES } from '../constants';
 
 interface InquiryModalProps {
@@ -40,7 +40,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, ini
                 if (company) setFetchedCompanyName(company.name);
             } else {
                 const { data, error } = await supabase
-                    .from('memorial_spaces')
+                    .from('facilities')
                     .select('name')
                     .eq('id', facilityId)
                     .maybeSingle();
@@ -50,6 +50,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, ini
         };
 
         if (isOpen) {
+            setIsSuccess(false);
             fetchName();
             // Reset state
             setFormData(prev => ({
@@ -76,7 +77,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, ini
                 .from('partner_inquiries')
                 .insert({
                     user_id: user?.id || null,
-                    target_facility_id: (type === 'facility' && facilityId) ? parseInt(facilityId) : null,
+                    target_facility_id: (type === 'facility' && facilityId) ? facilityId : null,
                     target_brand_id: (type === 'sangjo' && facilityId) ? facilityId : null,
                     company_name: fetchedCompanyName || '알 수 없는 업체',
                     manager_name: formData.managerName,
@@ -105,12 +106,12 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, ini
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300 text-left">
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300 text-left">
             <div className="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl shadow-black/20 overflow-hidden relative animate-in zoom-in-95 slide-in-from-bottom-4 duration-500">
                 {/* Close Button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-6 right-6 p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-all z-20"
+                    className="absolute top-4 right-4 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-all z-20"
                 >
                     <X size={20} />
                 </button>

@@ -4,7 +4,7 @@ import { z } from 'zod';
 export const ReservationSchema = z.object({
     // Core Info
     id: z.string().uuid().optional(),
-    user_id: z.string().uuid().optional(),
+    user_id: z.string().min(1).optional(),
     facility_id: z.union([z.string(), z.number()]).optional(),
 
     // Core Info
@@ -19,7 +19,7 @@ export const ReservationSchema = z.object({
     request_note: z.string().optional(),
 
     // System
-    status: z.enum(['pending', 'confirmed', 'cancelled', 'rejected', 'urgent']).default('pending'),
+    status: z.enum(['pending', 'confirmed', 'cancelled', 'rejected', 'completed', 'no_show', 'urgent']).default('pending'),
     payment_amount: z.number().default(0),
     // Urgent / Funeral Specific (Optional)
     deceased_name: z.string().optional(),
@@ -41,17 +41,23 @@ export const MemorialSpaceSchema = z.object({
     id: z.union([z.string(), z.number()]),
     name: z.string().min(1, "시설명을 입력해주세요"),
     address: z.string().min(1, "주소를 입력해주세요"),
-    category: z.enum(['장례식장', '봉안시설', '자연장', '공원묘지', '동물장례', '해양장', '상조']),
+    category: z.enum([
+        // English codes
+        'funeral_home', 'columbarium', 'natural_burial', 'cemetery', 'pet_funeral', 'sea_burial',
+        // Korean labels (DB 레거시 호환)
+        '장례식장', '봉안시설', '자연장', '공원묘지', '동물장례', '해양장',
+        // 상조는 MemorialSpace(물리적 시설)가 아님 → 별도 관리
+    ]),
     ai_context: z.string().optional(),
     ai_features: z.array(z.string()).optional(),
     images: z.array(z.string()).optional(),
-    is_verified: z.boolean(),
+    verified: z.boolean(),
 });
 
 // [Step 3] Partner Inquiry Schema
 export const PartnerInquirySchema = z.object({
     id: z.string().uuid().optional(),
-    user_id: z.string().uuid().optional(),
+    user_id: z.string().min(1).optional(),
     company_name: z.string().min(1, "업체명을 입력해주세요"),
     business_type: z.enum(['funeral_home', 'sangjo', 'memorial_park', 'pet_funeral']),
     contact_person: z.string().min(1, "담당자명을 입력해주세요"), // Renamed

@@ -60,16 +60,16 @@ export function useCompanySelect({ facilities }: UseCompanySelectParams) {
         }
       }
 
-      // 1. Fetch Products from 'memorial_spaces' (Requires Integer ID)
-      if (legacyId) {
+      // 1. Fetch Products from 'facilities' (Requires UUID)
+      if (uuid) {
         const { data } = await supabase
-          .from('memorial_spaces')
-          .select('price_info')
-          .eq('id', legacyId)
+          .from('facilities')
+          .select('packages')
+          .eq('id', uuid)
           .maybeSingle();
 
-        if (data && data.price_info && data.price_info.products) {
-          productData = data.price_info.products;
+        if (data && data.packages && Array.isArray(data.packages) && data.packages.length > 0) {
+          productData = data.packages;
         }
       }
 
@@ -90,14 +90,14 @@ export function useCompanySelect({ facilities }: UseCompanySelectParams) {
       // Fallback: Fetch ID by name to get reviews
       try {
         const { data } = await supabase
-          .from('memorial_spaces')
-          .select('id, price_info')
+          .from('facilities')
+          .select('id, packages')
           .eq('name', company.name)
           .maybeSingle();
 
         if (data) {
-          if (data.price_info && data.price_info.products) {
-            productData = data.price_info.products;
+          if (data.packages && Array.isArray(data.packages) && data.packages.length > 0) {
+            productData = data.packages;
           }
           const { data: reviews } = await supabase
             .from('facility_reviews')

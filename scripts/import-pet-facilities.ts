@@ -13,8 +13,8 @@ const supabase = createClient(
     process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || ''
 );
 
-const NAVER_CLIENT_ID = process.env.VITE_NAVER_CLIENT_ID;
-const NAVER_CLIENT_SECRET = process.env.VITE_NAVER_CLIENT_SECRET;
+const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID;
+const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET;
 
 async function searchNaver(query: string, start = 1): Promise<any[]> {
     try {

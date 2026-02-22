@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
+import { confirmAsync } from '../../src/components/common/ConfirmModal';
 import {
     MapPin,
     Check,
@@ -22,7 +23,8 @@ import { ConsultationForm } from '../Consultation/BrandChatHelpers';
 // Safe Highlighting Component
 const SafeHighlight = ({ text, highlight }: { text: string, highlight: string }) => {
     if (!highlight.trim()) return <span>{text}</span>;
-    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+    const escaped = highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const parts = text.split(new RegExp(`(${escaped})`, 'gi'));
     return (
         <span>
             {parts.map((part, i) =>
@@ -152,7 +154,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                     .in('status', ['pending', 'urgent'])
                     .limit(1);
                 if (existingRes && existingRes.length > 0) {
-                    const willReplace = confirm('이미 접수된 추모시설 예약이 있습니다.\n새 시설로 변경하시겠습니까? (기존 예약은 자동 취소됩니다)');
+                    const willReplace = await confirmAsync('이미 접수된 추모시설 예약이 있습니다.\n새 시설로 변경하시겠습니까? (기존 예약은 자동 취소됩니다)');
                     if (!willReplace) return;
                     await authClient.from('reservations')
                         .update({ status: 'cancelled' })
@@ -170,7 +172,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                     visitor_count: 1,
                     purpose: 'memorial',
                     special_requests: `시설: ${facilityName || ''}\n${finalText}`,
-                    status: 'pending',
+                    status: 'waiting',
                     payment_amount: 0,
                 });
             } catch (e) {
@@ -234,7 +236,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                 .in('status', ['pending', 'urgent'])
                 .limit(1);
             if (existingRes && existingRes.length > 0) {
-                const willReplace = confirm('이미 접수된 추모시설 예약이 있습니다.\n새 시설로 변경하시겠습니까? (기존 예약은 자동 취소됩니다)');
+                const willReplace = await confirmAsync('이미 접수된 추모시설 예약이 있습니다.\n새 시설로 변경하시겠습니까? (기존 예약은 자동 취소됩니다)');
                 if (!willReplace) return;
                 await authClient.from('reservations')
                     .update({ status: 'cancelled' })
@@ -252,7 +254,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                 visitor_count: 1,
                 purpose: 'memorial',
                 special_requests: notes,
-                status: 'pending',
+                status: 'waiting',
                 payment_amount: 0,
             });
             if (error) throw error;
@@ -417,7 +419,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                 <div className="flex flex-wrap gap-1.5">
                     {MEMORIAL_TIMING_OPTIONS.map(opt => (
                         <button key={opt.id} onClick={() => setTiming(opt.id)}
-                            className={`px-3 py-2 rounded-lg text-xs font-bold border transition-all ${timing === opt.id
+                            className={`px-3 py-2 min-h-[44px] md:min-h-0 rounded-lg text-xs font-bold border transition-all ${timing === opt.id
                                 ? 'bg-emerald-600 border-emerald-600 text-white'
                                 : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-300'}`}>
                             {opt.label}
@@ -432,7 +434,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                 <div className="flex flex-wrap gap-1.5 mb-2">
                     {REGION_CHIPS.map(reg => (
                         <button key={reg} onClick={() => { setLocation(reg); setShowSuggestions(false); }}
-                            className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all ${location === reg
+                            className={`px-3 py-2 rounded-full text-xs font-bold border transition-all min-h-[44px] md:min-h-[36px] ${location === reg
                                 ? 'bg-emerald-600 border-emerald-600 text-white'
                                 : 'bg-white border-slate-200 text-slate-500 hover:border-emerald-300'}`}>
                             {reg}
@@ -468,7 +470,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                 <div className="flex flex-wrap gap-1.5">
                     {MEMORIAL_RELIGION_OPTIONS.map(opt => (
                         <button key={opt.id} onClick={() => setReligion(religion === opt.id ? '' : opt.id)}
-                            className={`px-3 py-2 rounded-lg text-xs font-bold border transition-all ${religion === opt.id
+                            className={`px-3 py-2 min-h-[44px] md:min-h-0 rounded-lg text-xs font-bold border transition-all ${religion === opt.id
                                 ? 'bg-emerald-600 border-emerald-600 text-white'
                                 : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-300'}`}>
                             {opt.icon} {opt.label}
@@ -483,7 +485,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                 <div className="flex flex-wrap gap-1.5">
                     {MEMORIAL_BUDGET_OPTIONS.map(opt => (
                         <button key={opt.id} onClick={() => setBudget(budget === opt.id ? '' : opt.id)}
-                            className={`px-3 py-2 rounded-lg text-xs font-bold border transition-all ${budget === opt.id
+                            className={`px-3 py-2 min-h-[44px] md:min-h-0 rounded-lg text-xs font-bold border transition-all ${budget === opt.id
                                 ? 'bg-emerald-600 border-emerald-600 text-white'
                                 : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-300'}`}>
                             {opt.label}

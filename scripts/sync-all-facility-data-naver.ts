@@ -14,8 +14,8 @@ dotenv.config({ path: '.env.local' });
 const supabaseUrl = process.env.VITE_SUPABASE_URL!;
 // Service Role Key 사용 (RLS 우회)
 const supabaseKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY!;
-const naverClientId = process.env.VITE_NAVER_CLIENT_ID!;
-const naverClientSecret = process.env.VITE_NAVER_CLIENT_SECRET!;
+const naverClientId = process.env.NAVER_CLIENT_ID!;
+const naverClientSecret = process.env.NAVER_CLIENT_SECRET!;
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 

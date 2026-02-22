@@ -3,8 +3,9 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { Notice, PartnerInquiry, Payment, Subscription } from '@/types/db';
 
 // --- 파트너 승인 API ---
-export const fetchPendingInquiries = async () => {
-    const { data, error } = await supabase
+export const fetchPendingInquiries = async (client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('partner_inquiries')
         .select('*')
         .eq('status', 'pending')
@@ -38,8 +39,9 @@ export const approvePartner = async (inquiry: PartnerInquiry) => {
     return data;
 };
 
-export const rejectPartner = async (id: string) => {
-    const { error } = await supabase
+export const rejectPartner = async (id: string, client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { error } = await db
         .from('partner_inquiries')
         .update({ status: 'rejected' })
         .eq('id', id);
@@ -55,9 +57,9 @@ export interface UserProfile {
     created_at: string;
 }
 
-export const fetchAllUsers = async () => {
-    // profiles 테이블 조회 (Super Admin RLS 정책 적용됨)
-    const { data, error } = await supabase
+export const fetchAllUsers = async (client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
@@ -66,22 +68,23 @@ export const fetchAllUsers = async () => {
     return data as UserProfile[];
 };
 
-export const updateUserRole = async (userId: string, newRole: string, client?: SupabaseClient) => {
+export const updateUserRole = async (userId: string, newRole: string, client?: SupabaseClient, actorId?: string) => {
     const db = client || supabase;
     const { error } = await db
         .from('profiles')
         .update({ role: newRole })
-        .eq('id', userId);
+        .eq('clerk_id', userId);
 
     if (error) throw error;
 
-    await db.from('audit_logs').insert([{
+    const { error: auditError } = await db.from('audit_logs').insert([{
         action: 'UPDATE_ROLE',
         target_resource: 'profiles',
         target_id: userId,
         details: { new_role: newRole },
-        status: 'success'
+        actor_id: actorId || 'system'
     }]);
+    if (auditError) console.warn('[updateUserRole] audit_log insert failed:', auditError.message);
 };
 
 // --- 시설 통합 관리 API [NEW] ---
@@ -93,8 +96,9 @@ export interface MemorialSpace {
     manager_id: string | null;
 }
 
-export const fetchAllFacilities = async () => {
-    const { data, error } = await supabase
+export const fetchAllFacilities = async (client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('facilities')
         .select('*')
         .order('created_at', { ascending: false });
@@ -103,9 +107,10 @@ export const fetchAllFacilities = async () => {
     return data as any[];
 };
 
-export const searchFacilities = async (query: string) => {
+export const searchFacilities = async (query: string, client?: SupabaseClient) => {
+    const db = client || supabase;
     const sanitized = query.trim().replace(/[%_\\]/g, '\\$&');
-    const { data, error } = await supabase
+    const { data, error } = await db
         .from('facilities')
         .select('*')
         .ilike('name', `%${sanitized}%`)
@@ -115,8 +120,9 @@ export const searchFacilities = async (query: string) => {
     return data as any[];
 };
 
-export const updateFacilityManager = async (facilityId: string, newManagerId: string | null) => {
-    const { error } = await supabase
+export const updateFacilityManager = async (facilityId: string, newManagerId: string | null, client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { error } = await db
         .from('facilities')
         .update({ user_id: newManagerId })
         .eq('id', facilityId);
@@ -126,8 +132,9 @@ export const updateFacilityManager = async (facilityId: string, newManagerId: st
 
 
 // --- 구독 관리 API ---
-export const fetchSubscriptions = async () => {
-    const { data, error } = await supabase
+export const fetchSubscriptions = async (client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('admin_subscriptions_with_facility')
         .select(`
             *,
@@ -160,12 +167,11 @@ export const fetchSubscriptions = async () => {
     }) as (Subscription & { facility_name: string, next_billing_date?: string })[];
 };
 
-export const updateSubscriptionBillingDate = async (facilityId: string, nextDate: string) => {
-    // Import from queries to avoid duplication or use direct supabase if preferred
-    // For Super Admin API, direct supabase is often cleaner if it's high-level
+export const updateSubscriptionBillingDate = async (facilityId: string, nextDate: string, client?: SupabaseClient) => {
+    const db = client || supabase;
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
 
-    let query = supabase.from('facility_subscriptions').update({
+    let query = db.from('facility_subscriptions').update({
         next_billing_date: nextDate,
         updated_at: new Date().toISOString()
     });
@@ -182,9 +188,9 @@ export const updateSubscriptionBillingDate = async (facilityId: string, nextDate
 };
 
 // --- 매출/결제 API ---
-export const fetchPayments = async () => {
-    // [Crucial] Fetch all payments regardless of joins to ensure Revenue count is correct
-    const { data: payments, error: pError } = await supabase
+export const fetchPayments = async (client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { data: payments, error: pError } = await db
         .from('subscription_payments')
         .select('*')
         .order('paid_at', { ascending: false });
@@ -196,7 +202,7 @@ export const fetchPayments = async () => {
 
     // Try to get facility names for display, but don't let it crash the revenue total
     try {
-        const { data: subs, error: sError } = await supabase
+        const { data: subs, error: sError } = await db
             .from('admin_subscriptions_with_facility')
             .select('id, facility_name');
 
@@ -216,8 +222,9 @@ export const fetchPayments = async () => {
 };
 
 // --- 공지사항 API ---
-export const fetchNotices = async () => {
-    const { data, error } = await supabase
+export const fetchNotices = async (client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('notices')
         .select('*')
         .order('created_at', { ascending: false });
@@ -246,10 +253,9 @@ export const deleteNotice = async (id: string, client?: SupabaseClient) => {
 };
 
 // --- 상담 신청 관리 API ---
-export const fetchLeads = async () => {
-    // [Fix] consultation_leads 테이블이 없으므로 consultations 테이블 사용
-    // Error hint suggests 'consultations' table exists.
-    const { data: leads, error } = await supabase
+export const fetchLeads = async (client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { data: leads, error } = await db
         .from('consultations')
         .select('*')
         .order('created_at', { ascending: false });
@@ -286,8 +292,9 @@ export interface AuditLog {
     created_at: string;
 }
 
-export const fetchAuditLogs = async () => {
-    const { data, error } = await supabase
+export const fetchAuditLogs = async (client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('audit_logs')
         .select('*')
         .order('created_at', { ascending: false })
@@ -302,13 +309,13 @@ export const fetchAuditLogs = async () => {
 };
 
 // --- 시스템 설정 API [NEW] ---
-export const fetchSystemSettings = async () => {
-    const { data, error } = await supabase
+export const fetchSystemSettings = async (client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('system_settings')
         .select('*');
 
     if (error) {
-        console.warn('system_settings table might not exist, using defaults');
         return [];
     }
     return data;

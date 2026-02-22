@@ -5,6 +5,7 @@ import { getDistinctRegions, getDistinctRegionsFromFacilities, getIntelligentRec
 import { createAuthenticatedClient } from '@/lib/supabaseClient';
 import { useSession } from '@/lib/auth';
 import { addSearchHistory } from '@/utils/searchHistory';
+import { confirmAsync } from '../../src/components/common/ConfirmModal';
 import { ConsultationForm } from '../Consultation/BrandChatHelpers';
 import {
     PET_TYPE_OPTIONS,
@@ -15,7 +16,8 @@ import {
 // Safe Highlighting Component
 const SafeHighlight = ({ text, highlight }: { text: string, highlight: string }) => {
     if (!highlight.trim()) return <span>{text}</span>;
-    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+    const escaped = highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const parts = text.split(new RegExp(`(${escaped})`, 'gi'));
     return (
         <span>
             {parts.map((part, i) =>
@@ -183,7 +185,7 @@ const PetSearchForm: React.FC<FormProps> = ({
                 .in('status', ['pending', 'urgent'])
                 .limit(1);
             if (existingRes && existingRes.length > 0) {
-                const willReplace = confirm('이미 접수된 동물장례 예약이 있습니다.\n새 시설로 변경하시겠습니까? (기존 예약은 자동 취소됩니다)');
+                const willReplace = await confirmAsync('이미 접수된 동물장례 예약이 있습니다.\n새 시설로 변경하시겠습니까? (기존 예약은 자동 취소됩니다)');
                 if (!willReplace) { setBookingId(null); setConsultFacility(null); return; }
                 await authClient.from('reservations')
                     .update({ status: 'cancelled' })
@@ -365,7 +367,7 @@ const PetSearchForm: React.FC<FormProps> = ({
                 <div className="flex gap-2">
                     {PET_TYPE_OPTIONS.map(opt => (
                         <button key={opt.id} onClick={() => setPetType(petType === opt.id ? '' : opt.id)}
-                            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-bold border transition-all ${petType === opt.id
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 min-h-[44px] md:min-h-0 rounded-lg text-xs font-bold border transition-all ${petType === opt.id
                                 ? 'bg-orange-500 border-orange-500 text-white'
                                 : 'bg-white border-slate-200 text-slate-600 hover:border-orange-300'}`}>
                             {opt.icon} {opt.label}
@@ -391,7 +393,7 @@ const PetSearchForm: React.FC<FormProps> = ({
                 <div className="grid grid-cols-2 gap-1.5">
                     {PET_WEIGHT_OPTIONS.map(opt => (
                         <button key={opt.id} onClick={() => setWeight(weight === opt.id ? '' : opt.id)}
-                            className={`px-3 py-2 rounded-lg text-xs font-bold border transition-all text-left ${weight === opt.id
+                            className={`px-3 py-2 min-h-[44px] md:min-h-0 rounded-lg text-xs font-bold border transition-all text-left ${weight === opt.id
                                 ? 'bg-orange-500 border-orange-500 text-white'
                                 : 'bg-white border-slate-200 text-slate-600 hover:border-orange-300'}`}>
                             {opt.label} <span className={`font-normal ${weight === opt.id ? 'text-orange-100' : 'text-slate-400'}`}>({opt.sub})</span>
@@ -406,7 +408,7 @@ const PetSearchForm: React.FC<FormProps> = ({
                 <div className="flex flex-wrap gap-1.5">
                     {PET_SERVICE_OPTIONS.map(opt => (
                         <button key={opt.id} onClick={() => toggleService(opt.id)}
-                            className={`px-3 py-2 rounded-lg text-xs font-bold border transition-all ${services.includes(opt.id)
+                            className={`px-3 py-2 min-h-[44px] md:min-h-0 rounded-lg text-xs font-bold border transition-all ${services.includes(opt.id)
                                 ? 'bg-orange-100 border-orange-400 text-orange-700'
                                 : 'bg-white border-slate-200 text-slate-600 hover:border-orange-300'}`}>
                             {opt.icon} {opt.label}
@@ -421,7 +423,7 @@ const PetSearchForm: React.FC<FormProps> = ({
                 <div className="flex flex-wrap gap-1.5 mb-2">
                     {REGION_CHIPS.map(reg => (
                         <button key={reg} onClick={() => { setRegion(reg); setShowSuggestions(false); }}
-                            className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all ${region === reg
+                            className={`px-3 py-2 rounded-full text-xs font-bold border transition-all min-h-[44px] md:min-h-[36px] ${region === reg
                                 ? 'bg-orange-500 border-orange-500 text-white'
                                 : 'bg-white border-slate-200 text-slate-500 hover:border-orange-300'}`}>
                             {reg}

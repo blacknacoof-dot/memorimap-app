@@ -2,11 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
     MessageSquare, User, Bot, Zap,
     CheckCircle, Send,
-    MoreHorizontal, Smartphone, Hash, MonitorDot, XCircle
+    MoreHorizontal, Smartphone, Hash, MonitorDot, XCircle, ArrowLeft
 } from 'lucide-react';
 import { toast } from 'sonner'; // [Phase 2] Error Handler
 import { supabase, createAuthenticatedClient } from '../../lib/supabaseClient';
-import { useSession } from '@clerk/clerk-react';
+import { useSession } from '../../lib/auth';
 import { PartnerConversation } from '../../types';
 
 interface LiveConsultationProps {
@@ -106,7 +106,7 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
         const updatedMessages = [...selected.messages, newMessage];
 
         const client = await getAuthClient();
-        await client
+        const { error } = await client
             .from('partner_conversations')
             .update({
                 messages: updatedMessages,
@@ -115,15 +115,27 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
             })
             .eq('id', selectedId);
 
+        if (error) {
+            toast.error('메시지 전송에 실패했습니다.');
+            return;
+        }
         setInput('');
+    };
+
+    const handleSelectConversation = (id: string) => {
+        setSelectedId(id);
+    };
+
+    const handleBack = () => {
+        setSelectedId(null);
     };
 
     const selectedConv = conversations.find(c => c.id === selectedId);
 
     return (
-        <div className="flex h-[calc(100vh-180px)] bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-            {/* Sidebar: Conversation List */}
-            <div className="w-80 border-r border-slate-100 flex flex-col bg-slate-50/30">
+        <div className="flex h-[calc(100dvh-180px)] bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            {/* Sidebar: Conversation List - hidden on mobile when chat is selected */}
+            <div className={`${selectedId ? 'hidden md:flex' : 'flex'} w-full md:w-80 border-r border-slate-100 flex-col bg-slate-50/30`}>
                 <div className="p-4 border-b border-slate-100 bg-white">
                     <h3 className="font-bold text-slate-800 flex items-center gap-2">
                         <Zap className="w-4 h-4 text-blue-600" />
@@ -134,8 +146,8 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
                     {conversations.map((conv) => (
                         <div
                             key={conv.id}
-                            onClick={() => setSelectedId(conv.id)}
-                            className={`p-4 cursor-pointer transition-all hover:bg-white ${selectedId === conv.id ? 'bg-white ring-2 ring-blue-500/10 z-10' : ''
+                            onClick={() => handleSelectConversation(conv.id)}
+                            className={`p-4 cursor-pointer transition-all hover:bg-white min-h-[44px] ${selectedId === conv.id ? 'bg-white ring-2 ring-blue-500/10 z-10' : ''
                                 } ${conv.conversation_status === 'agent_requested' ? 'bg-red-50/50' : ''}`}
                         >
                             <div className="flex justify-between items-start mb-1">
@@ -165,12 +177,19 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
                 </div>
             </div>
 
-            {/* Chat Area */}
+            {/* Chat Area - full width on mobile, flex-1 on desktop */}
             {selectedConv ? (
-                <div className="flex-1 flex flex-col bg-white">
+                <div className={`${selectedId ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-white`}>
                     {/* Chat Header */}
                     <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-white/50 backdrop-blur-sm">
                         <div className="flex items-center gap-3">
+                            {/* Mobile back button */}
+                            <button
+                                onClick={handleBack}
+                                className="md:hidden p-2 min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 text-slate-600 hover:bg-slate-100 rounded-xl"
+                            >
+                                <ArrowLeft size={20} />
+                            </button>
                             <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
                                 <User className="text-slate-400" size={20} />
                             </div>
@@ -178,7 +197,7 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
                                 <h4 className="font-bold text-slate-800 text-sm">{selectedConv.user_name || '익명 고객'}</h4>
                                 <div className="flex items-center gap-3">
                                     <span className="text-[10px] text-slate-500 flex items-center gap-1"><Smartphone size={10} /> {selectedConv.user_phone || '연락처 미제공'}</span>
-                                    <span className="text-[10px] text-blue-600 font-bold flex items-center gap-1"><Zap size={10} /> {selectedConv.conversation_status}</span>
+                                    <span className="text-[10px] text-blue-600 font-bold flex items-center gap-1 hidden sm:flex"><Zap size={10} /> {selectedConv.conversation_status}</span>
                                 </div>
                             </div>
                         </div>
@@ -186,22 +205,24 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
                             {selectedConv.conversation_status === 'ai_handling' && (
                                 <button
                                     onClick={handleHijack}
-                                    className="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 shadow-md flex items-center gap-2"
+                                    className="bg-blue-600 text-white px-3 md:px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-blue-700 shadow-md flex items-center gap-2 min-h-[44px]"
                                 >
-                                    <Bot size={14} /> 상담 개입하기
+                                    <Bot size={14} /> <span className="hidden sm:inline">상담</span> 개입
                                 </button>
                             )}
-                            <button className="p-2 text-slate-400 hover:bg-slate-100 rounded-xl">
+                            <button
+                                onClick={() => toast.info('추가 기능은 준비 중입니다.')}
+                                className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-400 hover:bg-slate-100 rounded-xl">
                                 <MoreHorizontal size={18} />
                             </button>
                         </div>
                     </div>
 
                     {/* Messages */}
-                    <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/30">
+                    <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-slate-50/30">
                         {selectedConv.messages.map((msg, i) => (
                             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-start' : 'justify-end'}`}>
-                                <div className={`max-w-[70%] rounded-2xl p-3 shadow-sm ${msg.role === 'user'
+                                <div className={`max-w-[85%] md:max-w-[70%] rounded-2xl p-3 shadow-sm ${msg.role === 'user'
                                     ? 'bg-white text-slate-700 rounded-tl-none border border-slate-100'
                                     : 'bg-slate-800 text-white rounded-tr-none'
                                     }`}>
@@ -215,7 +236,7 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
                     </div>
 
                     {/* Input */}
-                    <div className="p-4 bg-white border-t border-slate-100">
+                    <div className="p-4 bg-white border-t border-slate-100 pb-safe">
                         <div className="relative flex items-center gap-2">
                             <input
                                 type="text"
@@ -237,7 +258,7 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
                     </div>
                 </div>
             ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-slate-300 gap-4">
+                <div className="hidden md:flex flex-1 flex-col items-center justify-center text-slate-300 gap-4">
                     <MessageSquare size={64} className="opacity-10" />
                     <p className="font-bold text-slate-400 italic">왼쪽 목록에서 대화를 선택하세요.</p>
                 </div>

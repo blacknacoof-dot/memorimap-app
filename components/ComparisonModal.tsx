@@ -51,7 +51,7 @@ export const ComparisonModal: React.FC<Props> = ({ facilities, onClose, onRemove
                       </button>
                     </div>
                     <div className="absolute top-2 left-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full">
-                      {getCategoryLabel(normalizeCategoryValue(facility.category || facility.type) as any)}
+                      {getCategoryLabel(normalizeCategoryValue(facility.type || facility.category) as any)}
                     </div>
                   </div>
 

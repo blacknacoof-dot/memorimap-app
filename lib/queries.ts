@@ -22,8 +22,9 @@ export type PartnerCategoryType = keyof typeof PARTNER_CATEGORIES;
 /**
  * [추가] 중복 리뷰 작성 확인
  */
-export const checkExistingReview = async (userId: string, facilityId: string) => {
-    const { data, error } = await supabase
+export const checkExistingReview = async (userId: string, facilityId: string, client?: import('@supabase/supabase-js').SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('facility_reviews')
         .select('id')
         .eq('user_id', userId)
@@ -41,7 +42,8 @@ export const checkExistingReview = async (userId: string, facilityId: string) =>
 /**
  * [추가] 리뷰 이미지 업로드
  */
-export const uploadReviewImage = async (userId: string, file: File) => {
+export const uploadReviewImage = async (userId: string, file: File, client?: import('@supabase/supabase-js').SupabaseClient) => {
+    const db = client || supabase;
     // [Security] 파일 검증
     const validation = validateImageFile(file);
     if (!validation.valid) {
@@ -52,13 +54,13 @@ export const uploadReviewImage = async (userId: string, file: File) => {
     const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
     const filePath = `review-images/${userId}/${fileName}`;
 
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await db.storage
         .from('reviews') // 'reviews' bucket must exist in Supabase
         .upload(filePath, file);
 
     if (uploadError) throw uploadError;
 
-    const { data } = supabase.storage
+    const { data } = db.storage
         .from('reviews')
         .getPublicUrl(filePath);
 
@@ -186,6 +188,13 @@ export const getIntelligentRecommendations = async (
         '울산': ['울산광역시'], '울산광역시': ['울산'],
         '세종': ['세종특별자치시'], '세종특별자치시': ['세종'],
         '제주': ['제주특별자치도'], '제주특별자치도': ['제주'],
+        '강원': ['강원특별자치도', '강원도'], '강원특별자치도': ['강원', '강원도'], '강원도': ['강원', '강원특별자치도'],
+        '충북': ['충청북도'], '충청북도': ['충북'],
+        '충남': ['충청남도'], '충청남도': ['충남'],
+        '전북': ['전북특별자치도', '전라북도'], '전북특별자치도': ['전북', '전라북도'], '전라북도': ['전북', '전북특별자치도'],
+        '전남': ['전라남도'], '전라남도': ['전남'],
+        '경북': ['경상북도'], '경상북도': ['경북'],
+        '경남': ['경상남도'], '경상남도': ['경남'],
     };
 
     const addressContainsRegion = (address: string, region: string): boolean => {
@@ -432,8 +441,9 @@ export interface LeadInput {
     notes?: string;
 }
 
-export const createLead = async (leadData: LeadInput) => {
-    const { data, error } = await supabase
+export const createLead = async (leadData: LeadInput, client?: import('@supabase/supabase-js').SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('leads')
         .insert([{
             user_id: leadData.userId || null,
@@ -456,8 +466,9 @@ export const createLead = async (leadData: LeadInput) => {
     return data && data[0] ? data[0] : null;
 };
 
-export const createConsultationFromLead = async (leadId: string, facilityId: string) => {
-    const { data, error } = await supabase.rpc('create_consultation_from_lead', {
+export const createConsultationFromLead = async (leadId: string, facilityId: string, client?: import('@supabase/supabase-js').SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db.rpc('create_consultation_from_lead', {
         p_lead_id: leadId,
         p_facility_id: facilityId
     });
@@ -562,8 +573,10 @@ export const createUrgentReservation = async (
     userPhone: string,
     visitDate: Date, // Timestamp
     type: 'single' | 'couple',
-    notes: string = ''
+    notes: string = '',
+    client?: import('@supabase/supabase-js').SupabaseClient
 ) => {
+    const db = client || supabase;
     const leadResult = await createLead({
         userId,
         facilityId,
@@ -576,12 +589,12 @@ export const createUrgentReservation = async (
             reservation_time: visitDate.toISOString(),
             is_urgent_booking: true
         }
-    });
+    }, db);
 
     // if (leadError) throw leadError; // createLead throws internally if error
 
     // Additionally create a reservation record if table exists
-    const { data, error } = await supabase
+    const { data, error } = await db
         .from('reservations')
         .insert([
             {
@@ -607,8 +620,9 @@ export const createUrgentReservation = async (
     return data;
 };
 
-export const getConsultationHistory = async (userId: string) => {
-    const { data, error } = await supabase
+export const getConsultationHistory = async (userId: string, client?: import('@supabase/supabase-js').SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('consultations')
         .select(`
       *,
@@ -630,11 +644,18 @@ export const getConsultationHistory = async (userId: string) => {
     return data;
 };
 
-export const deleteConsultation = async (id: string) => {
-    const { error } = await supabase
+export const deleteConsultation = async (id: string, userId?: string, client?: import('@supabase/supabase-js').SupabaseClient) => {
+    const db = client || supabase;
+    let query = db
         .from('consultations')
         .delete()
         .eq('id', id);
+
+    if (userId) {
+        query = query.eq('user_id', userId);
+    }
+
+    const { error } = await query;
 
     if (error) {
         console.error('Error deleting consultation:', error);
@@ -680,12 +701,13 @@ export const getReviews = async (facilityId: string) => {
     }
 };
 
-export const getUserReviews = async (userId: string) => {
+export const getUserReviews = async (userId: string, client?: import('@supabase/supabase-js').SupabaseClient) => {
+    const db = client || supabase;
     let reviews: any[] = [];
 
 
 
-    const { data, error } = await supabase
+    const { data, error } = await db
         .from('facility_reviews')
         .select('*')
         .eq('user_id', userId)
@@ -714,8 +736,10 @@ export const createReview = async (
     rating: number,
     content: string,
     userName?: string,
-    images: string[] = []
+    images: string[] = [],
+    client?: import('@supabase/supabase-js').SupabaseClient
 ): Promise<any> => {
+    const db = client || supabase;
     const insertData = {
         facility_id: facilityId,
         user_id: userId,
@@ -728,7 +752,7 @@ export const createReview = async (
     };
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from('facility_reviews')
             .insert([insertData])
             .select()
@@ -746,9 +770,10 @@ export const createReview = async (
     }
 };
 
-export const deleteReview = async (reviewId: string) => {
+export const deleteReview = async (reviewId: string, client?: import('@supabase/supabase-js').SupabaseClient) => {
+    const db = client || supabase;
     try {
-        const { error } = await supabase
+        const { error } = await db
             .from('facility_reviews')
             .update({
                 is_active: false,
@@ -772,8 +797,9 @@ export const deleteReview = async (reviewId: string) => {
 /**
  * [추가] 시설 정보 업데이트
  */
-export const updateFacility = async (id: string, updates: any) => {
-    const { data, error } = await supabase
+export const updateFacility = async (id: string, updates: any, client?: import('@supabase/supabase-js').SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('facilities') // Changed from memorial_spaces
         .update(updates)
         .eq('id', id)
@@ -833,8 +859,44 @@ export const getFacilityReservations = async (facilityId: string) => {
         status: item.status as any
     }));
 };
-export const approveReservation = async (id: string) => {
-    const { data, error } = await supabase
+/**
+ * 예약 상태 변경 시 유저에게 인앱 알림 전송
+ */
+const notifyReservationStatusChange = async (
+    reservation: any,
+    newStatus: 'confirmed' | 'cancelled',
+    reason?: string
+) => {
+    if (!reservation?.user_id) return;
+
+    const facilityName = reservation.facility_name || '시설';
+    const visitDate = reservation.visit_date || '미정';
+
+    const title = newStatus === 'confirmed'
+        ? '예약이 승인되었습니다'
+        : '예약이 거절되었습니다';
+
+    const message = newStatus === 'confirmed'
+        ? `${facilityName} 예약이 승인되었습니다. 방문일: ${visitDate}`
+        : `${facilityName} 예약이 거절되었습니다.${reason ? ` 사유: ${reason}` : ''}`;
+
+    const type = newStatus === 'confirmed' ? 'success' : 'warning';
+
+    try {
+        await supabase.from('user_notifications').insert([{
+            user_id: reservation.user_id,
+            title,
+            message,
+            type,
+        }]);
+    } catch (e) {
+        // 알림 실패는 예약 처리를 블록하지 않음
+    }
+};
+
+export const approveReservation = async (id: string, client?: any) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('reservations')
         .update({ status: 'confirmed' })
         .eq('id', id)
@@ -845,23 +907,19 @@ export const approveReservation = async (id: string) => {
         console.error('Error approving reservation:', error);
         throw error;
     }
+
+    await notifyReservationStatusChange(data, 'confirmed');
     return data;
 };
 
-export const rejectReservation = async (id: string, reason?: string) => {
-    // 거절 사유를 notes에 추가하거나 별도 컬럼이 있다면 사용. 여기서는 notes에 [거절 사유] 형태로 추가
-    // 먼저 기존 notes를 가져와야 하나, 간단히 update로 처리. 
-    // 하지만 SQL update는 기존 값을 참조하기 어려우므로, 단순히 status만 변경하거나
-    // 클라이언트에서 notes를 합쳐서 보내주는게 맞음. 
-    // 여기서는 reason이 있으면 notes를 덮어쓰거나(단순화) 함.
-    // 더 안전하게는 status만 변경.
-
+export const rejectReservation = async (id: string, reason?: string, client?: any) => {
+    const db = client || supabase;
     const updateData: any = { status: 'cancelled' };
     if (reason) {
         updateData.notes = `[거절 사유] ${reason}`;
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await db
         .from('reservations')
         .update(updateData)
         .eq('id', id)
@@ -872,14 +930,32 @@ export const rejectReservation = async (id: string, reason?: string) => {
         console.error('Error rejecting reservation:', error);
         throw error;
     }
+
+    await notifyReservationStatusChange(data, 'cancelled', reason);
+
+    // 결제된 예약이 거절되면 환불 요청 플래그 기록
+    if (data?.payment_id) {
+        try {
+            const { requestRefund } = await import('./portone');
+            await requestRefund({
+                paymentId: data.payment_id,
+                reason: reason || '시설 측 예약 거절',
+                reservationId: id,
+            });
+        } catch (e) {
+            console.error('환불 요청 플래그 기록 실패:', e);
+        }
+    }
+
     return data;
 };
 
 /**
  * 사용자 본인의 예약 목록 조회
  */
-export const getMyReservations = async (userId: string) => {
-    const { data, error } = await supabase
+export const getMyReservations = async (userId: string, client?: any) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('reservations')
         .select('*')
         .eq('user_id', userId)
@@ -892,22 +968,25 @@ export const getMyReservations = async (userId: string) => {
 
     return (data || []).map((item: any) => ({
         id: item.id,
-        facilityId: item.facility_id,
-        facilityName: item.facility_name || '시설',
-        date: item.visit_date,
-        timeSlot: item.time_slot,
+        facility_id: item.facility_id,
+        facility_name: item.facility_name || '시설',
+        visit_date: item.visit_date,
+        time_slot: item.time_slot,
         status: item.status,
-        visitorCount: item.visitor_count || 1,
+        visitor_count: item.visitor_count || 1,
         message: item.message,
-        createdAt: item.created_at
+        created_at: item.created_at,
+        payment_id: item.payment_id,
+        visitor_name: item.visitor_name,
     }));
 };
 
 /**
  * 예약 취소
  */
-export const cancelReservation = async (id: string) => {
-    const { data, error } = await supabase
+export const cancelReservation = async (id: string, client?: any) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('reservations')
         .update({ status: 'cancelled' })
         .eq('id', id)
@@ -1011,12 +1090,13 @@ export const deleteFacilityFaq = async (faqId: string) => {
  */
 export const getReviewsBySpace = getReviews;
 
-export const getFacilitySubscription = async (facilityId: string) => {
+export const getFacilitySubscription = async (facilityId: string, client?: import('@supabase/supabase-js').SupabaseClient) => {
     try {
+        const db = client || supabase;
         const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
 
         // [New Strategy] Query both potential columns based on ID type
-        let query = supabase
+        let query = db
             .from('facility_subscriptions')
             .select(`
                 *,
@@ -1031,8 +1111,10 @@ export const getFacilitySubscription = async (facilityId: string) => {
         if (isUUID) {
             query = query.eq('facility_id_uuid', facilityId);
         } else {
-            // Legacy/BIGINT
-            query = query.or(`facility_id.eq.${facilityId},facility_id_bigint.eq.${facilityId}`);
+            // Legacy/BIGINT — 숫자만 허용 (PostgREST 필터 주입 방어)
+            const numericId = facilityId.replace(/[^0-9]/g, '');
+            if (!numericId) return null;
+            query = query.or(`facility_id.eq.${numericId},facility_id_bigint.eq.${numericId}`);
         }
 
         const { data, error } = await query.maybeSingle();
@@ -1359,15 +1441,33 @@ export const incrementAiUsage = async (facilityId: string) => {
     }
 };
 
-export const updateFacilitySubscription = async (facilityId: string, planId: string) => {
+export const updateFacilitySubscription = async (facilityId: string, planId: string, client?: import('@supabase/supabase-js').SupabaseClient) => {
+    const db = client || supabase;
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
 
-    // 1. 플랜 정보 조회 (가격 등) - 대소문자 구분 없이 조회
-    const { data: planData } = await supabase
+    // 1. 플랜 정보 조회 (가격 등) - name_en 우선, name fallback
+    let { data: planData } = await db
         .from('subscription_plans')
         .select('*')
         .ilike('name_en', planId)
-        .single();
+        .maybeSingle();
+
+    // name_en이 비어있으면 한글 name으로 재시도
+    if (!planData) {
+        const nameMap: Record<string, string> = {
+            'FREE': '무료', 'BASIC': '베이직', 'PREMIUM': '프리미엄', 'ENTERPRISE': '엔터프라이즈',
+            'SJ_STARTER': '상조 STARTER', 'SJ_PROFESSIONAL': '상조 PROFESSIONAL', 'SJ_ENTERPRISE': '상조 ENTERPRISE',
+        };
+        const korName = nameMap[planId.toUpperCase()];
+        if (korName) {
+            const { data: fallback } = await db
+                .from('subscription_plans')
+                .select('*')
+                .eq('name', korName)
+                .maybeSingle();
+            planData = fallback;
+        }
+    }
 
     // 다음 결제일 계산 (기본 1개월 뒤)
     const nextDate = new Date();
@@ -1391,7 +1491,7 @@ export const updateFacilitySubscription = async (facilityId: string, planId: str
     }
 
     // 2. 구독 정보 Upsert
-    const { data: subData, error: subError } = await supabase
+    const { data: subData, error: subError } = await db
         .from('facility_subscriptions')
         .upsert({
             ...upsertData,
@@ -1409,7 +1509,11 @@ export const updateFacilitySubscription = async (facilityId: string, planId: str
 
     // 3. 결제 내역 기록 (매출 통계용)
     if (planData && planData.price > 0 && subData) {
-        const { error: payError } = await supabase
+        const now = new Date();
+        const periodEnd = new Date(now);
+        periodEnd.setMonth(periodEnd.getMonth() + 1);
+
+        const { error: payError } = await db
             .from('subscription_payments')
             .insert([{
                 subscription_id: subData.id,
@@ -1417,8 +1521,9 @@ export const updateFacilitySubscription = async (facilityId: string, planId: str
                 final_amount: planData.price,
                 status: 'completed',
                 payment_method: 'card',
-                paid_at: new Date().toISOString(),
-                description: `[구독] ${planData.name} 플랜 결제`
+                paid_at: now.toISOString(),
+                billing_period_start: now.toISOString().split('T')[0],
+                billing_period_end: periodEnd.toISOString().split('T')[0],
             }]);
 
         if (payError) {
@@ -1545,7 +1650,7 @@ export const getPendingFacilities = async () => {
         const { data, error } = await supabase
             .from('facilities') // Changed from memorial_spaces
             .select('*')
-            .eq('is_verified', false)
+            .eq('verified', false)
             .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -1571,7 +1676,7 @@ export const approveFacility = async (facilityId: string) => {
         const { error } = await supabase
             .from('facilities') // Changed from memorial_spaces
             .update({
-                is_verified: true,
+                verified: true,
                 // verified_at: new Date().toISOString() // verified_at might not be in new schema, check if needed
             })
             .eq('id', facilityId);
@@ -1589,7 +1694,7 @@ export const rejectFacility = async (facilityId: string, rejectionReason: string
             .from('facilities') // Changed from memorial_spaces
             .update({
                 // status: 'rejected', // 'status' might not exist in facilities table
-                is_verified: false, // Just keep it unverified for now
+                verified: false, // Just keep it unverified for now
                 // rejection_reason: rejectionReason // Check if column exists
             })
             .eq('id', facilityId);
@@ -1701,7 +1806,7 @@ export const createFuneralConsultation = async (data: ConsultationData): Promise
             .from('consultations')
             .insert({
                 ...data,
-                status: 'pending'
+                status: 'waiting'
             })
             .select()
             .single();
@@ -1737,7 +1842,7 @@ export const createMemorialConsultation = async (data: {
             .from('consultations') // Changed from memorial_consultations
             .insert({
                 ...data,
-                status: 'pending'
+                status: 'waiting'
             })
             .select()
             .single();
@@ -1766,11 +1871,7 @@ export const getConsultationsByFacility = async (
             .order('created_at', { ascending: false });
 
         if (status) {
-            if (status === 'waiting') {
-                query = query.in('status', ['waiting', 'pending']);
-            } else {
-                query = query.eq('status', status);
-            }
+            query = query.eq('status', status);
         }
 
         const { data, error } = await query;
@@ -1817,7 +1918,7 @@ export const getConsultationsByUser = async (userId: string): Promise<Consultati
  */
 export const updateConsultationStatus = async (
     consultationId: string,
-    status: 'pending' | 'accepted' | 'cancelled' | 'completed',
+    status: 'pending' | 'waiting' | 'accepted' | 'cancelled' | 'completed',
     notes?: string,
     authClient?: import('@supabase/supabase-js').SupabaseClient
 ): Promise<boolean> => {

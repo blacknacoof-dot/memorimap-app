@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSession } from '@clerk/clerk-react';
+import { useSession } from '../lib/auth';
 import { useConfirmModal } from '../src/components/common/ConfirmModal';
 import { Plus, Edit, Trash, Save, Loader2 } from 'lucide-react';
 import { getFacilityFaqs, upsertFacilityFaq, deleteFacilityFaq, supabase } from '../lib/queries';

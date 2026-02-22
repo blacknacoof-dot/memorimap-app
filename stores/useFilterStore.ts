@@ -11,6 +11,7 @@ interface FilterState {
     toggleCategory: (category: FacilityCategoryType) => void;
     setSortBy: (sort: 'name' | 'created_at' | 'distance') => void;
     resetFilters: () => void;
+    resetCategories: () => void;
 }
 
 export const useFilterStore = create<FilterState>((set) => ({
@@ -23,13 +24,12 @@ export const useFilterStore = create<FilterState>((set) => ({
     toggleCategory: (category) => set((state) => {
         const isSelected = state.selectedCategories.includes(category);
         return {
-            selectedCategories: isSelected
-                ? state.selectedCategories.filter(c => c !== category)
-                : [...state.selectedCategories, category]
+            selectedCategories: isSelected ? [] : [category]
         };
     }),
 
     setSortBy: (sort) => set({ sortBy: sort }),
 
     resetFilters: () => set({ searchQuery: '', selectedCategories: [], sortBy: 'created_at' }),
+    resetCategories: () => set({ selectedCategories: [], sortBy: 'created_at' }),
 }));

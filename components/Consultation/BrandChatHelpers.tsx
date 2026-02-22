@@ -96,7 +96,7 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
 
     return (
         <div className="fixed inset-0 z-[500] flex items-end justify-center sm:items-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
-            <div className={`bg-white w-full max-w-sm max-h-[calc(100vh-2rem)] rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-slideUp ${isUrgent ? 'border-2 border-red-500' : isMemorial ? 'border-2 border-emerald-500' : ''}`}>
+            <div className={`bg-white w-full max-w-sm max-h-[calc(100dvh-2rem)] rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-slideUp ${isUrgent ? 'border-2 border-red-500' : isMemorial ? 'border-2 border-emerald-500' : ''}`}>
                 {/* Modal Header */}
                 <div className={`${headerColor} text-white p-5 pt-6 shadow-md shrink-0 flex justify-between items-center relative overflow-hidden`}>
                     {isUrgent && (

@@ -12,8 +12,8 @@ const supabase = createClient(
     process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || ''
 );
 
-const NAVER_CLIENT_ID = process.env.VITE_NAVER_CLIENT_ID || '';
-const NAVER_CLIENT_SECRET = process.env.VITE_NAVER_CLIENT_SECRET || '';
+const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID || '';
+const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET || '';
 
 // 네이버 검색 API 호출
 async function searchNaver(query: string): Promise<any> {
