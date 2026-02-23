@@ -22,9 +22,7 @@ const getCorsHeaders = (req: Request) => {
 };
 
 /**
- * [AUTH-14 FIX] JWT 검증 — PostgREST를 통한 서명 검증
- * Clerk JWT → Supabase에 전달 → PostgREST가 JWT 서명 검증 → clerk_user_id() RPC 호출
- * 유효하지 않은 JWT는 PostgREST 단에서 거부됨
+ * JWT 검증 — Supabase Auth native verification
  */
 async function verifyJWT(token: string): Promise<{ userId: string | null; error: string | null }> {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -35,18 +33,18 @@ async function verifyJWT(token: string): Promise<{ userId: string | null; error:
     }
 
     try {
-        const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
+        const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
             global: { headers: { Authorization: `Bearer ${token}` } },
             auth: { persistSession: false, autoRefreshToken: false },
         });
 
-        const { data: clerkId, error: rpcError } = await supabaseUser.rpc('clerk_user_id');
+        const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
 
-        if (rpcError || !clerkId) {
-            return { userId: null, error: rpcError?.message || 'Invalid or expired token' };
+        if (authError || !user) {
+            return { userId: null, error: authError?.message || 'Invalid or expired token' };
         }
 
-        return { userId: clerkId, error: null };
+        return { userId: user.id, error: null };
     } catch (e) {
         return { userId: null, error: e.message || 'Token verification failed' };
     }

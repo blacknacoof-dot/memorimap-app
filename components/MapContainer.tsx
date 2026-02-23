@@ -238,7 +238,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
         },
       });
     }
-  }, [filteredFacilities, isClusterReady]);
+  }, [filteredFacilities, isMapReady, isClusterReady]);
 
   // 3. Sync Center (Removed to prevent snapping back when user moves map)
   // The map is initialized with initialCenter, and manual movement should be preserved.

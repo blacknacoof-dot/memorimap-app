@@ -8,12 +8,12 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const NAVER_CLIENT_ID = process.env.VITE_NAVER_CLIENT_ID;
-const NAVER_CLIENT_SECRET = process.env.VITE_NAVER_CLIENT_SECRET;
+const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID;
+const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET;
 
 if (!NAVER_CLIENT_ID || !NAVER_CLIENT_SECRET) {
     console.error("❌ Error: Missing Naver API Keys in .env.local");
-    console.error("Expected: VITE_NAVER_CLIENT_ID, VITE_NAVER_CLIENT_SECRET");
+    console.error("Expected: NAVER_CLIENT_ID, NAVER_CLIENT_SECRET");
     process.exit(1);
 } else {
     console.log("✅ Naver API Keys detected.");

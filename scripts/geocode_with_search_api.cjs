@@ -9,11 +9,11 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const NAVER_CLIENT_ID = process.env.VITE_NAVER_CLIENT_ID;
-const NAVER_CLIENT_SECRET = process.env.VITE_NAVER_CLIENT_SECRET;
+const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID;
+const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET;
 
 if (!NAVER_CLIENT_ID || !NAVER_CLIENT_SECRET) {
-    console.error("❌ Error: Missing keys (VITE_NAVER_CLIENT_ID/SECRET)");
+    console.error("❌ Error: Missing keys (NAVER_CLIENT_ID/SECRET)");
     process.exit(1);
 }
 

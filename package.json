@@ -14,8 +14,6 @@
     "dev:light": "set NODE_OPTIONS=--max-old-space-size=4096 && vite"
   },
   "dependencies": {
-    "@clerk/clerk-react": "^5.2.0",
-    "@clerk/localizations": "^3.31.0",
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^5.2.2",
     "@supabase/supabase-js": "^2.39.3",
