@@ -173,24 +173,26 @@ const App: React.FC = () => {
   if (viewState === ViewState.ADMIN || viewState === ViewState.SUPER_ADMIN) {
     return (
       <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <Suspense fallback={<LoadingFallback />}>
-          <ContentRouter
-            viewState={viewState} setViewState={setViewState}
-            mapRef={mapRef} filteredFacilities={filteredFacilities}
-            handleFacilitySelect={handleFacilitySelect} handleMapBoundsChange={handleMapBoundsChange}
-            targetMapCenter={targetMapCenter} targetMapZoom={targetMapZoom} userLocation={userLocation}
-            compareList={compareList} setShowComparison={setShowComparison} toggleCompare={toggleCompare}
-            sangjoCompareList={sangjoCompareList} toggleSangjoCompare={toggleSangjoCompare} setShowSangjoComparison={setShowSangjoComparison}
-            facilities={facilities} isDataLoading={isDataLoading} showPromo={showPromo}
-            isSignedIn={isSignedIn} userInfo={userInfo} userRole={userRole} isLoadingRole={isLoadingRole}
-            reservations={reservations} handleUpdateReservation={handleUpdateReservation}
-            handleReviewDeleted={handleReviewDeleted} handleCompanySelect={handleCompanySelect}
-            handleLoginClick={handleLoginClick} showToast={showToast} setShowLoginModal={setShowLoginModal}
-            consultingFacility={consultingFacility} setConsultingFacility={setConsultingFacility}
-            selectedConsultation={selectedConsultation} setSelectedConsultation={setSelectedConsultation}
-            adminFacilityId={adminFacilityId} setAdminFacilityId={setAdminFacilityId} adminSangjoId={adminSangjoId}
-          />
-        </Suspense>
+        <ErrorBoundary>
+          <Suspense fallback={<LoadingFallback />}>
+            <ContentRouter
+              viewState={viewState} setViewState={setViewState}
+              mapRef={mapRef} filteredFacilities={filteredFacilities}
+              handleFacilitySelect={handleFacilitySelect} handleMapBoundsChange={handleMapBoundsChange}
+              targetMapCenter={targetMapCenter} targetMapZoom={targetMapZoom} userLocation={userLocation}
+              compareList={compareList} setShowComparison={setShowComparison} toggleCompare={toggleCompare}
+              sangjoCompareList={sangjoCompareList} toggleSangjoCompare={toggleSangjoCompare} setShowSangjoComparison={setShowSangjoComparison}
+              facilities={facilities} isDataLoading={isDataLoading} showPromo={showPromo}
+              isSignedIn={isSignedIn} userInfo={userInfo} userRole={userRole} isLoadingRole={isLoadingRole}
+              reservations={reservations} handleUpdateReservation={handleUpdateReservation}
+              handleReviewDeleted={handleReviewDeleted} handleCompanySelect={handleCompanySelect}
+              handleLoginClick={handleLoginClick} showToast={showToast} setShowLoginModal={setShowLoginModal}
+              consultingFacility={consultingFacility} setConsultingFacility={setConsultingFacility}
+              selectedConsultation={selectedConsultation} setSelectedConsultation={setSelectedConsultation}
+              adminFacilityId={adminFacilityId} setAdminFacilityId={setAdminFacilityId} adminSangjoId={adminSangjoId}
+            />
+          </Suspense>
+        </ErrorBoundary>
         <Toaster richColors position="top-center" closeButton />
       </HashRouter>
     );
