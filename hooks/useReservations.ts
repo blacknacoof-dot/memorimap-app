@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { supabase, createAuthenticatedClient } from '../lib/supabaseClient';
+import { getAuthClient } from '../lib/supabaseClient';
 import { useSession } from '../lib/auth';
 import { Reservation, ViewState } from '../types';
 
@@ -27,18 +27,6 @@ export const useReservations = (
   const [isBooking, setIsBooking] = useState(false);
   const { session } = useSession();
 
-  const getAuthClient = async () => {
-    if (!session) return supabase;
-    try {
-      const token = await Promise.race([
-        session.getToken({ template: 'supabase' }),
-        new Promise<null>((r) => setTimeout(() => r(null), 8000)),
-      ]);
-      if (token) return createAuthenticatedClient(token);
-    } catch { /* fallback */ }
-    return supabase;
-  };
-
   /**
    * 예약 확정 처리
    */
@@ -56,7 +44,7 @@ export const useReservations = (
     }
 
     try {
-      const client = await getAuthClient();
+      const client = await getAuthClient(session);
       const { data, error } = await client
         .from('reservations')
         .insert({
@@ -101,7 +89,7 @@ export const useReservations = (
    */
   const handleUpdateReservation = useCallback(async (id: string, status: 'confirmed' | 'cancelled') => {
     try {
-      const client = await getAuthClient();
+      const client = await getAuthClient(session);
       const { error } = await client
         .from('reservations')
         .update({ status })

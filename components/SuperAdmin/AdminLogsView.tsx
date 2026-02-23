@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { fetchAuditLogs, AuditLog } from '../../lib/api/superAdmin';
 import { History, User, ExternalLink, Clock } from 'lucide-react';
 import { toast } from 'sonner';
-import { createAuthenticatedClient } from '../../lib/supabaseClient';
+import { getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
 
 export const AdminLogsView: React.FC = () => {
@@ -10,19 +10,10 @@ export const AdminLogsView: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const { session } = useSession();
 
-    const getAuthClient = async () => {
-        try {
-            const token = await session?.getToken?.({ template: 'supabase' });
-            if (token) return createAuthenticatedClient(token);
-        } catch { /* fallback */ }
-        return null;
-    };
-
     const loadLogs = async () => {
         setLoading(true);
         try {
-            const client = await getAuthClient();
-            if (!client) { setLoading(false); return; }
+            const client = await getAuthClient(session, { strict: true });
             const data = await fetchAuditLogs(client);
             setLogs(data);
         } catch (error) {

@@ -1,15 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from '@/lib/auth';
-import { supabase, createAuthenticatedClient } from '@/lib/supabaseClient';
+import { getAuthClient } from '@/lib/supabaseClient';
 import { fetchLeads } from '@/lib/api/superAdmin';
-
-async function getAuthClient(session: any) {
-    try {
-        const token = await session?.getToken?.({ template: 'supabase' });
-        if (token) return createAuthenticatedClient(token);
-    } catch { /* fallback */ }
-    return supabase;
-}
 
 export interface Lead {
     id: string;
@@ -31,7 +23,7 @@ export function useLeads() {
     const loadLeads = async () => {
         setLoading(true);
         try {
-            const client = await getAuthClient(session);
+            const client = await getAuthClient(session, { strict: true });
             const data = await fetchLeads(client);
             setLeads(data as any || []);
         } catch (error) {

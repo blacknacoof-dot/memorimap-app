@@ -4,8 +4,9 @@ import { getConsultationsByFacility, updateConsultationStatus, Consultation } fr
 import { Clock, CheckCircle, XCircle, Check, Phone, MapPin, Users, Calendar, ChevronDown, RefreshCw } from 'lucide-react';
 import { aiConsultationService } from '@/lib/api/aiConsultation';
 import { AiConsultationStatus } from '@/types';
-import { supabase } from '@/lib/supabaseClient'; // [Realtime]
+import { supabase, getAuthClient } from '@/lib/supabaseClient'; // [Realtime]
 import { useApiRetry } from '@/hooks/useApiRetry';
+import { useSession } from '@/lib/auth';
 import { ConsultationActionModal } from './facility/ConsultationActionModal';
 
 interface Props {
@@ -49,6 +50,7 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [filter, setFilter] = useState<string>('all');
     const { callWithRetry } = useApiRetry();
+    const { session } = useSession();
     const [expandedId, setExpandedId] = useState<string | null>(null);
 
     // [Modal Logic]
@@ -126,7 +128,9 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
         if (!selectedConsultation) return;
 
         try {
+            const client = await getAuthClient(session, { strict: true });
             await aiConsultationService.updateStatus(
+                client,
                 selectedConsultation.id,
                 AiConsultationStatus.CONSULTATION_CONFIRMED,
                 {

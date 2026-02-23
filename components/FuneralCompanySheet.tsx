@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { FuneralCompany, Review } from '../types';
-import { supabase, createAuthenticatedClient } from '../lib/supabaseClient';
+import { getAuthClient } from '../lib/supabaseClient';
 import { useSession } from '../lib/auth';
 import { X, Star, Phone, MessageCircleQuestion, Heart, Share2, CheckCircle2, ShieldCheck, CreditCard, Gift, Bot, ChevronRight, Camera, User, ClipboardCheck, Trash2 } from 'lucide-react';
 import { ReviewCard } from './ReviewCard';
@@ -21,17 +21,6 @@ interface Props {
 export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenAIConsult, onOpenContract, currentUser, isLoggedIn = false, onOpenLogin }) => {
     const { session } = useSession();
 
-    const getAuthClient = async () => {
-        if (!session) return supabase;
-        try {
-            const token = await Promise.race([
-                session.getToken({ template: 'supabase' }),
-                new Promise<null>((r) => setTimeout(() => r(null), 8000)),
-            ]);
-            if (token) return createAuthenticatedClient(token);
-        } catch { /* fallback */ }
-        return supabase;
-    };
     const [activeTab, setActiveTab] = useState<'info' | 'gallery' | 'reviews' | 'benefits' | 'price'>('info');
 
     // 기본 후기 생성 (company별 안정적 시드)
@@ -101,7 +90,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
 
         setIsSubmittingReview(true);
         try {
-            const authClient = await getAuthClient();
+            const authClient = await getAuthClient(session);
             const { createReview } = await import('../lib/queries');
 
             const newReview = await createReview(
@@ -178,7 +167,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
     };
 
     return (
-        <div className="fixed inset-x-0 bottom-0 z-[250] bg-white rounded-t-3xl shadow-2xl transform transition-transform duration-300 max-h-[90dvh] h-[75dvh] md:h-[80dvh] flex flex-col md:max-w-md md:mx-auto">
+        <div className="fixed inset-x-0 bottom-0 z-[250] bg-white rounded-t-3xl shadow-2xl transform transition-transform duration-300 max-h-[90dvh] h-[75dvh] md:h-[80dvh] flex flex-col md:max-w-md md:mx-auto pb-safe">
             {/* Handle */}
             <div className="w-full flex justify-center pt-3 pb-1" onClick={onClose}>
                 <div className="w-12 h-1.5 bg-gray-300 rounded-full cursor-pointer"></div>
@@ -549,7 +538,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                                             isOwner={currentUser && (review.userId === currentUser.id || review.user_id === currentUser.id)}
                                             onDelete={async (reviewId) => {
                                                 try {
-                                                    const delClient = await getAuthClient();
+                                                    const delClient = await getAuthClient(session);
                                                     const { deleteReview } = await import('../lib/queries');
                                                     await deleteReview(reviewId, delClient);
 

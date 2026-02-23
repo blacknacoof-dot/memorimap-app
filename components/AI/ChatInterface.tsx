@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import { sendMessageToGemini, ChatMessage } from '../../services/geminiService';
-import { supabase, createAuthenticatedClient } from '../../lib/supabaseClient';
+import { getAuthClient } from '../../lib/supabaseClient';
 import { getFacilityLatestInfo } from '../../lib/queries';
 import { X, Send, MapPin, Phone, CalendarCheck, Loader2, Bot, Sparkles, Check } from 'lucide-react';
 import { ActionType, Message, Facility } from '../../types';
@@ -70,15 +70,6 @@ export const ChatInterface: React.FC<Props> = ({
     const { session } = useSession();
     const isPetFacility = facility.type === 'pet' || initialIntent === 'pet_funeral';
 
-    // Auth client helper for DB operations
-    const getAuthClient = async () => {
-        try {
-            const token = await session?.getToken?.({ template: 'supabase' });
-            if (token) return createAuthenticatedClient(token);
-        } catch { /* fallback */ }
-        return supabase;
-    };
-
     // [HOOKS FIX] All hooks MUST be declared before any conditional return
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
@@ -100,7 +91,7 @@ export const ChatInterface: React.FC<Props> = ({
     // [PDCA] System Logging Helper
     const logToSystem = async (level: 'INFO' | 'WARN' | 'ERROR', message: string, traceId?: string, meta: any = {}) => {
         try {
-            const client = await getAuthClient();
+            const client = await getAuthClient(session);
             // Fire and forget - don't await execution to avoid blocking UI
             client.from('system_logs').insert({
                 level,
@@ -441,7 +432,7 @@ export const ChatInterface: React.FC<Props> = ({
 
                 // [Phase 5] 리드 저장 (DB 연동)
                 try {
-                    const authClient = await getAuthClient();
+                    const authClient = await getAuthClient(session);
                     const lead = await createLead({
                         userId: currentUser?.id,
                         contactName: currentUser?.name || '익명 고객',
@@ -497,7 +488,7 @@ export const ChatInterface: React.FC<Props> = ({
                     visitDate.setHours(hours, minutes, 0, 0);
 
                     // Call DB
-                    const urgentClient = await getAuthClient();
+                    const urgentClient = await getAuthClient(session);
                     // @ts-ignore
                     await createUrgentReservation(
                         facility.id.toString(),
@@ -634,7 +625,7 @@ export const ChatInterface: React.FC<Props> = ({
                             });
 
                             // [PDCA] 2. Save to DB (Leads)
-                            const formClient = await getAuthClient();
+                            const formClient = await getAuthClient(session);
                             const lead = await createLead({
                                 userId: currentUser?.id,
                                 facilityId: facility.id.toString(), // Ensure string

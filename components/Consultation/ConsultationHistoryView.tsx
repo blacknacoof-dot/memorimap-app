@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useUser, useSession } from '../../lib/auth';
-import { supabase, createAuthenticatedClient } from '../../lib/supabaseClient';
+import { getAuthClient } from '../../lib/supabaseClient';
 import { getConsultationHistory, deleteConsultation } from '../../lib/queries';
 import { Consultation } from '../../types/consultation';
 import { MessageSquare, Clock, Trash2, ArrowLeft, Loader2 } from 'lucide-react';
@@ -20,18 +20,6 @@ export const ConsultationHistoryView: React.FC<Props> = ({ facilities, onBack, o
     const [history, setHistory] = useState<Consultation[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const getAuthClient = async () => {
-        if (!session) return supabase;
-        try {
-            const token = await Promise.race([
-                session.getToken({ template: 'supabase' }),
-                new Promise<null>((r) => setTimeout(() => r(null), 8000)),
-            ]);
-            if (token) return createAuthenticatedClient(token);
-        } catch { /* fallback */ }
-        return supabase;
-    };
-
     useEffect(() => {
         if (user) {
             loadHistory();
@@ -42,7 +30,7 @@ export const ConsultationHistoryView: React.FC<Props> = ({ facilities, onBack, o
         if (!user) return;
         setLoading(true);
         try {
-            const client = await getAuthClient();
+            const client = await getAuthClient(session);
             const data = await getConsultationHistory(user.id, client);
             setHistory(data);
         } finally {
@@ -54,7 +42,7 @@ export const ConsultationHistoryView: React.FC<Props> = ({ facilities, onBack, o
         e.stopPropagation();
         if (!await confirmAsync('정말 이 상담 내역을 삭제하시겠습니까?')) return;
         try {
-            const client = await getAuthClient();
+            const client = await getAuthClient(session);
             await deleteConsultation(id, undefined, client);
             setHistory(prev => prev.filter(c => c.id !== id));
         } catch (err) {

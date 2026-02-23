@@ -1,16 +1,8 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useSession } from '@/lib/auth';
-import { supabase, createAuthenticatedClient } from '@/lib/supabaseClient';
+import { getAuthClient } from '@/lib/supabaseClient';
 import { fetchAllUsers, updateUserRole, UserProfile } from '@/lib/api/superAdmin';
-
-async function getAuthClient(session: any) {
-    try {
-        const token = await session?.getToken?.({ template: 'supabase' });
-        if (token) return createAuthenticatedClient(token);
-    } catch { /* fallback */ }
-    return supabase;
-}
 
 export function useAllUsers() {
     const { session } = useSession();
@@ -20,7 +12,7 @@ export function useAllUsers() {
     const fetchUsers = async () => {
         setLoading(true);
         try {
-            const client = await getAuthClient(session);
+            const client = await getAuthClient(session, { strict: true });
             const data = await fetchAllUsers(client);
             setUsers(data);
         } catch (error) {
@@ -32,7 +24,7 @@ export function useAllUsers() {
 
     const updateRole = async (userId: string, newRole: string) => {
         try {
-            const client = await getAuthClient(session);
+            const client = await getAuthClient(session, { strict: true });
             await updateUserRole(userId, newRole, client);
             toast.success('권한이 변경되었습니다.');
             await fetchUsers();

@@ -3,7 +3,7 @@ import { Check, X, Sparkles, Crown, Zap, ChevronDown, ChevronUp, MessageCircle, 
 import { requestPayment, verifyPayment, PORTONE_CONFIG } from '../lib/portone';
 import { toast } from 'sonner'; // [Phase 2] Error Handler
 import { useUser, useSession } from '../lib/auth';
-import { supabase, createAuthenticatedClient } from '../lib/supabaseClient';
+import { getAuthClient } from '../lib/supabaseClient';
 
 interface Plan {
     id: string;
@@ -168,23 +168,11 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
 
-    const getAuthClient = async () => {
-        if (!session) return supabase;
-        try {
-            const token = await Promise.race([
-                session.getToken({ template: 'supabase' }),
-                new Promise<null>((r) => setTimeout(() => r(null), 8000)),
-            ]);
-            if (token) return createAuthenticatedClient(token);
-        } catch { /* fallback */ }
-        return supabase;
-    };
-
     React.useEffect(() => {
         const loadSub = async () => {
             if (facilityId) {
                 try {
-                    const authClient = await getAuthClient();
+                    const authClient = await getAuthClient(session);
                     const { getFacilitySubscription } = await import('../lib/queries');
                     const sub = await getFacilitySubscription(facilityId, authClient);
                     if (sub && sub.plan_id) {
@@ -248,7 +236,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
             // 결제 성공 → DB 구독 업데이트
             if (facilityId) {
                 try {
-                    const subClient = await getAuthClient();
+                    const subClient = await getAuthClient(session);
                     const { updateFacilitySubscription } = await import('../lib/queries');
                     await updateFacilitySubscription(facilityId, plan.nameEn, subClient);
                 } catch (e) {

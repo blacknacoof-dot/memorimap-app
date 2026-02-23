@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Star, Send, Loader2, Image as ImageIcon, X } from 'lucide-react';
 import { createReview } from '../lib/queries';
 import { useUser, useSession } from '../lib/auth';
-import { supabase, createAuthenticatedClient } from '../lib/supabaseClient';
+import { getAuthClient } from '../lib/supabaseClient';
 import { toast } from 'sonner'; // [Phase 2] Error Handler
 
 import { Reservation } from '../types';
@@ -31,23 +31,11 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
     const [hasExistingReview, setHasExistingReview] = useState(false);
     const [isChecking, setIsChecking] = useState(true);
 
-    const getAuthClient = async () => {
-        if (!session) return supabase;
-        try {
-            const token = await Promise.race([
-                session.getToken({ template: 'supabase' }),
-                new Promise<null>((r) => setTimeout(() => r(null), 8000)),
-            ]);
-            if (token) return createAuthenticatedClient(token);
-        } catch { /* fallback */ }
-        return supabase;
-    };
-
     // Initial Requirement Check
     useEffect(() => {
         const checkRequirements = async () => {
             if (isSignedIn && user && hasConfirmedReservation) {
-                const client = await getAuthClient();
+                const client = await getAuthClient(session);
                 const checked = await import('../lib/queries').then(m => m.checkExistingReview(user.id, spaceId, client));
                 setHasExistingReview(checked);
             }
@@ -103,7 +91,7 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
 
         setIsSubmitting(true);
         try {
-            const authClient = await getAuthClient();
+            const authClient = await getAuthClient(session);
             // 1. 이미지 업로드
             const imageUrls: string[] = [];
             if (images.length > 0) {

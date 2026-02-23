@@ -13,7 +13,7 @@ import { sangjoFavoriteService, SangjoFavorite } from '../services/sangjoFavorit
 import { FUNERAL_COMPANIES } from '../constants';
 import { toast } from 'sonner';
 import { MyConsultations } from './dashboard/MyConsultations';
-import { supabase, createAuthenticatedClient } from '../lib/supabaseClient';
+import { getAuthClient } from '../lib/supabaseClient';
 import { useSession } from '../lib/auth';
 
 import IntegratedJourneyView from './IntegratedJourneyView';
@@ -60,21 +60,6 @@ export const MyPageView: React.FC<Props> = ({
     const [journeyRefreshKey, setJourneyRefreshKey] = useState(0);
     const { session } = useSession();
 
-    /** Clerk JWT 토큰으로 인증된 Supabase 클라이언트 반환 (8초 타임아웃) */
-    const getAuthClient = async () => {
-        if (!session) return supabase;
-        try {
-            const token = await Promise.race([
-                session.getToken({ template: 'supabase' }),
-                new Promise<null>((r) => setTimeout(() => r(null), 8000)),
-            ]);
-            if (token) return createAuthenticatedClient(token);
-        } catch (e) {
-            console.error('[MyPage] Failed to get auth token:', e);
-        }
-        return supabase;
-    };
-
     useEffect(() => {
         if (isLoggedIn && user) {
             fetchMyReservations();
@@ -87,7 +72,7 @@ export const MyPageView: React.FC<Props> = ({
 
     const fetchUserPhone = async () => {
         if (!user) return;
-        const client = await getAuthClient();
+        const client = await getAuthClient(session);
         const phone = await getUserPhoneNumber(user.id, client);
         setUserPhone(phone || '');
     };
@@ -96,7 +81,7 @@ export const MyPageView: React.FC<Props> = ({
         if (!user) return;
         setIsLoadingReservations(true);
         try {
-            const client = await getAuthClient();
+            const client = await getAuthClient(session);
             const data = await getMyReservations(user.id, client);
             setMyReservations(data as unknown as Reservation[]);
         } catch (err) {
@@ -110,7 +95,7 @@ export const MyPageView: React.FC<Props> = ({
         if (!isLoggedIn || !user?.id) return;
         setIsLoadingFavorites(true);
         try {
-            const client = await getAuthClient();
+            const client = await getAuthClient(session);
             const { data: favData, error: favError } = await client
                 .from('favorites')
                 .select('*')
@@ -174,7 +159,7 @@ export const MyPageView: React.FC<Props> = ({
     const fetchConsultationCount = async () => {
         if (!user) return;
         try {
-            const client = await getAuthClient();
+            const client = await getAuthClient(session);
             const { count } = await client
                 .from('consultations')
                 .select('*', { count: 'exact', head: true })
@@ -189,7 +174,7 @@ export const MyPageView: React.FC<Props> = ({
         if (!user) return;
         setIsLoadingSangjoFavorites(true);
         try {
-            const client = await getAuthClient();
+            const client = await getAuthClient(session);
             const { data, error } = await client
                 .from('sangjo_favorites')
                 .select('*')
@@ -208,7 +193,7 @@ export const MyPageView: React.FC<Props> = ({
         if (!user) return;
         if (!await confirmAsync('즐겨찾기를 해제하시겠습니까?')) return;
         try {
-            const client = await getAuthClient();
+            const client = await getAuthClient(session);
             const { error } = await client
                 .from('sangjo_favorites')
                 .delete()
@@ -228,7 +213,7 @@ export const MyPageView: React.FC<Props> = ({
         if (!await confirmAsync('정말로 예약을 취소하시겠습니까?')) return;
 
         try {
-            const client = await getAuthClient();
+            const client = await getAuthClient(session);
             await cancelReservation(reservationId, client);
             setMyReservations(prev => prev.map(r =>
                 r.id === reservationId ? { ...r, status: 'cancelled' as const } : r

@@ -5,7 +5,7 @@ import {
     Type, Globe, Plus, Trash2, Bot
 } from 'lucide-react';
 import { toast } from 'sonner'; // [Phase 2] Error Handler
-import { supabase, createAuthenticatedClient } from '../../lib/supabaseClient';
+import { getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
 import { Partner } from '../../types';
 
@@ -19,24 +19,12 @@ export const AIConfiguration: React.FC<AIConfigurationProps> = ({ partnerId }) =
     const [saving, setSaving] = useState(false);
     const { session } = useSession();
 
-    const getAuthClient = async () => {
-        if (!session) return supabase;
-        try {
-            const token = await Promise.race([
-                session.getToken({ template: 'supabase' }),
-                new Promise<null>((r) => setTimeout(() => r(null), 8000)),
-            ]);
-            if (token) return createAuthenticatedClient(token);
-        } catch { /* fallback */ }
-        return supabase;
-    };
-
     useEffect(() => {
         loadPartner();
     }, [partnerId]);
 
     const loadPartner = async () => {
-        const client = await getAuthClient();
+        const client = await getAuthClient(session);
         const { data } = await client
             .from('partners')
             .select('*')
@@ -49,7 +37,7 @@ export const AIConfiguration: React.FC<AIConfigurationProps> = ({ partnerId }) =
     const handleSave = async () => {
         if (!partner) return;
         setSaving(true);
-        const client = await getAuthClient();
+        const client = await getAuthClient(session);
         const { error } = await client
             .from('partners')
             .update({ ai_context: partner.ai_context })

@@ -4,7 +4,7 @@ import {
     Search, MapPin, Phone, MessageSquare,
     ChevronRight, BellRing, User
 } from 'lucide-react';
-import { supabase, createAuthenticatedClient } from '../../lib/supabaseClient';
+import { supabase, getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
 import { SangjoContract, AiConsultation, AiConsultationStatus } from '../../types';
 import { aiConsultationService } from '../../lib/api/aiConsultation';
@@ -23,8 +23,8 @@ export const ContractMonitoring: React.FC = () => {
     useEffect(() => {
         const initAuth = async () => {
             try {
-                const token = await session?.getToken?.({ template: 'supabase' });
-                if (token) setAuthClient(createAuthenticatedClient(token));
+                const client = await getAuthClient(session, { strict: true });
+                setAuthClient(client);
             } catch { /* fallback */ }
         };
         initAuth();
@@ -162,9 +162,15 @@ export const ContractMonitoring: React.FC = () => {
         }
 
         try {
+            if (!authClient) {
+                toast.error('인증 세션이 필요합니다.');
+                return;
+            }
+
             // [API] 상태 변경 시도 (Atomic Lock 동작)
             // lib/api/aiConsultation.ts의 updateStatus는 WHERE status='AI_HANDLING' 조건을 포함함
             await aiConsultationService.updateStatus(
+                authClient,
                 consultation.conversation_id,
                 AiConsultationStatus.AGENT_CONNECTED
             );
@@ -184,7 +190,7 @@ export const ContractMonitoring: React.FC = () => {
             );
 
         } catch (error: any) {
-            console.error('Join Chat Error:', error);
+            // Join Chat Error — toast로 사용자에게 알림
             // 2차 방어: DB 업데이트 실패 (0 rows affecting -> .single() throws error)
             // PGRST116: The result contains 0 rows
             if (error.code === 'PGRST116' || error.message?.includes('0 rows')) {

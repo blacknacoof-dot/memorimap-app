@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase, createAuthenticatedClient } from '@/lib/supabaseClient';
+import { getAuthClient } from '@/lib/supabaseClient';
 import { useSession } from '@/lib/auth';
 import { PartnerInquiry } from '@/types/db';
 
@@ -16,11 +16,7 @@ export function usePartnerInquiries(options: UsePartnerInquiriesOptions = {}) {
     return useQuery({
         queryKey: ['partner-inquiries', status, page, !!session],
         queryFn: async () => {
-            let client = supabase;
-            try {
-                const token = await session?.getToken?.({ template: 'supabase' });
-                if (token) client = createAuthenticatedClient(token);
-            } catch { /* fallback */ }
+            const client = await getAuthClient(session, { strict: true });
 
             let query = client
                 .from('partner_inquiries')
@@ -54,8 +50,8 @@ export function usePartnerInquiries(options: UsePartnerInquiriesOptions = {}) {
 
             return {
                 data: uniqueData,
-                totalCount: uniqueData.length,
-                totalPages: Math.ceil(uniqueData.length / pageSize),
+                totalCount: count ?? uniqueData.length,
+                totalPages: Math.ceil((count ?? uniqueData.length) / pageSize),
                 currentPage: page
             };
         },

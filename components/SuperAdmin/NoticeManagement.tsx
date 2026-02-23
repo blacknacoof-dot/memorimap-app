@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { getPlatformNotices, createPlatformNotice, updatePlatformNotice, deletePlatformNotice } from '../../lib/sangjoQueries';
 import { PlatformNotice } from '../../types';
 import { confirmAsync } from '../../src/components/common/ConfirmModal';
-import { createAuthenticatedClient } from '../../lib/supabaseClient';
+import { getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
 
 export const NoticeManagement: React.FC = () => {
@@ -20,14 +20,6 @@ export const NoticeManagement: React.FC = () => {
     const [formData, setFormData] = useState({ title: '', content: '', notice_type: 'info' as string });
     const { session } = useSession();
 
-    const getAuthClient = async () => {
-        try {
-            const token = await session?.getToken?.({ template: 'supabase' });
-            if (token) return createAuthenticatedClient(token);
-        } catch { /* fallback */ }
-        return null;
-    };
-
     useEffect(() => {
         loadNotices();
     }, [session]);
@@ -35,11 +27,11 @@ export const NoticeManagement: React.FC = () => {
     const loadNotices = async () => {
         setLoading(true);
         try {
-            const client = await getAuthClient();
-            const data = await getPlatformNotices(undefined, client || undefined);
+            const client = await getAuthClient(session, { strict: true });
+            const data = await getPlatformNotices(undefined, client);
             setNotices(data);
         } catch (err) {
-            console.error('공지사항 로딩 실패:', err);
+            // 공지사항 로딩 실패 — toast 없이 조용히 처리
         } finally {
             setLoading(false);
         }
@@ -60,8 +52,7 @@ export const NoticeManagement: React.FC = () => {
     const handleDelete = async (notice: PlatformNotice) => {
         if (!await confirmAsync(`"${notice.title}" 공지를 삭제하시겠습니까?`)) return;
         try {
-            const client = await getAuthClient();
-            if (!client) { toast.error('인증 세션이 필요합니다.'); return; }
+            const client = await getAuthClient(session, { strict: true });
             await deletePlatformNotice(notice.id, client);
             setNotices(prev => prev.filter(n => n.id !== notice.id));
             toast.success('공지가 삭제되었습니다.');
@@ -76,8 +67,7 @@ export const NoticeManagement: React.FC = () => {
             return;
         }
         try {
-            const client = await getAuthClient();
-            if (!client) { toast.error('인증 세션이 필요합니다.'); return; }
+            const client = await getAuthClient(session, { strict: true });
             if (editingNotice) {
                 await updatePlatformNotice(editingNotice.id, formData, client);
                 toast.success('공지가 수정되었습니다.');

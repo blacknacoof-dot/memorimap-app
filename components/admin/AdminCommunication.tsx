@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { createNotice, getNotices, getInquiries, Inquiry } from '../../lib/queries';
 import { Loader2, Send, MessageSquare, Megaphone, CheckCircle } from 'lucide-react';
+import { getAuthClient } from '../../lib/supabaseClient';
+import { useSession } from '../../lib/auth';
 
 export const AdminCommunication: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'notices' | 'inquiries' | 'customer_support'>('notices');
@@ -10,6 +12,7 @@ export const AdminCommunication: React.FC = () => {
     const [supportInquiries, setSupportInquiries] = useState<any[]>([]);
     const [expandedSupport, setExpandedSupport] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const { session } = useSession();
 
     // Notice Form
     const [noticeTitle, setNoticeTitle] = useState('');
@@ -18,15 +21,16 @@ export const AdminCommunication: React.FC = () => {
     const loadData = async () => {
         setIsLoading(true);
         try {
+            const client = await getAuthClient(session, { strict: true });
             if (activeTab === 'notices') {
-                const data = await getNotices();
+                const data = await getNotices(client);
                 setNotices(data);
             } else if (activeTab === 'customer_support') {
-                const data = await getInquiries();
+                const data = await getInquiries(client);
                 const all = data as unknown as any[];
                 setSupportInquiries(all.filter((i: any) => i.type === 'customer_support' || i.inquiryType === 'customer_support'));
             } else {
-                const data = await getInquiries();
+                const data = await getInquiries(client);
                 const all = data as unknown as any[];
                 setInquiries(all.filter((i: any) => i.type !== 'customer_support' && i.inquiryType !== 'customer_support') as Inquiry[]);
             }
@@ -38,13 +42,14 @@ export const AdminCommunication: React.FC = () => {
     };
 
     useEffect(() => {
-        loadData();
-    }, [activeTab]);
+        if (session) loadData();
+    }, [activeTab, session]);
 
     const handleNoticeSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await createNotice(noticeTitle, noticeContent);
+            const client = await getAuthClient(session, { strict: true });
+            await createNotice(noticeTitle, noticeContent, client);
             toast.success('공지사항이 등록되었습니다.');
             setNoticeTitle('');
             setNoticeContent('');

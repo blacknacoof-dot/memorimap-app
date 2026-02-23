@@ -5,10 +5,11 @@ import {
     Zap, ChevronRight, RefreshCw, AlertTriangle,
     Siren, ClipboardList, CreditCard, Calendar
 } from 'lucide-react';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase, getAuthClient } from '../../lib/supabaseClient';
 import { Partner, AiConsultationStatus, Message as DbMessage } from '../../types';
 import { aiConsultationService } from '../../lib/api/aiConsultation';
-import { useUser, useClerk } from '../../lib/auth';
+import { useUser, useClerk, useSession } from '../../lib/auth';
+
 
 interface ScenarioBotProps {
     partnerId: string;
@@ -33,6 +34,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
     const [isSyncing, setIsSyncing] = useState(false);
     const { isSignedIn, user } = useUser();
     const { openSignIn } = useClerk() as any; // Using any to handle both Mock and Real Clerk
+    const { session } = useSession();
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -71,7 +73,8 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
 
             if (savedSessionId) {
                 setIsSyncing(true);
-                session = await aiConsultationService.getConsultation(savedSessionId);
+                const client = await getAuthClient(session);
+                session = await aiConsultationService.getConsultation(client, savedSessionId);
 
                 // [Hardening] 소유권 검증 - 본인의 세션이 아니면 복구 거부
                 if (session && user && session.user_id !== user.id) {
@@ -121,7 +124,8 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
                 setMessages(initialMessages);
 
                 const newSessionId = `conv_${partnerId}_${Date.now()}`;
-                const newSession = await aiConsultationService.startOrResumeConsultation({
+                const startClient = await getAuthClient(session);
+                const newSession = await aiConsultationService.startOrResumeConsultation(startClient, {
                     conversationId: newSessionId,
                     userId: user?.id,
                     facilityId: partnerId,
@@ -181,7 +185,8 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
         setMessages(updatedMsgs);
 
         // 유저 메시지 먼저 저장
-        await aiConsultationService.appendMessage(conversationId, newUserMsg);
+        const actionClient = await getAuthClient(session);
+        await aiConsultationService.appendMessage(actionClient, conversationId, newUserMsg);
 
         let assistantMsg: Message | null = null;
 
@@ -224,7 +229,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
                     type: 'contact'
                 };
                 // [Decision Lock] 서비스 레이어를 통한 상태 변경 및 이벤트 발생
-                await aiConsultationService.updateStatus(conversationId, AiConsultationStatus.AGENT_REQUESTED, { priority: 'high' });
+                await aiConsultationService.updateStatus(actionClient, conversationId, AiConsultationStatus.AGENT_REQUESTED, { priority: 'high' });
                 break;
             case 'restart':
                 assistantMsg = {
@@ -245,7 +250,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
         if (assistantMsg) {
             const finalMsgs = [...updatedMsgs, assistantMsg];
             setMessages(finalMsgs);
-            await aiConsultationService.appendMessage(conversationId, assistantMsg);
+            await aiConsultationService.appendMessage(actionClient, conversationId, assistantMsg);
         }
     };
 
@@ -257,7 +262,8 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
         setMessages(updatedMsgs);
         setInput('');
 
-        await aiConsultationService.appendMessage(conversationId, newUserMsg);
+        const sendClient = await getAuthClient(session);
+        await aiConsultationService.appendMessage(sendClient, conversationId, newUserMsg);
 
         // If not hijacked, give a simple AI response
         if (!isHijacked) {
@@ -269,7 +275,8 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
                 };
                 const finalMsgs = [...updatedMsgs, aiReply];
                 setMessages(finalMsgs);
-                await aiConsultationService.appendMessage(conversationId, aiReply);
+                const replyClient = await getAuthClient(session);
+                await aiConsultationService.appendMessage(replyClient, conversationId, aiReply);
             }, 1000);
         }
     };

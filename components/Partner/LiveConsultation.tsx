@@ -5,7 +5,7 @@ import {
     MoreHorizontal, Smartphone, Hash, MonitorDot, XCircle, ArrowLeft
 } from 'lucide-react';
 import { toast } from 'sonner'; // [Phase 2] Error Handler
-import { supabase, createAuthenticatedClient } from '../../lib/supabaseClient';
+import { supabase, getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
 import { PartnerConversation } from '../../types';
 
@@ -20,18 +20,6 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
     const scrollRef = useRef<HTMLDivElement>(null);
     const { session } = useSession();
 
-    const getAuthClient = async () => {
-        if (!session) return supabase;
-        try {
-            const token = await Promise.race([
-                session.getToken({ template: 'supabase' }),
-                new Promise<null>((r) => setTimeout(() => r(null), 8000)),
-            ]);
-            if (token) return createAuthenticatedClient(token);
-        } catch { /* fallback */ }
-        return supabase;
-    };
-
     useEffect(() => {
         loadConversations();
         const sub = setupRealtime();
@@ -45,7 +33,7 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
     }, [selectedId, conversations]);
 
     const loadConversations = async () => {
-        const client = await getAuthClient();
+        const client = await getAuthClient(session);
         const { data } = await client
             .from('partner_conversations')
             .select('*')
@@ -83,7 +71,7 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
 
     const handleHijack = async () => {
         if (!selectedId) return;
-        const client = await getAuthClient();
+        const client = await getAuthClient(session);
         const { error } = await client
             .from('partner_conversations')
             .update({ conversation_status: 'agent_connected', priority: 'high' })
@@ -105,7 +93,7 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
 
         const updatedMessages = [...selected.messages, newMessage];
 
-        const client = await getAuthClient();
+        const client = await getAuthClient(session);
         const { error } = await client
             .from('partner_conversations')
             .update({

@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useSession } from '@/lib/auth';
-import { supabase, createAuthenticatedClient } from '@/lib/supabaseClient';
+import { getAuthClient } from '@/lib/supabaseClient';
 
 export interface AdminFacility {
     id: string;
@@ -19,14 +19,6 @@ export interface AdminFacility {
     package_count?: number;
 }
 
-async function getAuthClient(session: any) {
-    try {
-        const token = await session?.getToken?.({ template: 'supabase' });
-        if (token) return createAuthenticatedClient(token);
-    } catch { /* fallback */ }
-    return supabase;
-}
-
 export function useAllFacilities() {
     const { session } = useSession();
     const [facilities, setFacilities] = useState<AdminFacility[]>([]);
@@ -38,7 +30,7 @@ export function useAllFacilities() {
     const search = useCallback(async (term: string, targetPage: number = 0) => {
         setLoading(true);
         try {
-            const client = await getAuthClient(session);
+            const client = await getAuthClient(session, { strict: true });
             let query = client.from('facilities').select('id, name, address, type, user_id, images, phone, description', { count: 'exact' });
 
             if (term) {
@@ -66,7 +58,7 @@ export function useAllFacilities() {
 
     const updateManager = useCallback(async (facilityId: string, userId: string | null) => {
         try {
-            const client = await getAuthClient(session);
+            const client = await getAuthClient(session, { strict: true });
             const { error } = await client
                 .from('facilities')
                 .update({ user_id: userId })

@@ -4,7 +4,7 @@ import {
     Calendar, MoreVertical, Plus,
     ChevronRight, CheckCircle, Clock, X
 } from 'lucide-react';
-import { supabase, createAuthenticatedClient } from '../../lib/supabaseClient';
+import { supabase, getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
 import { PartnerOperation } from '../../types';
 import { toast } from 'sonner';
@@ -35,18 +35,6 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
     const [isSaving, setIsSaving] = useState(false);
     const { session } = useSession();
 
-    const getAuthClient = async () => {
-        if (!session) return supabase;
-        try {
-            const token = await Promise.race([
-                session.getToken({ template: 'supabase' }),
-                new Promise<null>((r) => setTimeout(() => r(null), 8000)),
-            ]);
-            if (token) return createAuthenticatedClient(token);
-        } catch { /* fallback */ }
-        return supabase;
-    };
-
     const STAGES: PartnerOperation['operation_stage'][] = ['pending', 'dispatched', 'in_progress', 'completed'];
 
     useEffect(() => {
@@ -56,7 +44,7 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
     }, [partnerId]);
 
     const loadOperations = async () => {
-        const client = await getAuthClient();
+        const client = await getAuthClient(session);
         const { data } = await client
             .from('partner_operations')
             .select('*')
@@ -86,7 +74,7 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
 
     const handleMove = async (id: string, nextStage: PartnerOperation['operation_stage']) => {
         try {
-            const client = await getAuthClient();
+            const client = await getAuthClient(session);
             const { error } = await client
                 .from('partner_operations')
                 .update({ operation_stage: nextStage })
@@ -105,7 +93,7 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
         }
         setIsSaving(true);
         try {
-            const client = await getAuthClient();
+            const client = await getAuthClient(session);
             const { error } = await client.from('partner_operations').insert({
                 partner_id: partnerId,
                 operation_stage: 'pending',

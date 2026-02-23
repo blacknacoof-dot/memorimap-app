@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import {
     LayoutDashboard, MessageSquare, Truck,
     Settings, LogOut, Bell, User,
@@ -12,11 +12,13 @@ import { AIConfiguration } from './AIConfiguration';
 import { FacilityInfoEditor } from './FacilityInfoEditor';
 import { NotificationCenter } from '../NotificationCenter';
 import { ConsultationList } from '../ConsultationList';
-import { supabase, createAuthenticatedClient } from '../../lib/supabaseClient';
+import { supabase, getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
 import { Consultation, getFacilitySubscription, approveReservation, rejectReservation } from '../../lib/queries';
 import { Reservation } from '../../types';
 import { toast } from 'sonner';
+
+const SubscriptionPlans = lazy(() => import('../SubscriptionPlans'));
 
 interface PartnerDashboardProps {
     partnerId: string;
@@ -32,25 +34,12 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
     const [reservations, setReservations] = useState<Reservation[]>([]);
     const [subscription, setSubscription] = useState<any>(null);
     const [payments, setPayments] = useState<any[]>([]);
+    const [showPlanSelector, setShowPlanSelector] = useState(false);
     const { session } = useSession();
-
-    const getAuthClient = async () => {
-        if (!session) return supabase;
-        try {
-            const token = await Promise.race([
-                session.getToken({ template: 'supabase' }),
-                new Promise<null>((r) => setTimeout(() => r(null), 8000)),
-            ]);
-            if (token) return createAuthenticatedClient(token);
-        } catch (e) {
-            console.error('[PartnerDashboard] auth token error:', e);
-        }
-        return supabase;
-    };
 
     useEffect(() => {
         const fetchPartner = async () => {
-            const client = await getAuthClient();
+            const client = await getAuthClient(session);
 
             // partnerId는 실제로 facility UUID (sangjo_hq_admins.sangjo_id에서 가져온 값)
             // 바로 facilityId로 설정
@@ -106,7 +95,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
 
         const loadFacilityData = async () => {
             try {
-                const client = await getAuthClient();
+                const client = await getAuthClient(session);
                 const [consResult, resResult, subData] = await Promise.all([
                     client.from('consultations').select('*').eq('facility_id', facilityId).order('created_at', { ascending: false }),
                     client.from('reservations').select('*').eq('facility_id', facilityId).order('created_at', { ascending: false }),
@@ -125,7 +114,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                     if (payData) setPayments(payData);
                 }
             } catch (err) {
-                console.error('[PartnerDashboard] 데이터 로드 실패:', err);
+                // data load failed
                 toast.error('데이터를 불러오지 못했습니다.');
             }
         };
@@ -227,7 +216,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                         <button className="w-full flex justify-center py-2 text-slate-500 hover:text-white"><User size={20} /></button>
                     )}
                     <button
-                        onClick={onLogout}
+                        onClick={() => { supabase.auth.signOut().then(() => onLogout()); }}
                         className="w-full mt-4 flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-red-400 transition-colors text-sm font-bold"
                     >
                         <LogOut size={18} />
@@ -258,7 +247,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                         </button>
                     ))}
                     <button
-                        onClick={onLogout}
+                        onClick={() => { supabase.auth.signOut().then(() => onLogout()); }}
                         className="flex-shrink-0 px-3 py-2 rounded-lg text-xs font-bold transition-colors whitespace-nowrap text-red-400 hover:text-red-300"
                     >
                         로그아웃
@@ -309,7 +298,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                 <ConsultationList
                                     consultations={consultations}
                                     onAnswer={async (id, text) => {
-                                        const client = await getAuthClient();
+                                        const client = await getAuthClient(session);
                                         const { error } = await client
                                             .from('consultations')
                                             .update({ answer: text, answered_at: new Date().toISOString(), status: 'accepted', is_read: true })
@@ -324,7 +313,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                         }
                                     }}
                                     onRead={async (id) => {
-                                        const client = await getAuthClient();
+                                        const client = await getAuthClient(session);
                                         await client.from('consultations').update({ is_read: true }).eq('id', id);
                                         setConsultations(prev => prev.map(c => c.id === id ? { ...c, is_read: true } : c));
                                     }}
@@ -393,7 +382,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                                             onClick={async () => {
                                                                 if (!res.id) return;
                                                                 try {
-                                                                    const client = await getAuthClient();
+                                                                    const client = await getAuthClient(session);
                                                                     await approveReservation(res.id, client);
                                                                     setReservations(prev => prev.map(r => r.id === res.id ? { ...r, status: 'confirmed' as const } : r));
                                                                     toast.success('예약이 승인되었습니다.');
@@ -409,7 +398,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                                             onClick={async () => {
                                                                 if (!res.id) return;
                                                                 try {
-                                                                    const client = await getAuthClient();
+                                                                    const client = await getAuthClient(session);
                                                                     await rejectReservation(res.id, undefined, client);
                                                                     setReservations(prev => prev.map(r => r.id === res.id ? { ...r, status: 'cancelled' as const } : r));
                                                                     toast.success('예약이 거절되었습니다.');
@@ -431,6 +420,32 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                         )}
                         {activeTab === 'revenue' && (
                             <div className="space-y-6">
+                                {/* 요금제 선택 패널 */}
+                                {showPlanSelector && (
+                                    <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <h3 className="font-black text-slate-800 flex items-center gap-2">
+                                                <Crown size={18} className="text-purple-600" />
+                                                상조 요금제 선택
+                                            </h3>
+                                            <button onClick={() => setShowPlanSelector(false)} className="text-slate-400 hover:text-slate-600 p-1">
+                                                <X size={20} />
+                                            </button>
+                                        </div>
+                                        <Suspense fallback={<div className="text-center py-8 text-slate-400 text-sm">로딩중...</div>}>
+                                            <SubscriptionPlans
+                                                type="sangjo"
+                                                currentPlan={subscription?.plan_id}
+                                                facilityId={facilityId || partnerId}
+                                                onSelectPlan={(planId) => {
+                                                    toast.success(`${planId} 플랜 신청이 접수되었습니다.`);
+                                                    setShowPlanSelector(false);
+                                                }}
+                                            />
+                                        </Suspense>
+                                    </div>
+                                )}
+
                                 {/* KPI Cards */}
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                                     <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-3xl text-white shadow-xl relative overflow-hidden">
@@ -439,6 +454,12 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                             <div className="p-2 bg-white/20 rounded-xl backdrop-blur-md">
                                                 <Crown className="w-6 h-6" />
                                             </div>
+                                            <button
+                                                onClick={() => setShowPlanSelector(!showPlanSelector)}
+                                                className="text-[11px] font-bold bg-white/20 hover:bg-white/30 backdrop-blur-md px-3 py-1.5 rounded-lg transition-colors"
+                                            >
+                                                {subscription ? '요금제 변경' : '요금제 선택'}
+                                            </button>
                                         </div>
                                         <p className="text-[11px] font-bold text-blue-100 uppercase tracking-widest opacity-80 mb-1">현재 구독</p>
                                         <h2 className="text-2xl font-black tracking-tight">

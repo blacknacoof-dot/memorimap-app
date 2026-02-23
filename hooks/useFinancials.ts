@@ -1,15 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from '@/lib/auth';
-import { supabase, createAuthenticatedClient } from '@/lib/supabaseClient';
+import { getAuthClient } from '@/lib/supabaseClient';
 import { fetchSubscriptions, fetchPayments } from '@/lib/api/superAdmin';
-
-async function getAuthClient(session: any) {
-    try {
-        const token = await session?.getToken?.({ template: 'supabase' });
-        if (token) return createAuthenticatedClient(token);
-    } catch { /* fallback */ }
-    return supabase;
-}
 
 // Types based on SuperAdminDashboard usage
 export interface Subscription {
@@ -38,7 +30,7 @@ export function useSubscriptions() {
         if (!session) return;
         const load = async () => {
             try {
-                const client = await getAuthClient(session);
+                const client = await getAuthClient(session, { strict: true });
                 const data = await fetchSubscriptions(client);
                 setFacilities(data as any);
             } catch (err) {
@@ -63,7 +55,7 @@ export function useRevenue() {
         if (!session) return;
         const load = async () => {
             try {
-                const client = await getAuthClient(session);
+                const client = await getAuthClient(session, { strict: true });
                 const data = await fetchPayments(client);
                 setPayments(data as any);
                 setTotalRevenue(data.reduce((acc, curr) => acc + (curr.amount || 0), 0));

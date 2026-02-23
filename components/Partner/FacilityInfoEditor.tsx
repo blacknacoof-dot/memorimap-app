@@ -5,7 +5,7 @@ import {
     Trash2, GripVertical, Upload, X, Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase, createAuthenticatedClient } from '../../lib/supabaseClient';
+import { getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
 
 interface FacilityInfoEditorProps {
@@ -47,25 +47,13 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { session } = useSession();
 
-    const getAuthClient = async () => {
-        if (!session) return supabase;
-        try {
-            const token = await Promise.race([
-                session.getToken({ template: 'supabase' }),
-                new Promise<null>((r) => setTimeout(() => r(null), 8000)),
-            ]);
-            if (token) return createAuthenticatedClient(token);
-        } catch { /* fallback */ }
-        return supabase;
-    };
-
     useEffect(() => {
         loadData();
     }, [facilityId]);
 
     const loadData = async () => {
         setLoading(true);
-        const client = await getAuthClient();
+        const client = await getAuthClient(session);
 
         const [facilityResult, packagesResult] = await Promise.all([
             client.from('facilities')
@@ -113,7 +101,7 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
     const handleSaveFacility = async () => {
         if (!facility) return;
         setSaving(true);
-        const client = await getAuthClient();
+        const client = await getAuthClient(session);
 
         const { error } = await client.from('facilities').update({
             name: facility.name,
@@ -137,7 +125,7 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
         const files = e.target.files;
         if (!files || !facility) return;
         setUploading(true);
-        const client = await getAuthClient();
+        const client = await getAuthClient(session);
         const newImages = [...facility.images];
 
         for (const file of Array.from(files)) {
@@ -175,7 +163,7 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
     const handleRemoveImage = async (index: number) => {
         if (!facility) return;
         const newImages = facility.images.filter((_, i) => i !== index);
-        const client = await getAuthClient();
+        const client = await getAuthClient(session);
         const { error } = await client.from('facilities')
             .update({ images: newImages })
             .eq('id', facilityId);
@@ -227,7 +215,7 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
 
     const handleSavePackages = async () => {
         setSaving(true);
-        const client = await getAuthClient();
+        const client = await getAuthClient(session);
 
         // 삭제
         const toDelete = packages.filter(p => p._isDeleted && p.id);

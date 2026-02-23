@@ -3,7 +3,7 @@ import { useSession } from '../lib/auth';
 import { useConfirmModal } from '../src/components/common/ConfirmModal';
 import { Plus, Edit, Trash, Save, Loader2 } from 'lucide-react';
 import { getFacilityFaqs, upsertFacilityFaq, deleteFacilityFaq, supabase } from '../lib/queries';
-import { createAuthenticatedClient } from '../lib/supabaseClient';
+import { getAuthClient } from '../lib/supabaseClient';
 import { toast } from 'sonner';
 
 interface FAQ {
@@ -26,21 +26,6 @@ export const FacilityFAQManager: React.FC<Props> = ({ facilityId }) => {
     const [isSaving, setIsSaving] = useState(false);
     const confirmModal = useConfirmModal();
 
-    /** Clerk JWT 토큰으로 인증된 Supabase 클라이언트 반환 */
-    const getAuthClient = async () => {
-        if (!session) return supabase;
-        try {
-            const token = await Promise.race([
-                session.getToken({ template: 'supabase' }),
-                new Promise<null>((r) => setTimeout(() => r(null), 8000)),
-            ]);
-            if (token) return createAuthenticatedClient(token);
-        } catch (e) {
-            console.error('[FAQ] Failed to get auth token:', e);
-        }
-        return supabase;
-    };
-
     useEffect(() => {
         loadFaqs();
     }, [facilityId]);
@@ -52,7 +37,7 @@ export const FacilityFAQManager: React.FC<Props> = ({ facilityId }) => {
         }
         setIsLoading(true);
         try {
-            const client = await getAuthClient();
+            const client = await getAuthClient(session);
             const { data, error } = await client
                 .from('facility_faqs')
                 .select('*')
@@ -88,7 +73,7 @@ export const FacilityFAQManager: React.FC<Props> = ({ facilityId }) => {
                 if (!facilityId) return;
                 setIsSaving(true);
                 try {
-                    const client = await getAuthClient();
+                    const client = await getAuthClient(session);
                     let result: any = null;
                     let error: any = null;
 
@@ -149,7 +134,7 @@ export const FacilityFAQManager: React.FC<Props> = ({ facilityId }) => {
             message: '정말로 삭제하시겠습니까?',
             requireCheckbox: false,
             onConfirm: async () => {
-                const client = await getAuthClient();
+                const client = await getAuthClient(session);
                 const { error } = await client
                     .from('facility_faqs')
                     .update({ is_active: false })

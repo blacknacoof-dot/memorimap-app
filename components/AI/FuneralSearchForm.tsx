@@ -9,7 +9,7 @@ import {
     Calendar
 } from 'lucide-react';
 import { getDistinctRegions, getDistinctRegionsFromFacilities, getIntelligentRecommendations } from '@/lib/queries';
-import { createAuthenticatedClient } from '@/lib/supabaseClient';
+import { getAuthClient } from '@/lib/supabaseClient';
 import { useSession } from '@/lib/auth';
 import {
     FUNERAL_URGENCY_OPTIONS,
@@ -182,9 +182,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
         ].filter(Boolean).join(', ');
 
         try {
-            const token = await session?.getToken({ template: 'supabase' });
-            if (!token) throw new Error('인증 토큰 없음');
-            const authClient = createAuthenticatedClient(token);
+            const authClient = await getAuthClient(session, { strict: true });
 
             // 카테고리별 1건 제한: 기존 긴급 예약 체크
             const { data: existingRes } = await authClient
@@ -301,6 +299,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                                     benefits: [],
                                 }}
                                 mode="urgent"
+                                preStepData={{ scale: scale || '', religion: religion || '' }}
                                 onClose={() => { setConsultFacility(null); }}
                                 onSubmit={handleConsultSubmit}
                             />

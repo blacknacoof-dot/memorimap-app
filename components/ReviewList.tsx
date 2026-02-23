@@ -4,7 +4,7 @@ import { getReviewsBySpace, deleteReview } from '../lib/queries';
 import { Review } from '../types';
 import { Loader2 } from 'lucide-react';
 import { useUser, useSession } from '../lib/auth';
-import { supabase, createAuthenticatedClient } from '../lib/supabaseClient';
+import { getAuthClient } from '../lib/supabaseClient';
 import { toast } from 'sonner'; // [NEW]
 
 interface Props {
@@ -27,18 +27,6 @@ export const ReviewList: React.FC<Props> = ({ spaceId, refreshTrigger }) => {
     const { user } = useUser();
     const { session } = useSession();
 
-    const getAuthClient = async () => {
-        if (!session) return supabase;
-        try {
-            const token = await Promise.race([
-                session.getToken({ template: 'supabase' }),
-                new Promise<null>((r) => setTimeout(() => r(null), 8000)),
-            ]);
-            if (token) return createAuthenticatedClient(token);
-        } catch { /* fallback */ }
-        return supabase;
-    };
-
     const fetchReviews = async () => {
         setLoading(true);
         try {
@@ -57,7 +45,7 @@ export const ReviewList: React.FC<Props> = ({ spaceId, refreshTrigger }) => {
 
     const handleDelete = async (id: string) => {
         try {
-            const client = await getAuthClient();
+            const client = await getAuthClient(session);
             await deleteReview(id, client);
             setReviews(prev => prev.filter(r => r.id !== id));
             toast.success('리뷰가 삭제되었습니다.');

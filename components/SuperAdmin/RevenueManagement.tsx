@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Wallet, TrendingUp, CreditCard, ArrowUpRight,
     ArrowDownRight, BarChart3, Download, Settings,
@@ -6,10 +6,31 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRevenue } from '../../hooks/useFinancials';
+import { useSession } from '../../lib/auth';
+import { getAuthClient } from '../../lib/supabaseClient';
 
 export const RevenueManagement: React.FC = () => {
     const { payments, totalRevenue, loading } = useRevenue();
     const [viewType, setViewType] = useState<'total' | 'partner'>('total');
+    const [commissionRate, setCommissionRate] = useState(0.1);
+    const { session } = useSession();
+
+    // DB에서 수수료율 로드
+    useEffect(() => {
+        if (!session) return;
+        const load = async () => {
+            try {
+                const client = await getAuthClient(session, { strict: true });
+                const { data } = await client
+                    .from('system_settings')
+                    .select('value')
+                    .eq('key', 'commission_rate')
+                    .maybeSingle();
+                if (data?.value != null) setCommissionRate(Number(data.value) / 100);
+            } catch { /* 기본값 유지 */ }
+        };
+        load();
+    }, [session]);
 
     if (loading) return <div className="py-20 text-center text-slate-400">금융 데이터를 분석 중...</div>;
 
@@ -18,7 +39,7 @@ export const RevenueManagement: React.FC = () => {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const monthlyPayments = payments.filter(p => new Date(p.paid_at) >= monthStart);
     const monthlyRevenue = monthlyPayments.reduce((acc, p) => acc + (p.amount || 0), 0);
-    const monthlyCommission = Math.round(monthlyRevenue * 0.1); // 10% 수수료
+    const monthlyCommission = Math.round(monthlyRevenue * commissionRate);
 
     // 정산 데이터 — 실 결제 데이터 기반으로 추후 구현 예정
     const settlements: { id: number; company: string; amount: number; fee: number; status: string }[] = [];
@@ -62,7 +83,7 @@ export const RevenueManagement: React.FC = () => {
                     </div>
                     <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">중개 수수료 수익</p>
                     <h2 className="text-2xl font-black text-slate-800">₩ {monthlyCommission.toLocaleString()}</h2>
-                    <p className="text-[10px] text-slate-400 mt-2">매출의 10% 기준</p>
+                    <p className="text-[10px] text-slate-400 mt-2">매출의 {Math.round(commissionRate * 100)}% 기준</p>
                 </div>
             </div>
 

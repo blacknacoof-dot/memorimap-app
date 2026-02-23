@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSession } from '../../lib/auth';
 import { Reservation, ViewState, Facility } from '../../types';
 import { getFacilityReservations, approveReservation, rejectReservation, getUserFacility, getFacilitySubscription, getFacilityConsultations, answerConsultation, Consultation, markConsultationAsRead, supabase } from '../../lib/queries';
-import { createAuthenticatedClient } from '../../lib/supabaseClient';
+import { getAuthClient } from '../../lib/supabaseClient';
 import { ReservationList } from '../ReservationList';
 import { ConsultationList } from '../ConsultationList';
 import { ReservationDetailModal } from '../ReservationDetailModal';
@@ -30,21 +30,6 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
     const [editingFacility, setEditingFacility] = useState<Facility | null>(null);
     const [subscription, setSubscription] = useState<any>(null);
 
-    /** Clerk JWT 토큰으로 인증된 Supabase 클라이언트 반환 */
-    const getAuthClient = async () => {
-        if (!session) return supabase;
-        try {
-            const token = await Promise.race([
-                session.getToken({ template: 'supabase' }),
-                new Promise<null>((r) => setTimeout(() => r(null), 8000)),
-            ]);
-            if (token) return createAuthenticatedClient(token);
-        } catch (e) {
-            console.error('[Dashboard] Failed to get auth token:', e);
-        }
-        return supabase;
-    };
-
     useEffect(() => {
         if (user) {
             loadData();
@@ -54,7 +39,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
     const loadData = async () => {
         setIsLoading(true);
         try {
-            const client = await getAuthClient();
+            const client = await getAuthClient(session);
             // loadData started
 
             // Get the single facility owned by this user (using auth client for RLS)
@@ -211,7 +196,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
         if (!await confirmAsync('이 예약을 승인하시겠습니까?')) return;
 
         try {
-            const client = await getAuthClient();
+            const client = await getAuthClient(session);
             await approveReservation(reservationId, client);
             setReservations(prev => prev.map(r =>
                 r.id === reservationId ? { ...r, status: 'confirmed' as const } : r
@@ -227,7 +212,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
         const reason = prompt('거절 사유를 입력해주세요 (선택):');
 
         try {
-            const client = await getAuthClient();
+            const client = await getAuthClient(session);
             await rejectReservation(reservationId, reason || undefined, client);
             setReservations(prev => prev.map(r =>
                 r.id === reservationId ? { ...r, status: 'cancelled' as const } : r
@@ -425,7 +410,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                     consultations={consultations}
                     onAnswer={async (id, text) => {
                         try {
-                            const client = await getAuthClient();
+                            const client = await getAuthClient(session);
                             const { error } = await client
                                 .from('consultations')
                                 .update({ answer: text, answered_at: new Date().toISOString(), status: 'accepted', is_read: true })
@@ -446,7 +431,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                     }}
                     onRead={async (id) => {
                         try {
-                            const client = await getAuthClient();
+                            const client = await getAuthClient(session);
                             await client
                                 .from('consultations')
                                 .update({ is_read: true })

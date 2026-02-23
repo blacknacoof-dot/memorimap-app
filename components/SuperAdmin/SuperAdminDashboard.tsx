@@ -22,8 +22,7 @@ import { NotificationCenter } from '../NotificationCenter';
 import { AdminLogsView } from './AdminLogsView';
 import { AdminCommunication } from '../admin/AdminCommunication';
 import { MessageSquare } from 'lucide-react';
-import { supabase, createAuthenticatedClient } from '../../lib/supabaseClient';
-import { useApiRetry } from '../../hooks/useApiRetry';
+import { supabase, getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
 
 // MOCK_DATA removed. Using real hooks.
@@ -112,7 +111,6 @@ import { Calendar } from 'lucide-react';
 const AdminSettings = () => {
     const { user } = useUser();
     const { session } = useSession();
-    const { queryWithRetry } = useApiRetry();
     const [fullName, setFullName] = useState(user?.fullName || '');
     const [phone, setPhone] = useState('');
     const [saving, setSaving] = useState(false);
@@ -121,11 +119,10 @@ const AdminSettings = () => {
         if (!user?.id || !session) return;
         const loadPhone = async () => {
             try {
-                const token = await session.getToken?.({ template: 'supabase' });
-                const client = token ? createAuthenticatedClient(token) : supabase;
+                const client = await getAuthClient(session, { strict: true });
                 const { data } = await client.from('profiles').select('phone').eq('clerk_id', user.id).single();
                 if (data?.phone) setPhone(data.phone);
-            } catch { /* fallback */ }
+            } catch { /* ignore */ }
         };
         loadPhone();
     }, [user?.id, session]);
@@ -134,17 +131,14 @@ const AdminSettings = () => {
         if (!user?.id) return;
         setSaving(true);
         try {
-            const { error } = await queryWithRetry(async (authClient) =>
-                (authClient || supabase)
-                    .from('profiles')
-                    .update({ full_name: fullName, phone })
-                    .eq('clerk_id', user.id)
-                    .then(res => res)
-            );
+            const client = await getAuthClient(session, { strict: true });
+            const { error } = await client
+                .from('profiles')
+                .update({ full_name: fullName, phone })
+                .eq('clerk_id', user.id);
             if (error) throw error;
             toast.success('프로필 정보가 저장되었습니다.');
         } catch (e: any) {
-            console.error(e);
             toast.error('저장 실패: ' + e.message);
         } finally {
             setSaving(false);
@@ -157,7 +151,6 @@ const AdminSettings = () => {
             toast.error('이메일 정보를 찾을 수 없습니다.');
             return;
         }
-        const { supabase } = await import('../../lib/supabaseClient');
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: `${window.location.origin}/#/reset-password`,
         });
@@ -247,22 +240,29 @@ const SystemSettings = () => {
     const [commission, setCommission] = useState('3.5');
     const { session } = useSession();
 
-    const getAuthClient = async () => {
-        try {
-            const token = await session?.getToken?.({ template: 'supabase' });
-            if (token) return createAuthenticatedClient(token);
-        } catch { /* fallback */ }
-        return null;
-    };
+    // DB에서 수수료율 로드
+    useEffect(() => {
+        if (!session) return;
+        const load = async () => {
+            try {
+                const client = await getAuthClient(session, { strict: true });
+                const { data } = await client
+                    .from('system_settings')
+                    .select('value')
+                    .eq('key', 'commission_rate')
+                    .maybeSingle();
+                if (data?.value != null) setCommission(String(data.value));
+            } catch { /* 기본값 유지 */ }
+        };
+        load();
+    }, [session]);
 
     const handleSaveSystemSettings = async () => {
         try {
-            const client = await getAuthClient();
-            if (!client) { toast.error('인증 세션이 필요합니다.'); return; }
+            const client = await getAuthClient(session, { strict: true });
             await updateSystemSetting('commission_rate', commission, client);
             toast.success('시스템 설정이 저장되었습니다.');
         } catch (e) {
-            console.error(e);
             toast.error('설정 저장 중 오류가 발생했습니다.');
         }
     };
@@ -283,8 +283,7 @@ const SystemSettings = () => {
                     <label className="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" className="sr-only peer" onChange={async (e) => {
                             try {
-                                const client = await getAuthClient();
-                                if (!client) { toast.error('인증 세션이 필요합니다.'); return; }
+                                const client = await getAuthClient(session, { strict: true });
                                 await updateSystemSetting('maintenance_mode', e.target.checked, client);
                                 toast.success(`점검 모드가 ${e.target.checked ? '활성화' : '비활성화'} 되었습니다.`);
                             } catch {
@@ -356,6 +355,8 @@ const SystemSettings = () => {
 /** [Tab A] Subscription Manager */
 const SubscriptionManager = ({ onManage }: { onManage: (facilityName: string) => void }) => {
     const { data: facilities, loading } = useSubscriptions();
+    const { session } = useSession();
+    const [subsSearch, setSubsSearch] = useState('');
 
     if (loading) return <div className="p-10 text-center">로딩 중...</div>;
 
@@ -363,9 +364,9 @@ const SubscriptionManager = ({ onManage }: { onManage: (facilityName: string) =>
         const newDate = prompt('새로운 재결제 예정일을 입력하세요 (YYYY-MM-DD):', current?.split('T')[0] || '');
         if (newDate) {
             try {
-                // Ensure valid ISO string
+                const client = await getAuthClient(session, { strict: true });
                 const isoDate = new Date(newDate).toISOString();
-                await updateSubscriptionBillingDate(facilityId, isoDate);
+                await updateSubscriptionBillingDate(facilityId, isoDate, client);
                 toast.success('재결제 예정일이 업데이트되었습니다.');
             } catch (e) {
                 toast.error('날짜 형식이 올바르지 않거나 업데이트에 실패했습니다.');
@@ -373,6 +374,9 @@ const SubscriptionManager = ({ onManage }: { onManage: (facilityName: string) =>
         }
     };
 
+    const filteredFacilities = subsSearch
+        ? facilities.filter(f => (f.facility_name || '').toLowerCase().includes(subsSearch.toLowerCase()))
+        : facilities;
     const total = facilities.length;
     const active = facilities.filter(f => f.status === 'active').length;
     const pending = facilities.filter(f => f.status !== 'active').length;
@@ -414,11 +418,11 @@ const SubscriptionManager = ({ onManage }: { onManage: (facilityName: string) =>
                     <h3 className="text-sm font-bold text-slate-800">구독 시설 목록</h3>
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border rounded-lg">
                         <Search className="w-3.5 h-3.5 text-slate-400" />
-                        <input type="text" placeholder="간편 검색..." className="bg-transparent text-xs outline-none w-24" />
+                        <input type="text" value={subsSearch} onChange={(e) => setSubsSearch(e.target.value)} placeholder="간편 검색..." className="bg-transparent text-xs outline-none w-24" />
                     </div>
                 </div>
                 <div className="divide-y divide-slate-100 max-h-[500px] overflow-y-auto">
-                    {(facilities as any[]).map((fac) => (
+                    {(filteredFacilities as any[]).map((fac) => (
                         <div key={fac.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors group">
                             <div className="flex flex-col">
                                 <div className="flex items-center gap-3">
@@ -452,7 +456,7 @@ const SubscriptionManager = ({ onManage }: { onManage: (facilityName: string) =>
                             </button>
                         </div>
                     ))}
-                    {facilities.length === 0 && (
+                    {filteredFacilities.length === 0 && (
                         <div className="p-5 text-center text-xs text-slate-400">구독 중인 시설이 없습니다.</div>
                     )}
                 </div>

@@ -8,7 +8,7 @@ import { toast } from 'sonner'; // [Phase 2] Error Handler
 import { getPartners, updatePartnerStatus } from '../../lib/sangjoQueries';
 import { confirmAsync } from '../../src/components/common/ConfirmModal';
 import { Partner } from '../../types';
-import { createAuthenticatedClient } from '../../lib/supabaseClient';
+import { getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
 
 export const PartnerManagement: React.FC = () => {
@@ -19,14 +19,6 @@ export const PartnerManagement: React.FC = () => {
     const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
     const { session } = useSession();
 
-    const getAuthClient = async () => {
-        try {
-            const token = await session?.getToken?.({ template: 'supabase' });
-            if (token) return createAuthenticatedClient(token);
-        } catch { /* fallback */ }
-        return null;
-    };
-
     useEffect(() => {
         loadPartners();
     }, [session]);
@@ -34,8 +26,7 @@ export const PartnerManagement: React.FC = () => {
     const loadPartners = async () => {
         setLoading(true);
         try {
-            const client = await getAuthClient();
-            if (!client) { setLoading(false); return; }
+            const client = await getAuthClient(session, { strict: true });
             const data = await getPartners(client);
             setPartners(data);
         } catch (err) {
@@ -49,8 +40,7 @@ export const PartnerManagement: React.FC = () => {
         if (!await confirmAsync(`상태를 ${status === 'approved' ? '승인' : '반려/정지'} 하시겠습니까?`)) return;
 
         try {
-            const client = await getAuthClient();
-            if (!client) { toast.error('인증 세션이 필요합니다.'); return; }
+            const client = await getAuthClient(session, { strict: true });
             await updatePartnerStatus(id, status, undefined, client);
             toast.success('상태가 업데이트되었습니다.');
             loadPartners();
