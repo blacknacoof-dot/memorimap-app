@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Phone, Mail, FileText, Bell, Shield, Info, ChevronLeft, Send, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSession, useUser } from '../lib/auth';
-import { createAuthenticatedClient } from '../lib/supabaseClient';
+import { getAuthClient } from '../lib/supabaseClient';
 import { ViewState } from '../types';
 
 interface ViewProps {
@@ -167,9 +167,7 @@ export const SupportView: React.FC<ViewProps> = ({ onBack, user }) => {
     }
     setIsSubmitting(true);
     try {
-      const token = await session?.getToken({ template: 'supabase' });
-      if (!token) { toast.error('로그인이 필요합니다.'); setIsSubmitting(false); return; }
-      const authClient = createAuthenticatedClient(token);
+      const authClient = await getAuthClient(session, { strict: true });
       const { error } = await authClient.from('partner_inquiries').insert({
         user_id: clerkUser?.id || null,
         company_name: '고객문의',

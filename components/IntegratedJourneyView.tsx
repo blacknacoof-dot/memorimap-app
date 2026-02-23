@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { supabase, createAuthenticatedClient, setSupabaseAuth } from '../lib/supabaseClient';
-import { useUser, useSession } from '../lib/auth'; // Clerk 연동 지원을 위한 훅 임포트
+import { getAuthClient } from '../lib/supabaseClient';
+import { useUser, useSession } from '../lib/auth';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -60,16 +60,7 @@ export default function IntegratedJourneyView({
         setLoading(true);
 
         try {
-            let authClient = supabase;
-            // Clerk JWT 토큰을 명시적으로 가져와서 Supabase에 설정
-            if (session) {
-                const token = await session.getToken({ template: 'supabase' });
-                if (token) {
-                    // [Fix] createAuthenticatedClient를 사용하여 확실한 인증 보장
-                    authClient = createAuthenticatedClient(token);
-                    // Authenticated client created for data loading
-                }
-            }
+            const authClient = await getAuthClient(session);
 
             // authClient를 사용하여 RPC 호출
             const { data, error } = await authClient.rpc('get_my_journey_full');
@@ -94,19 +85,7 @@ export default function IntegratedJourneyView({
         }
 
         try {
-            // Clerk JWT 토큰을 명시적으로 가져와서 Supabase에 설정
-            // Getting Clerk token
-            const token = await session.getToken({ template: 'supabase' });
-
-            if (!token) {
-                console.error('[Journey] Failed to get Clerk token');
-                toast.error('인증 토큰을 가져올 수 없습니다. 다시 로그인해주세요.');
-                return;
-            }
-
-            // [Fix] createAuthenticatedClient 사용
-            const authClient = createAuthenticatedClient(token);
-            // Authenticated client ready, saving
+            const authClient = await getAuthClient(session, { strict: true });
 
             const { error } = await authClient
                 .from('user_ending_notes')
@@ -159,13 +138,7 @@ export default function IntegratedJourneyView({
         setIsCreatingShare(true);
 
         try {
-            // Clerk JWT 토큰을 명시적으로 가져와서 Supabase에 설정
-            const token = await session.getToken({ template: 'supabase' });
-            let authClient = supabase;
-
-            if (token) {
-                authClient = createAuthenticatedClient(token);
-            }
+            const authClient = await getAuthClient(session, { strict: true });
 
             const { data, error } = await authClient.rpc('create_journey_share', {
                 p_preferences: note.preferences || [],

@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { createAuthenticatedClient } from './supabaseClient';
+import { supabase } from './supabaseClient';
 import { toast } from 'sonner';
 
 /**
@@ -77,7 +77,7 @@ export async function withRetry<T>(
         try {
           const newToken = await getToken();
           if (newToken) {
-            const newClient = createAuthenticatedClient(newToken);
+            const newClient = supabase;
             if (!silent) {
               toast.info('인증을 갱신했습니다.', { duration: 2000 });
             }
@@ -135,7 +135,7 @@ export async function withQueryRetry<T>(
       try {
         const newToken = await getToken();
         if (newToken) {
-          const newClient = createAuthenticatedClient(newToken);
+          const newClient = supabase;
           if (!silent) {
             toast.info('인증을 갱신했습니다.', { duration: 2000 });
           }

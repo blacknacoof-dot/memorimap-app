@@ -3,7 +3,7 @@ import { X, User, Phone, Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateUserProfile } from '../lib/queries';
 import { useSession } from '../lib/auth';
-import { createAuthenticatedClient } from '../lib/supabaseClient';
+import { getAuthClient } from '../lib/supabaseClient';
 
 interface Props {
     user: {
@@ -48,12 +48,7 @@ export const EditProfileModal: React.FC<Props> = ({ user, onClose, onUpdate }) =
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            // Clerk JWT 인증 클라이언트 생성
-            let authClient;
-            if (session) {
-                const token = await session.getToken({ template: 'supabase' });
-                if (token) authClient = createAuthenticatedClient(token);
-            }
+            const authClient = await getAuthClient(session, { strict: true });
             await updateUserProfile(user.id, {
                 full_name: name,
                 phone_number: phone

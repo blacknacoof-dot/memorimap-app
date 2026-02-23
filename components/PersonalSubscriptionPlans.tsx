@@ -7,7 +7,7 @@ import {
 import { requestPayment, verifyPayment, PORTONE_CONFIG } from '../lib/portone';
 import { toast } from 'sonner';
 import { useSession } from '../lib/auth';
-import { supabase, createAuthenticatedClient } from '../lib/supabaseClient';
+import { getAuthClient } from '../lib/supabaseClient';
 
 interface PersonalPlanFeature {
     name: string;
@@ -116,9 +116,7 @@ export default function PersonalSubscriptionPlans({ onBack }: PersonalSubscripti
             return;
         }
         try {
-            const token = await session.getToken({ template: 'supabase' });
-            if (!token) { setIsLoading(false); return; }
-            const client = createAuthenticatedClient(token);
+            const client = await getAuthClient(session, { strict: true });
             const { data } = await client
                 .from('user_subscriptions')
                 .select('plan_id, status')
@@ -140,22 +138,17 @@ export default function PersonalSubscriptionPlans({ onBack }: PersonalSubscripti
 
         if (plan.id === 'personal_free') {
             // 무료 전환 = 기존 구독 취소 + DB 반영
-            if (session) {
-                try {
-                    const token = await session.getToken({ template: 'supabase' });
-                    if (token) {
-                        const client = createAuthenticatedClient(token);
-                        const userId = session.user?.id;
-                        if (userId) {
-                            await client.from('user_subscriptions')
-                                .update({ status: 'cancelled' })
-                                .eq('user_id', userId)
-                                .eq('status', 'active');
-                        }
-                    }
-                } catch (e) {
-                    console.error('구독 취소 DB 업데이트 실패:', e);
+            try {
+                const client = await getAuthClient(session, { strict: true });
+                const userId = session?.user?.id;
+                if (userId) {
+                    await client.from('user_subscriptions')
+                        .update({ status: 'cancelled' })
+                        .eq('user_id', userId)
+                        .eq('status', 'active');
                 }
+            } catch (e) {
+                console.error('구독 취소 DB 업데이트 실패:', e);
             }
             setSelectedPlan(plan.id);
             setCurrentPlan(plan.id);
@@ -201,26 +194,21 @@ export default function PersonalSubscriptionPlans({ onBack }: PersonalSubscripti
             }
 
             // 결제 성공 → DB 업데이트
-            if (session) {
-                try {
-                    const token = await session.getToken({ template: 'supabase' });
-                    if (token) {
-                        const client = createAuthenticatedClient(token);
-                        const userId = session.user?.id;
-                        if (!userId) throw new Error('사용자 정보를 찾을 수 없습니다.');
-                        await client.from('user_subscriptions').upsert({
-                            user_id: userId,
-                            plan_id: plan.id,
-                            plan_name: plan.nameEn,
-                            status: 'active',
-                            started_at: new Date().toISOString(),
-                            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-                        }, { onConflict: 'user_id' });
-                    }
-                } catch (e) {
-                    console.error('구독 DB 업데이트 실패:', e);
-                    toast.error('결제는 완료되었으나 구독 정보 업데이트에 실패했습니다. 고객센터에 문의해주세요.');
-                }
+            try {
+                const client = await getAuthClient(session, { strict: true });
+                const userId = session?.user?.id;
+                if (!userId) throw new Error('사용자 정보를 찾을 수 없습니다.');
+                await client.from('user_subscriptions').upsert({
+                    user_id: userId,
+                    plan_id: plan.id,
+                    plan_name: plan.nameEn,
+                    status: 'active',
+                    started_at: new Date().toISOString(),
+                    expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                }, { onConflict: 'user_id' });
+            } catch (e) {
+                console.error('구독 DB 업데이트 실패:', e);
+                toast.error('결제는 완료되었으나 구독 정보 업데이트에 실패했습니다. 고객센터에 문의해주세요.');
             }
 
             setSelectedPlan(plan.id);

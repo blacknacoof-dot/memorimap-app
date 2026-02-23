@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import { MapPin, Check, Phone, Loader2, Calendar } from 'lucide-react';
 import { getDistinctRegions, getDistinctRegionsFromFacilities, getIntelligentRecommendations } from '../../lib/queries';
-import { createAuthenticatedClient } from '@/lib/supabaseClient';
+import { getAuthClient } from '@/lib/supabaseClient';
 import { useSession } from '@/lib/auth';
 import { addSearchHistory } from '@/utils/searchHistory';
 import { confirmAsync } from '../../src/components/common/ConfirmModal';
@@ -172,9 +172,7 @@ const PetSearchForm: React.FC<FormProps> = ({
         ].filter(Boolean).join(', ');
 
         try {
-            const token = await session?.getToken({ template: 'supabase' });
-            if (!token) throw new Error('인증 토큰 없음');
-            const authClient = createAuthenticatedClient(token);
+            const authClient = await getAuthClient(session, { strict: true });
 
             // 카테고리별 1건 제한: 기존 반려동물 예약 체크
             const { data: existingRes } = await authClient
