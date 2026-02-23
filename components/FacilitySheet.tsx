@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { favoriteService } from '../services/favoriteService';
 import { Facility, Reservation } from '../types';
-import { X, Star, MapPin, Phone, Clock, Navigation, Heart, Check, Scale, Bot, Award, Crown, ShieldCheck, MessageSquare, ChevronLeft, ChevronRight, Image as ImageIcon, Gift, Share2 } from 'lucide-react';
+import { X, Star, MapPin, Phone, Clock, Heart, Check, Scale, Bot, Award, Crown, ShieldCheck, MessageSquare, ChevronLeft, ChevronRight, Image as ImageIcon, Gift, Share2 } from 'lucide-react';
 import { incrementAiUsage } from '../lib/queries';
 import { ReviewForm } from './ReviewForm';
 import { ReviewList } from './ReviewList';
@@ -186,14 +186,14 @@ export const FacilitySheet: React.FC<Props> = ({
         </div>
       )}
 
-      <div className="fixed inset-x-0 bottom-0 z-[210] bg-white rounded-t-3xl shadow-2xl transform transition-transform duration-300 max-h-[90dvh] h-[80dvh] md:h-[85dvh] flex flex-col md:max-w-md md:mx-auto">
+      <div className="fixed inset-x-0 bottom-0 z-[210] bg-white rounded-t-3xl shadow-2xl transform transition-transform duration-300 max-h-[90dvh] h-[80dvh] md:h-[85dvh] flex flex-col md:max-w-md md:mx-auto pb-safe">
         {/* Handle for dragging (visual only) */}
         <div className="w-full flex justify-center pt-3 pb-1" onClick={onClose}>
           <div className="w-12 h-1.5 bg-gray-300 rounded-full cursor-pointer"></div>
         </div>
 
         {/* Hero Image */}
-        <div className="relative h-48 shrink-0">
+        <div className="relative h-32 md:h-48 shrink-0">
           <img src={facility.imageUrl} alt={facility.name} className="w-full h-full object-cover" />
 
           {/* Top Right Controls */}
@@ -248,9 +248,9 @@ export const FacilitySheet: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* AI Consultation Promotion / Button */}
+        {/* AI Consultation Promotion — 데스크톱만 표시 (모바일은 하단 CTA에 AI 상담 버튼) */}
         {facility.subscription && facility.subscription.plan && (
-          <div className="px-4 py-6">
+          <div className="hidden md:block px-4 py-6">
             <div className={`p-4 rounded-2xl border-2 transition-all duration-300 ${facility.subscription.plan.name_en === 'premium' || facility.subscription.plan.name_en === 'enterprise'
               ? 'bg-gradient-to-br from-primary/5 to-purple-500/5 border-primary/20 shadow-sm'
               : 'bg-slate-50 border-slate-100'
@@ -282,7 +282,7 @@ export const FacilitySheet: React.FC<Props> = ({
           </div>
         )}
 
-        {/* Tabs */}
+        {/* Tabs — AI 상담은 하단 고정 버튼으로 이동 */}
         <div className="flex border-b overflow-x-auto no-scrollbar">
           {[
             { id: 'info', label: '정보' },
@@ -293,7 +293,7 @@ export const FacilitySheet: React.FC<Props> = ({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex-none px-6 py-3 text-sm font-medium whitespace-nowrap ${activeTab === tab.id
+              className={`flex-1 py-3 text-sm font-medium whitespace-nowrap ${activeTab === tab.id
                 ? 'border-b-2 border-primary text-primary'
                 : 'text-gray-500 hover:text-gray-700'
                 }`}
@@ -301,12 +301,6 @@ export const FacilitySheet: React.FC<Props> = ({
               {tab.label}
             </button>
           ))}
-          <button
-            onClick={() => onOpenAiChat?.()}
-            className={`flex-none px-6 py-3 text-sm font-bold whitespace-nowrap flex items-center gap-1 text-primary animate-pulse`}
-          >
-            <Bot size={16} /> AI 상담
-          </button>
         </div>
 
         {/* Scrollable Content */}
@@ -633,15 +627,7 @@ export const FacilitySheet: React.FC<Props> = ({
             User might want to book after asking questions. Let's keep it but make it minimal or stick to standard.
             For now, keeping standard footer for all tabs.
         */}
-        <div className="p-4 border-t bg-white pb-safe flex gap-3 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] z-20">
-          <button
-            onClick={() => window.open(`https://map.naver.com/v5/search/${facility.name}`, '_blank', 'noopener,noreferrer')}
-            className="flex flex-col items-center justify-center min-w-[50px] text-gray-500 hover:text-primary transition-colors"
-          >
-            <Navigation size={20} />
-            <span className="text-[10px] mt-1 font-medium">길찾기</span>
-          </button>
-
+        <div className="p-3 md:p-4 border-t bg-white pb-safe flex gap-2 md:gap-3 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] z-20">
           <button
             onClick={async () => {
               const shareData = { title: facility.name, text: `${facility.name} - ${facility.address}`, url: window.location.href };
@@ -654,16 +640,24 @@ export const FacilitySheet: React.FC<Props> = ({
                 }
               } catch { /* 사용자 취소 */ }
             }}
-            className="flex flex-col items-center justify-center min-w-[50px] text-gray-500 hover:text-primary transition-colors"
+            className="flex flex-col items-center justify-center min-w-[44px] text-gray-500 hover:text-primary transition-colors"
           >
-            <Share2 size={20} />
-            <span className="text-[10px] mt-1 font-medium">공유</span>
+            <Share2 size={18} />
+            <span className="text-[9px] mt-0.5 font-medium">공유</span>
+          </button>
+
+          <button
+            onClick={() => onOpenAiChat?.()}
+            className="flex-1 bg-primary/10 text-primary border border-primary/30 py-3 rounded-xl font-bold active:scale-95 transition-transform flex items-center justify-center gap-1.5 text-sm"
+          >
+            <Bot size={18} />
+            AI 상담
           </button>
 
           {facility.naverBookingUrl && facility.naverBookingUrl.length > 10 && String(facility.id) !== '3' && /^https?:\/\//i.test(facility.naverBookingUrl) && (
             <button
               onClick={() => window.open(facility.naverBookingUrl, '_blank', 'noopener,noreferrer')}
-              className="flex-1 bg-[#03C75A] text-white py-3 rounded-xl font-bold shadow-lg shadow-green-600/20 active:scale-95 transition-transform flex items-center justify-center gap-2"
+              className="flex-1 bg-[#03C75A] text-white py-3 rounded-xl font-bold shadow-lg shadow-green-600/20 active:scale-95 transition-transform flex items-center justify-center gap-1.5 text-sm"
             >
               <span className="bg-white text-[#03C75A] w-5 h-5 rounded-sm flex items-center justify-center text-[10px] font-black">N</span>
               네이버 예약
@@ -672,9 +666,9 @@ export const FacilitySheet: React.FC<Props> = ({
 
           <button
             onClick={onBook}
-            className="flex-1 bg-primary text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/30 active:scale-95 transition-transform"
+            className="flex-1 bg-primary text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/30 active:scale-95 transition-transform text-sm"
           >
-            {facility.naverBookingUrl && facility.naverBookingUrl.length > 10 ? '방문 예약' : '방문 예약하기'}
+            방문 예약하기
           </button>
         </div>
       </div>

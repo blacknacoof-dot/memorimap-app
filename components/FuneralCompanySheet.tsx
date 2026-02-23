@@ -174,7 +174,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
             </div>
 
             {/* Hero */}
-            <div className="relative h-40 shrink-0">
+            <div className="relative h-28 md:h-40 shrink-0">
                 <img src={company.imageUrl} alt={company.name} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
 
@@ -193,8 +193,8 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                 </div>
             </div>
 
-            {/* Tabs */}
-            <div className="flex border-b">
+            {/* Tabs — 모바일 가로 스크롤, 데스크톱 균등 분배 */}
+            <div className="flex border-b overflow-x-auto no-scrollbar">
                 {[
                     { id: 'info', label: '정보' },
                     { id: 'gallery', label: '갤러리' },
@@ -205,7 +205,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as any)}
-                        className={`flex-1 py-4 text-xs md:text-sm font-bold truncate ${activeTab === tab.id
+                        className={`flex-none md:flex-1 px-4 md:px-2 py-3 text-xs md:text-sm font-bold whitespace-nowrap ${activeTab === tab.id
                             ? 'text-primary border-b-2 border-primary'
                             : 'text-gray-400'}`}
                     >
