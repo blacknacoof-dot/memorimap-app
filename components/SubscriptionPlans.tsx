@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Check, X, Sparkles, Crown, Zap, ChevronDown, ChevronUp, MessageCircle, Mail, BarChart3, Star, ShieldCheck } from 'lucide-react';
 import { requestPayment, verifyPayment, PORTONE_CONFIG } from '../lib/portone';
-import { toast } from 'sonner'; // [Phase 2] Error Handler
+import { toast } from 'sonner';
 import { useUser, useSession } from '../lib/auth';
 import { getAuthClient } from '../lib/supabaseClient';
+import { useSystemSettings } from '../hooks/useSystemSettings';
 
 interface Plan {
     id: string;
@@ -96,7 +97,20 @@ const facilityPlans: Plan[] = [
     },
 ];
 
-const sangjoPlans: Plan[] = [
+// badge는 DB system_settings에서 로드 (컴포넌트 내부에서 동적 적용)
+const SANGJO_COMMISSION_KEYS = [
+    'sj_starter_commission',
+    'sj_professional_commission',
+    'sj_enterprise_commission',
+] as const;
+
+const SANGJO_COMMISSION_DEFAULTS: Record<string, number> = {
+    sj_starter_commission: 10,
+    sj_professional_commission: 8,
+    sj_enterprise_commission: 5,
+};
+
+const sangjoPlansBase: Omit<Plan, 'badge'>[] = [
     {
         id: 'sj_starter',
         name: '상조 STARTER',
@@ -104,7 +118,6 @@ const sangjoPlans: Plan[] = [
         price: 3000000,
         icon: <Zap className="w-6 h-6" />,
         color: 'from-emerald-500 to-teal-600',
-        badge: '수수료 10%',
         features: [
             { name: 'AI 24시간 자동 상담', included: true },
             { name: 'AI 계약 클로징 유도', included: true },
@@ -120,7 +133,6 @@ const sangjoPlans: Plan[] = [
         price: 8000000,
         icon: <Crown className="w-6 h-6" />,
         color: 'from-blue-600 to-indigo-700',
-        badge: '수수료 8%',
         popular: true,
         features: [
             { name: '데이터 기반 우선 노출', included: true },
@@ -138,7 +150,6 @@ const sangjoPlans: Plan[] = [
         price: 15000000,
         icon: <Crown className="w-6 h-6" />,
         color: 'from-amber-600 to-orange-700',
-        badge: '수수료 5%',
         features: [
             { name: '메인 배너 독점 광고', included: true },
             { name: '완전 자동 계약 시스템', included: true },
@@ -160,6 +171,21 @@ interface SubscriptionPlansProps {
 export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityId, type = 'facility' }: SubscriptionPlansProps) {
     const { user } = useUser();
     const { session } = useSession();
+    const { getNumber: getSettingNum } = useSystemSettings([...SANGJO_COMMISSION_KEYS]);
+
+    // 상조 플랜: DB에서 수수료율 로드 → badge 동적 생성
+    const sangjoPlans: Plan[] = useMemo(() => {
+        const commissionMap: Record<string, number> = {
+            sj_starter: getSettingNum('sj_starter_commission', SANGJO_COMMISSION_DEFAULTS.sj_starter_commission),
+            sj_professional: getSettingNum('sj_professional_commission', SANGJO_COMMISSION_DEFAULTS.sj_professional_commission),
+            sj_enterprise: getSettingNum('sj_enterprise_commission', SANGJO_COMMISSION_DEFAULTS.sj_enterprise_commission),
+        };
+        return sangjoPlansBase.map(plan => ({
+            ...plan,
+            badge: `수수료 ${commissionMap[plan.id] ?? 10}%`,
+        }));
+    }, [getSettingNum]);
+
     const plans = type === 'sangjo' ? sangjoPlans : facilityPlans;
     const [selectedPlan, setSelectedPlan] = useState<string | null>(currentPlan || null);
     const [expandedPlan, setExpandedPlan] = useState<string | null>(type === 'sangjo' ? 'sj_professional' : 'premium');

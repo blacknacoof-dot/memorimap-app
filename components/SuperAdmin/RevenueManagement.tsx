@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
     Wallet, TrendingUp, CreditCard, ArrowUpRight,
     ArrowDownRight, BarChart3, Download, Settings,
@@ -6,31 +6,13 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRevenue } from '../../hooks/useFinancials';
-import { useSession } from '../../lib/auth';
-import { getAuthClient } from '../../lib/supabaseClient';
+import { useSystemSettings } from '../../hooks/useSystemSettings';
 
 export const RevenueManagement: React.FC = () => {
     const { payments, totalRevenue, loading } = useRevenue();
     const [viewType, setViewType] = useState<'total' | 'partner'>('total');
-    const [commissionRate, setCommissionRate] = useState(0.1);
-    const { session } = useSession();
-
-    // DB에서 수수료율 로드
-    useEffect(() => {
-        if (!session) return;
-        const load = async () => {
-            try {
-                const client = await getAuthClient(session, { strict: true });
-                const { data } = await client
-                    .from('system_settings')
-                    .select('value')
-                    .eq('key', 'commission_rate')
-                    .maybeSingle();
-                if (data?.value != null) setCommissionRate(Number(data.value) / 100);
-            } catch { /* 기본값 유지 */ }
-        };
-        load();
-    }, [session]);
+    const { getNumber } = useSystemSettings(['commission_rate']);
+    const commissionRate = getNumber('commission_rate', 10) / 100;
 
     if (loading) return <div className="py-20 text-center text-slate-400">금융 데이터를 분석 중...</div>;
 
