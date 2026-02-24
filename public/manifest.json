@@ -1,15 +1,23 @@
 {
-    "short_name": "Memorimap",
-    "name": "Memorimap - Memorial Map",
-    "icons": [
-        {
-            "src": "/vite.svg",
-            "type": "image/svg+xml",
-            "sizes": "32x32"
-        }
-    ],
-    "start_url": "/",
-    "background_color": "#ffffff",
-    "display": "standalone",
-    "theme_color": "#ec4899"
+  "short_name": "추모맵",
+  "name": "추모맵 - 내 손안의 추모 비서",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/vite.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    }
+  ],
+  "start_url": "/",
+  "scope": "/",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "theme_color": "#2563eb",
+  "lang": "ko",
+  "description": "장례식장, 봉안시설, 자연장, 상조 서비스 검색 및 AI 상담"
 }

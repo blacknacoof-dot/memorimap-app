@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -7,7 +6,6 @@ const ALLOWED_ORIGINS = [
     'https://memorimap.com',
     'https://www.memorimap.com',
     'http://localhost:5173',
-    'http://localhost:3000'
 ];
 
 const getCorsHeaders = (req: Request) => {
@@ -104,7 +102,7 @@ serve(async (req: Request) => {
 
         const contents = [
             { role: 'user', parts: [{ text: systemPrompt || '' }] },
-            ...(history || []).map((msg: any) => ({
+            ...(history || []).map((msg: { role: string; text: string }) => ({
                 role: msg.role === 'user' ? 'user' : 'model',
                 parts: [{ text: msg.text }]
             })),
@@ -146,8 +144,8 @@ serve(async (req: Request) => {
                 'Connection': 'keep-alive',
             },
         });
-    } catch (error: any) {
-        return new Response(JSON.stringify({ error: error.message || 'Internal error' }), {
+    } catch (error: unknown) {
+        return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Internal error' }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });

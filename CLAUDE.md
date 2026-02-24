@@ -99,7 +99,7 @@
 - [x] SangjoConsultationModal: h-[80vh]
 
 #### 미완료 (수동 확인 필요)
-- [ ] AI 채팅 하단 입력창 조건부 숨김 (현재 isFormActive로 이미 조건부 숨김 동작)
+- [x] AI 채팅 하단 입력창 조건부 숨김 (isFormActive로 정상 동작 확인)
 - [x] 추모시설 AI 상담 "접수 중 오류" — auth client 수정 완료
 - [ ] iOS Safe Area `env(safe-area-inset-bottom)` 적용 (실기기 테스트 후 판단)
 - [ ] Vercel 이전 빌드 캐시 확인 (배포 후 확인)

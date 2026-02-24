@@ -7,7 +7,6 @@ const ALLOWED_ORIGINS = [
     'https://memorimap.com',
     'https://www.memorimap.com',
     'http://localhost:5173',
-    'http://localhost:3000'
 ];
 
 const getCorsHeaders = (req: Request) => {
