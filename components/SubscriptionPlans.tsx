@@ -491,9 +491,9 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                                     }
                                     setIsSubmitting(true);
                                     try {
-                                        const { supabase } = await import('../lib/supabaseClient');
-                                        await supabase.from('partner_inquiries').insert({
-                                            user_id: 'anonymous',
+                                        const client = await getAuthClient(session, { strict: true });
+                                        await client.from('partner_inquiries').insert({
+                                            user_id: user?.id || 'anonymous',
                                             contact_person: inquiryForm.name,
                                             phone: inquiryForm.phone,
                                             email: inquiryForm.email || null,

@@ -5,11 +5,13 @@
 
 import { toast } from 'sonner';
 import { logAuditEvent, AuditAction } from '@/lib/security/auditLog';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 interface ErrorHandlerOptions {
     showToast?: boolean;
     logToAudit?: boolean;
     userId?: string;
+    client?: SupabaseClient;
 }
 
 /**
@@ -38,14 +40,14 @@ export function handleError(
         });
     }
 
-    // Audit Log 기록 (선택적)
-    if (options?.logToAudit && options?.userId) {
+    // Audit Log 기록 (선택적 — client가 있을 때만)
+    if (options?.logToAudit && options?.userId && options?.client) {
         logAuditEvent({
             userId: options.userId,
             action: AuditAction.RLS_VIOLATION,
             resourceType: 'error',
             metadata: { context, message }
-        }).catch(err => console.error('Audit log failed:', err));
+        }, options.client).catch(err => console.error('Audit log failed:', err));
     }
 }
 

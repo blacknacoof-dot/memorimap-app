@@ -5,6 +5,8 @@ import MapComponent, { MapRef } from './MapContainer';
 import { FacilityList } from './FacilityList';
 import { Scale, Crosshair, Database, ArrowLeft, Building2, ShieldAlert, Shield, Loader2 } from 'lucide-react';
 import { updateFacilitySubscription } from '../lib/queries';
+import { useSession } from '../lib/auth';
+import { getAuthClient } from '../lib/supabaseClient';
 
 // Lazy Load Components
 const AdminView = React.lazy(() => import('./AdminView').then(m => ({ default: m.AdminView })));
@@ -105,6 +107,8 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
     selectedConsultation, setSelectedConsultation,
     adminFacilityId, setAdminFacilityId, adminSangjoId,
   } = props;
+
+  const { session } = useSession();
 
   // ADMIN - separate full-page layout (with role guard)
   if (viewState === ViewState.ADMIN) {
@@ -368,7 +372,8 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
                 onSelectPlan={async (planId) => {
                   if (adminFacilityId) {
                     try {
-                      await updateFacilitySubscription(adminFacilityId, planId);
+                      const subClient = await getAuthClient(session, { strict: true });
+                      await updateFacilitySubscription(adminFacilityId, planId, subClient);
                       showToast('구독 정보가 업데이트되었습니다.', 'success');
                     } catch {
                       showToast('구독 정보 업데이트에 실패했습니다.', 'error');
@@ -431,10 +436,24 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
           </div>
         );
       }
+      if (!adminSangjoId) {
+        return (
+          <div className="h-full flex flex-col items-center justify-center p-6 bg-gray-50">
+            <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
+              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Loader2 className="text-yellow-600" size={32} />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">상조 정보를 불러오는 중...</h2>
+              <p className="text-gray-500 mb-6">연결된 상조 회사가 없을 수 있습니다. 관리자에게 문의해주세요.</p>
+              <button onClick={() => setViewState(ViewState.MAP)} className="px-6 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 font-medium">메인으로 돌아가기</button>
+            </div>
+          </div>
+        );
+      }
       return (
         <Suspense fallback={<LoadingFallback />}>
           <SangjoDashboard
-            sangjoId={adminSangjoId || 'a-sangjo'}
+            sangjoId={adminSangjoId}
             onBack={() => setViewState(ViewState.MAP)}
           />
         </Suspense>

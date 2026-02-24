@@ -381,6 +381,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                                         <button
                                                             onClick={async () => {
                                                                 if (!res.id) return;
+                                                                if (!confirm('이 예약을 승인하시겠습니까?')) return;
                                                                 try {
                                                                     const client = await getAuthClient(session);
                                                                     await approveReservation(res.id, client);
@@ -397,6 +398,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                                         <button
                                                             onClick={async () => {
                                                                 if (!res.id) return;
+                                                                if (!confirm('이 예약을 거절하시겠습니까?')) return;
                                                                 try {
                                                                     const client = await getAuthClient(session);
                                                                     await rejectReservation(res.id, undefined, client);

@@ -80,19 +80,21 @@ export const requestPayment = async (params: PaymentRequest): Promise<PaymentRes
 
         return response;
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('❌ Payment Error:', error);
 
+        const errMsg = error instanceof Error ? error.message : '';
+
         // 사용자 친화적 에러 메시지
-        if (error.message?.includes('User closed') || error.message?.includes('cancel')) {
+        if (errMsg.includes('User closed') || errMsg.includes('cancel')) {
             throw new Error('결제가 취소되었습니다.');
         }
 
-        if (error.message?.includes('popup') || error.message?.includes('blocked')) {
+        if (errMsg.includes('popup') || errMsg.includes('blocked')) {
             throw new Error('팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.');
         }
 
-        throw new Error(error.message || '결제 처리 중 오류가 발생했습니다.');
+        throw new Error(errMsg || '결제 처리 중 오류가 발생했습니다.');
     }
 };
 
@@ -142,8 +144,9 @@ export const verifyPayment = async (params: {
 
         const result = await response.json();
         return result;
-    } catch (error: any) {
-        return { verified: false, error: error.message || '결제 검증 실패' };
+    } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : '결제 검증 실패';
+        return { verified: false, error: msg };
     }
 };
 
@@ -155,12 +158,11 @@ export const requestRefund = async (params: {
     paymentId: string;
     reason: string;
     reservationId: string;
+    client: import('@supabase/supabase-js').SupabaseClient;
 }): Promise<{ success: boolean; error?: string }> => {
     // Edge Function 배포 전에는 DB 플래그만 기록
     try {
-        const { supabase } = await import('./supabaseClient');
-
-        const { error } = await supabase.from('reservations').update({
+        const { error } = await params.client.from('reservations').update({
             refund_status: 'requested',
             refund_reason: params.reason,
             payment_id: params.paymentId,
@@ -171,8 +173,9 @@ export const requestRefund = async (params: {
         }
 
         return { success: true };
-    } catch (error: any) {
-        return { success: false, error: error.message || '환불 요청 실패' };
+    } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : '환불 요청 실패';
+        return { success: false, error: msg };
     }
 };
 

@@ -3,7 +3,7 @@
  * Phase 1-4: Security Hardening
  */
 
-import { supabase } from '@/lib/supabaseClient';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export enum AuditAction {
     PROFILE_UPDATE = 'profile_update',
@@ -20,16 +20,18 @@ interface AuditLogEntry {
     action: AuditAction;
     resourceType: string;
     resourceId?: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
     ipAddress?: string;
 }
 
 /**
  * 감사 로그 기록
+ * @param entry - 감사 로그 데이터
+ * @param client - 인증된 Supabase 클라이언트 (필수)
  */
-export async function logAuditEvent(entry: AuditLogEntry): Promise<void> {
+export async function logAuditEvent(entry: AuditLogEntry, client: SupabaseClient): Promise<void> {
     try {
-        await supabase.from('audit_logs').insert({
+        await client.from('audit_logs').insert({
             user_id: entry.userId,
             action: entry.action,
             resource_type: entry.resourceType,

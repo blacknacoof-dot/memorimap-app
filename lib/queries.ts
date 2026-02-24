@@ -215,7 +215,7 @@ export const getIntelligentRecommendations = async (
                 if (itemType === 'sangjo' || itemType === '상조') return false;
                 const isFuneralType = itemType === 'funeral_home' || itemType === 'funeral' || itemType === '장례식장';
                 const isNameMatch = !itemType && i.name && i.name.includes('장례식장');
-                return isFuneralType || isNameMatch;
+                categoryMatch = isFuneralType || isNameMatch;
             } else if (normalizedCategory === 'pet') {
                 const PET_CATEGORIES = ['pet_memorial', 'pet_funeral', 'pet', '동물장례', '반려동물'];
                 categoryMatch = PET_CATEGORIES.includes(itemType) || PET_CATEGORIES.includes(i.type);
@@ -226,9 +226,14 @@ export const getIntelligentRecommendations = async (
 
             // 2. Region Filter — 주소 정규화 매핑 적용
             let regionMatch = true;
-            if (targetRegionText && i.address) {
-                const safeRegion = targetRegionText.split(' ')[0];
-                regionMatch = addressContainsRegion(i.address, safeRegion);
+            if (targetRegionText) {
+                const addr = i.address || i.full_address || '';
+                if (!addr) {
+                    regionMatch = false; // 주소 없으면 제외
+                } else {
+                    const safeRegion = targetRegionText.split(' ')[0];
+                    regionMatch = addressContainsRegion(addr, safeRegion);
+                }
             }
 
             return categoryMatch && regionMatch;
@@ -331,8 +336,20 @@ export const getIntelligentRecommendations = async (
     finalData.forEach(item => uniqueMap.set(item.id, item));
     let results = Array.from(uniqueMap.values());
 
-    // Sort: Rating Descending
-    results.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    // Sort: 1) 지역 일치 우선  2) Rating Descending
+    if (regionText) {
+        const safeRegion = regionText.split(' ')[0];
+        results.sort((a, b) => {
+            const addrA = a.address || a.full_address || '';
+            const addrB = b.address || b.full_address || '';
+            const matchA = addressContainsRegion(addrA, safeRegion) ? 1 : 0;
+            const matchB = addressContainsRegion(addrB, safeRegion) ? 1 : 0;
+            if (matchB !== matchA) return matchB - matchA; // 지역 일치 우선
+            return (b.rating || 0) - (a.rating || 0);
+        });
+    } else {
+        results.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    }
 
     // Limit to 5 (User asked for 3, but 5 covers scrolling)
     results = results.slice(0, 5);
@@ -480,8 +497,9 @@ export const createConsultationFromLead = async (leadId: string, facilityId: str
     return data;
 };
 
-export const getAllLeads = async () => {
-    const { data, error } = await supabase
+export const getAllLeads = async (client?: import('@supabase/supabase-js').SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('leads')
         .select(`
             *,
@@ -540,9 +558,11 @@ export const createConsultation = async (
     userId: string,
     userName: string,
     userPhone: string,
-    notes: string = ''
+    notes: string = '',
+    client?: import('@supabase/supabase-js').SupabaseClient
 ) => {
-    const { data, error } = await supabase
+    const db = client || supabase;
+    const { data, error } = await db
         .from('consultations')
         .insert([
             {
@@ -863,14 +883,15 @@ export const getFacilityReservations = async (facilityId: string) => {
  * 예약 상태 변경 시 유저에게 인앱 알림 전송
  */
 const notifyReservationStatusChange = async (
-    reservation: any,
+    reservation: Record<string, unknown>,
     newStatus: 'confirmed' | 'cancelled',
+    client: import('@supabase/supabase-js').SupabaseClient,
     reason?: string
 ) => {
     if (!reservation?.user_id) return;
 
-    const facilityName = reservation.facility_name || '시설';
-    const visitDate = reservation.visit_date || '미정';
+    const facilityName = (reservation.facility_name as string) || '시설';
+    const visitDate = (reservation.visit_date as string) || '미정';
 
     const title = newStatus === 'confirmed'
         ? '예약이 승인되었습니다'
@@ -883,7 +904,7 @@ const notifyReservationStatusChange = async (
     const type = newStatus === 'confirmed' ? 'success' : 'warning';
 
     try {
-        await supabase.from('user_notifications').insert([{
+        await client.from('user_notifications').insert([{
             user_id: reservation.user_id,
             title,
             message,
@@ -894,9 +915,8 @@ const notifyReservationStatusChange = async (
     }
 };
 
-export const approveReservation = async (id: string, client?: any) => {
-    const db = client || supabase;
-    const { data, error } = await db
+export const approveReservation = async (id: string, client: import('@supabase/supabase-js').SupabaseClient) => {
+    const { data, error } = await client
         .from('reservations')
         .update({ status: 'confirmed' })
         .eq('id', id)
@@ -908,18 +928,17 @@ export const approveReservation = async (id: string, client?: any) => {
         throw error;
     }
 
-    await notifyReservationStatusChange(data, 'confirmed');
+    await notifyReservationStatusChange(data, 'confirmed', client);
     return data;
 };
 
-export const rejectReservation = async (id: string, reason?: string, client?: any) => {
-    const db = client || supabase;
-    const updateData: any = { status: 'cancelled' };
+export const rejectReservation = async (id: string, reason: string | undefined, client: import('@supabase/supabase-js').SupabaseClient) => {
+    const updateData: Record<string, string> = { status: 'cancelled' };
     if (reason) {
         updateData.notes = `[거절 사유] ${reason}`;
     }
 
-    const { data, error } = await db
+    const { data, error } = await client
         .from('reservations')
         .update(updateData)
         .eq('id', id)
@@ -931,7 +950,7 @@ export const rejectReservation = async (id: string, reason?: string, client?: an
         throw error;
     }
 
-    await notifyReservationStatusChange(data, 'cancelled', reason);
+    await notifyReservationStatusChange(data, 'cancelled', client, reason);
 
     // 결제된 예약이 거절되면 환불 요청 플래그 기록
     if (data?.payment_id) {
@@ -941,6 +960,7 @@ export const rejectReservation = async (id: string, reason?: string, client?: an
                 paymentId: data.payment_id,
                 reason: reason || '시설 측 예약 거절',
                 reservationId: id,
+                client,
             });
         } catch (e) {
             console.error('환불 요청 플래그 기록 실패:', e);
@@ -1441,8 +1461,8 @@ export const incrementAiUsage = async (facilityId: string) => {
     }
 };
 
-export const updateFacilitySubscription = async (facilityId: string, planId: string, client?: import('@supabase/supabase-js').SupabaseClient) => {
-    const db = client || supabase;
+export const updateFacilitySubscription = async (facilityId: string, planId: string, client: import('@supabase/supabase-js').SupabaseClient) => {
+    const db = client;
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
 
     // 1. 플랜 정보 조회 (가격 등) - name_en 우선, name fallback
@@ -1534,7 +1554,7 @@ export const updateFacilitySubscription = async (facilityId: string, planId: str
 
     // 4. 슈퍼 관리자 알림 생성
     try {
-        const { data: superAdmins } = await supabase
+        const { data: superAdmins } = await db
             .from('profiles')
             .select('id')
             .eq('role', 'super_admin');
@@ -1548,7 +1568,7 @@ export const updateFacilitySubscription = async (facilityId: string, planId: str
                 link: '/admin?tab=subs'
             }));
 
-            await supabase
+            await db
                 .from('user_notifications')
                 .insert(notifications);
         }
@@ -1560,10 +1580,10 @@ export const updateFacilitySubscription = async (facilityId: string, planId: str
 /**
  * [추가] 구독 재결제 예정일 수동 업데이트 (관리자용)
  */
-export const updateSubscriptionBillingDate = async (facilityId: string, nextDate: string) => {
+export const updateSubscriptionBillingDate = async (facilityId: string, nextDate: string, client: import('@supabase/supabase-js').SupabaseClient) => {
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
 
-    let query = supabase.from('facility_subscriptions').update({
+    let query = client.from('facility_subscriptions').update({
         next_billing_date: nextDate,
         updated_at: new Date().toISOString()
     });
@@ -1617,9 +1637,10 @@ export const getMyFavorites = async (userId: string) => {
 /**
  * [추가] 전체 구독 현황 조회 (Super Admin)
  */
-export const getAllSubscriptions = async () => {
+export const getAllSubscriptions = async (client?: import('@supabase/supabase-js').SupabaseClient) => {
     try {
-        const { data, error } = await supabase
+        const db = client || supabase;
+        const { data, error } = await db
             .from('facility_subscriptions')
             .select(`
                 *,
@@ -2069,8 +2090,8 @@ export interface Inquiry {
     content?: string;
 }
 
-export const createNotice = async (title: string, content: string) => {
-    const { data, error } = await supabase
+export const createNotice = async (title: string, content: string, client?: import('@supabase/supabase-js').SupabaseClient) => {
+    const { data, error } = await (client || supabase)
         .from('notices')
         .insert([{
             title,
@@ -2086,8 +2107,8 @@ export const createNotice = async (title: string, content: string) => {
     return data;
 };
 
-export const getNotices = async () => {
-    const { data, error } = await supabase
+export const getNotices = async (client?: import('@supabase/supabase-js').SupabaseClient) => {
+    const { data, error } = await (client || supabase)
         .from('notices')
         .select('*')
         .order('created_at', { ascending: false });
@@ -2106,8 +2127,8 @@ export const getNotices = async () => {
     }));
 };
 
-export const getInquiries = async () => {
-    const { data, error } = await supabase
+export const getInquiries = async (client?: import('@supabase/supabase-js').SupabaseClient) => {
+    const { data, error } = await (client || supabase)
         .from('partner_inquiries')
         .select('*')
         .order('created_at', { ascending: false });
