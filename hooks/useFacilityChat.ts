@@ -1,11 +1,32 @@
-import { useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { useSession } from '../lib/auth';
+import { getAuthClient } from '../lib/supabaseClient';
+
+interface FunctionCallPayload {
+    name: string;
+    args: Record<string, string>;
+}
+
+interface CurrentUser {
+    id: string;
+}
+
+interface FunctionCallResult {
+    success?: boolean;
+    reservation_id?: string;
+    contract_id?: string;
+    message?: string;
+    error?: string;
+    shouldRetry?: boolean;
+}
 
 export const useFacilityChat = () => {
+    const { session } = useSession();
 
-    const handleFunctionCall = async (functionCall: any, currentUser: any) => {
+    const handleFunctionCall = async (functionCall: FunctionCallPayload, currentUser: CurrentUser | null): Promise<FunctionCallResult> => {
         const { name, args } = functionCall;
         try {
+            const client = await getAuthClient(session, { strict: true });
+
             switch (name) {
                 case 'book_facility_visit': {
                     // 입력 검증
@@ -17,20 +38,17 @@ export const useFacilityChat = () => {
                     }
 
                     // DB 트랜잭션 실행
-                    const { data, error } = await supabase
+                    const { data, error } = await client
                         .from('reservations')
                         .insert({
                             facility_id: args.facility_id,
                             user_id: currentUser?.id,
                             visitor_name: args.visitor_name,
                             visitor_phone: args.visitor_phone,
-                            visit_date: args.preferred_date, // Note: Schema might use visit_date (date) and time_slot (string) separately
+                            visit_date: args.preferred_date,
                             time_slot: args.preferred_time,
-                            // preferred_datetime: `${args.preferred_date}T${args.preferred_time}:00`, // Alternative if timestamp
-                            // consultation_type: args.consultation_type, // Add column if exists
                             special_requests: args.special_requests,
                             status: 'pending',
-                            // created_at: new Date().toISOString() // Default default
                         })
                         .select()
                         .single();
@@ -46,14 +64,13 @@ export const useFacilityChat = () => {
 
                 case 'create_sangjo_contract': {
                     // 상조 계약 생성 로직
-                    const { data, error } = await supabase
+                    const { data, error } = await client
                         .from('sangjo_contracts')
                         .insert({
                             sangjo_company_id: args.sangjo_company_id,
                             user_id: currentUser?.id,
                             customer_name: args.customer_name,
                             customer_phone: args.customer_phone,
-                            // customer_ssn_partial: args.customer_ssn, // Add if column exists
                             package_type: args.package_type,
                             monthly_payment: args.monthly_payment,
                             status: 'pending'

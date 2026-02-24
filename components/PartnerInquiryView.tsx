@@ -39,7 +39,7 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack, onLoginClick }) =>
     const [isSuccess, setIsSuccess] = useState(false);
 
     // Search related state
-    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [searchResults, setSearchResults] = useState<Array<{ id: string | number; name: string; address?: string; phone?: string; owner_user_id?: string }>>([]);
     const [showResults, setShowResults] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
@@ -105,13 +105,13 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack, onLoginClick }) =>
         return () => clearTimeout(timer);
     }, [formData.companyName, formData.type]);
 
-    const handleSelectFacility = (facility: any) => {
+    const handleSelectFacility = (facility: { id: string | number; name: string; address?: string; phone?: string }) => {
         setFormData(prev => ({
             ...prev,
             companyName: facility.name,
             address: facility.address || '',
             phone: facility.phone || '',
-            targetFacilityId: facility.id
+            targetFacilityId: typeof facility.id === 'number' ? facility.id : parseInt(String(facility.id), 10) || null
         }));
         setIsReadOnly(true);
         setShowResults(false);
@@ -146,15 +146,16 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack, onLoginClick }) =>
             }, authClient));
             // Submission success
             setIsSuccess(true);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Submission failed', error);
 
+            const err = error as { code?: string; message?: string };
             // 🔍 중복 이메일 에러 감지
-            if (error?.code === '23505' && error?.message?.includes('partner_inquiries_company_email_idx')) {
+            if (err?.code === '23505' && err?.message?.includes('partner_inquiries_company_email_idx')) {
                 toast.error('⚠️ 이미 등록된 회사 이메일입니다.\n\n다른 이메일로 신청하시거나, 기존 신청 상태를 확인해주세요.\n문의: 고객센터', { duration: 6000 });
             }
             // 🔍 기타 DB 제약 에러
-            else if (error?.code?.startsWith('23')) {
+            else if (err?.code?.startsWith('23')) {
                 toast.error('⚠️ 입력하신 정보에 문제가 있습니다.\n\n모든 필드를 확인 후 다시 시도해주세요.');
             }
             // 🔍 일반 에러

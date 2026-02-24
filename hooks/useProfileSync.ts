@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { useUser } from '../lib/auth';
-import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
+import { useUser, useSession } from '../lib/auth';
+import { getAuthClient, isSupabaseConfigured } from '../lib/supabaseClient';
 
 /**
  * Supabase Auth 로그인 시 profiles 테이블 upsert.
@@ -8,6 +8,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
  */
 export const useProfileSync = () => {
   const { user, isSignedIn } = useUser();
+  const { session } = useSession();
   const hasSyncedRef = useRef(false);
 
   useEffect(() => {
@@ -21,7 +22,8 @@ export const useProfileSync = () => {
 
     const syncProfile = async () => {
       try {
-        const { error } = await supabase
+        const client = await getAuthClient(session, { strict: true });
+        const { error } = await client
           .from('profiles')
           .upsert(
             {
@@ -35,10 +37,9 @@ export const useProfileSync = () => {
           );
 
         if (error) {
-          const code = (error as any).code;
-          const status = (error as any).status;
-          if (code !== '42501' && status !== 401) {
-            console.warn('[ProfileSync] Profile sync failed:', code, error.message);
+          const pgError = error as { code?: string; status?: number; message: string };
+          if (pgError.code !== '42501' && pgError.status !== 401) {
+            console.warn('[ProfileSync] Profile sync failed:', pgError.code, pgError.message);
           }
         }
       } catch (err) {
@@ -47,5 +48,5 @@ export const useProfileSync = () => {
     };
 
     syncProfile();
-  }, [isSignedIn, user]);
+  }, [isSignedIn, user, session]);
 };

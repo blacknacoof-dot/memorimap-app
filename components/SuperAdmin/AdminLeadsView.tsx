@@ -1,9 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { getAllLeads } from '../../lib/queries';
+import { supabase } from '../../lib/supabaseClient';
 import { FileText, Phone, MapPin, AlertCircle, CheckCircle2, XCircle, Clock } from 'lucide-react';
 
+interface Lead {
+    id: string;
+    created_at: string;
+    contact_name: string;
+    contact_phone: string;
+    phone_number?: string;
+    category: string;
+    urgency?: string;
+    scale?: string;
+    status: string;
+    context_data?: { text?: string; [key: string]: unknown };
+    priorities?: string[];
+}
+
 export const AdminLeadsView: React.FC = () => {
-    const [leads, setLeads] = useState<any[]>([]);
+    const [leads, setLeads] = useState<Lead[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -12,10 +27,10 @@ export const AdminLeadsView: React.FC = () => {
 
     const loadLeads = async () => {
         try {
-            const data = await getAllLeads();
-            setLeads(data || []);
+            const data = await getAllLeads(supabase);
+            setLeads((data || []) as Lead[]);
         } catch (error) {
-            console.error('Failed to load leads', error);
+            // getAllLeads failed
         } finally {
             setLoading(false);
         }
@@ -32,12 +47,12 @@ export const AdminLeadsView: React.FC = () => {
     };
 
     const getCategoryLabel = (cat: string) => {
-        const map: any = { 'funeral': '장례식장', 'memorial': '추모시설', 'pet': '동물장례' };
+        const map: Record<string, string> = { 'funeral': '장례식장', 'memorial': '추모시설', 'pet': '동물장례' };
         return map[cat] || cat;
     };
 
     const getUrgencyLabel = (u: string) => {
-        const map: any = { 'immediate': '긴급(임종직후)', 'imminent': '위독(임종임박)', 'prepare': '사전준비' };
+        const map: Record<string, string> = { 'immediate': '긴급(임종직후)', 'imminent': '위독(임종임박)', 'prepare': '사전준비' };
         return map[u] || u;
     };
 
@@ -88,7 +103,7 @@ export const AdminLeadsView: React.FC = () => {
                                 </td>
                             </tr>
                         ) : (
-                            processedLeads.map((lead: any) => (
+                            processedLeads.map((lead) => (
                                 <tr key={lead.id} className="hover:bg-slate-50 transition">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center gap-2">
@@ -100,7 +115,7 @@ export const AdminLeadsView: React.FC = () => {
                                         <div className="font-bold text-slate-800">{lead.contact_name}</div>
                                         <div className="flex items-center gap-1.5 text-slate-500 mt-1">
                                             <Phone size={12} />
-                                            {maskPhone(lead.contact_phone || lead.phone_number)}
+                                            {maskPhone(lead.contact_phone || lead.phone_number || '')}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { sangjoFavoriteService } from '../services/sangjoFavoriteService';
 import { FuneralCompany } from '../types';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 interface SangjoFavoriteState {
     favoritedIds: Set<string>;
@@ -8,7 +9,7 @@ interface SangjoFavoriteState {
 
     // Actions
     fetchFavorites: (userId: string) => Promise<void>;
-    toggleFavorite: (userId: string, company: FuneralCompany) => Promise<boolean>;
+    toggleFavorite: (userId: string, company: FuneralCompany, client: SupabaseClient) => Promise<boolean>;
 }
 
 export const useSangjoFavoriteStore = create<SangjoFavoriteState>((set) => ({
@@ -28,11 +29,11 @@ export const useSangjoFavoriteStore = create<SangjoFavoriteState>((set) => ({
         }
     },
 
-    toggleFavorite: async (userId: string, company: FuneralCompany) => {
+    toggleFavorite: async (userId: string, company: FuneralCompany, client: SupabaseClient) => {
         if (!userId) return false;
 
         try {
-            const isAdded = await sangjoFavoriteService.toggleFavorite(userId, company);
+            const isAdded = await sangjoFavoriteService.toggleFavorite(userId, company, client);
 
             set((state) => {
                 const next = new Set(state.favoritedIds);

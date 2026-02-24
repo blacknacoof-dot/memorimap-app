@@ -7,7 +7,7 @@ import { ViewState } from '../types';
 
 interface ViewProps {
   onBack: () => void;
-  user?: any;
+  user?: { id?: string; email?: string; user_metadata?: Record<string, unknown> } | null;
 }
 
 const Header = ({ title, onBack }: { title: string, onBack: () => void }) => (
@@ -154,7 +154,7 @@ export const SupportView: React.FC<ViewProps> = ({ onBack, user }) => {
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({
     category: INQUIRY_CATEGORIES[0] as string,
-    name: user?.user_metadata?.name || user?.user_metadata?.full_name || '',
+    name: (user?.user_metadata?.name as string) || (user?.user_metadata?.full_name as string) || '',
     phone: '',
     email: '',
     message: '',

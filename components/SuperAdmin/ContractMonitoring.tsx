@@ -189,11 +189,13 @@ export const ContractMonitoring: React.FC = () => {
                 { duration: 5000 }
             );
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             // Join Chat Error — toast로 사용자에게 알림
             // 2차 방어: DB 업데이트 실패 (0 rows affecting -> .single() throws error)
             // PGRST116: The result contains 0 rows
-            if (error.code === 'PGRST116' || error.message?.includes('0 rows')) {
+            const err = error instanceof Error ? error : null;
+            const errCode = (error as { code?: string })?.code;
+            if (errCode === 'PGRST116' || err?.message?.includes('0 rows')) {
                 toast.warning('⚠️ 이미 다른 관리자가 상담을 시작했습니다.');
                 // 최신 데이터로 리프레시
                 loadAiConsultations();
@@ -253,7 +255,7 @@ export const ContractMonitoring: React.FC = () => {
                     ].map((tab) => (
                         <button
                             key={tab.id}
-                            onClick={() => setActiveFilter(tab.id as any)}
+                            onClick={() => setActiveFilter(tab.id as typeof activeFilter)}
                             className={`px-3 md:px-6 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${activeFilter === tab.id
                                 ? `${tab.color} text-white shadow-md`
                                 : 'text-slate-500 hover:text-slate-700'
@@ -271,23 +273,23 @@ export const ContractMonitoring: React.FC = () => {
                     <div className="py-20 text-center text-slate-400">관제 데이터를 연결 중...</div>
                 ) : filteredItems.length === 0 ? (
                     <div className="py-20 text-center text-slate-400">현재 해당 등급의 데이터가 없습니다.</div>
-                ) : filteredItems.map((item: any) => (
+                ) : filteredItems.map((item) => (
                     <div
                         key={item.type === 'contract' ? item.contract_number : item.conversation_id}
                         className={`bg-white border-2 rounded-2xl p-4 md:p-5 flex flex-col md:flex-row md:items-center gap-3 md:gap-0 md:justify-between transition-all hover:shadow-lg group ${(item.type === 'contract' && item.emergency_level === 'critical') || (item.type === 'ai' && item.status === AiConsultationStatus.AGENT_REQUESTED)
                             ? 'border-red-500/50 bg-red-50/20'
-                            : item.emergency_level === 'urgent' ? 'border-amber-500/30' : 'border-slate-100'
+                            : (item.type === 'contract' && item.emergency_level === 'urgent') ? 'border-amber-500/30' : 'border-slate-100'
                             }`}
                     >
                         <div className="flex items-center gap-3 md:gap-6">
                             {/* Status Icon */}
                             <div className={`w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 ${item.type === 'ai' ? 'bg-purple-100 text-purple-600' :
-                                item.emergency_level === 'critical' ? 'bg-red-100 text-red-600 animate-pulse' :
-                                    item.emergency_level === 'urgent' ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-400'
+                                (item.type === 'contract' && item.emergency_level === 'critical') ? 'bg-red-100 text-red-600 animate-pulse' :
+                                    (item.type === 'contract' && item.emergency_level === 'urgent') ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-400'
                                 }`}>
                                 {item.type === 'ai' ? <MessageSquare size={20} /> :
-                                    item.emergency_level === 'critical' ? <BellRing size={20} /> :
-                                        item.emergency_level === 'urgent' ? <AlertCircle size={20} /> : <Clock size={20} />}
+                                    (item.type === 'contract' && item.emergency_level === 'critical') ? <BellRing size={20} /> :
+                                        (item.type === 'contract' && item.emergency_level === 'urgent') ? <AlertCircle size={20} /> : <Clock size={20} />}
                             </div>
 
                             {/* Info */}
@@ -303,7 +305,7 @@ export const ContractMonitoring: React.FC = () => {
                                 <div className="flex flex-wrap items-center gap-2 md:gap-4">
                                     <div className="flex items-center gap-1.5 text-[11px] md:text-xs text-slate-500">
                                         <MapPin size={12} />
-                                        <span>{item.region || item.category || '전국'}</span>
+                                        <span>{(item.type === 'contract' ? item.region : item.category) || '전국'}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5 text-[11px] md:text-xs text-slate-500">
                                         <Activity size={12} />
@@ -323,7 +325,7 @@ export const ContractMonitoring: React.FC = () => {
                         <div className="flex items-center justify-between md:justify-end gap-3 md:gap-4 border-t md:border-0 border-slate-100 pt-3 md:pt-0">
                             <div className="md:text-right md:mr-4">
                                 <p className="text-[10px] text-slate-400 font-bold uppercase mb-0.5">배정 파트너</p>
-                                <p className="text-xs md:text-sm font-bold text-slate-700 truncate max-w-[120px] md:max-w-none">{item.sangjo_id || item.facility_name || '자동 배정 중'}</p>
+                                <p className="text-xs md:text-sm font-bold text-slate-700 truncate max-w-[120px] md:max-w-none">{(item.type === 'contract' ? item.sangjo_id : item.facility_name) || '자동 배정 중'}</p>
                             </div>
                             <div className="flex gap-2 shrink-0">
                                 <button

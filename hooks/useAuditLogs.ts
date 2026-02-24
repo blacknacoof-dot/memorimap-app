@@ -8,7 +8,7 @@ interface AuditLog {
     action_display?: string; // Derived from view usually
     action_category: string;
     target_resource: string;
-    details: any;
+    details: Record<string, unknown>;
     created_at: string;
     status: string;
 }

@@ -7,7 +7,8 @@ import { ReviewForm } from './ReviewForm';
 import { ReviewList } from './ReviewList';
 import { ChatInterface } from './AI/ChatInterface';
 import { getSmartFeatures, getSmartDescription } from '../lib/facilityUtils';
-import { supabase } from '../lib/supabaseClient';
+import { supabase, getAuthClient } from '../lib/supabaseClient';
+import { useSession } from '../lib/auth';
 import { toast } from 'sonner';
 
 interface Props {
@@ -45,6 +46,7 @@ export const FacilitySheet: React.FC<Props> = ({
   onOpenAiChat,
   onViewSangjoList
 }) => {
+  const { session } = useSession();
   const [activeTab, setActiveTab] = useState<'info' | 'photos' | 'reviews' | 'price' | 'ai'>('info');
 
   // Gallery State (Index based)
@@ -54,7 +56,7 @@ export const FacilitySheet: React.FC<Props> = ({
   const [reviewRefreshTrigger, setReviewRefreshTrigger] = useState(0);
 
   const [isFavorite, setIsFavorite] = useState(false);
-  const [dbPackages, setDbPackages] = useState<any[]>([]);
+  const [dbPackages, setDbPackages] = useState<Array<{ id: string; name: string; price: number; items?: string[]; description?: string; sort_order?: number; is_active?: boolean; category?: string; price_label?: string; included_items?: string[] }>>([]);
 
   // Load facility_packages from DB
   useEffect(() => {
@@ -99,7 +101,8 @@ export const FacilitySheet: React.FC<Props> = ({
       setIsFavorite(newStatus);
 
       // Actual API call
-      const result = await favoriteService.toggleFavorite(currentUser.id, facility.id);
+      const client = await getAuthClient(session, { strict: true });
+      const result = await favoriteService.toggleFavorite(currentUser.id, facility.id, client);
 
       // Sync just in case
       if (result !== newStatus) {
@@ -292,7 +295,7 @@ export const FacilitySheet: React.FC<Props> = ({
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as typeof activeTab)}
               className={`flex-1 py-3 text-sm font-medium whitespace-nowrap ${activeTab === tab.id
                 ? 'border-b-2 border-primary text-primary'
                 : 'text-gray-500 hover:text-gray-700'
@@ -492,7 +495,7 @@ export const FacilitySheet: React.FC<Props> = ({
               {/* DB 패키지 데이터 우선 표시 */}
               {dbPackages.length > 0 ? (
                 <div className="space-y-3">
-                  {dbPackages.map((pkg: any) => (
+                  {dbPackages.map((pkg) => (
                     <div key={pkg.id} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-sm transition-shadow">
                       <div className="flex items-start justify-between mb-2">
                         <div>
@@ -526,14 +529,14 @@ export const FacilitySheet: React.FC<Props> = ({
                     <div className="flex-1 min-w-0 px-2">카테고리</div>
                     <div className="flex-[2] min-w-0 px-2">가격</div>
                   </div>
-                  {facility.priceInfo.items.filter((p: any) => {
+                  {facility.priceInfo.items.filter((p) => {
                     if (facility.type === 'funeral') {
                       // 용품 제외, 빈소/접객실만 포함
                       if (p.item.includes('용품') || p.category.includes('용품')) return false;
                       return p.item.includes('빈소') || p.item.includes('접객실');
                     }
                     return true;
-                  }).map((p: any, idx: number) => {
+                  }).map((p, idx: number) => {
                     // 가격 표시 로직 수정: price 필드의 숫자를 만원 단위로 변환
                     let displayPrice = '-';
                     const priceNum = parseInt(String(p.price).replace(/[^0-9]/g, ''));
@@ -552,10 +555,10 @@ export const FacilitySheet: React.FC<Props> = ({
                         if (manwonValue < 1000000) {
                           displayPrice = '-';
                         } else {
-                          displayPrice = p.price;
+                          displayPrice = String(p.price);
                         }
                       } else {
-                        displayPrice = p.price;
+                        displayPrice = String(p.price);
                       }
                     } else if (String(p.price).includes('문의') || String(p.price).includes('상담')) {
                       displayPrice = '상담 문의';
@@ -584,7 +587,7 @@ export const FacilitySheet: React.FC<Props> = ({
                       <div className="w-1/3 px-2">상세</div>
                       <div className="w-1/3 px-2">가격</div>
                     </div>
-                    {facility.prices.map((p: any, idx: number) => {
+                    {facility.prices.map((p, idx: number) => {
                       let displayPrice = p.price || '상담 문의';
                       // 레거시 가격 데이터도 검증 (100만원 미만 필터링)
                       const priceNum = p.price ? parseInt(String(p.price).replace(/[^0-9]/g, '')) : 0;

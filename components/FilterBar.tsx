@@ -21,7 +21,7 @@ export const FilterBar = () => {
         <div className="w-full pointer-events-auto">
             {/* Category Filters */}
             <div className="overflow-x-auto filter-scroll touch-pan-x no-scrollbar">
-                <div className="flex gap-2 px-1 pb-2 w-max">
+                <div className="flex gap-1.5 md:gap-2 px-1 pb-1 md:pb-2 w-max">
                     {CATEGORIES.map((cat) => {
                         const isSelected = cat.id === 'all'
                             ? selectedCategories.length === 0
@@ -37,7 +37,7 @@ export const FilterBar = () => {
                                         toggleCategory(cat.id as FacilityCategoryType);
                                     }
                                 }}
-                                className={`px-3 py-1.5 rounded-full text-[11px] font-medium shadow-sm border whitespace-nowrap transition-colors flex-shrink-0 min-h-[44px] md:min-h-[36px] ${isSelected
+                                className={`px-2.5 py-1 md:px-3 md:py-1.5 rounded-full text-[10px] md:text-[11px] font-medium shadow-sm border whitespace-nowrap transition-colors flex-shrink-0 min-h-[28px] md:min-h-[36px] ${isSelected
                                     ? 'bg-primary text-white border-primary'
                                     : 'bg-white/90 backdrop-blur text-gray-900 hover:bg-white border-white/50'
                                     }`}

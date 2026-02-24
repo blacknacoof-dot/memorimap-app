@@ -142,7 +142,7 @@ const MapView: React.FC<MapViewProps> = ({ viewState, setViewState }) => {
                     ref={mapRef}
                     facilities={filteredFacilities}
                     onFacilitySelect={handleFacilitySelect}
-                    onBoundsChange={handleBoundsChange}
+                    onBoundsChange={handleBoundsChange as (bounds: { getSouthWest: () => { lat: number; lng: number }; getNorthEast: () => { lat: number; lng: number } }) => void}
                 />
 
                 {/* My Location Button */}

@@ -1,11 +1,10 @@
-import { supabase } from '@/lib/supabaseClient';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { Notice, PartnerInquiry, Payment, Subscription } from '@/types/db';
+import type { Facility } from '@/types/facility';
 
-// --- 파트너 승인 API ---
-export const fetchPendingInquiries = async (client?: SupabaseClient) => {
-    const db = client || supabase;
-    const { data, error } = await db
+// --- 파트너 입점 신청 조회 API ---
+export const fetchPendingInquiries = async (client: SupabaseClient) => {
+    const { data, error } = await client
         .from('partner_inquiries')
         .select('*')
         .eq('status', 'pending')
@@ -14,52 +13,17 @@ export const fetchPendingInquiries = async (client?: SupabaseClient) => {
     return data as PartnerInquiry[];
 };
 
-/**
- * @deprecated Edge Function 경로 사용 (useAdminActions.ts > useApprovePartner)
- * PartnerAdmissions.tsx에서 이미 Edge Function을 호출하므로 이 함수는 fallback용
- */
-export const approvePartner = async (inquiry: PartnerInquiry) => {
-    // Edge Function approve-partner를 통한 승인이 메인 경로입니다.
-    // 이 함수는 Edge Function 접근 불가 시 직접 RPC 호출 fallback입니다.
-    const { data, error: rpcError } = await supabase
-        .rpc('approve_partner_transaction', {
-            p_inquiry_id: inquiry.id,
-            p_admin_id: 'system-fallback'
-        });
-
-    if (rpcError) {
-        console.error('RPC Error during approval:', rpcError);
-        throw rpcError;
-    }
-
-    if (data && data.success === false) {
-        throw new Error(data.error || 'Transaction failed');
-    }
-
-    return data;
-};
-
-export const rejectPartner = async (id: string, client?: SupabaseClient) => {
-    const db = client || supabase;
-    const { error } = await db
-        .from('partner_inquiries')
-        .update({ status: 'rejected' })
-        .eq('id', id);
-    if (error) throw error;
-};
-
-// --- 유저 관리 API [NEW] ---
+// --- 유저 관리 API ---
 export interface UserProfile {
     id: string;
-    email: string | null; // profiles 테이블에 email이 없다면 auth JOIN 필요하지만, 현재 스키마 가정
+    email: string | null;
     full_name: string | null;
     role: string;
     created_at: string;
 }
 
-export const fetchAllUsers = async (client?: SupabaseClient) => {
-    const db = client || supabase;
-    const { data, error } = await db
+export const fetchAllUsers = async (client: SupabaseClient) => {
+    const { data, error } = await client
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
@@ -68,16 +32,15 @@ export const fetchAllUsers = async (client?: SupabaseClient) => {
     return data as UserProfile[];
 };
 
-export const updateUserRole = async (userId: string, newRole: string, client?: SupabaseClient, actorId?: string) => {
-    const db = client || supabase;
-    const { error } = await db
+export const updateUserRole = async (userId: string, newRole: string, client: SupabaseClient, actorId?: string) => {
+    const { error } = await client
         .from('profiles')
         .update({ role: newRole })
         .eq('clerk_id', userId);
 
     if (error) throw error;
 
-    const { error: auditError } = await db.from('audit_logs').insert([{
+    const { error: auditError } = await client.from('audit_logs').insert([{
         action: 'UPDATE_ROLE',
         target_resource: 'profiles',
         target_id: userId,
@@ -87,7 +50,7 @@ export const updateUserRole = async (userId: string, newRole: string, client?: S
     if (auditError) console.warn('[updateUserRole] audit_log insert failed:', auditError.message);
 };
 
-// --- 시설 통합 관리 API [NEW] ---
+// --- 시설 통합 관리 API ---
 export interface MemorialSpace {
     id: string;
     name: string;
@@ -96,33 +59,30 @@ export interface MemorialSpace {
     manager_id: string | null;
 }
 
-export const fetchAllFacilities = async (client?: SupabaseClient) => {
-    const db = client || supabase;
-    const { data, error } = await db
+export const fetchAllFacilities = async (client: SupabaseClient) => {
+    const { data, error } = await client
         .from('facilities')
         .select('*')
         .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data as any[];
+    return data as Facility[];
 };
 
-export const searchFacilities = async (query: string, client?: SupabaseClient) => {
-    const db = client || supabase;
+export const searchFacilities = async (query: string, client: SupabaseClient) => {
     const sanitized = query.trim().replace(/[%_\\]/g, '\\$&');
-    const { data, error } = await db
+    const { data, error } = await client
         .from('facilities')
         .select('*')
         .ilike('name', `%${sanitized}%`)
         .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data as any[];
+    return data as Facility[];
 };
 
-export const updateFacilityManager = async (facilityId: string, newManagerId: string | null, client?: SupabaseClient) => {
-    const db = client || supabase;
-    const { error } = await db
+export const updateFacilityManager = async (facilityId: string, newManagerId: string | null, client: SupabaseClient) => {
+    const { error } = await client
         .from('facilities')
         .update({ user_id: newManagerId })
         .eq('id', facilityId);
@@ -132,9 +92,8 @@ export const updateFacilityManager = async (facilityId: string, newManagerId: st
 
 
 // --- 구독 관리 API ---
-export const fetchSubscriptions = async (client?: SupabaseClient) => {
-    const db = client || supabase;
-    const { data, error } = await db
+export const fetchSubscriptions = async (client: SupabaseClient) => {
+    const { data, error } = await client
         .from('admin_subscriptions_with_facility')
         .select(`
             *,
@@ -144,18 +103,32 @@ export const fetchSubscriptions = async (client?: SupabaseClient) => {
 
     if (error) throw error;
 
-    return data.map((item: any) => {
-        // [Resolve Plan Name]
+    interface SubscriptionRow {
+        id: string;
+        facility_id?: number | string;
+        facility_name?: string;
+        plan_id?: string;
+        plan?: { name?: string; name_en?: string; price?: number } | null;
+        plan_name?: string;
+        status?: string;
+        start_date?: string;
+        end_date?: string | null;
+        auto_renew?: boolean;
+        created_at?: string;
+        next_billing_date?: string;
+        [key: string]: unknown;
+    }
+
+    return data.map((item: SubscriptionRow) => {
         let pName = item.plan?.name;
 
-        // Fallback for cases where join failed but plan_id exists
         if (!pName && item.plan_id) {
             const idLower = String(item.plan_id).toLowerCase();
             if (idLower.includes('enterprise')) pName = '엔터프라이즈';
             else if (idLower.includes('premium')) pName = '프리미엄';
             else if (idLower.includes('basic')) pName = '베이직';
             else if (idLower.includes('free')) pName = '무료체험';
-            else pName = '베이직'; // Default fallback
+            else pName = '베이직';
         }
 
         return {
@@ -167,11 +140,10 @@ export const fetchSubscriptions = async (client?: SupabaseClient) => {
     }) as (Subscription & { facility_name: string, next_billing_date?: string })[];
 };
 
-export const updateSubscriptionBillingDate = async (facilityId: string, nextDate: string, client?: SupabaseClient) => {
-    const db = client || supabase;
+export const updateSubscriptionBillingDate = async (facilityId: string, nextDate: string, client: SupabaseClient) => {
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
 
-    let query = db.from('facility_subscriptions').update({
+    let query = client.from('facility_subscriptions').update({
         next_billing_date: nextDate,
         updated_at: new Date().toISOString()
     });
@@ -188,43 +160,36 @@ export const updateSubscriptionBillingDate = async (facilityId: string, nextDate
 };
 
 // --- 매출/결제 API ---
-export const fetchPayments = async (client?: SupabaseClient) => {
-    const db = client || supabase;
-    const { data: payments, error: pError } = await db
+export const fetchPayments = async (client: SupabaseClient) => {
+    const { data: payments, error: pError } = await client
         .from('subscription_payments')
         .select('*')
         .order('paid_at', { ascending: false });
 
-    if (pError) {
-        console.error('Fetch payments error:', pError);
-        throw pError;
-    }
+    if (pError) throw pError;
 
-    // Try to get facility names for display, but don't let it crash the revenue total
     try {
-        const { data: subs, error: sError } = await db
+        const { data: subs, error: sError } = await client
             .from('admin_subscriptions_with_facility')
             .select('id, facility_name');
 
         if (!sError && subs) {
             const subMap = new Map(subs.map(s => [s.id, s.facility_name]));
-            return payments.map((item: any) => ({
+            return payments.map((item: Payment) => ({
                 ...item,
-                facility_name: subMap.get(item.subscription_id) || '(시설 정보 유실)',
+                facility_name: subMap.get(item.subscription_id ?? '') || '(시설 정보 유실)',
             })) as (Payment & { facility_name: string })[];
         }
-    } catch (e) {
-        console.warn('Facility name resolution failed:', e);
+    } catch {
+        // facility name resolution failed — non-blocking
     }
 
-    // Fallback: Return payments with placeholder names if join fails
     return payments.map(p => ({ ...p, facility_name: '(알 수 없음)' })) as (Payment & { facility_name: string })[];
 };
 
 // --- 공지사항 API ---
-export const fetchNotices = async (client?: SupabaseClient) => {
-    const db = client || supabase;
-    const { data, error } = await db
+export const fetchNotices = async (client: SupabaseClient) => {
+    const { data, error } = await client
         .from('notices')
         .select('*')
         .order('created_at', { ascending: false });
@@ -232,9 +197,8 @@ export const fetchNotices = async (client?: SupabaseClient) => {
     return data as Notice[];
 };
 
-export const createNotice = async (notice: Partial<Notice>, client?: SupabaseClient) => {
-    const db = client || supabase;
-    const { data, error } = await db
+export const createNotice = async (notice: Partial<Notice>, client: SupabaseClient) => {
+    const { data, error } = await client
         .from('notices')
         .insert([notice])
         .select()
@@ -243,9 +207,8 @@ export const createNotice = async (notice: Partial<Notice>, client?: SupabaseCli
     return data;
 };
 
-export const deleteNotice = async (id: string, client?: SupabaseClient) => {
-    const db = client || supabase;
-    const { error } = await db
+export const deleteNotice = async (id: string, client: SupabaseClient) => {
+    const { error } = await client
         .from('notices')
         .delete()
         .eq('id', id);
@@ -253,9 +216,8 @@ export const deleteNotice = async (id: string, client?: SupabaseClient) => {
 };
 
 // --- 상담 신청 관리 API ---
-export const fetchLeads = async (client?: SupabaseClient) => {
-    const db = client || supabase;
-    const { data: leads, error } = await db
+export const fetchLeads = async (client: SupabaseClient) => {
+    const { data: leads, error } = await client
         .from('consultations')
         .select('*')
         .order('created_at', { ascending: false });
@@ -265,7 +227,24 @@ export const fetchLeads = async (client?: SupabaseClient) => {
         return [];
     }
 
-    return leads.map((lead: any) => ({
+    interface ConsultationRow {
+        id: string;
+        user_name?: string | null;
+        visitor_name?: string | null;
+        contact_name?: string | null;
+        phone_number?: string | null;
+        contact_number?: string | null;
+        contact_phone?: string | null;
+        consultation_type?: string | null;
+        type?: string | null;
+        category?: string | null;
+        status?: string | null;
+        created_at: string;
+        facility_name?: string | null;
+        [key: string]: unknown;
+    }
+
+    return leads.map((lead: ConsultationRow) => ({
         id: lead.id,
         user_name: lead.user_name || lead.visitor_name || lead.contact_name || '익명 고객',
         phone_number: lead.phone_number || lead.contact_number || lead.contact_phone,
@@ -279,7 +258,7 @@ export const fetchLeads = async (client?: SupabaseClient) => {
     }));
 };
 
-// --- 관리 활동 로그 API [NEW] ---
+// --- 관리 활동 로그 API ---
 export interface AuditLog {
     id: string;
     actor_id: string;
@@ -287,31 +266,26 @@ export interface AuditLog {
     action: string;
     target_resource: string;
     target_id: string;
-    details: any;
+    details: Record<string, unknown> | null;
     status: string;
     created_at: string;
 }
 
-export const fetchAuditLogs = async (client?: SupabaseClient) => {
-    const db = client || supabase;
-    const { data, error } = await db
+export const fetchAuditLogs = async (client: SupabaseClient) => {
+    const { data, error } = await client
         .from('audit_logs')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(100);
 
-    if (error) {
-        console.error('Failed to fetch audit logs:', error);
-        throw error;
-    }
+    if (error) throw error;
 
     return data as AuditLog[];
 };
 
-// --- 시스템 설정 API [NEW] ---
-export const fetchSystemSettings = async (client?: SupabaseClient) => {
-    const db = client || supabase;
-    const { data, error } = await db
+// --- 시스템 설정 API ---
+export const fetchSystemSettings = async (client: SupabaseClient) => {
+    const { data, error } = await client
         .from('system_settings')
         .select('*');
 
@@ -321,9 +295,8 @@ export const fetchSystemSettings = async (client?: SupabaseClient) => {
     return data;
 };
 
-export const updateSystemSetting = async (key: string, value: any, client?: SupabaseClient) => {
-    const db = client || supabase;
-    const { error } = await db
+export const updateSystemSetting = async (key: string, value: string | number | boolean | Record<string, unknown>, client: SupabaseClient) => {
+    const { error } = await client
         .from('system_settings')
         .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
 

@@ -47,7 +47,7 @@ export const AIConfiguration: React.FC<AIConfigurationProps> = ({ partnerId }) =
         setSaving(false);
     };
 
-    const updateContext = (key: string, value: any) => {
+    const updateContext = (key: string, value: string | string[]) => {
         if (!partner) return;
         setPartner({
             ...partner,

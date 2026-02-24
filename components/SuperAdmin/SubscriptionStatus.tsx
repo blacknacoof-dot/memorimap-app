@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getAllSubscriptions } from '../../lib/queries';
+import { supabase } from '../../lib/supabaseClient';
 import { Search, Zap, Calendar, TrendingUp } from 'lucide-react';
 
 interface Subscription {
@@ -22,10 +23,10 @@ export const SubscriptionStatus: React.FC = () => {
     const loadSubscriptions = async () => {
         setIsLoading(true);
         try {
-            const data = await getAllSubscriptions();
+            const data = await getAllSubscriptions(supabase);
             setSubs(data);
         } catch (error) {
-            console.error(error);
+            // getAllSubscriptions failed
         } finally {
             setIsLoading(false);
         }

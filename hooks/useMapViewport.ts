@@ -16,7 +16,7 @@ import { normalizeType, getCategoryDb, selectFacilityImage, formatPriceRange } f
 interface UseMapViewportParams {
   setFacilities: React.Dispatch<React.SetStateAction<Facility[]>>;
   setCurrentBounds: React.Dispatch<React.SetStateAction<LatLngBounds | null>>;
-  session: any;
+  session: { getToken: (opts?: Record<string, unknown>) => Promise<string | null> } | null;
 }
 
 export function useMapViewport({ setFacilities, setCurrentBounds, session }: UseMapViewportParams) {
@@ -47,7 +47,24 @@ export function useMapViewport({ setFacilities, setCurrentBounds, session }: Use
 
       const fetchedData = await fetchFacilitiesInView(bounds, token);
       if (fetchedData && fetchedData.length > 0) {
-        const mappedFacilities: Facility[] = fetchedData.map((f: any) => {
+        interface ViewFacilityRow {
+          id: string;
+          name: string;
+          type?: string;
+          category?: string;
+          address: string;
+          lat?: number;
+          latitude?: number;
+          lng?: number;
+          longitude?: number;
+          images?: string[];
+          image_url?: string;
+          rating?: number;
+          review_count?: number;
+          price_min?: number;
+          [key: string]: unknown;
+        }
+        const mappedFacilities: Facility[] = fetchedData.map((f: ViewFacilityRow) => {
           const rawType = f.type || f.category || 'charnel';
           const normalizedType = normalizeType(rawType, f.name || '');
           const mappedCategory = getCategoryDb(normalizedType);

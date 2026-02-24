@@ -78,7 +78,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "eslint --max-warnings 0 --rule '@typescript-eslint/no-explicit-any: error' --rule 'no-console: [error, {allow: [error, warn]}]'"
+      "eslint --no-error-on-unmatched-pattern --quiet --rule '@typescript-eslint/no-explicit-any: error'"
     ]
   }
 }

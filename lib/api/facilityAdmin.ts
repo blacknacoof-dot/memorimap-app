@@ -33,7 +33,23 @@ export const fetchFacilityReservations = async (facilityId: string | number, aut
     if (error) throw error;
 
     // DB의 raw 데이터를 Reservation 타입으로 변환 (필드 매핑)
-    return (data || []).map((item: any) => ({
+    interface ReservationRow {
+        id?: string;
+        visit_date: string;
+        time_slot: string;
+        visitor_name: string;
+        visitor_count: number;
+        contact_number: string;
+        special_requests?: string;
+        purpose?: string;
+        facility_id: string;
+        user_id: string;
+        status: Reservation['status'];
+        created_at?: string;
+        [key: string]: unknown;
+    }
+
+    return (data || []).map((item: ReservationRow) => ({
         ...item,
         visit_time: item.time_slot, // Map DB time_slot to visit_time for UI
         request_note: item.special_requests // Map DB special_requests to request_note for UI
@@ -48,7 +64,7 @@ export const updateReservationStatus = async (
     authClient?: SupabaseClient
 ) => {
     const client = authClient || supabase;
-    const updatePayload: any = { status };
+    const updatePayload: { status: Reservation['status']; message?: string } = { status };
     if (rejectionReason) {
         updatePayload.message = rejectionReason;
     }

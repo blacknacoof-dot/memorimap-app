@@ -87,8 +87,8 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
       <div className={`bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden ring-1 ring-black/5 ${
         isFocused ? 'ring-primary/30 border-primary/20' : ''
       }`}>
-        <div className={`flex items-center px-4 bg-white ${compact ? 'h-12' : 'h-14'}`}>
-          <Search size={compact ? 18 : 20} className="text-primary mr-3 shrink-0" />
+        <div className={`flex items-center px-3 md:px-4 bg-white ${compact ? 'h-9 md:h-12' : 'h-14'}`}>
+          <Search size={compact ? 16 : 20} className="text-primary mr-2 md:mr-3 shrink-0 md:!w-[18px] md:!h-[18px]" />
           <input
             id="smart-search-input"
             name="search"
@@ -101,7 +101,7 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
             }}
             placeholder="지역, 시설, 또는 '급해요' 입력"
             className={`w-full h-full outline-none bg-transparent text-gray-900 placeholder:text-gray-400 font-medium ${
-              compact ? 'text-sm' : 'text-base'
+              compact ? 'text-xs md:text-sm' : 'text-base'
             }`}
           />
           {query && (

@@ -427,7 +427,7 @@ export const PetChatInterface: React.FC<ComponentProps> = ({ company, onClose, o
         if (action === 'RESERVE') {
             setShowReservation(true);
         }
-        if (action === 'MAP') toast.info(`[지도 연동]\n주소: ${(company as any).address || '주소 정보 없음'}`);
+        if (action === 'MAP') toast.info(`[지도 연동]\n주소: ${(company as FuneralCompany & { address?: string }).address || '주소 정보 없음'}`);
         if (action === 'CALL_MANAGER') window.location.href = `tel:${company.phone}`;
     };
 

@@ -10,6 +10,9 @@ export interface Subscription {
     facility_name: string;
     plan_name: string;
     end_date?: string;
+    facility_id_uuid?: string;
+    facility_id_bigint?: string | number;
+    next_billing_date?: string;
 }
 
 export interface Payment {
@@ -32,7 +35,7 @@ export function useSubscriptions() {
             try {
                 const client = await getAuthClient(session, { strict: true });
                 const data = await fetchSubscriptions(client);
-                setFacilities(data as any);
+                setFacilities(data as Subscription[]);
             } catch (err) {
                 console.error('Failed to fetch subscriptions:', err);
             } finally {
@@ -57,7 +60,7 @@ export function useRevenue() {
             try {
                 const client = await getAuthClient(session, { strict: true });
                 const data = await fetchPayments(client);
-                setPayments(data as any);
+                setPayments(data as Payment[]);
                 setTotalRevenue(data.reduce((acc, curr) => acc + (curr.amount || 0), 0));
             } catch (err) {
                 console.error('Failed to fetch revenue:', err);

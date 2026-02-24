@@ -26,7 +26,7 @@ export function validateImageFile(file: File): { valid: boolean; error?: string 
     }
 
     // 2. MIME 타입 검증
-    if (!ALLOWED_IMAGE_TYPES.includes(file.type as any)) {
+    if (!(ALLOWED_IMAGE_TYPES as readonly string[]).includes(file.type)) {
         return { valid: false, error: '지원하지 않는 파일 형식입니다. (JPEG, PNG, WebP, GIF만 허용)' };
     }
 

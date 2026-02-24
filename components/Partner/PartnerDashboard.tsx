@@ -32,8 +32,8 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
     const [facilityId, setFacilityId] = useState<string | null>(null);
     const [consultations, setConsultations] = useState<Consultation[]>([]);
     const [reservations, setReservations] = useState<Reservation[]>([]);
-    const [subscription, setSubscription] = useState<any>(null);
-    const [payments, setPayments] = useState<any[]>([]);
+    const [subscription, setSubscription] = useState<{ id: string; plan_name?: string; plan_price?: number; plan_id?: string; next_billing_date?: string; started_at?: string; start_date?: string; status?: string } | null>(null);
+    const [payments, setPayments] = useState<Array<{ id: string; paid_at?: string; billing_period_start?: string; billing_period_end?: string; final_amount?: number; amount?: number; status?: string }>>([]);
     const [showPlanSelector, setShowPlanSelector] = useState(false);
     const { session } = useSession();
 
@@ -179,7 +179,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                     {menuItems.map((item) => (
                         <button
                             key={item.id}
-                            onClick={() => setActiveTab(item.id as any)}
+                            onClick={() => setActiveTab(item.id as typeof activeTab)}
                             className={`w-full flex items-center gap-3 px-3 py-3 rounded-2xl transition-all group ${activeTab === item.id
                                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
                                     : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'
@@ -238,7 +238,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                     {menuItems.map(item => (
                         <button
                             key={item.id}
-                            onClick={() => setActiveTab(item.id as any)}
+                            onClick={() => setActiveTab(item.id as typeof activeTab)}
                             className={`flex-shrink-0 px-3 py-2 rounded-lg text-xs font-bold transition-colors whitespace-nowrap ${
                                 activeTab === item.id ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
                             }`}
@@ -581,7 +581,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-slate-50">
-                                                {payments.map((p: any) => (
+                                                {payments.map((p) => (
                                                     <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
                                                         <td className="px-3 md:px-6 py-3.5 text-slate-600 text-xs">
                                                             {p.paid_at ? new Date(p.paid_at).toLocaleDateString() : '-'}
@@ -634,7 +634,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                             <div className="bg-slate-50 rounded-2xl p-4">
                                                 <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">시작일</p>
                                                 <p className="font-black text-slate-800">
-                                                    {(subscription.started_at || subscription.start_date) ? new Date(subscription.started_at || subscription.start_date).toLocaleDateString() : '-'}
+                                                    {(subscription.started_at || subscription.start_date) ? new Date(subscription.started_at || subscription.start_date || '').toLocaleDateString() : '-'}
                                                 </p>
                                             </div>
                                             <div className="bg-slate-50 rounded-2xl p-4">

@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { getAuthClient } from '../lib/supabaseClient';
 import { useSession } from '../lib/auth';
-import { Reservation, ViewState } from '../types';
+import { Facility, Reservation, ViewState } from '../types';
 
 interface UseReservationsReturn {
   reservations: Reservation[];
@@ -17,10 +17,10 @@ interface UseReservationsReturn {
  */
 export const useReservations = (
   isSignedIn: boolean,
-  user: any,
+  user: { id: string } | null,
   showToast: (message: string, type?: 'success' | 'error' | 'info') => void,
   setShowLoginModal: React.Dispatch<React.SetStateAction<boolean>>,
-  setSelectedFacility: React.Dispatch<React.SetStateAction<any>>,
+  setSelectedFacility: (facility: Facility | null) => void,
   setViewState: (state: ViewState) => void
 ): UseReservationsReturn => {
   const [reservations, setReservations] = useState<Reservation[]>([]);

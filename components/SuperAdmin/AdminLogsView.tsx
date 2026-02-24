@@ -70,7 +70,7 @@ export const AdminLogsView: React.FC = () => {
                                         </span>
                                         <span className="text-sm font-medium text-gray-900">
                                             {log.details?.reason ? `반려 사유: ${log.details.reason}` :
-                                                log.details?.facility_id ? `시설 생성됨 (ID: ${log.details.facility_id.slice(0, 8)}...)` :
+                                                log.details?.facility_id ? `시설 생성됨 (ID: ${String(log.details.facility_id).slice(0, 8)}...)` :
                                                     ''}
                                         </span>
                                     </div>

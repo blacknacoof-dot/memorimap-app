@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, User, Calendar, Heart, Settings, HelpCircle, LogOut, ChevronRight, Bell, BookOpen, LogIn, Building2 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { ViewState } from '../types';
 import { confirmAsync } from '../src/components/common/ConfirmModal';
 
@@ -190,7 +191,7 @@ export const SideMenu: React.FC<Props> = ({
   );
 };
 
-const MenuItem = ({ icon: Icon, label, onClick }: { icon: any, label: string, onClick?: () => void }) => (
+const MenuItem = ({ icon: Icon, label, onClick }: { icon: LucideIcon, label: string, onClick?: () => void }) => (
   <button onClick={onClick} className="w-full flex items-center gap-3 p-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors text-left group">
     <Icon size={20} className="text-gray-400 group-hover:text-primary transition-colors" />
     <span className="text-sm font-medium group-hover:text-gray-900">{label}</span>

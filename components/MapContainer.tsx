@@ -3,17 +3,58 @@ import { Facility } from '../types';
 import { getMarkerHtml, LeafletCompatibleBounds } from '../utils/naverMapHelper';
 import { toast } from 'sonner';
 
+interface NaverMaps {
+  Map: new (el: HTMLElement, opts: Record<string, unknown>) => NaverMapInstance;
+  LatLng: new (lat: number, lng: number) => NaverLatLng;
+  Marker: new (opts: Record<string, unknown>) => NaverMarker;
+  Size: new (w: number, h: number) => unknown;
+  Point: new (x: number, y: number) => unknown;
+  Event: {
+    addListener: (target: unknown, event: string, handler: (...args: unknown[]) => void) => void;
+    trigger: (target: unknown, event: string) => void;
+  };
+}
+
+interface NaverLatLng {
+  lat: () => number;
+  lng: () => number;
+}
+
+interface NaverBounds {
+  getNE: () => NaverLatLng;
+  getSW: () => NaverLatLng;
+}
+
+interface NaverMapInstance {
+  getBounds: () => NaverBounds;
+  setSize: (size: unknown) => void;
+  getCenter: () => NaverLatLng;
+  setCenter: (latlng: NaverLatLng) => void;
+  setZoom: (zoom: number) => void;
+  panTo: (latlng: NaverLatLng, opts?: unknown) => void;
+}
+
+interface NaverMarker {
+  setMap: (map: NaverMapInstance | null) => void;
+  getElement: () => HTMLElement | null;
+  setPosition: (latlng: unknown) => void;
+}
+
+interface MarkerClusteringInstance {
+  setMap: (map: NaverMapInstance | null) => void;
+}
+
 declare global {
   interface Window {
-    naver: any;
-    MarkerClustering: any;
+    naver: { maps: NaverMaps };
+    MarkerClustering: new (opts: Record<string, unknown>) => MarkerClusteringInstance;
   }
 }
 
 interface MapProps {
   facilities: Facility[];
   onFacilitySelect: (facility: Facility) => void;
-  onBoundsChange?: (bounds: any) => void; // Using 'any' to compat with Leaflet types
+  onBoundsChange?: (bounds: LeafletCompatibleBounds) => void;
   initialCenter?: [number, number];
   initialZoom?: number;
 }
@@ -25,13 +66,13 @@ export interface MapRef {
 
 const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelect, onBoundsChange, initialCenter, initialZoom }, ref) => {
   const mapElement = useRef<HTMLDivElement | null>(null);
-  const mapInstance = useRef<any>(null);
-  const markersRef = useRef<any[]>([]);
-  const clusterRef = useRef<any>(null);
+  const mapInstance = useRef<NaverMapInstance | null>(null);
+  const markersRef = useRef<NaverMarker[]>([]);
+  const clusterRef = useRef<MarkerClusteringInstance | null>(null);
   const [isMapReady, setIsMapReady] = useState(false);
   const [isClusterReady, setIsClusterReady] = useState(false);
   const [myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const locationMarkerRef = useRef<any>(null);
+  const locationMarkerRef = useRef<NaverMarker | null>(null);
 
   // facilities prop은 useFacilityData에서 이미 카테고리/검색 필터링 완료
   const filteredFacilities = facilities;
@@ -164,7 +205,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
       isMounted = false;
       if (checkInterval) clearInterval(checkInterval);
       // Clean up global callback to prevent memory leak or stale closures
-      delete (window as any).initNaverMap;
+      delete (window as Window & { initNaverMap?: () => void }).initNaverMap;
     };
   }, []); // Run once
 
@@ -188,11 +229,11 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
       .filter(f => f.lat && f.lng)
       .map(facility => {
         const marker = new window.naver.maps.Marker({
-          position: new window.naver.maps.LatLng(facility.lat, facility.lng),
+          position: new window.naver.maps.LatLng(facility.lat!, facility.lng!),
           map: useCluster ? null : mapInstance.current,
           title: facility.name,
           icon: {
-            content: getMarkerHtml(((facility as any).type || facility.category || 'funeral_home') as string, false),
+            content: getMarkerHtml((facility.type || facility.category || 'funeral_home') as string, false),
             size: new window.naver.maps.Size(24, 24),
             anchor: new window.naver.maps.Point(12, 12)
           }
@@ -229,7 +270,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
         ],
         indexGenerator: [10, 50, 100, 500],
         averageCenter: true,
-        stylingFunction: (clusterMarker: any, count: number) => {
+        stylingFunction: (clusterMarker: NaverMarker, count: number) => {
           const el = clusterMarker.getElement();
           if (el) {
             const div = el.querySelector('div');
@@ -253,8 +294,8 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
         const { latitude, longitude } = position.coords;
         const latLng = new window.naver.maps.LatLng(latitude, longitude);
 
-        mapInstance.current.setCenter(latLng);
-        mapInstance.current.setZoom(16);
+        mapInstance.current!.setCenter(latLng);
+        mapInstance.current!.setZoom(16);
         setMyLocation({ lat: latitude, lng: longitude });
 
         // Update Location Marker

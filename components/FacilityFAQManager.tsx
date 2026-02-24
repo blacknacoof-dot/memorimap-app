@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSession } from '../lib/auth';
 import { useConfirmModal } from '../src/components/common/ConfirmModal';
 import { Plus, Edit, Trash, Save, Loader2 } from 'lucide-react';
-import { getFacilityFaqs, upsertFacilityFaq, deleteFacilityFaq, supabase } from '../lib/queries';
+import { getFacilityFaqs } from '../lib/queries';
 import { getAuthClient } from '../lib/supabaseClient';
 import { toast } from 'sonner';
 
@@ -47,7 +47,7 @@ export const FacilityFAQManager: React.FC<Props> = ({ facilityId }) => {
             if (error) {
                 console.warn('[FAQ] loadFaqs error:', error);
             }
-            setFaqs((data || []).map((d: any) => ({ id: d.id, question: d.question, answer: d.answer, order_index: d.order_index })));
+            setFaqs((data || []).map((d: { id: string; question: string; answer: string; order_index?: number }) => ({ id: d.id, question: d.question, answer: d.answer, order_index: d.order_index })));
         } catch {
             toast.error('FAQ 로딩 실패');
         } finally {
@@ -74,8 +74,8 @@ export const FacilityFAQManager: React.FC<Props> = ({ facilityId }) => {
                 setIsSaving(true);
                 try {
                     const client = await getAuthClient(session);
-                    let result: any = null;
-                    let error: any = null;
+                    let result: FAQ | null = null;
+                    let error: { message: string } | null = null;
 
                     if (editingId === 'new') {
                         // INSERT 새 FAQ

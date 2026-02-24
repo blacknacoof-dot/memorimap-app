@@ -1,5 +1,5 @@
 export interface MapProvider {
-    initialize(container: HTMLElement, options?: any): void;
+    initialize(container: HTMLElement, options?: Record<string, unknown>): void;
     setCenter(lat: number, lng: number): void;
     setZoom(level: number): void;
     fitBounds(bounds: { minLat: number; minLng: number; maxLat: number; maxLng: number }): void;
@@ -13,7 +13,7 @@ export interface MapMarker {
     lng: number;
     title: string;
     category?: string;
-    icon?: string | any; // Allow flexible icon types
+    icon?: string | { url: string; size?: [number, number] };
     onClick?: () => void;
 }
 

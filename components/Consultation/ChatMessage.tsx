@@ -2,6 +2,7 @@ import React from 'react';
 import { Message } from '../../types/consultation';
 import { Bot, User, Star, ChevronRight } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import rehypeSanitize from 'rehype-sanitize';
 import { FuneralCompany } from '../../types';
 
 interface Props {
@@ -30,7 +31,7 @@ export const ChatMessage: React.FC<Props> = ({ message, isStreaming }) => {
                     {isUser ? (
                         message.text
                     ) : (
-                        <ReactMarkdown>{message.text}</ReactMarkdown>
+                        <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{message.text}</ReactMarkdown>
                     )}
                 </div>
                 {message.recommendation && (

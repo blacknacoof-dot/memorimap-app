@@ -70,9 +70,10 @@ export function useAllFacilities() {
                 f.id === facilityId ? { ...f, user_id: userId || undefined } : f
             ));
             toast.success('관리자가 변경되었습니다.');
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Update manager failed:', error);
-            toast.error('업데이트 실패: ' + error.message);
+            const message = error instanceof Error ? error.message : '알 수 없는 오류';
+            toast.error('업데이트 실패: ' + message);
         }
     }, [session]);
 

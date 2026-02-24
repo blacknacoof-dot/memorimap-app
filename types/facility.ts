@@ -3,6 +3,8 @@
  * Standardized to English codes for internal use
  */
 
+import type { Review, SangjoProduct } from './index';
+
 // ============================================================
 // PACKAGE & MANAGER TYPES
 // ============================================================
@@ -119,7 +121,7 @@ export interface Facility {
     reviewCount?: number;
     imageUrl?: string;
     galleryImages?: string[];
-    reviews?: any[]; // Keep flexible for now
+    reviews?: Review[];
 
     // Management
     manager_id?: string;
@@ -134,18 +136,18 @@ export interface Facility {
     // Extra fields for compatibility with existing code
     type?: string; // Legacy
     religion?: string;
-    prices?: any[];
+    prices?: Array<{ type: string; price: string; label?: string; value?: string | number; unit?: string; item?: string; detail?: string; category?: string }>;
     naverBookingUrl?: string;
     isDetailLoaded?: boolean;
     dataSource?: string;
-    priceInfo?: any;
+    priceInfo?: { items?: Array<{ item: string; category: string; price: string | number; [key: string]: unknown }>; [key: string]: unknown } | null;
     aiContext?: string; // Re-enabled for frontend logic compatibility
-    ai_features?: any; // Added to match query selection
+    ai_features?: string[];
     ai_tone?: string;
     ai_welcome_message?: string;
     ai_price_summary?: Record<string, string | number>;
-    subscription?: any;
-    products?: any[];
+    subscription?: { plan_name?: string; plan?: { name_en: string; [key: string]: unknown }; status?: string; start_date?: string; end_date?: string | null };
+    products?: SangjoProduct[];
 
     // Packages & Managers (JSONB)
     packages?: FacilityPackage[];

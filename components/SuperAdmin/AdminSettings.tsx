@@ -34,8 +34,8 @@ export const AdminSettings = () => {
                 .eq('clerk_id', user.id);
             if (error) throw error;
             toast.success('프로필 정보가 저장되었습니다.');
-        } catch (e: any) {
-            toast.error('저장 실패: ' + e.message);
+        } catch (e: unknown) {
+            toast.error('저장 실패: ' + (e instanceof Error ? e.message : '알 수 없는 오류'));
         } finally {
             setSaving(false);
         }

@@ -69,8 +69,8 @@ export function useUserRole({ isSignedIn, userInfo, viewState, setViewState, sho
             }
           }
 
-          // Fetch Sangjo Info if role is sangjo-related
-          if (result.role.includes('sangjo')) {
+          // Fetch Sangjo Info if role is sangjo-related or super_admin
+          if (result.role.includes('sangjo') || result.role === 'super_admin') {
             const { getSangjoUser } = await import('../lib/sangjoQueries');
             const sangjoInfo = await getSangjoUser(userInfo.id);
             if (sangjoInfo) {
@@ -78,7 +78,7 @@ export function useUserRole({ isSignedIn, userInfo, viewState, setViewState, sho
               setSangjoOrgType(result.role === 'sangjo_hq_admin' ? 'headquarters' : 'branch');
             }
           }
-        } catch (err: any) {
+        } catch (err: unknown) {
           console.error('❌ Unexpected fetchUserRole error:', err);
           setRoleError('Unexpected error');
           showToast('권한 정보를 불러오지 못했습니다.', 'error');

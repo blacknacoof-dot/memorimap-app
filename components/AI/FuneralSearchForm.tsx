@@ -37,15 +37,15 @@ const SafeHighlight = ({ text, highlight }: { text: string, highlight: string })
 interface FormProps {
     userLocation?: { lat: number; lng: number };
     onGetCurrentPosition?: () => void;
-    onSubmit: (data: { text: string; data: any }) => void;
+    onSubmit: (data: { text: string; data: Record<string, unknown> }) => void;
     onClose?: () => void;
     onGoToMyPage?: () => void;
     onLoginRequired?: () => void;
     initialCategory?: string;
     facilityId?: string;
     facilityName?: string;
-    currentUser?: any;
-    onSwitchToFacility?: (facility: any, context?: any) => void;
+    currentUser?: { id: string; name?: string; firstName?: string; phone?: string } | null;
+    onSwitchToFacility?: (facility: { id: string; name: string; address?: string; phone?: string }, context?: Record<string, unknown>) => void;
 }
 
 const REGION_CHIPS = ['서울', '경기', '인천', '부산', '대구', '광주', '대전', '울산', '세종', '강원', '제주'];
@@ -72,7 +72,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
     const [religion, setReligion] = useState('');
 
     // Recommendations
-    const [recommendedFacilities, setRecommendedFacilities] = useState<any[]>([]);
+    const [recommendedFacilities, setRecommendedFacilities] = useState<Array<{ id: string; name: string; address?: string; phone?: string; image_url?: string; imageUrl?: string; images?: string[] }>>([]);
     const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
 
     // Booking state
@@ -162,12 +162,12 @@ const FuneralSearchForm: React.FC<FormProps> = ({
     };
 
     // Handle ConsultationForm submit
-    const handleConsultSubmit = async (data: any) => {
+    const handleConsultSubmit = async (data: Record<string, unknown>) => {
         if (!consultFacility) return;
         setBookingId(consultFacility.id);
 
-        const scaleVal = data.scale || '미선택';
-        const religionVal = data.religion || '미선택';
+        const scaleVal = (data.scale as string) || '미선택';
+        const religionVal = (data.religion as string) || '미선택';
 
         const notes = [
             `[AI 마음이 바로 예약 접수]`,
@@ -322,10 +322,10 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                     ) : recommendedFacilities.length > 0 ? (
                         <div className="max-h-[320px] overflow-y-auto space-y-2 pr-1">
                             {recommendedFacilities.map((f, idx) => {
-                                const fId = String(typeof f.id === 'object' ? (f.id as any).id || (f as any).facilityId : f.id);
+                                const fId = String(typeof f.id === 'object' ? (f.id as Record<string, unknown>).id || (f as Record<string, unknown>).facilityId : f.id);
                                 const isBooked = bookedIds.has(fId);
 
-                                const imgUrl = f.image_url || f.imageUrl || (f.images?.length > 0 ? f.images[0] : null);
+                                const imgUrl = f.image_url || f.imageUrl || ((f.images?.length ?? 0) > 0 ? f.images![0] : null);
                                 return (
                                     <div key={fId} className="bg-white border border-slate-200 rounded-xl p-3 space-y-2">
                                         <div className="flex gap-3">

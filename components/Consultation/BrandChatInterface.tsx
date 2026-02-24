@@ -4,6 +4,7 @@ import { FuneralCompany } from '../../types';
 import { ConsultationForm, QuickMenuBtn } from './BrandChatHelpers';
 import { PetChatInterface } from './PetChatInterface';
 import { sendMessageToGemini, ChatMessage as GeminiMessage } from '../../services/geminiService';
+import { supabase } from '../../lib/supabaseClient';
 
 interface Props {
     company: FuneralCompany;
@@ -83,7 +84,7 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
         ]
     };
 
-    const [messages, setMessages] = useState<any[]>([
+    const [messages, setMessages] = useState<Array<{ id: number; sender: string; text: string; type?: string; data?: Array<{ id: number; title: string; price: string; totalPrice: string; desc: string; features: string[]; badge?: string }> }>>([
         {
             id: 1,
             sender: 'ai',
@@ -159,7 +160,7 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
                         text: "가장 가까운 의전 팀을 즉시 배정하겠습니다. 현재 위치를 접수해주세요.",
                         type: 'text' // Or a specific urgent action card type
                     }]);
-                    setFormMode('urgent' as any); // Cast because 'urgent' might not be in the original type definition in this file, but ConsultationForm accepts it
+                    setFormMode('urgent');
                     setIsFormOpen(true);
                 }, 500);
             } else if (response.action === 'SHOW_PRODUCTS') { // [NEW] Product Display
@@ -220,11 +221,11 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
         }
     };
 
-    const handleFormSubmit = async (formData: any) => {
+    const handleFormSubmit = async (formData: Record<string, unknown>) => {
         setIsFormOpen(false);
 
         // Supabase에 상담 접수 저장
-        const isUrgent = formMode === ('urgent' as any);
+        const isUrgent = formMode === 'urgent';
         const isPhone = formMode === 'phone';
         const contractNumber = `${isUrgent ? 'URG' : 'REQ'}-2025-${Math.floor(Math.random() * 900000 + 100000)}`;
 
@@ -234,19 +235,18 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
                 id: `db-${Date.now()}`,
                 contract_number: contractNumber,
                 sangjo_id: company.id,
-                customer_name: formData.name || '익명 고객',
-                customer_phone: formData.phone || '',
-                service_type: isUrgent ? '긴급 출동' : (isPhone ? '전화 상담' : (formData.type || '채팅 상담')),
+                customer_name: (formData.name as string) || '익명 고객',
+                customer_phone: (formData.phone as string) || '',
+                service_type: isUrgent ? '긴급 출동' : (isPhone ? '전화 상담' : ((formData.type as string) || '채팅 상담')),
                 status: '상담신청',
                 application_type: 'CONSULTATION',
-                preferred_call_time: formData.time || '',
+                preferred_call_time: (formData.time as string) || '',
                 total_price: 0,
                 emergency_level: isUrgent ? 'critical' : 'normal',
                 created_at: new Date().toISOString()
-            });
-            // Consultation saved successfully
+            }, supabase);
         } catch (e) {
-            console.error('상담 접수 저장 실패:', e);
+            // saveSangjoContract failed (non-blocking)
         }
 
         if (isPhone) {
@@ -376,7 +376,7 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
                             {/* Product Carousel */}
                             {msg.type === 'product_carousel' && (
                                 <div className="flex gap-3 overflow-x-auto py-2 px-1 snap-x scrollbar-hide -ml-10 w-[120%] sm:w-[110%] sm:ml-0 pr-4">
-                                    {msg.data.map((product: any) => (
+                                    {msg.data?.map((product) => (
                                         <div key={product.id} className="snap-center min-w-[260px] w-[260px] bg-white rounded-2xl border border-gray-200 shadow-md flex-shrink-0 overflow-hidden group hover:border-[#005B50] transition-all relative">
                                             {product.badge && (
                                                 <div className="absolute top-0 right-0 bg-[#005B50] text-white text-[10px] font-bold px-2.5 py-1 rounded-bl-xl shadow-sm z-10">

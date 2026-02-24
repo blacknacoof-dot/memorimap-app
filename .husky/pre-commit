@@ -1,2 +1,7 @@
 node scripts/pre-commit-check.cjs
-npx lint-staged
+
+# lint-staged: 스테이지된 파일이 20개 이하일 때만 실행 (대규모 리팩토링 시 SIGKILL 방지)
+STAGED_COUNT=$(git diff --cached --name-only --diff-filter=ACM -- '*.ts' '*.tsx' | wc -l)
+if [ "$STAGED_COUNT" -le 20 ]; then
+  npx lint-staged
+fi

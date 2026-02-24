@@ -1,8 +1,10 @@
+import type { FuneralCompany } from './index';
+
 export interface Message {
     role: 'user' | 'model';
     text: string;
     timestamp: Date;
-    recommendation?: any[]; // For Maum-i recommendation cards
+    recommendation?: FuneralCompany[];
 }
 
 export interface Consultation {

@@ -5,7 +5,7 @@ import { FuneralCompany } from '../../types';
 interface FormProps {
     company: FuneralCompany;
     onClose: () => void;
-    onSubmit: (data: any) => void;
+    onSubmit: (data: Record<string, unknown>) => void;
     mode: 'phone' | 'chat' | 'urgent' | 'memorial';
     preStepData?: { scale: string; religion: string };
 }
@@ -208,7 +208,7 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
                                         </button>
                                     ))}
                                 </div>
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className={`grid ${preStepData?.religion ? 'grid-cols-1' : 'grid-cols-2'} gap-3`}>
                                     <div>
                                         <label className="block text-[10px] font-bold text-gray-500 mb-1">유골함 수량</label>
                                         <select
@@ -222,6 +222,7 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
                                             <option value="5기 이상">5기 이상 (가족)</option>
                                         </select>
                                     </div>
+                                    {!preStepData?.religion && (
                                     <div>
                                         <label className="block text-[10px] font-bold text-gray-500 mb-1">종교</label>
                                         <select
@@ -235,6 +236,7 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
                                             <option value="무교/기타">무교/기타</option>
                                         </select>
                                     </div>
+                                    )}
                                 </div>
                             </div>
 

@@ -22,7 +22,7 @@ export const FacilityList = React.memo<FacilityListProps>(({ facilities, onSelec
 
     // Memoized renderer - Set 사용으로 의존성 최적화
     const itemContent = useMemo(() => {
-        return (index: number, facility: any) => {
+        return (index: number, facility: Facility) => {
             const isCompared = compareIdSet.has(facility.id);
             return (
                 <div className="pb-2 last:pb-0">

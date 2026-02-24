@@ -1,6 +1,11 @@
 import { useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { RealtimeChannel } from '@supabase/supabase-js';
+import type { RealtimeChannel, RealtimePostgresChangesPayload, RealtimePostgresChangesFilter } from '@supabase/supabase-js';
+import { REALTIME_POSTGRES_CHANGES_LISTEN_EVENT } from '@supabase/supabase-js';
+
+// Supabase realtime generics require `{ [key: string]: any }` — this is the library's own constraint.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type RealtimeRecord = { [key: string]: any };
 
 interface UseRealtimeOptions<T> {
     table: string;
@@ -10,7 +15,7 @@ interface UseRealtimeOptions<T> {
     enabled?: boolean;
 }
 
-export function useRealtimeSubscription<T = any>({
+export function useRealtimeSubscription<T extends RealtimeRecord = RealtimeRecord>({
     table,
     event,
     filter,
@@ -25,28 +30,28 @@ export function useRealtimeSubscription<T = any>({
         // Create a unique channel name to prevent collisions if multiple components subscribe to similar events
         const channelName = `realtime:${table}:${event}:${filter || 'all'}:${Date.now()}`;
 
-        const setupSubscription = async () => {
-            // console.log(`[Realtime] Setting up subscription for ${table} (${event})`, filter);
+        const handlePayload = (payload: RealtimePostgresChangesPayload<T>) => {
+            if ('new' in payload && payload.new && typeof payload.new === 'object' && Object.keys(payload.new).length > 0) {
+                callback(payload.new as T);
+            } else if (event === 'DELETE' && 'old' in payload && payload.old && typeof payload.old === 'object' && Object.keys(payload.old).length > 0) {
+                callback(payload.old as T);
+            }
+        };
 
+        const pgFilter: RealtimePostgresChangesFilter<`${REALTIME_POSTGRES_CHANGES_LISTEN_EVENT.ALL}`> = {
+            event: '*',
+            schema: 'public',
+            table,
+            filter
+        };
+
+        const setupSubscription = () => {
             channel = supabase
                 .channel(channelName)
-                .on(
-                    'postgres_changes' as any, // Cast to any to avoid type mismatch with library definition
-                    {
-                        event,
-                        schema: 'public',
-                        table,
-                        filter
-                    },
-                    (payload: any) => { // Explicitly type payload as any
-                        // console.log(`[Realtime] ${table} ${event} received:`, payload);
-                        if (payload.new) {
-                            callback(payload.new as T);
-                        } else if (event === 'DELETE' && payload.old) {
-                            // For DELETE, payload.new is null, so pass payload.old
-                            callback(payload.old as T);
-                        }
-                    }
+                .on<T>(
+                    'postgres_changes',
+                    pgFilter,
+                    handlePayload
                 )
                 .subscribe((status, err) => {
                     if (status === 'SUBSCRIBED') {

@@ -110,7 +110,7 @@ export default function IntegratedJourneyView({
 
             toast.success('엔딩 노트가 안전하게 저장되었습니다.');
             loadData(); // UI 즉시 갱신
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('저장 중 예외 발생:', err);
             toast.error('저장 중 문제가 발생했습니다. 다시 시도해주세요.');
         }
@@ -207,7 +207,7 @@ export default function IntegratedJourneyView({
         );
     }
 
-    const userName = (user as any)?.fullName || (user as any)?.user_metadata?.name || user?.primaryEmailAddress?.emailAddress?.split('@')[0] || '사용자';
+    const userName = (user as { fullName?: string })?.fullName || (user as { user_metadata?: { name?: string } })?.user_metadata?.name || user?.primaryEmailAddress?.emailAddress?.split('@')[0] || '사용자';
     const { steps: journeySteps, percent: journeyPercent } = computeJourneySteps(
         facilityFavoriteCount,
         sangjoFavoriteCount,

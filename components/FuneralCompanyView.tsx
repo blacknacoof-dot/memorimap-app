@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { FuneralCompany, Review } from '../types';
 import { FUNERAL_COMPANIES } from '../constants';
 import { Star, Phone, ChevronRight, Award, ShieldCheck, HeartHandshake, Search, Scale, Check, Bot, Heart } from 'lucide-react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase, getAuthClient } from '../lib/supabaseClient';
 
 import { SangjoConsultationModal } from './Consultation/SangjoConsultationModal';
 import { sangjoFavoriteService } from '../services/sangjoFavoriteService';
-import { useUser } from '../lib/auth';
+import { useUser, useSession } from '../lib/auth';
 import { useSangjoFavoriteStore } from '../stores/useSangjoFavoriteStore';
 
 // 기본 후기 생성 (DB 리뷰가 없는 상조 회사용)
@@ -79,6 +79,7 @@ export const FuneralCompanyView: React.FC<Props> = ({
     const [companies, setCompanies] = useState<FuneralCompany[]>(FUNERAL_COMPANIES);
     const [isLoading, setIsLoading] = useState(true);
     const { user } = useUser();
+    const { session } = useSession();
 
     // [Change] Using global store for favorites
     const { favoritedIds, fetchFavorites, toggleFavorite: storeToggleFavorite } = useSangjoFavoriteStore();
@@ -123,7 +124,7 @@ export const FuneralCompanyView: React.FC<Props> = ({
                     // Reviews fetched from DB
 
                     // Group reviews by facility_id (ensure string keys and trim whitespace)
-                    const reviewsByCompany = new Map<string, any[]>();
+                    const reviewsByCompany = new Map<string, { id: string; user_id?: string; user_name?: string; userName?: string; facility_id?: string; rating?: number; content?: string; images?: string[]; created_at?: string }[]>();
                     allReviews?.forEach(review => {
                         const companyId = review.facility_id?.toString().trim();
                         if (companyId) {
@@ -248,7 +249,7 @@ export const FuneralCompanyView: React.FC<Props> = ({
                             galleryImages: galleryImages,
                             products: products,
                             reviews: (() => {
-                                const dbReviews = uniqueReviews.map((r: any) => {
+                                const dbReviews = uniqueReviews.map((r) => {
                                     let displayDate = '최근';
                                     try {
                                         if (r.created_at) {
@@ -330,7 +331,8 @@ export const FuneralCompanyView: React.FC<Props> = ({
         }
 
         try {
-            await storeToggleFavorite(user.id, company);
+            const client = await getAuthClient(session, { strict: true });
+            await storeToggleFavorite(user.id, company, client);
         } catch (error) {
             console.error('Failed to toggle sangjo favorite:', error);
         }

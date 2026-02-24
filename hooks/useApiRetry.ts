@@ -39,11 +39,16 @@ export function useApiRetry() {
   );
 
   /** { data, error } 기반 Supabase 쿼리 래퍼 */
+  interface SupabaseQueryError {
+    status?: number;
+    code?: string;
+    message?: string;
+  }
   const queryWithRetry = useCallback(
     <T>(
-      fn: (authClient?: SupabaseClient) => Promise<{ data: T | null; error: any }>,
+      fn: (authClient?: SupabaseClient) => Promise<{ data: T | null; error: SupabaseQueryError | null }>,
       silent = false
-    ): Promise<{ data: T | null; error: any }> => {
+    ): Promise<{ data: T | null; error: SupabaseQueryError | null }> => {
       return withQueryRetry(fn, { getToken, silent });
     },
     [getToken]

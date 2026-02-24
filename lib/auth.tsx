@@ -108,7 +108,7 @@ export const useSession = () => {
           ...session.user,
           ...user,
         },
-        getToken: async (_opts?: any): Promise<string | null> => session.access_token || null,
+        getToken: async (_opts?: Record<string, unknown>): Promise<string | null> => session.access_token || null,
       }
     : null;
   return { session: wrappedSession, isLoaded: true };
@@ -123,10 +123,10 @@ export const useAuth = () => {
   return {
     userId: user?.id || null,
     isSignedIn,
-    getToken: async (_opts?: any): Promise<string | null> => session?.access_token || null,
+    getToken: async (_opts?: Record<string, unknown>): Promise<string | null> => session?.access_token || null,
   };
 };
 
 // No longer needed (LoginModal/SignUpModal rewritten with direct Supabase calls)
-export const useSignIn = () => ({ signIn: null as any, setActive: null as any, isLoaded: true });
-export const useSignUp = () => ({ signUp: null as any, isLoaded: true });
+export const useSignIn = () => ({ signIn: null as never, setActive: null as never, isLoaded: true });
+export const useSignUp = () => ({ signUp: null as never, isLoaded: true });

@@ -5,14 +5,20 @@ import { fetchLeads } from '@/lib/api/superAdmin';
 
 export interface Lead {
     id: string;
-    contact_name: string;
-    contact_phone: string;
+    contact_name?: string;
+    user_name?: string;
+    contact_phone?: string;
+    phone_number?: string | null;
+    customer_name?: string;
+    customer_phone?: string | null;
+    facility_name?: string;
     category: string;
-    status: 'new' | 'in_progress' | 'contacted' | 'closed';
+    type?: string;
+    status: string;
     created_at: string;
     urgency?: string;
     scale?: string;
-    context_data?: any;
+    context_data?: Record<string, unknown>;
 }
 
 export function useLeads() {
@@ -25,7 +31,7 @@ export function useLeads() {
         try {
             const client = await getAuthClient(session, { strict: true });
             const data = await fetchLeads(client);
-            setLeads(data as any || []);
+            setLeads((data || []) as Lead[]);
         } catch (error) {
             console.error('Fetch leads failed:', error);
             setLeads([]);

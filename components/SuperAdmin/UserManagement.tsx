@@ -85,7 +85,7 @@ export const UserManagement: React.FC = () => {
                                                 <div>
                                                     <div className="font-medium text-gray-900">{user.full_name || '이름 없음'}</div>
                                                     <div className="text-xs text-gray-500">{user.email || '이메일 없음'}</div>
-                                                    <div className="text-[10px] text-gray-400 font-mono mt-0.5">{user.id}</div>
+                                                    <div className="text-[10px] text-gray-400 font-mono mt-0.5">{user.id?.substring(0, 8)}...</div>
                                                 </div>
                                             </div>
                                         </td>

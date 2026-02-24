@@ -62,7 +62,7 @@ export const AdminView: React.FC<Props> = ({ facilities, reservations, onUpdateR
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as typeof activeTab)}
               className={`flex items-center gap-3 p-4 md:px-6 hover:bg-gray-50 transition-colors ${activeTab === tab.id
                 ? 'text-blue-600 border-r-2 border-blue-600 bg-blue-50/50'
                 : 'text-gray-500'

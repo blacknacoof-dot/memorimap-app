@@ -80,8 +80,8 @@ export interface AiConsultation {
   facility_name: string;
   category: 'funeral' | 'pet' | 'memorial';
   status: AiConsultationStatus;
-  messages: any[];
-  metadata: Record<string, any>;
+  messages: Array<{ role: string; text?: string; content?: string; timestamp?: string | Date; [key: string]: unknown }>;
+  metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }
@@ -94,7 +94,7 @@ export interface Message {
   options?: { label: string; value: string }[];
 }
 
-export type { FacilityCategoryType, PhysicalFacilityType, SangjoServiceType } from './facility';
+export type { FacilityCategoryType, PhysicalFacilityType, SangjoServiceType, StandardFacilityCategoryType } from './facility';
 // ============================================================
 // RE-EXPORT FROM FACILITY TYPES (Single Source of Truth)
 // ============================================================

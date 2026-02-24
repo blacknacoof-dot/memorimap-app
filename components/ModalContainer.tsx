@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { Facility, Reservation, ViewState } from '../types';
+import { Facility, Reservation, ViewState, FuneralCompany } from '../types';
 import { SideMenu } from './SideMenu';
 import { LoginModal } from './LoginModal';
 import { SignUpModal } from './SignUpModal';
@@ -72,15 +72,15 @@ export interface ModalContainerProps {
   handleBookingConfirm: (r: Reservation) => void;
 
   // Funeral Company
-  selectedFuneralCompany: any;
-  setSelectedFuneralCompany: (c: any) => void;
+  selectedFuneralCompany: FuneralCompany | null;
+  setSelectedFuneralCompany: (c: FuneralCompany | null) => void;
   showSangjoAIConsult: boolean;
   setShowSangjoAIConsult: (v: boolean) => void;
   showSangjoContract: boolean;
   setShowSangjoContract: (v: boolean) => void;
 
   // Sangjo Comparison
-  sangjoCompareList: any[];
+  sangjoCompareList: FuneralCompany[];
   showSangjoComparison: boolean;
   setShowSangjoComparison: (v: boolean) => void;
   removeFromSangjoCompare: (id: string) => void;
@@ -92,8 +92,8 @@ export interface ModalContainerProps {
   setInitialChatIntent: (i: 'funeral_home' | 'memorial_facility' | 'pet_funeral' | null) => void;
   userLocation: { lat: number; lng: number; type: string };
   getCurrentPosition: () => void;
-  handoverContext: any;
-  setHandoverContext: (ctx: any) => void;
+  handoverContext: Record<string, unknown> | string | null;
+  setHandoverContext: (ctx: Record<string, unknown> | string | null) => void;
 }
 
 export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
@@ -113,7 +113,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
 
   const setSearchQuery = useFilterStore(state => state.setSearchQuery);
 
-  const handleAiChatAction = (action: string, data?: any) => {
+  const handleAiChatAction = (action: string, data?: unknown) => {
     const isGlobalAI = aiChatFacility?.id === 'maum-i';
 
     if (action === 'RESERVE') {
@@ -125,7 +125,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
           return;
         }
         setAiChatFacility(null);
-        setSelectedFacility(data);
+        setSelectedFacility(data as Facility);
         setIsUrgentBooking(true);
         setIsBooking(true);
         return;
@@ -145,8 +145,8 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
         setTimeout(() => window.location.href = 'tel:1588-0000', 500);
         return;
       }
-      sonnerToast.info(`담당자(${(aiChatFacility as any)?.phone})에게 연결합니다.`);
-      setTimeout(() => window.location.href = `tel:${(aiChatFacility as any)?.phone}`, 500);
+      sonnerToast.info(`담당자(${aiChatFacility?.phone})에게 연결합니다.`);
+      setTimeout(() => window.location.href = `tel:${aiChatFacility?.phone}`, 500);
     } else if (action === 'RECOMMEND') {
       setAiChatFacility(null);
       if (isGlobalAI) {
@@ -156,7 +156,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
         setViewState(ViewState.LIST);
         return;
       }
-      setSearchQuery((aiChatFacility as any)?.address?.split(' ')[0] || '');
+      setSearchQuery(aiChatFacility?.address?.split(' ')[0] || '');
       setViewState(ViewState.LIST);
     }
   };
@@ -167,10 +167,10 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
     return sorted.slice(0, 3);
   };
 
-  const handleSwitchToFacility = (target: any, context?: any) => {
+  const handleSwitchToFacility = (target: Facility | { id: string; name: string; address?: string; phone?: string }, context?: Record<string, unknown> | string) => {
     const globalContext = useConversationStore.getState().mainBotContext;
     const summary = generateContextSummary(globalContext);
-    setAiChatFacility(target);
+    setAiChatFacility(target as Facility);
     setHandoverContext(context || summary);
   };
 
@@ -233,7 +233,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
         <RecommendationStarter
           onSelectIntent={(intent) => {
             setInitialChatIntent(intent);
-            setAiChatFacility({ name: '통합 AI 마음이', id: 'maum-i', type: 'assistant' } as any);
+            setAiChatFacility({ name: '통합 AI 마음이', id: 'maum-i', type: 'assistant', address: '' } as Facility);
           }}
         />
       )}
@@ -293,7 +293,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
             onConfirm={(data) => {
               const contractReservation: Reservation = {
                 id: `CONT-${Date.now()}`,
-                facility_id: data.companyId,
+                facility_id: String(data.companyId),
                 facility_name: data.companyName,
                 visit_date: new Date().toISOString(),
                 time_slot: data.callTime,
@@ -305,7 +305,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
                 status: 'pending',
                 payment_amount: 0,
                 user_id: userId || '',
-                funeral_company_id: data.companyId,
+                funeral_company_id: String(data.companyId),
                 funeral_company_name: data.companyName,
               };
               handleBookingConfirm(contractReservation);
@@ -336,11 +336,11 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
               initialIntent={initialChatIntent}
               userLocation={userLocation}
               onGetCurrentPosition={getCurrentPosition}
-              handoverContext={handoverContext}
+              handoverContext={typeof handoverContext === 'object' && handoverContext ? handoverContext as { urgency?: string; location?: { text?: string }; [key: string]: unknown } : undefined}
               onClose={() => { setAiChatFacility(null); setInitialChatIntent(null); }}
               onGoToMyPage={() => { setAiChatFacility(null); setInitialChatIntent(null); setViewState(ViewState.MY_PAGE); }}
               onSearchFacilities={handleSearchFacilities}
-              onSwitchToFacility={handleSwitchToFacility}
+              onSwitchToFacility={(f, ctx) => handleSwitchToFacility(f as Facility, ctx)}
               onAction={handleAiChatAction}
             />
           </div>

@@ -30,10 +30,23 @@ export function useNotices() {
             if (error) throw error;
 
             // [Fix] Map fields if DB uses different names than frontend expects
-            const mappedData = (data as any[] || []).map(item => ({
-                ...item,
-                target_audience: item.target_audience || item.category || 'all',
-                is_published: item.is_published !== undefined ? item.is_published : true
+            interface NoticeRow {
+                id: string;
+                title: string;
+                content: string;
+                target_audience?: string;
+                category?: string;
+                is_published?: boolean;
+                created_at: string;
+                [key: string]: unknown;
+            }
+            const mappedData: Notice[] = ((data || []) as NoticeRow[]).map(item => ({
+                id: item.id,
+                title: item.title,
+                content: item.content,
+                target_audience: (item.target_audience || item.category || 'all') as Notice['target_audience'],
+                is_published: item.is_published !== undefined ? item.is_published : true,
+                created_at: item.created_at
             }));
 
             setNotices(mappedData);

@@ -129,7 +129,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
         if (packages.length >= 5) return;
         setPackages(prev => [...prev, { ...EMPTY_PACKAGE }]);
     };
-    const updatePackage = (idx: number, field: keyof FacilityPackage, value: any) => {
+    const updatePackage = (idx: number, field: keyof FacilityPackage, value: string | number | string[]) => {
         setPackages(prev => prev.map((p, i) => i === idx ? { ...p, [field]: value } : p));
     };
     const removePackage = (idx: number) => {

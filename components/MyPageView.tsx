@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { User, Loader2, Settings2, Calendar } from 'lucide-react';
-import { Reservation, Facility, Review, ViewState } from '../types';
+import { Reservation, Facility, Review, ViewState, FuneralCompany } from '../types';
 import { getMyReservations, cancelReservation, getUserPhoneNumber } from '../lib/queries';
 import { ReservationList } from './ReservationList';
 import { ReservationDetailModal } from './ReservationDetailModal';
@@ -21,15 +21,15 @@ import { normalizeType } from '../utils/facilityNormalizer';
 
 interface Props {
     isLoggedIn: boolean;
-    user: any;
+    user: { id: string; name: string; email: string; imageUrl?: string } | null;
     userRole?: string;
     reservations?: Reservation[];
     facilities: Facility[];
     onLoginClick: () => void;
-    onNavigate?: (view: any) => void;
+    onNavigate?: (view: ViewState) => void;
     onReviewDeleted?: (facilityId: string, reviewId: string, rating: number) => void;
     onSelectFacility?: (facility: Facility) => void;
-    onSelectCompany?: (company: any) => void;
+    onSelectCompany?: (company: FuneralCompany) => void;
 }
 
 export const MyPageView: React.FC<Props> = ({
@@ -114,18 +114,18 @@ export const MyPageView: React.FC<Props> = ({
                     .in('id', facilityIds);
 
                 if (facData && facData.length > 0) {
-                    const mappedFacs: Facility[] = facData.map((f: any) => ({
-                        id: f.id,
-                        legacy_id: f.legacy_id,
-                        name: f.name || '이름 없음',
-                        address: f.address || '',
-                        imageUrl: f.image_url || (f.images && f.images[0]) || null,
-                        type: normalizeType(f.type || '', f.name || ''),
+                    const mappedFacs: Facility[] = facData.map((f: Record<string, unknown>) => ({
+                        id: String(f.id || ''),
+                        legacy_id: f.legacy_id as string | number | undefined,
+                        name: String(f.name || '이름 없음'),
+                        address: String(f.address || ''),
+                        imageUrl: String(f.image_url || (Array.isArray(f.images) && f.images[0]) || ''),
+                        type: normalizeType(String(f.type || ''), String(f.name || '')),
                         rating: Number(f.rating || 0),
                         reviewCount: Number(f.review_count || 0),
                         lat: Number(f.lat || f.latitude || 0),
                         lng: Number(f.lng || f.longitude || 0),
-                        category: 'etc' as any
+                        category: 'funeral_home' as const
                     }));
                     setExtraFacilities(() => {
                         const newMap = new Map<string, Facility>();
@@ -148,7 +148,8 @@ export const MyPageView: React.FC<Props> = ({
         if (!user) return;
         if (!await confirmAsync('즐겨찾기를 해제하시겠습니까?')) return;
         try {
-            await favoriteService.toggleFavorite(user.id, facilityId);
+            const client = await getAuthClient(session, { strict: true });
+            await favoriteService.toggleFavorite(user.id, facilityId, client);
             setMyFavorites(prev => prev.filter(f => f.facility_id !== facilityId));
             toast.success('즐겨찾기가 해제되었습니다.');
         } catch (err) {
@@ -244,6 +245,8 @@ export const MyPageView: React.FC<Props> = ({
             </div>
         );
     }
+
+    if (!user) return null;
 
     const filteredReservations = myReservations.filter(r => {
         if (activeTab === 'pending') return r.status === 'pending' || r.status === 'urgent';
@@ -645,12 +648,8 @@ export const MyPageView: React.FC<Props> = ({
                         facility={facilities.find(f => f.id === selectedReservation.facility_id) || {
                           id: selectedReservation.facility_id,
                           name: selectedReservation.facility_name || '시설 정보 없음',
-                          category: '',
-                          type: '',
                           address: '',
-                          lat: 0,
-                          lng: 0,
-                        } as any}
+                        } as Facility}
                         onClose={() => setSelectedReservation(null)}
                         onCancel={(selectedReservation.status === 'pending' || selectedReservation.status === 'urgent') ? () => selectedReservation.id && handleCancelReservation(selectedReservation.id) : undefined}
                     />

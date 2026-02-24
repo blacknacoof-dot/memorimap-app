@@ -32,7 +32,8 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
 
   // [Step 1] Safe Refactoring: Use React Hook Form with Zod
   const form = useForm<ReservationFormValues>({
-    resolver: zodResolver(ReservationSchema) as any,
+    // @ts-expect-error zodResolver generic type mismatch with useForm
+    resolver: zodResolver(ReservationSchema),
     mode: 'onChange',
     defaultValues: {
       status: reservationMode === 'URGENT' ? 'urgent' : 'pending',
@@ -87,7 +88,8 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
     const isValid = await trigger(fieldsToValidate);
     if (isValid) {
       if (reservationMode === 'URGENT' && step === 0) {
-        handleSubmit(onUrgentSubmit as any)();
+        // @ts-expect-error handleSubmit generic type mismatch
+        handleSubmit(onUrgentSubmit)();
       } else {
         setStep(prev => prev + 1);
       }
@@ -141,7 +143,7 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
     }, 1000);
   };
 
-  const mapToLegacy = (data: ReservationFormValues, status: any, paidAmount: number, paymentId: string): LegacyReservation => {
+  const mapToLegacy = (data: ReservationFormValues, status: LegacyReservation['status'], paidAmount: number, paymentId: string): LegacyReservation => {
     return {
       id: `RES-${Date.now()}`,
       facility_id: facility.id,
@@ -212,9 +214,9 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
 
       onConfirm(legacy);
       setStep(4);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Payment Error:', error);
-      setPaymentError(error.message || '결제 진행 중 오류가 발생했습니다.');
+      setPaymentError(error instanceof Error ? error.message : '결제 진행 중 오류가 발생했습니다.');
     } finally {
       setIsProcessingPayment(false);
     }

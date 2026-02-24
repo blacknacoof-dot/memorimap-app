@@ -1,11 +1,20 @@
 import { supabase } from '../lib/supabaseClient';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export interface Favorite {
     id: string;
     user_id: string;
     facility_id: string;
     created_at: string;
-    memorial_spaces?: any; // Join된 시설 정보
+    memorial_spaces?: {
+        id: number;
+        name: string;
+        address: string;
+        category: string;
+        description?: string | null;
+        image_urls?: string[];
+        verified: boolean;
+    } | null; // Join된 시설 정보
 }
 
 export const favoriteService = {
@@ -50,13 +59,13 @@ export const favoriteService = {
     },
 
     // 즐겨찾기 추가/삭제 (Toggle)
-    async toggleFavorite(userId: string, facilityId: string): Promise<boolean> {
+    async toggleFavorite(userId: string, facilityId: string, client: SupabaseClient): Promise<boolean> {
         // 1. 체크
         const isFav = await this.checkFavorite(userId, facilityId);
 
         if (isFav) {
             // 삭제
-            const { error } = await supabase
+            const { error } = await client
                 .from('favorites')
                 .delete()
                 .eq('user_id', userId)
@@ -69,7 +78,7 @@ export const favoriteService = {
             return false;
         } else {
             // 추가
-            const { error } = await supabase
+            const { error } = await client
                 .from('favorites')
                 .insert({ user_id: userId, facility_id: facilityId });
 

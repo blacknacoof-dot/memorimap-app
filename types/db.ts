@@ -121,6 +121,9 @@ export interface Subscription {
     end_date: string | null;
     auto_renew: boolean;
     created_at: string;
+    facility_id_uuid?: string;
+    facility_id_bigint?: string | number;
+    next_billing_date?: string;
 }
 
 /**

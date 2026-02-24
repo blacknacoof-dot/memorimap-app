@@ -45,26 +45,44 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
         if (error) throw error;
 
         if (data && data.length > 0) {
-          const mappedFacilities = data.map((item: any) => {
-            const resolvedCategory = item.type || item.category || 'charnel';
-            const name = item.name || '';
-            const type = normalizeType(resolvedCategory, name);
+          interface FacilityRow {
+            id?: string;
+            name?: string;
+            type?: string;
+            category?: string;
+            rating?: number;
+            review_count?: number;
+            images?: string[];
+            image_url?: string;
+            price_min?: number;
+            address?: string;
+            lat?: number;
+            latitude?: number;
+            lng?: number;
+            longitude?: number;
+            packages?: Facility['products'];
+            [key: string]: unknown;
+          }
+          const mappedFacilities: Facility[] = (data as FacilityRow[]).map((item) => {
+            const resolvedCategory = String(item.type || item.category || 'charnel');
+            const itemName = item.name || '';
+            const type = normalizeType(resolvedCategory, itemName);
             const mappedCategory = getCategoryDb(type);
 
             const ratingValue = item.rating ? Number(item.rating) : 0;
             const reviewCountValue = item.review_count ? Number(item.review_count) : 0;
 
+            const images = Array.isArray(item.images) ? item.images : [];
             const selectedImage = selectFacilityImage(
-              item.images || [], item.image_url || '', type, String(item.id || '')
+              images, item.image_url || '', type, String(item.id || '')
             );
             const displayPriceRange = formatPriceRange(item.price_min);
 
             return {
-              id: item.id?.toString(),
+              id: String(item.id || ''),
               name: item.name || '이름 없음',
               category: mappedCategory,
               type: type,
-              db_type: item.type,
               religion: 'none',
               address: item.address || '',
               lat: Number(item.lat || item.latitude || 0),
@@ -77,22 +95,23 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
               features: [],
               phone: '',
               prices: [],
-              galleryImages: item.images || [],
+              galleryImages: images,
               reviews: [],
               isDetailLoaded: false,
               isVerified: true,
               dataSource: 'db',
               priceInfo: null,
-              products: item.packages || []
+              products: Array.isArray(item.packages) ? item.packages : []
             };
           });
           setFacilities(mappedFacilities);
         } else {
           // DB empty or RPC error
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Failed to fetch facilities:", err);
-        showToast(`데이터 불러오기 실패: ${err.message || "연결 오류"}`, 'error');
+        const message = err instanceof Error ? err.message : "연결 오류";
+        showToast(`데이터 불러오기 실패: ${message}`, 'error');
       } finally {
         setIsDataLoading(false);
       }
@@ -118,14 +137,14 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
     }
 
     // 2. Exclude sangjo from general list
-    const sangjoSelected = selectedCategories.includes('sangjo' as any);
+    const sangjoSelected = (selectedCategories as string[]).includes('sangjo');
     if (!sangjoSelected) {
       result = result.filter(f => f.type !== 'sangjo' && f.type !== '상조');
     }
 
     // 3. Filter by Category
     if (selectedCategories.length > 0) {
-      result = result.filter(f => selectedCategories.includes(f.category as any));
+      result = result.filter(f => (selectedCategories as string[]).includes(f.category || ''));
     }
 
     // 4. Filter by Search Query
@@ -168,8 +187,20 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
           import('../lib/queries').then(m => m.getFacilityImages(realUuid))
         ]);
 
-        const reviews = (rawReviews || []).map((r: any) => ({
-          ...r,
+        interface RawReview {
+          id: string;
+          rating: number;
+          content: string;
+          userName?: string;
+          user_name?: string;
+          date?: string;
+          created_at?: string;
+          [key: string]: unknown;
+        }
+        const reviews = (rawReviews as RawReview[] || []).map((r) => ({
+          id: r.id,
+          rating: r.rating,
+          content: r.content,
           userName: r.userName || r.user_name || '익명',
           date: r.date || (r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : '')
         }));

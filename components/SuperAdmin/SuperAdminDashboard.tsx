@@ -172,7 +172,7 @@ export default function SuperAdminDashboard({ onBack }: { onBack?: () => void })
             <SideMenuDrawer
                 isOpen={isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
-                onNavigate={(tab) => setActiveTab(tab as any)}
+                onNavigate={(tab) => setActiveTab(tab as typeof activeTab)}
             />
 
             <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
@@ -215,7 +215,7 @@ export default function SuperAdminDashboard({ onBack }: { onBack?: () => void })
                         ].map((tab) => (
                             <button
                                 key={tab.id}
-                                onClick={() => setActiveTab(tab.id as any)}
+                                onClick={() => setActiveTab(tab.id as typeof activeTab)}
                                 className={`flex items-center gap-1.5 md:gap-2 py-3 md:py-4 px-1 md:px-2 text-[13px] md:text-sm font-bold border-b-2 transition-all whitespace-nowrap ${activeTab === tab.id
                                     ? 'border-blue-600 text-blue-600'
                                     : 'border-transparent text-slate-400 hover:text-slate-600'

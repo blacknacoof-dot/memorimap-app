@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, X, Bot, Check, ChevronRight, Shield, Star, Phone, FileText, Clock, Siren, Home } from 'lucide-react';
 import { FuneralCompany } from '../../types';
 import { ConsultationForm } from './BrandChatHelpers';
+import { supabase } from '../../lib/supabaseClient';
 
 interface Props {
     company: FuneralCompany;
@@ -234,7 +235,7 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
         }, 300);
     };
 
-    const handleFormSubmit = async (formData: any) => {
+    const handleFormSubmit = async (formData: Record<string, unknown>) => {
         setIsFormOpen(false);
         setStep('COMPLETE');
 
@@ -249,18 +250,18 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
                 id: `db-${Date.now()}`,
                 contract_number: contractNumber,
                 sangjo_id: company.id,
-                customer_name: formData.name || '익명 고객',
-                customer_phone: formData.phone || '',
-                service_type: isUrgent ? '긴급 출동' : (isPhone ? '전화 상담' : (formData.type || '채팅 상담')),
+                customer_name: (formData.name as string) || '익명 고객',
+                customer_phone: (formData.phone as string) || '',
+                service_type: isUrgent ? '긴급 출동' : (isPhone ? '전화 상담' : ((formData.type as string) || '채팅 상담')),
                 status: '상담신청',
                 application_type: 'CONSULTATION',
-                preferred_call_time: formData.time || '',
+                preferred_call_time: (formData.time as string) || '',
                 total_price: 0,
                 emergency_level: isUrgent ? 'critical' : 'normal',
                 created_at: new Date().toISOString(),
-            });
+            }, supabase);
         } catch (e) {
-            console.error('상담 접수 저장 실패:', e);
+            // saveSangjoContract failed (non-blocking)
         }
 
         const completeText = isUrgent

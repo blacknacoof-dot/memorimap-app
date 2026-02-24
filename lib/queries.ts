@@ -1,10 +1,146 @@
 import { Facility, Review, Reservation } from '../types';
 import { FUNERAL_COMPANIES } from '../constants';
 import { supabase, setSupabaseAuth } from './supabaseClient';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { logger } from '../utils/logger';
 import { validateImageFile } from './security/fileValidation';
 import { sanitizeSearchInput } from './security/sqlSanitize';
+
+// --- Internal helper types (replacing `any`) ---
+
+/** DB facility row returned from RPC / select queries */
+interface FacilityRow {
+    id: string | number;
+    name?: string;
+    type?: string;
+    category?: string;
+    address?: string;
+    full_address?: string;
+    latitude?: number;
+    longitude?: number;
+    lat?: number;
+    lng?: number;
+    [key: string]: unknown;
+}
+
+/** DB reservation row from select('*') */
+interface ReservationRow {
+    id: string;
+    facility_id: string;
+    facility_name?: string;
+    visit_date: string;
+    time_slot: string;
+    status: string;
+    visitor_count?: number;
+    message?: string;
+    created_at: string;
+    payment_id?: string;
+    visitor_name?: string;
+    user_name?: string;
+    visitorName?: string;
+    user_phone?: string;
+    user_id?: string;
+    [key: string]: unknown;
+}
+
+/** DB subscription row with joined relations */
+interface SubscriptionRow {
+    id: string;
+    facilities?: { name: string } | null;
+    plan?: { name: string; price: number } | null;
+    end_date?: string | null;
+    status?: string;
+    [key: string]: unknown;
+}
+
+/** DB pending facility row */
+interface PendingFacilityRow {
+    id?: string | number;
+    name?: string;
+    type?: string;
+    category?: string;
+    address?: string;
+    phone?: string;
+    business_license_image?: string;
+    created_at?: string;
+    user_id?: string;
+    [key: string]: unknown;
+}
+
+/** DB notice row */
+interface NoticeRow {
+    id: string;
+    title: string;
+    content: string;
+    created_at?: string;
+    [key: string]: unknown;
+}
+
+/** DB partner inquiry row */
+interface InquiryRow {
+    id: string;
+    company_name?: string;
+    manager_name?: string;
+    phone?: string;
+    email?: string;
+    message?: string;
+    inquiry_type?: string;
+    business_type?: string;
+    type?: string;
+    created_at?: string;
+    status?: string;
+    [key: string]: unknown;
+}
+
+/** Partner application input data */
+interface PartnerApplicationInput {
+    userId?: string;
+    name: string;
+    companyPhone?: string;
+    type?: string;
+    managerName?: string;
+    managerPosition?: string;
+    phone?: string;
+    managerMobile?: string;
+    companyEmail?: string;
+    email?: string;
+    address?: string;
+    privacyConsent?: boolean;
+    targetFacilityId?: string | number | null;
+    businessLicenseImage?: File;
+}
+
+/** Map bounds with getSouthWest/getNorthEast methods (Kakao Maps LatLngBounds) */
+interface MapBounds {
+    getSouthWest(): { lat: number; lng: number };
+    getNorthEast(): { lat: number; lng: number };
+}
+
+/** Facility subscription upsert data */
+interface SubscriptionUpsertData {
+    plan_id: string;
+    status: string;
+    next_billing_date: string;
+    updated_at: string;
+    facility_id_uuid?: string;
+    facility_id_bigint?: number;
+    facility_id?: number | null;
+}
+
+/** DB review row */
+interface ReviewRow {
+    id: string;
+    user_id?: string;
+    facility_id?: string;
+    rating?: number;
+    content?: string;
+    author_name?: string;
+    photos?: Array<{ url: string }>;
+    is_active?: boolean;
+    created_at: string;
+    [key: string]: unknown;
+}
 
 // Partner Inquiry Category Configuration
 export const PARTNER_CATEGORIES = {
@@ -22,7 +158,7 @@ export type PartnerCategoryType = keyof typeof PARTNER_CATEGORIES;
 /**
  * [추가] 중복 리뷰 작성 확인
  */
-export const checkExistingReview = async (userId: string, facilityId: string, client?: import('@supabase/supabase-js').SupabaseClient) => {
+export const checkExistingReview = async (userId: string, facilityId: string, client?: SupabaseClient) => {
     const db = client || supabase;
     const { data, error } = await db
         .from('facility_reviews')
@@ -42,7 +178,7 @@ export const checkExistingReview = async (userId: string, facilityId: string, cl
 /**
  * [추가] 리뷰 이미지 업로드
  */
-export const uploadReviewImage = async (userId: string, file: File, client?: import('@supabase/supabase-js').SupabaseClient) => {
+export const uploadReviewImage = async (userId: string, file: File, client?: SupabaseClient) => {
     const db = client || supabase;
     // [Security] 파일 검증
     const validation = validateImageFile(file);
@@ -166,7 +302,7 @@ export const getIntelligentRecommendations = async (
     category?: string,
     regionText?: string
 ) => {
-    let finalData: any[] = [];
+    let finalData: FacilityRow[] = [];
     const searchCategory = mapCategoryToCode(category);
 
     // [Strict Filter] 상조 서비스 원천 배제 및 카테고리 정규화
@@ -206,22 +342,22 @@ export const getIntelligentRecommendations = async (
         return false;
     };
 
-    const strictFilter = (items: any[], targetRegionText?: string) => {
-        return items.filter((i: any) => {
+    const strictFilter = (items: FacilityRow[], targetRegionText?: string) => {
+        return items.filter((i: FacilityRow) => {
             // 1. Category Filter — DB 필드는 `type` (category 컬럼 없음)
             const itemType = i.type || i.category;
             let categoryMatch = true;
             if (normalizedCategory === 'funeral') {
                 if (itemType === 'sangjo' || itemType === '상조') return false;
                 const isFuneralType = itemType === 'funeral_home' || itemType === 'funeral' || itemType === '장례식장';
-                const isNameMatch = !itemType && i.name && i.name.includes('장례식장');
+                const isNameMatch = !itemType && !!i.name && i.name.includes('장례식장');
                 categoryMatch = isFuneralType || isNameMatch;
             } else if (normalizedCategory === 'pet') {
                 const PET_CATEGORIES = ['pet_memorial', 'pet_funeral', 'pet', '동물장례', '반려동물'];
-                categoryMatch = PET_CATEGORIES.includes(itemType) || PET_CATEGORIES.includes(i.type);
+                categoryMatch = PET_CATEGORIES.includes(itemType || '') || PET_CATEGORIES.includes(i.type || '');
             } else if (isMemorialGroup) {
                 const MEMORIAL_CATEGORIES = ['columbarium', 'charnel_house', 'natural_burial', 'tree_burial', 'park_cemetery', 'cemetery', 'complex', 'sea_burial', 'memorial', '봉안시설', '자연장', '공원묘지', '해양장'];
-                categoryMatch = MEMORIAL_CATEGORIES.includes(i.type) || MEMORIAL_CATEGORIES.includes(itemType);
+                categoryMatch = MEMORIAL_CATEGORIES.includes(i.type || '') || MEMORIAL_CATEGORIES.includes(itemType || '');
             }
 
             // 2. Region Filter — 주소 정규화 매핑 적용
@@ -269,17 +405,17 @@ export const getIntelligentRecommendations = async (
         if (finalData.length < 3) {
             // 기존 결과에서 좌표 추출
             let baseLat = 0, baseLng = 0;
-            const firstWithCoords = finalData.find((f: any) => (f.latitude || f.lat) && (f.longitude || f.lng));
+            const firstWithCoords = finalData.find((f: FacilityRow) => (f.latitude || f.lat) && (f.longitude || f.lng));
             if (firstWithCoords) {
-                baseLat = firstWithCoords.latitude || firstWithCoords.lat;
-                baseLng = firstWithCoords.longitude || firstWithCoords.lng;
+                baseLat = firstWithCoords.latitude || firstWithCoords.lat || 0;
+                baseLng = firstWithCoords.longitude || firstWithCoords.lng || 0;
             } else {
                 // 좌표 없으면 DB에서 해당 지역 아무 시설이라도 찾아서 좌표 확보
                 const anyResults = await searchFacilitiesByRegion(regionText, undefined);
-                const anyWithCoords = anyResults.find((f: any) => (f.latitude || f.lat) && (f.longitude || f.lng));
+                const anyWithCoords = anyResults.find((f: FacilityRow) => (f.latitude || f.lat) && (f.longitude || f.lng));
                 if (anyWithCoords) {
-                    baseLat = anyWithCoords.latitude || anyWithCoords.lat;
-                    baseLng = anyWithCoords.longitude || anyWithCoords.lng;
+                    baseLat = anyWithCoords.latitude || anyWithCoords.lat || 0;
+                    baseLng = anyWithCoords.longitude || anyWithCoords.lng || 0;
                 }
             }
 
@@ -454,11 +590,11 @@ export interface LeadInput {
     urgency: string;
     scale?: string;
     priorities?: string[];
-    contextData?: any;
+    contextData?: Record<string, unknown>;
     notes?: string;
 }
 
-export const createLead = async (leadData: LeadInput, client?: import('@supabase/supabase-js').SupabaseClient) => {
+export const createLead = async (leadData: LeadInput, client?: SupabaseClient) => {
     const db = client || supabase;
     const { data, error } = await db
         .from('leads')
@@ -483,7 +619,7 @@ export const createLead = async (leadData: LeadInput, client?: import('@supabase
     return data && data[0] ? data[0] : null;
 };
 
-export const createConsultationFromLead = async (leadId: string, facilityId: string, client?: import('@supabase/supabase-js').SupabaseClient) => {
+export const createConsultationFromLead = async (leadId: string, facilityId: string, client?: SupabaseClient) => {
     const db = client || supabase;
     const { data, error } = await db.rpc('create_consultation_from_lead', {
         p_lead_id: leadId,
@@ -497,7 +633,7 @@ export const createConsultationFromLead = async (leadId: string, facilityId: str
     return data;
 };
 
-export const getAllLeads = async (client?: import('@supabase/supabase-js').SupabaseClient) => {
+export const getAllLeads = async (client?: SupabaseClient) => {
     const db = client || supabase;
     const { data, error } = await db
         .from('leads')
@@ -559,7 +695,7 @@ export const createConsultation = async (
     userName: string,
     userPhone: string,
     notes: string = '',
-    client?: import('@supabase/supabase-js').SupabaseClient
+    client?: SupabaseClient
 ) => {
     const db = client || supabase;
     const { data, error } = await db
@@ -594,7 +730,7 @@ export const createUrgentReservation = async (
     visitDate: Date, // Timestamp
     type: 'single' | 'couple',
     notes: string = '',
-    client?: import('@supabase/supabase-js').SupabaseClient
+    client?: SupabaseClient
 ) => {
     const db = client || supabase;
     const leadResult = await createLead({
@@ -640,7 +776,7 @@ export const createUrgentReservation = async (
     return data;
 };
 
-export const getConsultationHistory = async (userId: string, client?: import('@supabase/supabase-js').SupabaseClient) => {
+export const getConsultationHistory = async (userId: string, client?: SupabaseClient) => {
     const db = client || supabase;
     const { data, error } = await db
         .from('consultations')
@@ -664,7 +800,7 @@ export const getConsultationHistory = async (userId: string, client?: import('@s
     return data;
 };
 
-export const deleteConsultation = async (id: string, userId?: string, client?: import('@supabase/supabase-js').SupabaseClient) => {
+export const deleteConsultation = async (id: string, userId?: string, client?: SupabaseClient) => {
     const db = client || supabase;
     let query = db
         .from('consultations')
@@ -689,8 +825,6 @@ export const deleteConsultation = async (id: string, userId?: string, client?: i
 // --- [리뷰 기능] ---
 export const getReviews = async (facilityId: string) => {
     try {
-        let reviews: any[] = [];
-
         // [통합] facility_reviews 테이블 사용, facility_id가 TEXT이므로 ID 매핑 로직 단순화
         const { data, error } = await supabase
             .from('facility_reviews')
@@ -701,32 +835,18 @@ export const getReviews = async (facilityId: string) => {
 
         if (error) {
             console.error('Error fetching reviews:', error);
-            // In mock mode, we still return local reviews even if DB fails
-            return reviews;
+            return [];
         }
 
-        // Merge DB reviews with local ones, avoiding duplicates by ID
-        const dbReviews = data || [];
-        const combined = [...reviews];
-        dbReviews.forEach(dbR => {
-            if (!combined.some(r => r.id === dbR.id)) {
-                combined.push(dbR);
-            }
-        });
-
-        return combined.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        return (data || []).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     } catch (e) {
         console.error('Exception in getReviews:', e);
         return [];
     }
 };
 
-export const getUserReviews = async (userId: string, client?: import('@supabase/supabase-js').SupabaseClient) => {
+export const getUserReviews = async (userId: string, client?: SupabaseClient) => {
     const db = client || supabase;
-    let reviews: any[] = [];
-
-
-
     const { data, error } = await db
         .from('facility_reviews')
         .select('*')
@@ -736,18 +856,10 @@ export const getUserReviews = async (userId: string, client?: import('@supabase/
 
     if (error) {
         console.error('Error fetching user reviews:', error);
-        return reviews;
+        return [];
     }
 
-    const dbReviews = data || [];
-    const combined = [...reviews];
-    dbReviews.forEach(dbR => {
-        if (!combined.some(r => r.id === dbR.id)) {
-            combined.push(dbR);
-        }
-    });
-
-    return combined.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return (data || []).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 };
 
 export const createReview = async (
@@ -757,8 +869,8 @@ export const createReview = async (
     content: string,
     userName?: string,
     images: string[] = [],
-    client?: import('@supabase/supabase-js').SupabaseClient
-): Promise<any> => {
+    client?: SupabaseClient
+): Promise<Record<string, unknown> | null> => {
     const db = client || supabase;
     const insertData = {
         facility_id: facilityId,
@@ -784,13 +896,13 @@ export const createReview = async (
             throw error;
         }
         return data;
-    } catch (e: any) {
+    } catch (e: unknown) {
 
         throw e;
     }
 };
 
-export const deleteReview = async (reviewId: string, client?: import('@supabase/supabase-js').SupabaseClient) => {
+export const deleteReview = async (reviewId: string, client?: SupabaseClient) => {
     const db = client || supabase;
     try {
         const { error } = await db
@@ -808,7 +920,7 @@ export const deleteReview = async (reviewId: string, client?: import('@supabase/
             throw error;
         }
         return true;
-    } catch (e: any) {
+    } catch (e: unknown) {
         console.error('deleteReview Exception:', e);
         throw e;
     }
@@ -817,7 +929,7 @@ export const deleteReview = async (reviewId: string, client?: import('@supabase/
 /**
  * [추가] 시설 정보 업데이트
  */
-export const updateFacility = async (id: string, updates: any, client?: import('@supabase/supabase-js').SupabaseClient) => {
+export const updateFacility = async (id: string, updates: Record<string, unknown>, client?: SupabaseClient) => {
     const db = client || supabase;
     const { data, error } = await db
         .from('facilities') // Changed from memorial_spaces
@@ -840,7 +952,7 @@ export const updateUserProfile = async (userId: string, data: Partial<{
     full_name: string;
     phone_number: string;
     avatar_url: string;
-}>, client?: any) => {
+}>, client?: SupabaseClient) => {
     const db = client || supabase;
     // upsert: clerk_id 행이 없으면 INSERT, 있으면 UPDATE (406 방지)
     const { data: result, error } = await db
@@ -867,7 +979,7 @@ export const getFacilityReservations = async (facilityId: string) => {
         .order('created_at', { ascending: false });
     if (error) throw error;
     // Map to expected UI types (match Reservation interface in types/index.ts)
-    return (data || []).map((item: any) => ({
+    return (data || []).map((item: ReservationRow) => ({
         ...item,
         facilityId: item.facility_id,
         facilityName: item.facility_name,
@@ -876,7 +988,7 @@ export const getFacilityReservations = async (facilityId: string) => {
         visitorName: item.user_name || item.visitorName,
         visitorCount: item.visitor_count || 1,
         userPhone: item.user_phone,
-        status: item.status as any
+        status: item.status as Reservation['status']
     }));
 };
 /**
@@ -885,7 +997,7 @@ export const getFacilityReservations = async (facilityId: string) => {
 const notifyReservationStatusChange = async (
     reservation: Record<string, unknown>,
     newStatus: 'confirmed' | 'cancelled',
-    client: import('@supabase/supabase-js').SupabaseClient,
+    client: SupabaseClient,
     reason?: string
 ) => {
     if (!reservation?.user_id) return;
@@ -915,7 +1027,7 @@ const notifyReservationStatusChange = async (
     }
 };
 
-export const approveReservation = async (id: string, client: import('@supabase/supabase-js').SupabaseClient) => {
+export const approveReservation = async (id: string, client: SupabaseClient) => {
     const { data, error } = await client
         .from('reservations')
         .update({ status: 'confirmed' })
@@ -932,7 +1044,7 @@ export const approveReservation = async (id: string, client: import('@supabase/s
     return data;
 };
 
-export const rejectReservation = async (id: string, reason: string | undefined, client: import('@supabase/supabase-js').SupabaseClient) => {
+export const rejectReservation = async (id: string, reason: string | undefined, client: SupabaseClient) => {
     const updateData: Record<string, string> = { status: 'cancelled' };
     if (reason) {
         updateData.notes = `[거절 사유] ${reason}`;
@@ -973,7 +1085,7 @@ export const rejectReservation = async (id: string, reason: string | undefined, 
 /**
  * 사용자 본인의 예약 목록 조회
  */
-export const getMyReservations = async (userId: string, client?: any) => {
+export const getMyReservations = async (userId: string, client?: SupabaseClient) => {
     const db = client || supabase;
     const { data, error } = await db
         .from('reservations')
@@ -986,7 +1098,7 @@ export const getMyReservations = async (userId: string, client?: any) => {
         return [];
     }
 
-    return (data || []).map((item: any) => ({
+    return (data || []).map((item: ReservationRow) => ({
         id: item.id,
         facility_id: item.facility_id,
         facility_name: item.facility_name || '시설',
@@ -1004,7 +1116,7 @@ export const getMyReservations = async (userId: string, client?: any) => {
 /**
  * 예약 취소
  */
-export const cancelReservation = async (id: string, client?: any) => {
+export const cancelReservation = async (id: string, client?: SupabaseClient) => {
     const db = client || supabase;
     const { data, error } = await db
         .from('reservations')
@@ -1023,7 +1135,7 @@ export const cancelReservation = async (id: string, client?: any) => {
 /**
  * 사용자 전화번호 조회
  */
-export const getUserPhoneNumber = async (userId: string, client?: any): Promise<string> => {
+export const getUserPhoneNumber = async (userId: string, client?: SupabaseClient): Promise<string> => {
     const db = client || supabase;
     const { data, error } = await db
         .from('profiles')
@@ -1067,10 +1179,10 @@ export const getFacilityFaqs = async (facilityId: string) => {
 /**
  * 시설 FAQ 저장 (upsert)
  */
-export const upsertFacilityFaq = async (faq: { id?: string; facility_id: string; question: string; answer: string; order_index?: number; category?: string }) => {
+export const upsertFacilityFaq = async (faq: { id?: string; facility_id: string; question: string; answer: string; order_index?: number; category?: string }, client: SupabaseClient) => {
     try {
-        const { order, ...rest } = faq as any;
-        const { data, error } = await supabase
+        const { order, ...rest } = faq as typeof faq & { order?: number };
+        const { data, error } = await client
             .from('facility_faqs')
             .upsert({
                 ...rest,
@@ -1091,9 +1203,9 @@ export const upsertFacilityFaq = async (faq: { id?: string; facility_id: string;
 /**
  * 시설 FAQ 삭제 (soft delete)
  */
-export const deleteFacilityFaq = async (faqId: string) => {
+export const deleteFacilityFaq = async (faqId: string, client: SupabaseClient) => {
     try {
-        const { error } = await supabase
+        const { error } = await client
             .from('facility_faqs')
             .update({ is_active: false })
             .eq('id', faqId);
@@ -1110,7 +1222,7 @@ export const deleteFacilityFaq = async (faqId: string) => {
  */
 export const getReviewsBySpace = getReviews;
 
-export const getFacilitySubscription = async (facilityId: string, client?: import('@supabase/supabase-js').SupabaseClient) => {
+export const getFacilitySubscription = async (facilityId: string, client?: SupabaseClient) => {
     try {
         const db = client || supabase;
         const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
@@ -1263,10 +1375,10 @@ export const getUserRole = async (userId: string) => {
 
         // 4. 기본 유저 권한 반환
         return { role: 'user', isError: false, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
         // 406 Not Acceptable 등 에러가 나도 기본 유저로 처리
         // console.error('Role check error:', error);
-        return { role: 'user', isError: false, error: error.message };
+        return { role: 'user', isError: false, error: error instanceof Error ? error.message : String(error) };
     }
 };
 
@@ -1326,7 +1438,7 @@ export const getFacilitiesByCategory = async (category: string) => {
 /**
  * [추가] 파트너 입점 신청 제출
  */
-export const submitPartnerApplication = async (data: any, authClient?: import('@supabase/supabase-js').SupabaseClient) => {
+export const submitPartnerApplication = async (data: PartnerApplicationInput, authClient?: SupabaseClient) => {
     const client = authClient || supabase;
     // 1. 파일 업로드
     let licenseUrl = '';
@@ -1352,7 +1464,7 @@ export const submitPartnerApplication = async (data: any, authClient?: import('@
                 .from('partner_docs')
                 .getPublicUrl(filePath);
             licenseUrl = urlData.publicUrl;
-        } catch (uploadErr: any) {
+        } catch (uploadErr: unknown) {
             console.error('[PartnerUpload] Upload exception:', uploadErr);
         }
     }
@@ -1461,7 +1573,7 @@ export const incrementAiUsage = async (facilityId: string) => {
     }
 };
 
-export const updateFacilitySubscription = async (facilityId: string, planId: string, client: import('@supabase/supabase-js').SupabaseClient) => {
+export const updateFacilitySubscription = async (facilityId: string, planId: string, client: SupabaseClient) => {
     const db = client;
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
 
@@ -1493,7 +1605,7 @@ export const updateFacilitySubscription = async (facilityId: string, planId: str
     const nextDate = new Date();
     nextDate.setMonth(nextDate.getMonth() + 1);
 
-    const upsertData: any = {
+    const upsertData: SubscriptionUpsertData = {
         plan_id: planData?.id || planId,
         status: 'active',
         next_billing_date: nextDate.toISOString(),
@@ -1580,7 +1692,7 @@ export const updateFacilitySubscription = async (facilityId: string, planId: str
 /**
  * [추가] 구독 재결제 예정일 수동 업데이트 (관리자용)
  */
-export const updateSubscriptionBillingDate = async (facilityId: string, nextDate: string, client: import('@supabase/supabase-js').SupabaseClient) => {
+export const updateSubscriptionBillingDate = async (facilityId: string, nextDate: string, client: SupabaseClient) => {
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
 
     let query = client.from('facility_subscriptions').update({
@@ -1602,16 +1714,16 @@ export const updateSubscriptionBillingDate = async (facilityId: string, nextDate
 /**
  * [추가] 찜하기(Favorite) 토글 기능
  */
-export const toggleFavorite = async (userId: string, facilityId: string, isFavorite: boolean) => {
+export const toggleFavorite = async (userId: string, facilityId: string, isFavorite: boolean, client: SupabaseClient) => {
     if (isFavorite) {
         // 찜 해제
-        return await supabase
+        return await client
             .from('favorites')
             .delete()
             .match({ user_id: userId, facility_id: facilityId });
     } else {
         // 찜 등록
-        return await supabase
+        return await client
             .from('favorites')
             .insert([{ user_id: userId, facility_id: facilityId }]);
     }
@@ -1637,7 +1749,7 @@ export const getMyFavorites = async (userId: string) => {
 /**
  * [추가] 전체 구독 현황 조회 (Super Admin)
  */
-export const getAllSubscriptions = async (client?: import('@supabase/supabase-js').SupabaseClient) => {
+export const getAllSubscriptions = async (client?: SupabaseClient) => {
     try {
         const db = client || supabase;
         const { data, error } = await db
@@ -1650,7 +1762,7 @@ export const getAllSubscriptions = async (client?: import('@supabase/supabase-js
 
         if (error) throw error;
 
-        return (data || []).map((item: any) => ({
+        return (data || []).map((item: SubscriptionRow) => ({
             id: item.id,
             facilityName: item.facilities?.name || 'Unknown',
             planName: item.plan?.name || 'Unknown',
@@ -1676,7 +1788,7 @@ export const getPendingFacilities = async () => {
 
         if (error) throw error;
 
-        return (data || []).map((item: any) => ({
+        return (data || []).map((item: PendingFacilityRow) => ({
             id: item.id?.toString(),
             name: item.name,
             type: item.type || item.category, // [Fix] item.type priority
@@ -1813,7 +1925,7 @@ export interface Consultation extends ConsultationData {
     is_read?: boolean; // Admin read status
     // New AI Fields
     is_ai_response: boolean;
-    metadata: Record<string, any>;
+    metadata: Record<string, unknown>;
     responder_id?: string | null;
     source: string;
 }
@@ -1821,9 +1933,9 @@ export interface Consultation extends ConsultationData {
 /**
  * Create a new funeral consultation (for AI chat form)
  */
-export const createFuneralConsultation = async (data: ConsultationData): Promise<Consultation | null> => {
+export const createFuneralConsultation = async (data: ConsultationData, client: SupabaseClient): Promise<Consultation | null> => {
     try {
-        const { data: result, error } = await supabase
+        const { data: result, error } = await client
             .from('consultations')
             .insert({
                 ...data,
@@ -1854,8 +1966,8 @@ export const createMemorialConsultation = async (data: {
     budget?: string;
     lighting?: string;
     tier?: string;
-    preferences?: any;
-}): Promise<any | null> => {
+    preferences?: Record<string, unknown>;
+}): Promise<Consultation | null> => {
     try {
         // [Fix] This seems to rely on 'memorial_consultations' which might be legacy.
         // Assuming 'consultations' is the unified table now.
@@ -1871,7 +1983,7 @@ export const createMemorialConsultation = async (data: {
             console.error('createMemorialConsultation error:', error);
             return null;
         }
-        return result;
+        return result as Consultation;
     } catch (e) {
         console.error('createMemorialConsultation exception:', e);
         return null;
@@ -1941,11 +2053,11 @@ export const updateConsultationStatus = async (
     consultationId: string,
     status: 'pending' | 'waiting' | 'accepted' | 'cancelled' | 'completed',
     notes?: string,
-    authClient?: import('@supabase/supabase-js').SupabaseClient
+    authClient?: SupabaseClient
 ): Promise<boolean> => {
     try {
         const client = authClient || supabase;
-        const updateData: any = { status };
+        const updateData: { status: string; notes?: string } = { status };
         if (notes !== undefined) {
             updateData.notes = notes;
         }
@@ -1974,10 +2086,11 @@ export const getFacilityConsultations = getConsultationsByFacility;
  */
 export const answerConsultation = async (
     consultationId: string,
-    answer: string
+    answer: string,
+    client: SupabaseClient
 ): Promise<boolean> => {
     try {
-        const { error } = await supabase
+        const { error } = await client
             .from('consultations')
             .update({
                 status: 'accepted', // Automatically mark as accepted/answered (or use 'completed'?)
@@ -2002,9 +2115,9 @@ export const answerConsultation = async (
 /**
  * Mark consultation as read by admin
  */
-export const markConsultationAsRead = async (consultationId: string): Promise<boolean> => {
+export const markConsultationAsRead = async (consultationId: string, client: SupabaseClient): Promise<boolean> => {
     try {
-        const { error } = await supabase
+        const { error } = await client
             .from('consultations')
             .update({ is_read: true })
             .eq('id', consultationId);
@@ -2017,12 +2130,12 @@ export const markConsultationAsRead = async (consultationId: string): Promise<bo
 };
 
 // Remove Stub or Redirect
-export const updateConsultation = async (id: string, data: any) => {
+export const updateConsultation = async (id: string, data: Record<string, unknown> | unknown[], client?: SupabaseClient) => {
     // If data has answer, route to answerConsultation logic?
     // But better to deprecate this stub.
     console.warn('Deprecated updateConsultation called. Use answerConsultation or updateConsultationStatus');
-    if (data.answer) {
-        return answerConsultation(id, data.answer);
+    if (!Array.isArray(data) && typeof data.answer === 'string' && client) {
+        return answerConsultation(id, data.answer, client);
     }
     return false;
 };
@@ -2054,7 +2167,7 @@ export const getConsultationById = async (consultationId: string): Promise<Consu
  * Fetch facilities within the current map viewport
  * Uses RPC 'search_facilities_in_view'
  */
-export const fetchFacilitiesInView = async (bounds: any, token?: string) => {
+export const fetchFacilitiesInView = async (bounds: MapBounds, token?: string) => {
     try {
         const sw = bounds.getSouthWest();
         const ne = bounds.getNorthEast();
@@ -2090,7 +2203,7 @@ export interface Inquiry {
     content?: string;
 }
 
-export const createNotice = async (title: string, content: string, client?: import('@supabase/supabase-js').SupabaseClient) => {
+export const createNotice = async (title: string, content: string, client?: SupabaseClient) => {
     const { data, error } = await (client || supabase)
         .from('notices')
         .insert([{
@@ -2107,7 +2220,7 @@ export const createNotice = async (title: string, content: string, client?: impo
     return data;
 };
 
-export const getNotices = async (client?: import('@supabase/supabase-js').SupabaseClient) => {
+export const getNotices = async (client?: SupabaseClient) => {
     const { data, error } = await (client || supabase)
         .from('notices')
         .select('*')
@@ -2118,7 +2231,7 @@ export const getNotices = async (client?: import('@supabase/supabase-js').Supaba
         return [];
     }
 
-    return data.map((n: any) => ({
+    return data.map((n: NoticeRow) => ({
         id: n.id,
         title: n.title,
         content: n.content,
@@ -2127,7 +2240,7 @@ export const getNotices = async (client?: import('@supabase/supabase-js').Supaba
     }));
 };
 
-export const getInquiries = async (client?: import('@supabase/supabase-js').SupabaseClient) => {
+export const getInquiries = async (client?: SupabaseClient) => {
     const { data, error } = await (client || supabase)
         .from('partner_inquiries')
         .select('*')
@@ -2138,7 +2251,7 @@ export const getInquiries = async (client?: import('@supabase/supabase-js').Supa
         return [];
     }
 
-    return data.map((i: any) => ({
+    return data.map((i: InquiryRow) => ({
         id: i.id,
         companyName: i.company_name,
         managerName: i.manager_name,
@@ -2148,6 +2261,6 @@ export const getInquiries = async (client?: import('@supabase/supabase-js').Supa
         inquiryType: i.inquiry_type,
         type: i.business_type || i.type,
         createdAt: i.created_at ? new Date(i.created_at).toLocaleDateString() : 'Unknown date',
-        status: (i.status === 'completed' || i.status === 'approved') ? 'resolved' : 'pending'
+        status: (i.status === 'completed' || i.status === 'approved') ? 'resolved' as const : 'pending' as const
     }));
 };

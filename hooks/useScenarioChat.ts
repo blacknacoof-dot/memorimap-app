@@ -24,7 +24,7 @@ export interface ChatMessage {
     timestamp?: Date;
 }
 
-export const useScenarioChat = (facilityId: string, onAction?: (action: string, data?: any) => void) => {
+export const useScenarioChat = (facilityId: string, onAction?: (action: string, data?: { facilityId: string; option: ScenarioOption }) => void) => {
     const [scenario, setScenario] = useState<ScenarioData | null>(null);
     const [currentNodeId, setCurrentNodeId] = useState<string>('');
     const [history, setHistory] = useState<ChatMessage[]>([]);
@@ -74,7 +74,7 @@ export const useScenarioChat = (facilityId: string, onAction?: (action: string, 
                         }]);
                     }
                 }
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error("Scenario fetch error, falling back:", err);
                 // Fallback on error (e.g. table missing)
                 setScenario(DEFAULT_SCENARIO);

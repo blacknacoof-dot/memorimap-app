@@ -3,20 +3,23 @@
  * 데이터 병합 및 동기화 로직
  */
 
+/** Internal indexable record type for merge operations */
+type Indexable = Record<string, string | number | boolean | null | undefined | object>;
+
 /**
  * 두 객체를 깊이 병합 (Deep Merge)
  * @param target - 기본 객체
  * @param source - 병합할 객체
  * @returns 병합된 객체
  */
-export function deepMerge<T extends Record<string, any>>(
+export function deepMerge<T extends Indexable>(
     target: T,
     source: Partial<T>
 ): T {
     const output = { ...target };
 
     for (const key in source) {
-        if (source.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
             const sourceValue = source[key];
             const targetValue = output[key];
 
@@ -29,18 +32,24 @@ export function deepMerge<T extends Record<string, any>>(
                 !Array.isArray(targetValue)
             ) {
                 // 객체인 경우 재귀적으로 병합
-                output[key] = deepMerge(targetValue, sourceValue);
+                (output as Indexable)[key] = deepMerge(
+                    targetValue as Indexable,
+                    sourceValue as Partial<Indexable>
+                );
             } else if (Array.isArray(sourceValue)) {
                 // 배열인 경우
                 if (Array.isArray(targetValue)) {
                     // ID 기반 배열 병합
-                    output[key] = mergeArraysById(targetValue, sourceValue) as any;
+                    (output as Indexable)[key] = mergeArraysById(
+                        targetValue as Indexable[],
+                        sourceValue as Indexable[]
+                    );
                 } else {
-                    output[key] = [...sourceValue] as any;
+                    (output as Indexable)[key] = [...sourceValue];
                 }
             } else {
                 // 기본값은 source로 덮어쓰기
-                output[key] = sourceValue as any;
+                (output as Indexable)[key] = sourceValue as T[Extract<keyof T, string>];
             }
         }
     }
@@ -55,7 +64,7 @@ export function deepMerge<T extends Record<string, any>>(
  * @param idKey - ID 필드명 (기본값: 'id')
  * @returns 병합된 배열
  */
-export function mergeArraysById<T extends Record<string, any>>(
+export function mergeArraysById<T extends Indexable>(
     targetArray: T[],
     sourceArray: T[],
     idKey: keyof T = 'id'
@@ -64,7 +73,7 @@ export function mergeArraysById<T extends Record<string, any>>(
 
     // 기존 배열을 Map에 저장
     targetArray.forEach(item => {
-        const key = item[idKey];
+        const key = item[idKey] as string | number;
         if (key !== undefined) {
             map.set(key, item);
         }
@@ -72,7 +81,7 @@ export function mergeArraysById<T extends Record<string, any>>(
 
     // 새로운 배열 병합 (덮어쓰기)
     sourceArray.forEach(item => {
-        const key = item[idKey];
+        const key = item[idKey] as string | number;
         if (key !== undefined) {
             const existing = map.get(key);
             if (existing) {
@@ -94,7 +103,7 @@ export function mergeArraysById<T extends Record<string, any>>(
  * @param sortOrder - 정렬 순서 ('asc' | 'desc')
  * @returns 정렬된 병합 배열
  */
-export function mergeAndSortByDate<T extends Record<string, any>>(
+export function mergeAndSortByDate<T extends Indexable>(
     targetArray: T[],
     sourceArray: T[],
     dateKey: keyof T,
@@ -103,8 +112,8 @@ export function mergeAndSortByDate<T extends Record<string, any>>(
     const merged = mergeArraysById(targetArray, sourceArray);
 
     return merged.sort((a, b) => {
-        const dateA = new Date(a[dateKey]).getTime();
-        const dateB = new Date(b[dateKey]).getTime();
+        const dateA = new Date(String(a[dateKey])).getTime();
+        const dateB = new Date(String(b[dateKey])).getTime();
 
         return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
     });
@@ -138,8 +147,8 @@ export function mergeOptimisticUpdate<T>(
         optimisticData !== null
     ) {
         return deepMerge(
-            currentData as Record<string, any>,
-            optimisticData as Record<string, any>
+            currentData as Indexable,
+            optimisticData as Partial<Indexable>
         ) as T;
     }
 
@@ -154,7 +163,7 @@ export function mergeOptimisticUpdate<T>(
  * @param isFirstPage - 첫 페이지 여부
  * @returns 병합된 데이터
  */
-export function mergePaginatedData<T extends Record<string, any>>(
+export function mergePaginatedData<T extends Indexable>(
     existingData: T[],
     newData: T[],
     page: number,
@@ -175,7 +184,7 @@ export function mergePaginatedData<T extends Record<string, any>>(
  * @param type - 업데이트 타입 ('INSERT' | 'UPDATE' | 'DELETE')
  * @returns 업데이트된 데이터
  */
-export function mergeRealtimeUpdate<T extends Record<string, any>>(
+export function mergeRealtimeUpdate<T extends Indexable>(
     currentData: T[],
     realtimeUpdate: T,
     type: 'INSERT' | 'UPDATE' | 'DELETE',
@@ -184,13 +193,14 @@ export function mergeRealtimeUpdate<T extends Record<string, any>>(
     const updateId = realtimeUpdate[idKey];
 
     switch (type) {
-        case 'INSERT':
+        case 'INSERT': {
             // 중복 체크 후 추가
             const exists = currentData.find(item => item[idKey] === updateId);
             if (!exists) {
                 return [realtimeUpdate, ...currentData];
             }
             return currentData;
+        }
 
         case 'UPDATE':
             // 기존 항목 업데이트
@@ -215,7 +225,7 @@ export function mergeRealtimeUpdate<T extends Record<string, any>>(
  * @param serverData - 서버 데이터
  * @returns 병합된 시설 데이터
  */
-export function mergeFacilityData<T extends Record<string, any>>(
+export function mergeFacilityData<T extends Indexable & { id: string | number; updated_at?: string }>(
     localData: T[],
     serverData: T[]
 ): T[] {
@@ -223,29 +233,27 @@ export function mergeFacilityData<T extends Record<string, any>>(
 
     // 로컬 데이터 추가
     localData.forEach(item => {
-        const id = item.id as string | number;
-        merged.set(id, item);
+        merged.set(item.id, item);
     });
 
     // 서버 데이터 병합 (더 최신인 경우 덮어쓰기)
     serverData.forEach(serverItem => {
-        const serverId = serverItem.id as string | number;
-        const localItem = merged.get(serverId);
+        const localItem = merged.get(serverItem.id);
 
         if (!localItem) {
             // 새로운 데이터
-            merged.set(serverId, serverItem);
+            merged.set(serverItem.id, serverItem);
         } else if (serverItem.updated_at && localItem.updated_at) {
             // updated_at 비교
             const serverTime = new Date(serverItem.updated_at).getTime();
             const localTime = new Date(localItem.updated_at).getTime();
 
             if (serverTime > localTime) {
-                merged.set(serverId, serverItem);
+                merged.set(serverItem.id, serverItem);
             }
         } else {
             // updated_at 없으면 서버 데이터 우선
-            merged.set(serverId, serverItem);
+            merged.set(serverItem.id, serverItem);
         }
     });
 

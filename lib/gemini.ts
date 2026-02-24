@@ -97,7 +97,7 @@ export async function* streamConsultationMessage(
     history: Message[],
     newMessage: string,
     topic: string,
-    faqs: any[] = []
+    faqs: Array<{ question: string; answer: string }> = []
 ): AsyncGenerator<string, void, unknown> {
     if (!USE_REAL_AI) {
         yield* getMockAIResponse(facility, newMessage, topic);
@@ -253,7 +253,7 @@ ${faqs.map((f, i) => `${i + 1}. Q: ${f.question}\n   A: ${f.answer}`).join('\n')
                 }
             }
         }
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Gemini Proxy Error, falling back to Mock AI:", error);
         yield* getMockAIResponse(facility, newMessage, topic);
     }

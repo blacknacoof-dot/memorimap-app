@@ -13,9 +13,9 @@ import { Loader2, CheckCircle, XCircle, Clock, ArrowLeft, Home, Edit, Building2,
 import { toast } from 'sonner'; // [Phase 2] Error Handler
 
 interface Props {
-    user: any;
-    facilities: any[];
-    onNavigate: (view: any, context?: { facilityId?: string }) => void;
+    user: { id: string; name: string; email: string; imageUrl?: string } | null;
+    facilities: Facility[];
+    onNavigate: (view: ViewState, context?: { facilityId?: string }) => void;
 }
 
 export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNavigate }) => {
@@ -28,7 +28,13 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
     const [activeTab, setActiveTab] = useState<'pending' | 'confirmed' | 'cancelled' | 'faq' | 'consultations'>('pending');
     const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
     const [editingFacility, setEditingFacility] = useState<Facility | null>(null);
-    const [subscription, setSubscription] = useState<any>(null);
+    const [subscription, setSubscription] = useState<{
+        plan_name?: string;
+        plan_price?: number;
+        next_billing_date?: string;
+        status?: string;
+        [key: string]: unknown;
+    } | null>(null);
 
     useEffect(() => {
         if (user) {
@@ -37,6 +43,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
     }, [user]);
 
     const loadData = async () => {
+        if (!user) return;
         setIsLoading(true);
         try {
             const client = await getAuthClient(session);
@@ -151,7 +158,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                             visitor_count: payload.new.visitor_count || 1,
                             contact_number: payload.new.contact_number || payload.new.user_phone, // Map phone
                             purpose: payload.new.purpose || '상담 및 방문',
-                            status: payload.new.status as any,
+                            status: payload.new.status as Reservation['status'],
                             payment_amount: payload.new.payment_amount || 0,
                             paid_at: payload.new.paid_at, // Keep as string (ISO)
                             user_id: payload.new.user_id, // Ensure user_id is mapped
@@ -178,7 +185,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                                 visitor_name: payload.new.user_name || payload.new.visitor_name,
                                 visitor_count: payload.new.visitor_count || 1,
                                 contact_number: payload.new.contact_number || payload.new.user_phone,
-                                status: payload.new.status as any
+                                status: payload.new.status as Reservation['status']
                             } : r
                         ));
                     }
@@ -384,7 +391,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                 ].map(tab => (
                     <button
                         key={tab.key}
-                        onClick={() => setActiveTab(tab.key as any)}
+                        onClick={() => setActiveTab(tab.key as typeof activeTab)}
                         className={`flex-shrink-0 md:flex-1 min-w-[60px] py-2 px-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap flex items-center justify-center gap-1 ${activeTab === tab.key
                             ? 'bg-primary text-white shadow-sm'
                             : 'bg-white text-gray-600 hover:bg-gray-50 border'

@@ -24,7 +24,7 @@ export const PartnerApplyForm: React.FC<Props> = ({ onSubmit }) => {
     const businessType = watch('business_type');
 
     return (
-        <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-8 max-w-2xl mx-auto py-8">
+        <form onSubmit={handleSubmit(onSubmit as (data: PartnerInquiryFormValues) => void)} className="space-y-8 max-w-2xl mx-auto py-8">
             <div className="space-y-2 text-center mb-8">
                 <h2 className="text-2xl font-bold text-gray-900">파트너 입점 신청</h2>
                 <p className="text-gray-500">시설/업체 정보를 등록하고 추모맵 파트너가 되어보세요.</p>

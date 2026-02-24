@@ -32,7 +32,7 @@ export function useFacilityAdmin() {
                 );
                 setReservations(myReservations);
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Facility Admin Load Error:", err);
             setError("데이터를 불러오는 중 오류가 발생했습니다.");
         } finally {

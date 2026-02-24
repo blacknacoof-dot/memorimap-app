@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { Facility, Reservation, ViewState } from '../types';
+import { Facility, Reservation, ViewState, FuneralCompany } from '../types';
 import { Consultation } from '../types/consultation';
 import MapComponent, { MapRef } from './MapContainer';
 import { FacilityList } from './FacilityList';
@@ -44,7 +44,7 @@ export interface ContentRouterProps {
   mapRef: React.RefObject<MapRef>;
   filteredFacilities: Facility[];
   handleFacilitySelect: (f: Facility) => void;
-  handleMapBoundsChange: (bounds: any) => void;
+  handleMapBoundsChange: (bounds: { getSouthWest: () => { lat: number; lng: number }; getNorthEast: () => { lat: number; lng: number } }) => void;
   targetMapCenter?: [number, number];
   targetMapZoom?: number;
   userLocation: { lat: number; lng: number; type: string };
@@ -53,8 +53,8 @@ export interface ContentRouterProps {
   compareList: Facility[];
   setShowComparison: (v: boolean) => void;
   toggleCompare: (f: Facility) => void;
-  sangjoCompareList: any[];
-  toggleSangjoCompare: (c: any) => void;
+  sangjoCompareList: FuneralCompany[];
+  toggleSangjoCompare: (c: FuneralCompany) => void;
   setShowSangjoComparison: (v: boolean) => void;
 
   // Data
@@ -74,7 +74,7 @@ export interface ContentRouterProps {
 
   // Handlers
   handleReviewDeleted: (facilityId: string, reviewId: string, rating: number) => void;
-  handleCompanySelect: (c: any) => void;
+  handleCompanySelect: (c: FuneralCompany) => void;
   handleLoginClick: () => void;
   showToast: (message: string, type?: ToastType) => void;
   setShowLoginModal: (v: boolean) => void;

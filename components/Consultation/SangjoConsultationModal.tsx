@@ -54,8 +54,8 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
                 }
             }
         };
-        window.addEventListener('connectToPartner', handleConnect as any);
-        return () => window.removeEventListener('connectToPartner', handleConnect as any);
+        window.addEventListener('connectToPartner', handleConnect as EventListener);
+        return () => window.removeEventListener('connectToPartner', handleConnect as EventListener);
     }, [onCompanySelect]);
 
     // Auto-scroll on messages change
@@ -187,7 +187,7 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
                 </div>
 
                 {/* Bottom: Preference Chips only (no text input) */}
-                <div className="flex-shrink-0 bg-white border-t border-gray-100 z-20">
+                <div className="flex-shrink-0 bg-white border-t border-gray-100 z-20 pb-safe">
                     <div className="px-4 pt-3 pb-2">
                         <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
                             {PREFERENCE_CHIPS.map((chip) => (

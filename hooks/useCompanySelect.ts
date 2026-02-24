@@ -17,7 +17,18 @@ export function useCompanySelect({ facilities }: UseCompanySelectParams) {
 
   const handleCompanySelect = useCallback(async (company: FuneralCompany, startChat?: boolean) => {
     let productData = company.products;
-    let reviewData: any[] = [];
+    interface ReviewRow {
+      id: string;
+      user_name?: string;
+      user_id?: string;
+      rating: number;
+      content: string;
+      created_at?: string;
+      images?: string[];
+      is_active?: boolean;
+      [key: string]: unknown;
+    }
+    let reviewData: ReviewRow[] = [];
 
     const relatedFacility = facilities.find(f => f.name === company.name && f.type === 'sangjo');
     let searchId: string | number | null = null;
@@ -116,8 +127,10 @@ export function useCompanySelect({ facilities }: UseCompanySelectParams) {
     const mergedCompany = {
       ...company,
       products: productData,
-      reviews: reviewData.map((r: any) => ({
-        ...r,
+      reviews: reviewData.map((r: ReviewRow) => ({
+        id: r.id,
+        rating: r.rating,
+        content: r.content,
         userName: r.user_name || '익명',
         userId: r.user_id,
         date: r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : ''

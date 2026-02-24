@@ -1,6 +1,7 @@
 import React from 'react';
 import { FuneralCompany } from '../types';
 import { X, Star, Trash2, ShieldCheck, HeartHandshake, Gift, Scale } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 interface Props {
     companies: FuneralCompany[];
@@ -12,7 +13,7 @@ interface Props {
 export const SangjoComparisonModal: React.FC<Props> = ({ companies, onClose, onRemove, onSelect }) => {
     if (companies.length === 0) return null;
 
-    const ComparisonRow = ({ title, icon: Icon, children }: { title: string, icon: any, children: React.ReactNode }) => (
+    const ComparisonRow = ({ title, icon: Icon, children }: { title: string, icon: LucideIcon, children: React.ReactNode }) => (
         <div className="border-b border-gray-100 flex min-w-max md:min-w-0">
             <div className="w-[100px] md:w-[120px] bg-gray-50/50 p-4 flex flex-col items-center justify-center gap-1 shrink-0">
                 <Icon size={16} className="text-gray-400" />
@@ -138,7 +139,7 @@ export const SangjoComparisonModal: React.FC<Props> = ({ companies, onClose, onR
                         </div>
 
                         {/* Sticky Action Footer */}
-                        <div className="sticky bottom-0 bg-white border-t p-4 flex min-w-max md:min-w-0">
+                        <div className="sticky bottom-0 bg-white border-t p-4 pb-safe flex min-w-max md:min-w-0">
                             <div className="w-[100px] md:w-[120px] shrink-0" />
                             {companies.map(c => (
                                 <div key={c.id} className="w-[140px] md:w-[200px] px-2 shrink-0">

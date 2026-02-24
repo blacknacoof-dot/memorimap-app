@@ -4,6 +4,7 @@ import { Consultation, ConsultationTopic, Message } from '../../types/consultati
 import { ChatBot } from './ChatBot';
 import { streamConsultationMessage } from '../../lib/gemini';
 import { createConsultation, updateConsultation, getFacilityFaqs } from '../../lib/queries';
+import { supabase } from '../../lib/supabaseClient';
 import { useUser } from '../../lib/auth';
 import { ArrowLeft, MoreVertical } from 'lucide-react';
 
@@ -28,7 +29,7 @@ export const ConsultationView: React.FC<Props> = ({
     const [isLoading, setIsLoading] = useState(false);
     const [streamingText, setStreamingText] = useState('');
     const [consultationId, setConsultationId] = useState<string | null>(null);
-    const [faqs, setFaqs] = useState<any[]>([]);
+    const [faqs, setFaqs] = useState<Array<{ id: string; question: string; answer: string }>>([]);
 
     // Initialize from existing consultation if provided
     useEffect(() => {
@@ -66,7 +67,8 @@ export const ConsultationView: React.FC<Props> = ({
                 user.id,
                 user.fullName || user.firstName || '사용자',
                 user.primaryPhoneNumber?.phoneNumber || '',
-                `[${topic || '일반 상담'}] ${newMessages[newMessages.length - 1]?.text || '상담 시작'}`
+                `[${topic || '일반 상담'}] ${newMessages[newMessages.length - 1]?.text || '상담 시작'}`,
+                supabase
             );
             if (result?.id) setConsultationId(result.id);
         } else {
@@ -113,7 +115,7 @@ export const ConsultationView: React.FC<Props> = ({
             await saveMessage(finalMessages);
 
         } catch (error) {
-            console.error("Consultation Error:", error);
+            // Consultation error occurred
             // Add error message locally
             setMessages(prev => [...prev, {
                 role: 'model',

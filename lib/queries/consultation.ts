@@ -1,10 +1,39 @@
 import { supabase } from '../supabaseClient';
-import { Consultation } from '../queries'; // Import existing type or redefine if needed for strictness
+import type { RealtimePostgresInsertPayload, RealtimePostgresUpdatePayload } from '@supabase/supabase-js';
+
+/** DB consultations row shape for realtime payload typing */
+interface ConsultationRow {
+  id: string;
+  facility_id: string;
+  user_id: string | null;
+  user_name: string | null;
+  user_phone: string | null;
+  urgency: string | null;
+  location: string | null;
+  needs_ambulance: boolean;
+  scale: string | null;
+  religion: string | null;
+  schedule: string | null;
+  status: string;
+  notes: string | null;
+  category: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** DB facilities row shape (subset used by createAIContext) */
+interface FacilityContextRow {
+  name: string;
+  address: string;
+  type: string;
+  description: string | null;
+  features: string[] | string | null;
+}
 
 // Re-export type if needed, or define specific AI-related types
 export interface CreateAIContextResult {
   context: string;
-  relevantFacilities: any[];
+  relevantFacilities: FacilityContextRow[];
 }
 
 /**
@@ -12,8 +41,8 @@ export interface CreateAIContextResult {
  */
 export const subscribeToConsultations = (
   facilityId: string,
-  onInsert: (payload: any) => void,
-  onUpdate: (payload: any) => void
+  onInsert: (payload: RealtimePostgresInsertPayload<ConsultationRow>) => void,
+  onUpdate: (payload: RealtimePostgresUpdatePayload<ConsultationRow>) => void
 ) => {
   return supabase
     .channel(`public:consultations:facility_id=eq.${facilityId}`)
@@ -25,7 +54,7 @@ export const subscribeToConsultations = (
         table: 'consultations',
         filter: `facility_id=eq.${facilityId}`,
       },
-      (payload) => onInsert(payload)
+      (payload) => onInsert(payload as RealtimePostgresInsertPayload<ConsultationRow>)
     )
     .on(
       'postgres_changes',
@@ -35,7 +64,7 @@ export const subscribeToConsultations = (
         table: 'consultations',
         filter: `facility_id=eq.${facilityId}`,
       },
-      (payload) => onUpdate(payload)
+      (payload) => onUpdate(payload as RealtimePostgresUpdatePayload<ConsultationRow>)
     )
     .subscribe();
 };
@@ -56,17 +85,19 @@ export const createAIContext = async (facilityId: string): Promise<CreateAIConte
     throw new Error('Facility not found for AI context');
   }
 
+  const typedFacility = facility as FacilityContextRow;
+
   // 2. Format Context
   const context = `
-시설명: ${facility.name}
-주소: ${facility.address}
-유형: ${facility.type}
-설명: ${facility.description || '없음'}
-특징: ${Array.isArray(facility.features) ? facility.features.join(', ') : facility.features || '없음'}
+시설명: ${typedFacility.name}
+주소: ${typedFacility.address}
+유형: ${typedFacility.type}
+설명: ${typedFacility.description || '없음'}
+특징: ${Array.isArray(typedFacility.features) ? typedFacility.features.join(', ') : typedFacility.features || '없음'}
   `.trim();
 
   return {
     context,
-    relevantFacilities: [facility]
+    relevantFacilities: [typedFacility]
   };
 };

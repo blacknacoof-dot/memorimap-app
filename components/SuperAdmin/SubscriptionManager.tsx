@@ -89,7 +89,7 @@ export const SubscriptionManager = ({ onManage }: { onManage: (facilityName: str
                     </div>
                 </div>
                 <div className="divide-y divide-slate-100 max-h-[500px] overflow-y-auto">
-                    {(filteredFacilities as any[]).map((fac) => (
+                    {filteredFacilities.map((fac) => (
                         <div key={fac.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors group">
                             <div className="flex flex-col">
                                 <div className="flex items-center gap-3">
@@ -107,7 +107,7 @@ export const SubscriptionManager = ({ onManage }: { onManage: (facilityName: str
                                         <span className="text-[11px] text-slate-400">만료: {fac.end_date ? new Date(fac.end_date).toLocaleDateString() : '-'}</span>
                                     </div>
                                     <button
-                                        onClick={() => handleUpdateBillingDate(fac.facility_id_uuid || fac.facility_id_bigint || fac.id, fac.next_billing_date)}
+                                        onClick={() => handleUpdateBillingDate(String(fac.facility_id_uuid || fac.facility_id_bigint || fac.id), fac.next_billing_date || '')}
                                         className="flex items-center gap-1.5 text-[11px] text-blue-600 font-black hover:text-blue-700 transition-colors"
                                     >
                                         <Calendar className="w-3.5 h-3.5" />

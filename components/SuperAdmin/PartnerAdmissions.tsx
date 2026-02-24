@@ -43,9 +43,8 @@ export const PartnerAdmissions: React.FC = () => {
                     await approvePartner({ inquiryId: inquiry.id, action: 'approve' });
                     toast.success('승인되었습니다.');
                     refetch();
-                } catch (error: any) {
-                    console.error('Approve failed:', error);
-                    toast.error('승인 처리 중 오류가 발생했습니다: ' + error.message);
+                } catch (error: unknown) {
+                    toast.error('승인 처리 중 오류가 발생했습니다: ' + (error instanceof Error ? error.message : '알 수 없는 오류'));
                 }
             }
         });
@@ -60,9 +59,8 @@ export const PartnerAdmissions: React.FC = () => {
                     await approvePartner({ inquiryId: id, action: 'reject', rejectionReason: '운영팀 문의 요망' });
                     toast.success('거절되었습니다.');
                     refetch();
-                } catch (error: any) {
-                    console.error('Reject failed:', error);
-                    toast.error('거절 처리 중 오류가 발생했습니다: ' + error.message);
+                } catch (error: unknown) {
+                    toast.error('거절 처리 중 오류가 발생했습니다: ' + (error instanceof Error ? error.message : '알 수 없는 오류'));
                 }
             }
         });

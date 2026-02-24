@@ -5,11 +5,31 @@ import { Loader2, Send, MessageSquare, Megaphone, CheckCircle } from 'lucide-rea
 import { getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
 
+interface NoticeItem {
+    id: string;
+    title: string;
+    content: string;
+    date: string;
+}
+
+interface SupportInquiryItem {
+    id: string;
+    companyName?: string;
+    managerName?: string;
+    phone?: string;
+    email?: string;
+    message?: string;
+    type?: string;
+    inquiryType?: string;
+    createdAt?: string;
+    status: 'pending' | 'resolved';
+}
+
 export const AdminCommunication: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'notices' | 'inquiries' | 'customer_support'>('notices');
-    const [notices, setNotices] = useState<any[]>([]);
+    const [notices, setNotices] = useState<NoticeItem[]>([]);
     const [inquiries, setInquiries] = useState<Inquiry[]>([]);
-    const [supportInquiries, setSupportInquiries] = useState<any[]>([]);
+    const [supportInquiries, setSupportInquiries] = useState<SupportInquiryItem[]>([]);
     const [expandedSupport, setExpandedSupport] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const { session } = useSession();
@@ -27,15 +47,16 @@ export const AdminCommunication: React.FC = () => {
                 setNotices(data);
             } else if (activeTab === 'customer_support') {
                 const data = await getInquiries(client);
-                const all = data as unknown as any[];
-                setSupportInquiries(all.filter((i: any) => i.type === 'customer_support' || i.inquiryType === 'customer_support'));
+                const all = data as unknown as SupportInquiryItem[];
+                setSupportInquiries(all.filter((i) => i.type === 'customer_support' || i.inquiryType === 'customer_support'));
             } else {
                 const data = await getInquiries(client);
-                const all = data as unknown as any[];
-                setInquiries(all.filter((i: any) => i.type !== 'customer_support' && i.inquiryType !== 'customer_support') as Inquiry[]);
+                const all = data as unknown as (Inquiry & { inquiryType?: string })[];
+                setInquiries(all.filter((i) => i.type !== 'customer_support' && i.inquiryType !== 'customer_support') as Inquiry[]);
             }
-        } catch (err: any) {
-            toast.error('데이터 로딩 실패: ' + (err?.message || '네트워크 오류'));
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : '네트워크 오류';
+            toast.error('데이터 로딩 실패: ' + message);
         } finally {
             setIsLoading(false);
         }
@@ -54,8 +75,9 @@ export const AdminCommunication: React.FC = () => {
             setNoticeTitle('');
             setNoticeContent('');
             loadData();
-        } catch (err: any) {
-            toast.error('공지사항 등록 실패: ' + (err?.message || '권한 오류'));
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : '권한 오류';
+            toast.error('공지사항 등록 실패: ' + message);
         }
     };
 
@@ -179,7 +201,7 @@ export const AdminCommunication: React.FC = () => {
 
                     {activeTab === 'customer_support' && (
                         <div className="space-y-3">
-                            {supportInquiries.map((i: any) => (
+                            {supportInquiries.map((i) => (
                                 <div key={i.id} className="bg-white rounded-xl border shadow-sm overflow-hidden">
                                     <button
                                         onClick={() => setExpandedSupport(expandedSupport === i.id ? null : i.id)}

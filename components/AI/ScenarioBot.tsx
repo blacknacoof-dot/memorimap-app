@@ -33,7 +33,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
     const [error, setError] = useState<string | null>(null);
     const [isSyncing, setIsSyncing] = useState(false);
     const { isSignedIn, user } = useUser();
-    const { openSignIn } = useClerk() as any; // Using any to handle both Mock and Real Clerk
+    const { openSignIn } = useClerk() as { openSignIn?: () => void };
     const { session } = useSession();
     const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -140,7 +140,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
                     // listenToEvents는 useEffect에서 처리
                 }
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Bot init failed:', err);
             if (retryCount < 2) {
                 // Retrying init

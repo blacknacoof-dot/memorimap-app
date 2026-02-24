@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import {
     Facility,
@@ -45,7 +45,7 @@ interface UseFacilitiesReturn {
     filteredFacilities: Facility[];
     loadFacilityDetails: (id: string) => Promise<void>; // Added to match existing interface
     isDataLoading: boolean; // Added match existing interface
-    setFacilities: any; // Added to match existing interface
+    setFacilities: React.Dispatch<React.SetStateAction<Facility[]>>;
 }
 
 /**

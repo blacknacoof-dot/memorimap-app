@@ -5,7 +5,7 @@ import { X, Check, Phone, User, Clock, ShieldCheck, HeartHandshake, Loader2 } fr
 interface Props {
     company: FuneralCompany;
     onClose: () => void;
-    onConfirm: (data: any) => void;
+    onConfirm: (data: { companyId: string | number; companyName: string; name: string; phone: string; callTime: string; status: string }) => void;
 }
 
 export const SangjoContractModal: React.FC<Props> = ({ company, onClose, onConfirm }) => {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { FuneralCompany, Review } from '../types';
+import { FuneralCompany, Review, SangjoProduct, ServiceDetail } from '../types';
 import { getAuthClient } from '../lib/supabaseClient';
 import { useSession } from '../lib/auth';
 import { X, Star, Phone, MessageCircleQuestion, Heart, Share2, CheckCircle2, ShieldCheck, CreditCard, Gift, Bot, ChevronRight, Camera, User, ClipboardCheck, Trash2 } from 'lucide-react';
@@ -13,7 +13,7 @@ interface Props {
     onClose: () => void;
     onOpenAIConsult: () => void;
     onOpenContract: () => void;
-    currentUser?: any; // Pass user object
+    currentUser?: { id: string; name: string; email?: string } | null;
     isLoggedIn?: boolean;
     onOpenLogin?: () => void; // New prop for login redirection
 }
@@ -98,7 +98,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                 currentUser.id,
                 reviewRating,
                 reviewContent,
-                currentUser.fullName || currentUser.firstName || '익명',
+                currentUser.name || '익명',
                 [], // images array
                 authClient
             );
@@ -107,10 +107,10 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
             toast.success('소중한 후기가 등록되었습니다!');
 
             // Optimistic Update (Use returned data if possible, or construct mock)
-            const createdReview = newReview || {
-                id: `temp-${Date.now()}`,
+            const createdReview: Review = {
+                id: (newReview?.id as string) || `temp-${Date.now()}`,
                 userId: currentUser.id,
-                userName: currentUser.fullName || currentUser.firstName || '익명',
+                userName: currentUser.name || '익명',
                 rating: reviewRating,
                 content: reviewContent,
                 date: new Date().toISOString().split('T')[0],
@@ -160,7 +160,8 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
         }
 
         try {
-            await storeToggleFavorite(currentUser.id, company);
+            const client = await getAuthClient(session, { strict: true });
+            await storeToggleFavorite(currentUser.id, company, client);
         } catch (error) {
             console.error('Like failed:', error);
         }
@@ -204,7 +205,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                 ].map(tab => (
                     <button
                         key={tab.id}
-                        onClick={() => setActiveTab(tab.id as any)}
+                        onClick={() => setActiveTab(tab.id as typeof activeTab)}
                         className={`flex-none md:flex-1 px-4 md:px-2 py-3 text-xs md:text-sm font-bold whitespace-nowrap ${activeTab === tab.id
                             ? 'text-primary border-b-2 border-primary'
                             : 'text-gray-400'}`}
@@ -346,7 +347,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                                 // Fallback Logic
                                 const products = company.products && company.products.length > 0
                                     ? company.products
-                                    : (company as any).priceInfo?.products || (company as any).packages || [];
+                                    : ((company as FuneralCompany & { priceInfo?: { products?: SangjoProduct[] }; packages?: SangjoProduct[] }).priceInfo?.products || (company as FuneralCompany & { packages?: SangjoProduct[] }).packages || []);
 
                                 if (products.length === 0) {
                                     return (
@@ -356,7 +357,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                                     );
                                 }
 
-                                return products.map((prod: any, idx: number) => {
+                                return products.map((prod: SangjoProduct & { badges?: string[] }, idx: number) => {
                                     const isPremium = prod.badges?.includes('고급형');
                                     const isStandard = prod.badges?.includes('표준형');
 
@@ -390,7 +391,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                                             </div>
 
                                             <div className={`p-4 space-y-4 ${isPremium || isStandard ? 'bg-white' : ''}`}>
-                                                {prod.serviceDetails && prod.serviceDetails.map((detail: any, dIdx: number) => (
+                                                {prod.serviceDetails && prod.serviceDetails.map((detail: ServiceDetail, dIdx: number) => (
                                                     <div key={dIdx} className="flex gap-3 text-sm">
                                                         <span className="font-bold text-gray-700 w-12 shrink-0 text-xs break-keep">{detail.category}</span>
                                                         <div className="text-gray-600 flex-1 text-xs space-y-1 break-words min-w-0">
@@ -409,7 +410,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                                                 <div className={`px-4 py-3 border-t border-dashed bg-gray-50/50 ${isPremium || isStandard ? 'border-gray-200' : 'border-gray-100'}`}>
                                                     <span className="text-[10px] font-bold text-blue-600 mb-1 block italic">자주 묻는 질문</span>
                                                     <div className="space-y-1">
-                                                        {prod.faq.slice(0, 1).map((f: any, fIdx: number) => (
+                                                        {prod.faq.slice(0, 1).map((f: { q: string; a: string }, fIdx: number) => (
                                                             <div key={fIdx} className="text-[11px]">
                                                                 <div className="font-medium text-gray-800 break-words">Q: {f.q}</div>
                                                                 <div className="text-gray-500 break-words">A: {f.a}</div>
@@ -535,7 +536,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                                         <ReviewCard
                                             key={review.id}
                                             review={review}
-                                            isOwner={currentUser && (review.userId === currentUser.id || review.user_id === currentUser.id)}
+                                            isOwner={!!(currentUser && (review.userId === currentUser.id || review.user_id === currentUser.id))}
                                             onDelete={async (reviewId) => {
                                                 try {
                                                     const delClient = await getAuthClient(session);

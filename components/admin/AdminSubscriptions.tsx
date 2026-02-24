@@ -2,20 +2,29 @@ import React, { useEffect, useState } from 'react';
 import { getAllSubscriptions } from '../../lib/queries';
 import { Loader2, Crown, TrendingUp } from 'lucide-react';
 
+interface SubscriptionItem {
+    id: string;
+    facilityName: string;
+    planName: string;
+    expiresAt: string;
+    price: number;
+    status: string;
+}
+
 export const AdminSubscriptions: React.FC = () => {
-    const [subs, setSubs] = useState<any[]>([]);
+    const [subs, setSubs] = useState<SubscriptionItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const load = async () => {
             const data = await getAllSubscriptions();
-            setSubs(data);
+            setSubs(data as SubscriptionItem[]);
             setIsLoading(false);
         };
         load();
     }, []);
 
-    const totalRevenue = subs.reduce((sum: number, s: any) => sum + (s.price || 0), 0);
+    const totalRevenue = subs.reduce((sum: number, s: SubscriptionItem) => sum + (s.price || 0), 0);
 
     if (isLoading) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-primary" /></div>;
 

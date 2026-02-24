@@ -1,9 +1,17 @@
-import { supabase } from '../supabaseClient';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { AiConsultation, AiConsultationStatus } from '../../types';
 import { logger } from '../../utils/logger';
 
+/** Message type for AI consultation chat messages */
+interface AiChatMessage {
+    role: string;
+    text?: string;
+    content?: string;
+    timestamp?: string | Date;
+}
+
 /**
- * [Decision Lock] 2026-02-01 이후의 모든 AI 상담 데이터는 
+ * [Decision Lock] 2026-02-01 이후의 모든 AI 상담 데이터는
  * 이 서비스를 통해서만 ai_consultations 테이블에 저장됩니다.
  */
 
@@ -12,17 +20,17 @@ export const aiConsultationService = {
      * 상담 세션 시작 또는 복구 (Upsert)
      * Ghost Session 방지를 위해 conversation_id 기반으로 작동
      */
-    async startOrResumeConsultation(params: {
+    async startOrResumeConsultation(client: SupabaseClient, params: {
         conversationId: string;
         userId?: string;
         facilityId: string;
         facilityName: string;
         category: AiConsultation['category'];
-        initialMessage?: any;
+        initialMessage?: AiChatMessage;
     }): Promise<AiConsultation | null> {
         const { conversationId, userId, facilityId, facilityName, category, initialMessage } = params;
 
-        const { data, error } = await supabase
+        const { data, error } = await client
             .from('ai_consultations')
             .upsert({
                 conversation_id: conversationId,
@@ -51,9 +59,9 @@ export const aiConsultationService = {
     /**
      * 메시지 추가 (Append)
      */
-    async appendMessage(conversationId: string, message: any) {
+    async appendMessage(client: SupabaseClient, conversationId: string, message: AiChatMessage) {
         // 1. 기존 메시지 로드
-        const { data: current, error: fetchError } = await supabase
+        const { data: current, error: fetchError } = await client
             .from('ai_consultations')
             .select('messages')
             .eq('conversation_id', conversationId)
@@ -67,7 +75,7 @@ export const aiConsultationService = {
         const updatedMessages = [...(current?.messages || []), message];
 
         // 2. 업데이트
-        const { data, error } = await supabase
+        const { data, error } = await client
             .from('ai_consultations')
             .update({
                 messages: updatedMessages,
@@ -87,8 +95,8 @@ export const aiConsultationService = {
      * 상태 변경 (Update Status)
      * [Decision Lock] 관제용 이벤트 발송을 포함함
      */
-    async updateStatus(conversationId: string, status: AiConsultationStatus, metadataUpdate?: Record<string, any>) {
-        const updatePayload: any = {
+    async updateStatus(client: SupabaseClient, conversationId: string, status: AiConsultationStatus, metadataUpdate?: Record<string, unknown>) {
+        const updatePayload: { status: AiConsultationStatus; updated_at: string; metadata?: Record<string, unknown> } = {
             status,
             updated_at: new Date().toISOString()
         };
@@ -97,7 +105,7 @@ export const aiConsultationService = {
             updatePayload.metadata = metadataUpdate;
         }
 
-        let query = supabase
+        let query = client
             .from('ai_consultations')
             .update(updatePayload)
             .eq('conversation_id', conversationId);
@@ -120,8 +128,8 @@ export const aiConsultationService = {
     /**
      * 상담 내역 조회
      */
-    async getConsultation(conversationId: string): Promise<AiConsultation | null> {
-        const { data, error } = await supabase
+    async getConsultation(client: SupabaseClient, conversationId: string): Promise<AiConsultation | null> {
+        const { data, error } = await client
             .from('ai_consultations')
             .select('*')
             .eq('conversation_id', conversationId)
@@ -137,8 +145,8 @@ export const aiConsultationService = {
     /**
      * 유저의 상담 목록 조회
      */
-    async getUserConsultations(userId: string): Promise<AiConsultation[]> {
-        const { data, error } = await supabase
+    async getUserConsultations(client: SupabaseClient, userId: string): Promise<AiConsultation[]> {
+        const { data, error } = await client
             .from('ai_consultations')
             .select('*')
             .eq('user_id', userId)

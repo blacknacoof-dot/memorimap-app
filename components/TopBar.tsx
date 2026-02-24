@@ -63,7 +63,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
       {/* FilterBar (카테고리만) — 검색창 아래 */}
       {viewState !== ViewState.MY_PAGE && !isMenuOpen && (
-        <div className="absolute top-[3.5rem] md:top-[4.5rem] left-0 right-0 z-40 px-3 md:px-4 pointer-events-none animate-in fade-in slide-in-from-top-1 duration-300">
+        <div className="absolute top-[3rem] md:top-[4.5rem] left-0 right-0 z-40 px-3 md:px-4 pointer-events-none animate-in fade-in slide-in-from-top-1 duration-300">
           <div className="pointer-events-auto">
             <FilterBar />
           </div>
@@ -72,7 +72,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
       {/* Promo Banner — 모바일: 컴팩트, 데스크톱: 기존 유지 */}
       {showPromo && (viewState === ViewState.MAP || viewState === ViewState.LIST) && (
-        <div className="absolute left-3 right-3 md:left-4 md:right-4 z-20 animate-in fade-in slide-in-from-top-2 transition-all duration-300 top-[6.5rem] md:top-[7.5rem]">
+        <div className="absolute left-3 right-3 md:left-4 md:right-4 z-20 animate-in fade-in slide-in-from-top-2 transition-all duration-300 top-[5.5rem] md:top-[7.5rem]">
           <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-amber-400 p-2.5 md:p-3 rounded-xl shadow-xl border border-amber-500/30 flex justify-between items-center">
             <div className="flex items-center gap-2 md:gap-3">
               <div className="bg-amber-500/20 p-1 md:p-1.5 rounded-lg shrink-0">

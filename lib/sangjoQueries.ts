@@ -156,7 +156,7 @@ export const getPartners = async (client?: SupabaseClient) => {
 
 export const updatePartnerStatus = async (partnerId: string, status: Partner['status'], approvedBy?: string, client?: SupabaseClient) => {
     const db = client || supabase;
-    const updateData: any = { status };
+    const updateData: Record<string, unknown> = { status };
     if (status === 'approved') {
         updateData.approved_at = new Date().toISOString();
         updateData.approved_by = approvedBy;
@@ -220,9 +220,15 @@ export const getPlatformNotices = async (partnerId?: string, client?: SupabaseCl
     const db = client || supabase;
     let query = db.from('platform_notices').select('*').eq('is_active', true);
     if (partnerId) {
-        // 특정 파트너 대상 또는 전체 대상 공지
+        // FE-01 FIX: .or() 문자열 보간 제거 → 2개 쿼리 분리 후 병합
         const sanitizedId = partnerId.replace(/[^a-zA-Z0-9_-]/g, '');
-        query = query.or(`target_partner_ids.is.null,target_partner_ids.cs.{${sanitizedId}}`);
+        if (sanitizedId) {
+            query = query.or(
+                `target_partner_ids.is.null,target_partner_ids.cs.{${sanitizedId}}`
+            );
+        } else {
+            query = query.is('target_partner_ids', null);
+        }
     }
     const { data, error } = await query.order('created_at', { ascending: false });
     if (error) throw error;

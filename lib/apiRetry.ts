@@ -17,16 +17,29 @@ interface RetryOptions {
   silent?: boolean;
 }
 
+/** Supabase/Postgrest 에러 형태 */
+interface SupabaseErrorLike {
+  status?: number;
+  code?: string;
+  message?: string;
+}
+
+/** unknown 값에서 SupabaseErrorLike 형태인지 확인 */
+function isSupabaseErrorLike(value: unknown): value is SupabaseErrorLike {
+  return typeof value === 'object' && value !== null;
+}
+
 /** Supabase 에러에서 HTTP 상태코드 추출 */
-function getErrorStatus(error: any): number | null {
-  if (error?.status) return error.status;
-  if (error?.code === 'PGRST301' || error?.message?.includes('JWT')) return 401;
-  if (error?.code === '401') return 401;
-  if (error?.message?.includes('Failed to fetch') || error?.message?.includes('NetworkError')) return 0;
+function getErrorStatus(error: unknown): number | null {
+  if (!isSupabaseErrorLike(error)) return null;
+  if (error.status) return error.status;
+  if (error.code === 'PGRST301' || error.message?.includes('JWT')) return 401;
+  if (error.code === '401') return 401;
+  if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) return 0;
   return null;
 }
 
-function isRetryableError(error: any): boolean {
+function isRetryableError(error: unknown): boolean {
   const status = getErrorStatus(error);
   if (status === 0) return true; // 네트워크 오류
   if (status === 401) return true; // 토큰 만료
@@ -35,7 +48,7 @@ function isRetryableError(error: any): boolean {
   return false;
 }
 
-function isAuthError(error: any): boolean {
+function isAuthError(error: unknown): boolean {
   const status = getErrorStatus(error);
   return status === 401;
 }
@@ -59,12 +72,12 @@ export async function withRetry<T>(
 ): Promise<T> {
   const { maxRetries = 3, getToken, silent = false } = options;
 
-  let lastError: any;
+  let lastError: unknown;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await fn();
-    } catch (error: any) {
+    } catch (error: unknown) {
       lastError = error;
 
       // 재시도 불가능한 에러는 즉시 throw
@@ -101,6 +114,12 @@ export async function withRetry<T>(
   throw lastError;
 }
 
+/** Supabase 쿼리 결과 타입 (에러 포함) */
+interface QueryResult<T> {
+  data: T | null;
+  error: SupabaseErrorLike | null;
+}
+
 /**
  * Supabase 쿼리 결과에서 에러를 자동 감지하고 재시도
  * .from().select() 등의 결과를 감싸서 사용
@@ -112,12 +131,12 @@ export async function withRetry<T>(
  * );
  */
 export async function withQueryRetry<T>(
-  fn: (authClient?: SupabaseClient) => Promise<{ data: T | null; error: any }>,
+  fn: (authClient?: SupabaseClient) => Promise<QueryResult<T>>,
   options: RetryOptions = {}
-): Promise<{ data: T | null; error: any }> {
+): Promise<QueryResult<T>> {
   const { maxRetries = 3, getToken, silent = false } = options;
 
-  let lastResult: { data: T | null; error: any } = { data: null, error: null };
+  let lastResult: QueryResult<T> = { data: null, error: null };
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     const result = await fn();

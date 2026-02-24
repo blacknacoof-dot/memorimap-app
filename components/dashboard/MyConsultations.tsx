@@ -2,19 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { getConsultationsByUser, updateConsultationStatus, getFacility, Consultation } from '@/lib/queries';
 import { Clock, CheckCircle, XCircle, Check, MapPin, Building2, Calendar, ChevronRight, RefreshCw, MessageSquare, Trash2 } from 'lucide-react';
-import { aiConsultationService } from '@/lib/api/aiConsultation';
-import { AiConsultationStatus } from '@/types';
+import type { LucideIcon } from 'lucide-react';
+// aiConsultationService import 제거 — 인증 클라이언트 미전달 방지
+import { AiConsultationStatus, Facility } from '@/types';
 import { supabase } from '@/lib/supabaseClient'; // [Realtime]
 import { useApiRetry } from '@/hooks/useApiRetry';
 import { confirmAsync } from '@/src/components/common/ConfirmModal';
 
+/** Extended consultation type with AI-specific fields */
+type ExtendedConsultation = Consultation & {
+    conversation_id?: string;
+    isAi?: boolean;
+    ai_pk?: string;
+    originStatus?: string;
+    facility_name?: string;
+};
+
 interface Props {
     userId: string;
-    onResumeChat?: (consultation: Consultation & { conversation_id?: string; isAi?: boolean; originStatus?: string }) => void;
-    onViewFacility?: (facility: any) => void;
+    onResumeChat?: (consultation: ExtendedConsultation) => void;
+    onViewFacility?: (facility: Facility) => void;
 }
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any; description: string }> = {
+const STATUS_CONFIG: Record<string, { label: string; color: string; icon: LucideIcon; description: string }> = {
     pending: { label: '대기중', color: 'bg-amber-100 text-amber-700 border-amber-200', icon: Clock, description: '담당자 확인 중' },
     waiting: { label: '대기중', color: 'bg-amber-100 text-amber-700 border-amber-200', icon: Clock, description: '담당자 확인 중' },
     accepted: { label: '접수됨', color: 'bg-blue-100 text-blue-700 border-blue-200', icon: CheckCircle, description: '담당자가 확인했습니다' },
@@ -22,7 +32,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any; d
     completed: { label: '완료', color: 'bg-emerald-100 text-emerald-700 border-emerald-200', icon: Check, description: '장례가 완료되었습니다' }
 };
 
-const getFacilityName = (c: any): string => {
+const getFacilityName = (c: ExtendedConsultation): string => {
     if (c.facility_name) return c.facility_name;
     if (c.notes) {
         const match = c.notes.match(/시설:\s*([^,\n]+)/);
@@ -51,7 +61,7 @@ const SCHEDULE_LABELS: Record<string, string> = {
 };
 
 export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewFacility }) => {
-    const [consultations, setConsultations] = useState<Consultation[]>([]);
+    const [consultations, setConsultations] = useState<ExtendedConsultation[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const { queryWithRetry, callWithRetry } = useApiRetry();
 
@@ -78,7 +88,7 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
         }
 
         // 2. Fetch AI Consultations (인증 클라이언트 사용, deleted 제외)
-        let aiData: any[] = [];
+        let aiData: Array<Record<string, unknown>> = [];
         try {
             const { data: aiResult, error: aiError } = await queryWithRetry(async (authClient) =>
                 (authClient || supabase)
@@ -89,32 +99,35 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
                     .then(res => res)
             );
             if (!aiError && aiResult) {
-                aiData = (aiResult as any[]).filter(ai => ai.status !== 'cancelled' && ai.status !== 'deleted');
+                aiData = (aiResult as Array<Record<string, unknown>>).filter(ai => ai.status !== 'cancelled' && ai.status !== 'deleted');
             }
         } catch (e) {
             console.error('ai_consultations 조회 실패:', e);
-            // fallback: 비인증 클라이언트 (RLS 허용 시)
-            const aiDataRaw = await aiConsultationService.getUserConsultations(userId);
-            aiData = aiDataRaw.filter(ai => ai.status !== 'cancelled' && ai.status !== 'deleted');
+            // fallback 제거 — 인증 실패 시 빈 배열
+            aiData = [];
         }
 
         // 3. Merge & Adapt
-        const aiAdapted = aiData.map((ai) => ({
-            id: ai.id, // UUID PK - always exists
-            facility_id: ai.facility_id || '',
-            user_id: ai.user_id || userId,
-            status: mapAiStatusToLegacy(ai.status),
-            created_at: ai.created_at || new Date().toISOString(),
-            facility_name: ai.facility_name,
+        const aiAdapted: ExtendedConsultation[] = aiData.map((ai) => ({
+            id: String(ai.id), // UUID PK - always exists
+            facility_id: String(ai.facility_id || ''),
+            user_id: String(ai.user_id || userId),
+            status: mapAiStatusToLegacy(ai.status as AiConsultationStatus) as ExtendedConsultation['status'],
+            created_at: String(ai.created_at || new Date().toISOString()),
+            updated_at: String(ai.updated_at || new Date().toISOString()),
+            facility_name: String(ai.facility_name || ''),
             scale: 'small',
             religion: 'none',
             schedule: '3day',
             urgency: 'inquiry',
+            is_ai_response: true,
+            metadata: (ai.metadata || {}) as Record<string, unknown>,
+            source: 'ai',
             isAi: true,
-            conversation_id: ai.conversation_id,
-            ai_pk: ai.id, // ai_consultations PK for delete/cancel
-            originStatus: ai.status
-        })) as any[];
+            conversation_id: String(ai.conversation_id || ''),
+            ai_pk: String(ai.id), // ai_consultations PK for delete/cancel
+            originStatus: String(ai.status || '')
+        }));
 
         setConsultations(
             [...aiAdapted, ...legacyData]
@@ -160,7 +173,7 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
         }
     }, [userId]);
 
-    const handleCancel = async (consultation: any) => {
+    const handleCancel = async (consultation: ExtendedConsultation) => {
         const consultationId = consultation.id;
         if (!consultationId || consultationId.startsWith('ai_temp_')) {
             toast.error('상담 ID가 없어 취소할 수 없습니다.');
@@ -208,7 +221,7 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
         }
     };
 
-    const handleDelete = async (consultation: any) => {
+    const handleDelete = async (consultation: ExtendedConsultation) => {
         if (!await confirmAsync('상담 내역을 삭제하시겠습니까?')) return;
 
         try {
@@ -353,22 +366,22 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
                             </div>
 
                             {/* Facility Instruction Box */}
-                            {consultation.status === 'accepted' && (consultation as any).metadata && (
+                            {consultation.status === 'accepted' && consultation.metadata && Object.keys(consultation.metadata).length > 0 && (
                                 <div className="mt-3 p-4 bg-indigo-50 border border-indigo-100 rounded-xl relative overflow-hidden">
                                     <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
                                     <h4 className="flex items-center gap-2 text-indigo-900 font-bold mb-2 text-sm">
                                         <MessageSquare size={16} /> 장례식장 안내 메시지
                                     </h4>
 
-                                    {(consultation as any).metadata.expected_time && (
+                                    {!!consultation.metadata.expected_time && (
                                         <p className="text-sm text-indigo-800 font-bold mb-1">
-                                            ⏰ {(consultation as any).metadata.expected_time}
+                                            ⏰ {String(consultation.metadata.expected_time)}
                                         </p>
                                     )}
 
-                                    {(consultation as any).metadata.instruction && (
+                                    {!!consultation.metadata.instruction && (
                                         <p className="text-sm text-indigo-700 whitespace-pre-wrap">
-                                            {(consultation as any).metadata.instruction}
+                                            {String(consultation.metadata.instruction)}
                                         </p>
                                     )}
 
@@ -396,11 +409,11 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
 
                             {/* Actions */}
                             {/* [AI] Resume Chat Button */}
-                            {(consultation as any).isAi && (consultation as any).originStatus !== AiConsultationStatus.COMPLETED && (
+                            {consultation.isAi && consultation.originStatus !== AiConsultationStatus.COMPLETED && (
                                 <button
                                     onClick={() => {
                                         if (onResumeChat) {
-                                            onResumeChat(consultation as any);
+                                            onResumeChat(consultation);
                                         } else {
                                             toast.info(`[상담 이어하기] 채팅창을 엽니다.\nID: ${consultation.id}`);
                                         }

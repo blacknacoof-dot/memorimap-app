@@ -45,7 +45,7 @@ export const FacilityEditForm: React.FC<Props> = ({ initialData, onSubmit, onCan
     }, [initialData, reset]);
 
     return (
-        <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit as (data: MemorialSpaceFormValues) => void)} className="space-y-6">
             <div className="bg-white p-6 rounded-xl border shadow-sm">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">시설 정보 수정</h3>
 

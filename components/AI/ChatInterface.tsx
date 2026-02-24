@@ -18,15 +18,15 @@ import { logger } from '../../utils/logger';
 interface Props {
     facility: Facility;
     allFacilities?: Facility[];
-    onAction: (action: ActionType, data?: any) => void;
+    onAction: (action: ActionType, data?: Facility | Record<string, unknown>) => void;
     onClose: () => void;
-    currentUser: any;
+    currentUser: { id: string; name?: string; phone?: string } | null;
     initialIntent?: 'funeral_home' | 'memorial_facility' | 'pet_funeral' | null;
-    onSwitchToFacility?: (facility: Facility, context?: any) => void;
+    onSwitchToFacility?: (facility: Facility | { id: string; name: string; address?: string; phone?: string }, context?: Record<string, unknown>) => void;
     onNavigateToFacility?: (facility: Facility) => void;
     userLocation?: { lat: number, lng: number, type: string };
     onGetCurrentPosition?: () => void;
-    handoverContext?: any;
+    handoverContext?: { urgency?: string; location?: { text?: string }; [key: string]: unknown };
     onSearchFacilities?: (region: string) => Facility[];
     onGoToMyPage?: () => void;
 }
@@ -89,7 +89,7 @@ export const ChatInterface: React.FC<Props> = ({
     const generateTraceId = () => Math.random().toString(36).substring(2, 11).toUpperCase();
 
     // [PDCA] System Logging Helper
-    const logToSystem = async (level: 'INFO' | 'WARN' | 'ERROR', message: string, traceId?: string, meta: any = {}) => {
+    const logToSystem = async (level: 'INFO' | 'WARN' | 'ERROR', message: string, traceId?: string, meta: Record<string, unknown> = {}) => {
         try {
             const client = await getAuthClient(session);
             // Fire and forget - don't await execution to avoid blocking UI
@@ -121,7 +121,7 @@ export const ChatInterface: React.FC<Props> = ({
             try {
                 const latestData = await getFacilityLatestInfo(facility.id.toString());
                 if (latestData) {
-                    const data = latestData as any; // Cast to any to handle Union type differences
+                    const data = latestData as Facility;
                     // Merge latest DB data with existing facility object
                     setLiveFacility(prev => ({
                         ...prev,
@@ -129,7 +129,7 @@ export const ChatInterface: React.FC<Props> = ({
                         // Ensure prices is properly formatted
                         prices: data.prices || prev.prices || [],
                         // Map snake_case DB fields to camelCase Facility type
-                        aiContext: data.ai_context || (prev as any).aiContext,
+                        aiContext: (data as Facility & { ai_context?: string }).ai_context || prev.aiContext,
                         features: data.ai_features || data.features || prev.features,
                         ai_welcome_message: data.ai_welcome_message || prev.ai_welcome_message,
                     }));
@@ -259,8 +259,8 @@ export const ChatInterface: React.FC<Props> = ({
                 // Scenario B-like for specific facility (Generic fallback)
                 let contextText = "";
                 if (handoverContext) {
-                    const urgencyMap: any = { immediate: '긴급한', imminent: '위독하신', prepare: '준비하시는' };
-                    contextText = ` 앞서 말씀하신 대로 ${urgencyMap[handoverContext.urgency] || ''} 상황에 맞춰 최선의 지원을 다하겠습니다. (${handoverContext.location?.text || ''}) `;
+                    const urgencyMap: Record<string, string> = { immediate: '긴급한', imminent: '위독하신', prepare: '준비하시는' };
+                    contextText = ` 앞서 말씀하신 대로 ${(handoverContext.urgency && urgencyMap[handoverContext.urgency]) || ''} 상황에 맞춰 최선의 지원을 다하겠습니다. (${handoverContext.location?.text || ''}) `;
                 }
 
                 defaultWelcome = `안녕하세요. **${facility.name}**입니다. \n${contextText}시설 위치나 가격 등 무엇이든 물어보세요.`;
@@ -296,13 +296,13 @@ export const ChatInterface: React.FC<Props> = ({
     // [HOOKS FIX] Early return AFTER all hooks — prevents React Hooks order violation
     if (isPetFacility && facility.id !== 'maum-i') {
         return <PetChatInterface
-            company={facility as any}
+            company={{ id: facility.id, name: facility.name, rating: facility.rating || 0, reviewCount: facility.reviewCount || 0, imageUrl: facility.imageUrl || '', description: facility.description || '', features: facility.features || [], phone: facility.phone || '', priceRange: facility.priceRange || '', benefits: [] }}
             onClose={onClose}
             onBack={onClose}
         />;
     }
 
-    const handleSend = async (textOverride?: string | { text: string, data: any }) => {
+    const handleSend = async (textOverride?: string | { text: string, data: Record<string, unknown> }) => {
         const traceId = generateTraceId(); // [PDCA] Generate Trace ID for this transaction
         logToSystem('INFO', 'Action Started', traceId, { intent: initialIntent, facilityId: facility.id }); // Replaced console.log
 
@@ -378,10 +378,11 @@ export const ChatInterface: React.FC<Props> = ({
                     scale: 'medium'
                 };
 
-                const searchLat = searchData.location?.lat || 37.5665;
-                const searchLng = searchData.location?.lng || 126.9780;
-                const category = searchData.category || (initialIntent === 'funeral_home' ? 'funeral' : undefined);
-                const regionText = searchData.location?.text;
+                const loc = searchData.location as { lat?: number; lng?: number; text?: string } | undefined;
+                const searchLat = loc?.lat || 37.5665;
+                const searchLng = loc?.lng || 126.9780;
+                const category = (searchData.category as string) || (initialIntent === 'funeral_home' ? 'funeral' : undefined);
+                const regionText = loc?.text;
 
                 if (regionText) {
                     setSearchContext(regionText);
@@ -399,7 +400,7 @@ export const ChatInterface: React.FC<Props> = ({
                     // Try User Query-based Search
                     const results = await getIntelligentRecommendations(searchLat, searchLng, category, regionText);
                     if (results && results.length > 0) {
-                        realResults = results as any; // Cast to Facility[]
+                        realResults = results as Facility[];
                     }
                 } catch (e) {
                     logToSystem('ERROR', 'Real DB Search failed', traceId, { error: e }); // Replaced console.error
@@ -437,14 +438,14 @@ export const ChatInterface: React.FC<Props> = ({
                         userId: currentUser?.id,
                         contactName: currentUser?.name || '익명 고객',
                         contactPhone: currentUser?.phone || '010-0000-0000',
-                        category: searchData.category,
-                        urgency: searchData.urgency,
-                        scale: searchData.scale,
-                        priorities: searchData.priorities || [],
+                        category: (searchData.category as string) || 'funeral',
+                        urgency: (searchData.urgency as string) || 'immediate',
+                        scale: (searchData.scale as string) || undefined,
+                        priorities: (searchData.priorities as string[]) || [],
                         contextData: {
-                            ...(searchData.location || {}),
+                            ...(searchData.location as Record<string, unknown> || {}),
                             ...searchData,
-                            notes: searchData.notes || ''
+                            notes: (searchData.notes as string) || ''
                         }
                     }, authClient);
                     if (lead) {
@@ -492,9 +493,9 @@ export const ChatInterface: React.FC<Props> = ({
                     // @ts-ignore
                     await createUrgentReservation(
                         facility.id.toString(),
-                        currentUser?.id,
-                        currentUser?.name,
-                        currentUser?.phone,
+                        currentUser?.id || '',
+                        currentUser?.name || '',
+                        currentUser?.phone || '',
                         visitDate,
                         urgentBookingContext.type?.replace('type_', '') as 'single' | 'couple' || 'single',
                         'AI 긴급 예약',
@@ -609,7 +610,7 @@ export const ChatInterface: React.FC<Props> = ({
             {/* [NEW] Consultation Form Modal */}
             {isFormOpen && (
                 <ConsultationForm
-                    company={facility as any} // Cast to match type
+                    company={{ id: facility.id, name: facility.name, rating: facility.rating || 0, reviewCount: facility.reviewCount || 0, imageUrl: facility.imageUrl || '', description: facility.description || '', features: facility.features || [], phone: facility.phone || '', priceRange: facility.priceRange || '', benefits: [] }}
                     mode={formMode}
                     onClose={() => setIsFormOpen(false)}
                     onSubmit={async (data) => {
@@ -629,17 +630,17 @@ export const ChatInterface: React.FC<Props> = ({
                             const lead = await createLead({
                                 userId: currentUser?.id,
                                 facilityId: facility.id.toString(), // Ensure string
-                                contactName: data.name,
-                                contactPhone: data.phone,
+                                contactName: (data.name as string) || '',
+                                contactPhone: (data.phone as string) || '',
                                 category: facility.type === 'pet_funeral' ? 'pet' : (facility.type === 'funeral' ? 'funeral' : 'memorial'),
                                 urgency: (formMode as string) === 'urgent' ? 'immediate' : 'high',
-                                priorities: data.requests ? [data.requests] : [],
+                                priorities: data.requests ? [data.requests as string] : [],
                                 contextData: {
                                     ...data,
                                     traceId,
                                     source: 'ConsultationForm'
                                 },
-                                notes: `[${data.type}] ${data.requests || ''} (Relation: ${data.relation || 'N/A'})`
+                                notes: `[${data.type || ''}] ${(data.requests as string) || ''} (Relation: ${(data.relation as string) || 'N/A'})`
                             }, formClient);
 
                             if (lead) {
@@ -736,7 +737,7 @@ export const ChatInterface: React.FC<Props> = ({
                                         {
                                             msg.options && msg.options.length > 0 && (
                                                 <div className="mt-3 flex flex-wrap gap-2 text-left">
-                                                    {msg.options.map((opt: any, i: number) => (
+                                                    {msg.options.map((opt: { label: string; value: string }, i: number) => (
                                                         <button
                                                             key={i}
                                                             onClick={() => handleActionClick(opt.value)}

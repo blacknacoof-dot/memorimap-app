@@ -179,10 +179,29 @@ export const requestRefund = async (params: {
     }
 };
 
+interface PortOneRequestPaymentParams {
+    storeId: string;
+    channelKey: string;
+    paymentId: string;
+    orderName: string;
+    totalAmount: number;
+    currency: string;
+    payMethod: string;
+    customer: {
+        fullName: string;
+        phoneNumber: string;
+        email?: string;
+    };
+    windowType?: {
+        pc: 'IFRAME' | 'POPUP' | 'REDIRECT';
+        mobile: 'IFRAME' | 'POPUP' | 'REDIRECT';
+    };
+}
+
 declare global {
     interface Window {
         PortOne?: {
-            requestPayment: (params: any) => Promise<any>;
+            requestPayment: (params: PortOneRequestPaymentParams) => Promise<PaymentResponse>;
         };
     }
 }

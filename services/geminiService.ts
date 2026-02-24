@@ -11,10 +11,23 @@ export interface ChatMessage {
   facilities?: Facility[]; // [NEW] For recommendation results
 }
 
+export interface AIResponseData {
+  facilities?: Array<{
+    id: string;
+    name: string;
+    address: string;
+    type?: string;
+    rating?: number;
+    reviewCount?: number;
+    imageUrl?: string;
+  }>;
+  [key: string]: unknown;
+}
+
 export interface AIResponse {
   text: string;
   action: ActionType;
-  data?: any;
+  data?: AIResponseData;
 }
 
 // ==========================================
@@ -194,7 +207,7 @@ export const sendMessageToGemini = async (
   if (userMsg.includes("장례 절차")) {
     return {
       text: "일반적인 3일장 절차에 대해 안내해 드리겠습니다.\n\n임종 직후부터 발인까지, 상주님께서 준비하셔야 할 사항들을 정리했습니다.",
-      action: 'SHOW_PROCESS' as any
+      action: 'SHOW_PROCESS' as ActionType
     };
   }
 
@@ -310,7 +323,7 @@ export const sendMessageToGemini = async (
   }
 
   // === [CONTEXT CHECK] Determine Type ===
-  const isMemorial = facility && ['columbarium', 'natural_burial', 'cemetery', 'sea_burial', 'memorial'].includes((facility as Facility).facility_type || (facility as Facility).type as any);
+  const isMemorial = facility && ['columbarium', 'natural_burial', 'cemetery', 'sea_burial', 'memorial'].includes((facility as Facility).facility_type || (facility as Facility).type || '');
   const isPet = facility && (facility as Facility).facility_type === 'pet_funeral';
 
   // Helper to format prices
@@ -324,7 +337,7 @@ export const sendMessageToGemini = async (
 
     // 2. Check for prices array (Facility)
     if ('prices' in facility && Array.isArray(facility.prices) && facility.prices.length > 0) {
-      return facility.prices.map((p: any) => `- **${p.item_name || p.name}**: ${parseInt(p.price || 0).toLocaleString()}원~`).join('\n');
+      return facility.prices.map((p) => `- **${p.label || p.type}**: ${parseInt(String(p.price) || '0').toLocaleString()}원~`).join('\n');
     }
 
     // 3. Fallback to priceRange string

@@ -4,8 +4,19 @@ import { getPendingFacilities, approveFacility, rejectFacility } from '../../lib
 import { Loader2, Check, X, FileText, Building2 } from 'lucide-react';
 import { useConfirmModal } from '../../src/components/common/ConfirmModal';
 
+interface PendingFacilityItem {
+    id: string;
+    name: string;
+    type?: string;
+    address: string;
+    phone?: string;
+    businessLicenseImage?: string | null;
+    createdAt: string;
+    ownerUserId?: string;
+}
+
 export const AdminApprovals: React.FC = () => {
-    const [facilities, setFacilities] = useState<any[]>([]);
+    const [facilities, setFacilities] = useState<PendingFacilityItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
@@ -14,7 +25,7 @@ export const AdminApprovals: React.FC = () => {
     const loadData = async () => {
         setIsLoading(true);
         const data = await getPendingFacilities();
-        setFacilities(data);
+        setFacilities(data as PendingFacilityItem[]);
         setIsLoading(false);
     };
 
@@ -71,7 +82,7 @@ export const AdminApprovals: React.FC = () => {
                                 </div>
                                 {f.businessLicenseImage && (
                                     <button
-                                        onClick={() => setSelectedImage(f.businessLicenseImage)}
+                                        onClick={() => setSelectedImage(f.businessLicenseImage || null)}
                                         className="mt-3 text-xs bg-gray-100 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-gray-200 text-blue-600 font-medium"
                                     >
                                         <FileText size={14} /> 사업자 등록증 확인

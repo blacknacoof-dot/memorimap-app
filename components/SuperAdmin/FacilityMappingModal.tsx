@@ -15,7 +15,7 @@ interface Props {
 
 export const FacilityMappingModal: React.FC<Props> = ({ isOpen, onClose, inquiryData, onConfirm }) => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [searchResults, setSearchResults] = useState<Array<{ id: string; name: string; address: string; type: string; owner_user_id: string | null }>>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedFacility, setSelectedFacility] = useState<string | null>(null);
 
@@ -41,7 +41,7 @@ export const FacilityMappingModal: React.FC<Props> = ({ isOpen, onClose, inquiry
             if (error) throw error;
             setSearchResults(data || []);
         } catch (err) {
-            console.error(err);
+            // facility search failed
         } finally {
             setIsLoading(false);
         }

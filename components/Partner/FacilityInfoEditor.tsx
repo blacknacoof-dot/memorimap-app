@@ -81,16 +81,16 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
         }
 
         if (packagesResult.data) {
-            setPackages(packagesResult.data.map((p: any) => ({
-                id: p.id,
-                name: p.name,
-                category: p.category || '',
-                price: p.price,
-                price_label: p.price_label || '',
-                description: p.description || '',
-                included_items: p.included_items || [],
-                sort_order: p.sort_order || 0,
-                is_active: p.is_active,
+            setPackages(packagesResult.data.map((p: Record<string, unknown>) => ({
+                id: p.id as string | undefined,
+                name: (p.name as string) || '',
+                category: (p.category as string) || '',
+                price: (p.price as number | null) ?? null,
+                price_label: (p.price_label as string) || '',
+                description: (p.description as string) || '',
+                included_items: (p.included_items as string[]) || [],
+                sort_order: (p.sort_order as number) || 0,
+                is_active: (p.is_active as boolean) ?? true,
             })));
         }
 
@@ -200,7 +200,7 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
         }]);
     };
 
-    const updatePackage = (index: number, field: keyof PackageItem, value: any) => {
+    const updatePackage = (index: number, field: keyof PackageItem, value: string | number | boolean | string[] | null) => {
         setPackages(prev => prev.map((p, i) => i === index ? { ...p, [field]: value } : p));
     };
 
