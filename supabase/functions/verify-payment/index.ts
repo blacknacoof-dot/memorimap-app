@@ -193,7 +193,7 @@ serve(async (req: Request) => {
                 });
             }
 
-            // 2. 소유권 검증 — 예약의 user_id === 요청자의 Clerk ID
+            // 2. 소유권 검증 — 예약의 user_id === 요청자의 Supabase Auth UID
             if (reservation.user_id !== verifiedUserId) {
                 await supabaseAdmin.from('system_logs').insert({
                     level: 'ERROR',
@@ -258,8 +258,8 @@ serve(async (req: Request) => {
             status: 200,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
-    } catch (error: any) {
-        return new Response(JSON.stringify({ error: error.message || 'Internal error' }), {
+    } catch (error: unknown) {
+        return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Internal error' }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });

@@ -8,9 +8,11 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 
 const ALLOWED_ORIGINS = [
-    "https://memorimap.vercel.app",
-    "https://memorimap.co.kr",
+    "https://memorimap-app.vercel.app",
+    "https://memorimap.com",
+    "https://www.memorimap.com",
     "http://localhost:5173",
+    "http://localhost:3000",
 ];
 
 function getCorsOrigin(req: Request): string {
@@ -26,7 +28,9 @@ interface DeployRequest {
 serve(async (req: Request) => {
     const corsHeaders = {
         "Access-Control-Allow-Origin": getCorsOrigin(req),
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
         "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+        "Access-Control-Allow-Credentials": "true",
     };
 
     // Handle CORS preflight
@@ -55,7 +59,7 @@ serve(async (req: Request) => {
             },
         });
 
-        // [Security] Verify the caller is an admin
+        // [Security] JWT 인증 — Supabase Auth 네이티브 검증
         const token = authHeader.replace(/^Bearer\s+/i, "");
         const supabaseAuth = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
             global: { headers: { Authorization: `Bearer ${token}` } },
@@ -64,14 +68,24 @@ serve(async (req: Request) => {
         const { data: { user }, error: authErr } = await supabaseAuth.auth.getUser(token);
 
         if (authErr || !user) {
-            // Fallback: check if it's a valid service-level call with matching service key
-            const apiKey = req.headers.get("apikey");
-            if (apiKey !== supabaseServiceKey) {
-                return new Response(
-                    JSON.stringify({ success: false, error: "Unauthorized" }),
-                    { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-                );
-            }
+            return new Response(
+                JSON.stringify({ success: false, error: "Unauthorized" }),
+                { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+        }
+
+        // [Security] 관리자 권한 확인 (super_admin 또는 facility_admin만 허용)
+        const { data: profile } = await supabase
+            .from("profiles")
+            .select("role")
+            .eq("clerk_id", user.id)
+            .single();
+
+        if (!profile || !["super_admin", "facility_admin", "admin"].includes(profile.role)) {
+            return new Response(
+                JSON.stringify({ success: false, error: "Forbidden: admin access required" }),
+                { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
         }
 
         // Parse request body
@@ -152,7 +166,7 @@ serve(async (req: Request) => {
             // 2. Generate static JSON (placeholder for future Storage upload)
             const staticData = {
                 generated_at: new Date().toISOString(),
-                facilities: botDataList?.map((bd: any) => ({
+                facilities: botDataList?.map((bd: Record<string, unknown> & { facility_id?: string; facilities?: { name?: string }; welcome_message?: string; faq_items?: unknown; ai_context?: unknown }) => ({
                     facility_id: bd.facility_id,
                     name: bd.facilities?.name,
                     welcome_message: bd.welcome_message,

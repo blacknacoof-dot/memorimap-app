@@ -52,7 +52,25 @@
       "Bash(git -C \"C:\\\\Users\\\\black\\\\Desktop\\\\memorimap\" add -A)",
       "Bash(git -C \"C:\\\\Users\\\\black\\\\Desktop\\\\memorimap\" status --short)",
       "Bash(del \"C:\\\\Users\\\\black\\\\Desktop\\\\memorimap\\\\nul\")",
-      "Bash(git -C \"C:\\\\Users\\\\black\\\\Desktop\\\\memorimap\" rm --cached nul)"
+      "Bash(git -C \"C:\\\\Users\\\\black\\\\Desktop\\\\memorimap\" rm --cached nul)",
+      "Bash(for f in *.JPG)",
+      "Bash(do cp \"$f\" \"C:/Users/black/Desktop/memorimap/public/images/sangjo/$f\")",
+      "Bash(done)",
+      "Bash(npx vite:*)",
+      "Bash(npx tsx:*)",
+      "Bash(head:*)",
+      "Bash(gzip:*)",
+      "Bash(tar:*)",
+      "Bash(grep:*)",
+      "Bash(cd:*)",
+      "Bash(cd /c/Users/black/Desktop/memorimap && npm uninstall @clerk/clerk-react @clerk/localizations 2>&1)",
+      "Bash(h)",
+      "Bash(echo EXIT:$?:*)",
+      "Bash(supabase --version 2>/dev/null || npx supabase --version 2>/dev/null)",
+      "Bash(file:*)",
+      "Bash(cd /c/Users/black/Desktop/memorimap && npx husky init 2>&1)",
+      "Bash(while read f)",
+      "Bash(do wc -l \"$f\")"
     ]
   }
 }

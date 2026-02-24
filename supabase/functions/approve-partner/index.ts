@@ -31,7 +31,7 @@ const ApproveRequestSchema = z.object({
 
 const RESEND_API_URL = 'https://api.resend.com/emails';
 
-async function logToDB(supabase: any, level: 'INFO' | 'WARN' | 'ERROR', message: string, meta: any = {}) {
+async function logToDB(supabase: ReturnType<typeof createClient>, level: 'INFO' | 'WARN' | 'ERROR', message: string, meta: Record<string, unknown> = {}) {
     try {
         await supabase.from('system_logs').insert({
             level,
@@ -70,7 +70,7 @@ async function sendEmail({ to, subject, html }: { to: string, subject: string, h
             const errorData = await res.text();
             console.error('Resend API Error:', errorData);
         } else {
-            console.log(`Email sent successfully to ${to}`);
+            console.warn(`Email sent successfully to ${to}`);
         }
     } catch (err) {
         console.error('Failed to send email:', err);
@@ -92,16 +92,16 @@ serve(async (req) => {
 
         // Admin client (service role) to execute transaction
         const supabaseAdmin = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+            Deno.env.get('SUPABASE_URL')!,
+            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
             { auth: { autoRefreshToken: false, persistSession: false } }
         )
 
         // Verify JWT via Supabase Auth (native)
         const token = authHeader.replace(/^Bearer\s+/i, '');
         const supabaseAuth = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+            Deno.env.get('SUPABASE_URL')!,
+            Deno.env.get('SUPABASE_ANON_KEY')!,
             {
                 global: { headers: { Authorization: `Bearer ${token}` } },
                 auth: { autoRefreshToken: false, persistSession: false }
@@ -270,7 +270,7 @@ serve(async (req) => {
                             <p style="margin: 10px 0 0 0; color: #555;">이제 추모맵에서 시설 정보를 관리하고 고객 상담을 받으실 수 있습니다.</p>
                         </div>
                         <div style="text-align: center; margin-top: 30px;">
-                            <a href="https://memorimap-app.vercel.app/#/facility-admin" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                            <a href="https://memorimap.com/#/facility-admin" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
                                 어드민 대시보드 바로가기
                             </a>
                         </div>
@@ -284,7 +284,7 @@ serve(async (req) => {
 
         return new Response(JSON.stringify({ success: true, action: 'approved', result: rpcResult }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Edge Function Error:', error);
 
         try {
@@ -293,11 +293,14 @@ serve(async (req) => {
                 Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
                 { auth: { persistSession: false } }
             );
-            await logToDB(supabaseErrorClient, 'ERROR', `Edge Function Exception: ${error.message}`, { stack: error.stack });
+            const errMsg = error instanceof Error ? error.message : String(error);
+            const errStack = error instanceof Error ? error.stack : undefined;
+            await logToDB(supabaseErrorClient, 'ERROR', `Edge Function Exception: ${errMsg}`, { stack: errStack });
         } catch (logErr) {
             console.error('Failed to log error to DB', logErr);
         }
 
-        return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } })
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return new Response(JSON.stringify({ error: errorMessage }), { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } })
     }
 })

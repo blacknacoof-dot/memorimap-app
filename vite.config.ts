@@ -50,7 +50,7 @@ export default defineConfig({
   // Note: vite build는 항상 production 모드이므로 조건문 불필요
   esbuild: {
     drop: ['debugger'],
-    pure: ['console.log', 'console.debug'],
+    pure: ['console.log', 'console.debug', 'console.warn', 'console.error', 'console.info'],
   },
   optimizeDeps: {
     force: false,

@@ -2,6 +2,7 @@
  * Facility Normalizer - App.tsx에서 3벌 중복되던 타입 정규화/이미지 로직 통합
  */
 import type { FacilityCategoryType } from '../types';
+import { FUNERAL_COMPANIES } from '../constants';
 
 // ── Bad URL Detection ──
 const BAD_URL_PATTERNS = [
@@ -24,9 +25,16 @@ function isOnlyMissing(url: string): boolean {
 }
 
 // ── Sangjo Detection ──
-const SANGJO_KEYWORDS = ['프리드라이프', '대명스테이션', '보람상조', '교원라이프', '상조'];
+const SANGJO_KEYWORDS = ['프리드라이프', '대명스테이션', '보람상조', '교원라이프', '상조', '라이프'];
+
+// FUNERAL_COMPANIES 이름 + DB에만 존재하는 추가 상조회사명
+const SANGJO_COMPANY_NAMES = new Set([
+  ...FUNERAL_COMPANIES.map(c => c.name),
+  '금강문화허브', '두레문화', '에스제인산림조합', '전국서비스',
+]);
 
 function isSangjoByName(name: string): boolean {
+  if (SANGJO_COMPANY_NAMES.has(name)) return true;
   return SANGJO_KEYWORDS.some(keyword => name.includes(keyword));
 }
 
