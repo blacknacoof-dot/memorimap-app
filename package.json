@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "typecheck": "tsc --noEmit",
-    "dev:light": "set NODE_OPTIONS=--max-old-space-size=4096 && vite"
+    "dev:light": "set NODE_OPTIONS=--max-old-space-size=4096 && vite",
+    "prepare": "husky"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -33,6 +34,7 @@
     "react-markdown": "^10.1.0",
     "react-router-dom": "^6.22.3",
     "react-virtuoso": "^4.18.1",
+    "rehype-sanitize": "^6.0.0",
     "sonner": "^2.0.7",
     "string-similarity-js": "^2.1.4",
     "zod": "^4.3.5",
@@ -58,7 +60,9 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.6",
+    "husky": "^9.1.7",
     "iconv-lite": "^0.7.1",
+    "lint-staged": "^16.2.7",
     "papaparse": "^5.5.3",
     "pg": "^8.17.1",
     "playwright": "^1.57.0",
@@ -69,6 +73,12 @@
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vite": "^5.2.0",
+    "vitest": "^4.0.18",
     "xlsx": "^0.18.5"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --max-warnings 0 --rule '@typescript-eslint/no-explicit-any: error' --rule 'no-console: [error, {allow: [error, warn]}]'"
+    ]
   }
 }
