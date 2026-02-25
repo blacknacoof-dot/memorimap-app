@@ -91,7 +91,7 @@ export const ChatInterface: React.FC<Props> = ({
     // [PDCA] System Logging Helper
     const logToSystem = async (level: 'INFO' | 'WARN' | 'ERROR', message: string, traceId?: string, meta: Record<string, unknown> = {}) => {
         try {
-            const client = await getAuthClient(session);
+            const client = await getAuthClient(session, { strict: true });
             // Fire and forget - don't await execution to avoid blocking UI
             client.from('system_logs').insert({
                 level,
@@ -433,7 +433,7 @@ export const ChatInterface: React.FC<Props> = ({
 
                 // [Phase 5] 리드 저장 (DB 연동)
                 try {
-                    const authClient = await getAuthClient(session);
+                    const authClient = await getAuthClient(session, { strict: true });
                     const lead = await createLead({
                         userId: currentUser?.id,
                         contactName: currentUser?.name || '익명 고객',
@@ -489,7 +489,7 @@ export const ChatInterface: React.FC<Props> = ({
                     visitDate.setHours(hours, minutes, 0, 0);
 
                     // Call DB
-                    const urgentClient = await getAuthClient(session);
+                    const urgentClient = await getAuthClient(session, { strict: true });
                     // @ts-ignore
                     await createUrgentReservation(
                         facility.id.toString(),
@@ -581,7 +581,7 @@ export const ChatInterface: React.FC<Props> = ({
         try {
             if (currentLeadId) {
                 // Handing over lead to facility
-                const authClient = await getAuthClient(session);
+                const authClient = await getAuthClient(session, { strict: true });
                 await createConsultationFromLead(currentLeadId, candidate.id, authClient);
             }
             onAction('RESERVE', candidate);
@@ -627,7 +627,7 @@ export const ChatInterface: React.FC<Props> = ({
                             });
 
                             // [PDCA] 2. Save to DB (Leads)
-                            const formClient = await getAuthClient(session);
+                            const formClient = await getAuthClient(session, { strict: true });
                             const lead = await createLead({
                                 userId: currentUser?.id,
                                 facilityId: facility.id.toString(), // Ensure string

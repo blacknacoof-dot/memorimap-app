@@ -5,8 +5,9 @@ import { Clock, CheckCircle, XCircle, Check, MapPin, Building2, Calendar, Chevro
 import type { LucideIcon } from 'lucide-react';
 // aiConsultationService import 제거 — 인증 클라이언트 미전달 방지
 import { AiConsultationStatus, Facility } from '@/types';
-import { supabase } from '@/lib/supabaseClient'; // [Realtime]
+import { supabase, getAuthClient } from '@/lib/supabaseClient'; // [Realtime]
 import { useApiRetry } from '@/hooks/useApiRetry';
+import { useSession } from '@/lib/auth';
 import { confirmAsync } from '@/src/components/common/ConfirmModal';
 
 /** Extended consultation type with AI-specific fields */
@@ -63,41 +64,37 @@ const SCHEDULE_LABELS: Record<string, string> = {
 export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewFacility }) => {
     const [consultations, setConsultations] = useState<ExtendedConsultation[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const { queryWithRetry, callWithRetry } = useApiRetry();
+    const { callWithRetry } = useApiRetry();
+    const { session } = useSession();
 
     const fetchConsultations = async () => {
         setIsLoading(true);
         // 1. Fetch Legacy Consultations (자동 재시도 + 토큰 갱신)
         let legacyData: Consultation[] = [];
         try {
-            const { data, error } = await queryWithRetry(async (authClient) =>
-                (authClient || supabase)
-                    .from('consultations')
-                    .select('*')
-                    .eq('user_id', userId)
-                    .not('status', 'eq', 'cancelled')
-                    .order('created_at', { ascending: false })
-                    .then(res => res)
-            );
+            const client = await getAuthClient(session, { strict: true });
+            const { data, error } = await client
+                .from('consultations')
+                .select('*')
+                .eq('user_id', userId)
+                .not('status', 'eq', 'cancelled')
+                .order('created_at', { ascending: false });
             if (!error && data) {
                 legacyData = data as Consultation[];
             }
-        } catch (e) {
-            console.error('consultations 조회 실패:', e);
-            legacyData = await getConsultationsByUser(userId); // fallback
+        } catch {
+            legacyData = await getConsultationsByUser(userId);
         }
 
         // 2. Fetch AI Consultations (인증 클라이언트 사용, deleted 제외)
         let aiData: Array<Record<string, unknown>> = [];
         try {
-            const { data: aiResult, error: aiError } = await queryWithRetry(async (authClient) =>
-                (authClient || supabase)
-                    .from('ai_consultations')
-                    .select('*')
-                    .eq('user_id', userId)
-                    .order('updated_at', { ascending: false })
-                    .then(res => res)
-            );
+            const aiClient = await getAuthClient(session, { strict: true });
+            const { data: aiResult, error: aiError } = await aiClient
+                .from('ai_consultations')
+                .select('*')
+                .eq('user_id', userId)
+                .order('updated_at', { ascending: false });
             if (!aiError && aiResult) {
                 aiData = (aiResult as Array<Record<string, unknown>>).filter(ai => ai.status !== 'cancelled' && ai.status !== 'deleted');
             }
@@ -188,22 +185,21 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
                     toast.error('AI 상담 ID가 유효하지 않습니다.');
                     return;
                 }
-                const { error } = await queryWithRetry(async (authClient) =>
-                    (authClient || supabase)
-                        .from('ai_consultations')
-                        .update({ status: 'cancelled', updated_at: new Date().toISOString() })
-                        .eq('id', aiId)
-                        .eq('user_id', userId)
-                        .then(res => res)
-                );
+                const cancelClient = await getAuthClient(session, { strict: true });
+                const { error } = await cancelClient
+                    .from('ai_consultations')
+                    .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+                    .eq('id', aiId)
+                    .eq('user_id', userId);
                 if (error) {
                     toast.error('취소 중 오류가 발생했습니다.');
                     return;
                 }
             } else {
                 // 일반 상담: 자동 재시도 포함
-                const success = await callWithRetry((authClient) =>
-                    updateConsultationStatus(consultationId, 'cancelled', undefined, authClient)
+                const client = await getAuthClient(session, { strict: true });
+                const success = await callWithRetry(() =>
+                    updateConsultationStatus(consultationId, 'cancelled', undefined, client)
                 );
                 if (!success) {
                     toast.error('취소 중 오류가 발생했습니다.');
@@ -229,24 +225,20 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
                     toast.error('AI 상담 ID가 유효하지 않아 삭제할 수 없습니다.');
                     return;
                 }
-                const { error } = await queryWithRetry(async (authClient) =>
-                    (authClient || supabase)
-                        .from('ai_consultations')
-                        .update({ status: 'cancelled', updated_at: new Date().toISOString() })
-                        .eq('id', aiId)
-                        .eq('user_id', userId)
-                        .then(res => res)
-                );
+                const cancelClient = await getAuthClient(session, { strict: true });
+                const { error } = await cancelClient
+                    .from('ai_consultations')
+                    .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+                    .eq('id', aiId)
+                    .eq('user_id', userId);
                 if (error) throw error;
             } else {
-                const { error } = await queryWithRetry(async (authClient) =>
-                    (authClient || supabase)
-                        .from('consultations')
-                        .update({ status: 'cancelled' })
-                        .eq('id', consultation.id)
-                        .eq('user_id', userId)
-                        .then(res => res)
-                );
+                const legacyCancelClient = await getAuthClient(session, { strict: true });
+                const { error } = await legacyCancelClient
+                    .from('consultations')
+                    .update({ status: 'cancelled' })
+                    .eq('id', consultation.id)
+                    .eq('user_id', userId);
                 if (error) throw error;
             }
 

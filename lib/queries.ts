@@ -1119,7 +1119,6 @@ export const getUserPhoneNumber = async (userId: string, client: SupabaseClient)
         .single();
 
     if (error) {
-        console.warn('Could not fetch user phone number:', error);
         return '';
     }
     return data?.phone_number || '';
@@ -1348,8 +1347,7 @@ export const getFacilitiesByCategory = async (category: string) => {
 /**
  * [추가] 파트너 입점 신청 제출
  */
-export const submitPartnerApplication = async (data: PartnerApplicationInput, authClient?: SupabaseClient) => {
-    const client = authClient || supabase;
+export const submitPartnerApplication = async (data: PartnerApplicationInput, client: SupabaseClient) => {
     // 1. 파일 업로드
     let licenseUrl = '';
     if (data.businessLicenseImage) {
@@ -1467,16 +1465,14 @@ export const getFacilityImages = async (facilityId: string) => {
     }
 };
 
-export const incrementAiUsage = async (facilityId: string) => {
-    // Implement or stub if not ready
-    // This functionality likely belongs to 'facility_subscriptions' table usage tracking
+export const incrementAiUsage = async (facilityId: string, client: SupabaseClient) => {
     try {
-        const { error } = await supabase.rpc('increment_ai_usage', { facility_id: facilityId });
+        const { error } = await client.rpc('increment_ai_usage', { facility_id: facilityId });
         if (error) {
-            // increment_ai_usage might not exist yet
+            // increment_ai_usage RPC가 아직 없을 수 있음 — 무시
         }
-    } catch (e) {
-        // ignore
+    } catch {
+        // non-fatal
     }
 };
 
@@ -1589,8 +1585,8 @@ export const updateFacilitySubscription = async (facilityId: string, planId: str
                 .from('user_notifications')
                 .insert(notifications);
         }
-    } catch (e) {
-        console.warn('Failed to send admin notifications:', e);
+    } catch {
+        // 알림 전송 실패 — non-fatal
     }
 };
 
@@ -1955,11 +1951,10 @@ export const getConsultationsByUser = async (userId: string): Promise<Consultati
 export const updateConsultationStatus = async (
     consultationId: string,
     status: 'pending' | 'waiting' | 'accepted' | 'cancelled' | 'completed',
-    notes?: string,
-    authClient?: SupabaseClient
+    notes: string | undefined,
+    client: SupabaseClient
 ): Promise<boolean> => {
     try {
-        const client = authClient || supabase;
         const updateData: { status: string; notes?: string } = { status };
         if (notes !== undefined) {
             updateData.notes = notes;
@@ -2036,7 +2031,7 @@ export const markConsultationAsRead = async (consultationId: string, client: Sup
 export const updateConsultation = async (id: string, data: Record<string, unknown> | unknown[], client?: SupabaseClient) => {
     // If data has answer, route to answerConsultation logic?
     // But better to deprecate this stub.
-    console.warn('Deprecated updateConsultation called. Use answerConsultation or updateConsultationStatus');
+    // Deprecated: answerConsultation 또는 updateConsultationStatus 사용 권장
     if (!Array.isArray(data) && typeof data.answer === 'string' && client) {
         return answerConsultation(id, data.answer, client);
     }
@@ -2123,16 +2118,14 @@ export const createNotice = async (title: string, content: string, client: Supab
     return data;
 };
 
-export const getNotices = async (client?: SupabaseClient) => {
-    const db = client || supabase;
-    const { data, error } = await db
+export const getNotices = async () => {
+    const { data, error } = await supabase
         .from('platform_notices')
         .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
     if (error) {
-        console.error('Error fetching notices:', error);
         return [];
     }
 

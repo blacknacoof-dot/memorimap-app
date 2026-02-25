@@ -8,6 +8,7 @@ import { supabase, getAuthClient } from '@/lib/supabaseClient'; // [Realtime]
 import { useApiRetry } from '@/hooks/useApiRetry';
 import { useSession } from '@/lib/auth';
 import { ConsultationActionModal } from './facility/ConsultationActionModal';
+import { confirmAsync } from '@/src/components/common/ConfirmModal';
 
 interface Props {
     facilityId: string;
@@ -104,10 +105,17 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
                     setIsModalOpen(true);
                 }
                 return; // Stop here, wait for modal confirm
+            } else if (newStatus === 'cancelled') {
+                const ok = await confirmAsync('이 상담을 취소하시겠습니까?', '상담 취소');
+                if (!ok) return;
+                const client = await getAuthClient(session, { strict: true });
+                await callWithRetry(() =>
+                    updateConsultationStatus(consultationId, newStatus, undefined, client)
+                );
             } else {
-                // Legacy or other statuses (자동 재시도)
-                await callWithRetry((authClient) =>
-                    updateConsultationStatus(consultationId, newStatus, undefined, authClient)
+                const client = await getAuthClient(session, { strict: true });
+                await callWithRetry(() =>
+                    updateConsultationStatus(consultationId, newStatus, undefined, client)
                 );
             }
 

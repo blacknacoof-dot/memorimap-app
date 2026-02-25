@@ -87,7 +87,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
 
         setIsSubmittingReview(true);
         try {
-            const authClient = await getAuthClient(session);
+            const authClient = await getAuthClient(session, { strict: true });
             const { createReview } = await import('../lib/queries');
 
             const newReview = await createReview(
@@ -530,7 +530,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                                             isOwner={!!(currentUser && (review.userId === currentUser.id || review.user_id === currentUser.id))}
                                             onDelete={async (reviewId) => {
                                                 try {
-                                                    const delClient = await getAuthClient(session);
+                                                    const delClient = await getAuthClient(session, { strict: true });
                                                     const { deleteReview } = await import('../lib/queries');
                                                     await deleteReview(reviewId, delClient);
 

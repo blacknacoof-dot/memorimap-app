@@ -73,7 +73,7 @@ export const FacilityFAQManager: React.FC<Props> = ({ facilityId }) => {
                 if (!facilityId) return;
                 setIsSaving(true);
                 try {
-                    const client = await getAuthClient(session);
+                    const client = await getAuthClient(session, { strict: true });
                     let result: FAQ | null = null;
                     let error: { message: string } | null = null;
 
@@ -133,7 +133,7 @@ export const FacilityFAQManager: React.FC<Props> = ({ facilityId }) => {
             message: '정말로 삭제하시겠습니까?',
             requireCheckbox: false,
             onConfirm: async () => {
-                const client = await getAuthClient(session);
+                const client = await getAuthClient(session, { strict: true });
                 const { error } = await client
                     .from('facility_faqs')
                     .update({ is_active: false })

@@ -194,7 +194,7 @@ export const MyPageView: React.FC<Props> = ({
         if (!user) return;
         if (!await confirmAsync('즐겨찾기를 해제하시겠습니까?')) return;
         try {
-            const client = await getAuthClient(session);
+            const client = await getAuthClient(session, { strict: true });
             const { error } = await client
                 .from('sangjo_favorites')
                 .delete()
@@ -213,7 +213,7 @@ export const MyPageView: React.FC<Props> = ({
         if (!await confirmAsync('정말로 예약을 취소하시겠습니까?')) return;
 
         try {
-            const client = await getAuthClient(session);
+            const client = await getAuthClient(session, { strict: true });
             await cancelReservation(reservationId, client);
             setMyReservations(prev => prev.map(r =>
                 r.id === reservationId ? { ...r, status: 'cancelled' as const } : r

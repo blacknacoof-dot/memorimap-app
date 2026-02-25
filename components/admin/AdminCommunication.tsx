@@ -43,7 +43,7 @@ export const AdminCommunication: React.FC = () => {
         try {
             const client = await getAuthClient(session, { strict: true });
             if (activeTab === 'notices') {
-                const data = await getNotices(client);
+                const data = await getNotices();
                 setNotices(data);
             } else if (activeTab === 'customer_support') {
                 const data = await getInquiries(client);

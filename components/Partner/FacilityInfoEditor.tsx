@@ -101,7 +101,7 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
     const handleSaveFacility = async () => {
         if (!facility) return;
         setSaving(true);
-        const client = await getAuthClient(session);
+        const client = await getAuthClient(session, { strict: true });
 
         const { error } = await client.from('facilities').update({
             name: facility.name,
@@ -125,7 +125,7 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
         const files = e.target.files;
         if (!files || !facility) return;
         setUploading(true);
-        const client = await getAuthClient(session);
+        const client = await getAuthClient(session, { strict: true });
         const newImages = [...facility.images];
 
         for (const file of Array.from(files)) {
@@ -163,7 +163,7 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
     const handleRemoveImage = async (index: number) => {
         if (!facility) return;
         const newImages = facility.images.filter((_, i) => i !== index);
-        const client = await getAuthClient(session);
+        const client = await getAuthClient(session, { strict: true });
         const { error } = await client.from('facilities')
             .update({ images: newImages })
             .eq('id', facilityId);
@@ -215,7 +215,7 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
 
     const handleSavePackages = async () => {
         setSaving(true);
-        const client = await getAuthClient(session);
+        const client = await getAuthClient(session, { strict: true });
 
         // 삭제
         const toDelete = packages.filter(p => p._isDeleted && p.id);

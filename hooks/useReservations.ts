@@ -44,7 +44,7 @@ export const useReservations = (
     }
 
     try {
-      const client = await getAuthClient(session);
+      const client = await getAuthClient(session, { strict: true });
       const { data, error } = await client
         .from('reservations')
         .insert({
@@ -89,7 +89,7 @@ export const useReservations = (
    */
   const handleUpdateReservation = useCallback(async (id: string, status: 'confirmed' | 'cancelled') => {
     try {
-      const client = await getAuthClient(session);
+      const client = await getAuthClient(session, { strict: true });
       const { error } = await client
         .from('reservations')
         .update({ status })

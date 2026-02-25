@@ -37,7 +37,7 @@ export const AIConfiguration: React.FC<AIConfigurationProps> = ({ partnerId }) =
     const handleSave = async () => {
         if (!partner) return;
         setSaving(true);
-        const client = await getAuthClient(session);
+        const client = await getAuthClient(session, { strict: true });
         const { error } = await client
             .from('partners')
             .update({ ai_context: partner.ai_context })

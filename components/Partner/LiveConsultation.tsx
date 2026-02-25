@@ -71,7 +71,7 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
 
     const handleHijack = async () => {
         if (!selectedId) return;
-        const client = await getAuthClient(session);
+        const client = await getAuthClient(session, { strict: true });
         const { error } = await client
             .from('partner_conversations')
             .update({ conversation_status: 'agent_connected', priority: 'high' })
@@ -93,7 +93,7 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
 
         const updatedMessages = [...selected.messages, newMessage];
 
-        const client = await getAuthClient(session);
+        const client = await getAuthClient(session, { strict: true });
         const { error } = await client
             .from('partner_conversations')
             .update({

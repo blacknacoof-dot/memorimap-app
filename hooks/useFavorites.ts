@@ -1,22 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabaseClient';
+import { getAuthClient } from '@/lib/supabaseClient';
 import type { UserFavorite, EndingNote, FavoriteAnalysis } from '@/types/favorites';
-
-/**
- * 찜 목록 조회
- */
-import { useAuth } from '../lib/auth';
+import { useAuth, useSession } from '../lib/auth';
 
 /**
  * 찜 목록 조회
  */
 export function useMyFavorites() {
     const { userId, isSignedIn } = useAuth();
+    const { session } = useSession();
 
     return useQuery({
         queryKey: ['my-favorites', userId],
         queryFn: async () => {
-            const { data, error } = await supabase.rpc('get_my_favorites');
+            const client = await getAuthClient(session, { strict: true });
+            const { data, error } = await client.rpc('get_my_favorites');
             if (error) {
                 throw error;
             }
@@ -32,6 +30,7 @@ export function useMyFavorites() {
  */
 export function useToggleFavorite() {
     const queryClient = useQueryClient();
+    const { session } = useSession();
 
     return useMutation({
         mutationFn: async (params: {
@@ -39,7 +38,8 @@ export function useToggleFavorite() {
             private_memo?: string;
             private_rating?: number;
         }) => {
-            const { data, error } = await supabase.rpc('toggle_favorite', {
+            const client = await getAuthClient(session, { strict: true });
+            const { data, error } = await client.rpc('toggle_favorite', {
                 p_facility_id: params.facility_id,
                 p_private_memo: params.private_memo,
                 p_private_rating: params.private_rating,
@@ -60,10 +60,12 @@ export function useToggleFavorite() {
  */
 export function useRemoveFavorite() {
     const queryClient = useQueryClient();
+    const { session } = useSession();
 
     return useMutation({
         mutationFn: async (facilityId: string) => {
-            const { data, error } = await supabase.rpc('remove_favorite', {
+            const client = await getAuthClient(session, { strict: true });
+            const { data, error } = await client.rpc('remove_favorite', {
                 p_facility_id: facilityId,
             });
             if (error) throw error;
@@ -72,7 +74,7 @@ export function useRemoveFavorite() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['my-favorites'] });
             queryClient.invalidateQueries({ queryKey: ['my-journey'] });
-            queryClient.invalidateQueries({ queryKey: ['favorite-analysis'] }); // Also update analysis
+            queryClient.invalidateQueries({ queryKey: ['favorite-analysis'] });
         },
     });
 }
@@ -81,12 +83,14 @@ export function useRemoveFavorite() {
  * 엔딩 노트 조회
  */
 export function useMyEndingNote() {
+    const { session } = useSession();
+
     return useQuery({
         queryKey: ['my-ending-note'],
         queryFn: async () => {
-            const { data, error } = await supabase.rpc('get_my_ending_note');
+            const client = await getAuthClient(session, { strict: true });
+            const { data, error } = await client.rpc('get_my_ending_note');
             if (error) throw error;
-            // 리스트로 반환될 수 있으므로 단일 객체 리턴 처리
             if (Array.isArray(data)) {
                 return (data[0] || null) as EndingNote | null;
             }
@@ -101,10 +105,12 @@ export function useMyEndingNote() {
  */
 export function useUpsertEndingNote() {
     const queryClient = useQueryClient();
+    const { session } = useSession();
 
     return useMutation({
         mutationFn: async (params: Partial<EndingNote>) => {
-            const { data, error } = await supabase.rpc('upsert_ending_note', {
+            const client = await getAuthClient(session, { strict: true });
+            const { data, error } = await client.rpc('upsert_ending_note', {
                 p_preferred_method: params.preferred_method,
                 p_emergency_contact_name: params.emergency_contact_name,
                 p_emergency_contact_phone: params.emergency_contact_phone,
@@ -117,7 +123,7 @@ export function useUpsertEndingNote() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['my-ending-note'] });
-            queryClient.invalidateQueries({ queryKey: ['my-journey'] }); // Updating note creates journey event? Maybe.
+            queryClient.invalidateQueries({ queryKey: ['my-journey'] });
         },
     });
 }
@@ -126,10 +132,13 @@ export function useUpsertEndingNote() {
  * AI 분석 조회
  */
 export function useFavoriteAnalysis() {
+    const { session } = useSession();
+
     return useQuery({
         queryKey: ['favorite-analysis'],
         queryFn: async () => {
-            const { data, error } = await supabase.rpc('analyze_favorite_patterns');
+            const client = await getAuthClient(session, { strict: true });
+            const { data, error } = await client.rpc('analyze_favorite_patterns');
             if (error) throw error;
             return data as FavoriteAnalysis;
         },
@@ -141,10 +150,13 @@ export function useFavoriteAnalysis() {
  * [관리자] 특정 사용자의 찜 목록 조회
  */
 export function useAdminUserFavorites(userId: string) {
+    const { session } = useSession();
+
     return useQuery({
         queryKey: ['admin', 'user-favorites', userId],
         queryFn: async () => {
-            const { data, error } = await supabase.rpc('admin_get_user_favorites', {
+            const client = await getAuthClient(session, { strict: true });
+            const { data, error } = await client.rpc('admin_get_user_favorites', {
                 p_user_id: userId,
             });
             if (error) throw error;

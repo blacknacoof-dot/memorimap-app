@@ -74,7 +74,7 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
 
     const handleMove = async (id: string, nextStage: PartnerOperation['operation_stage']) => {
         try {
-            const client = await getAuthClient(session);
+            const client = await getAuthClient(session, { strict: true });
             const { error } = await client
                 .from('partner_operations')
                 .update({ operation_stage: nextStage })
@@ -93,7 +93,7 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
         }
         setIsSaving(true);
         try {
-            const client = await getAuthClient(session);
+            const client = await getAuthClient(session, { strict: true });
             const { error } = await client.from('partner_operations').insert({
                 partner_id: partnerId,
                 operation_stage: 'pending',

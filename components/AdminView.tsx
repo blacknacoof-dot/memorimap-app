@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Facility, Reservation } from '../types';
 import { Users, Calendar, Building2, ChevronLeft, Search, MoreHorizontal, Check, X, PieChart } from 'lucide-react';
+import { confirmAsync } from '../src/components/common/ConfirmModal';
 
 interface Props {
   facilities: Facility[];
@@ -187,13 +188,21 @@ export const AdminView: React.FC<Props> = ({ facilities, reservations, onUpdateR
                             {r.status === 'pending' && (
                               <div className="flex justify-end gap-2">
                                 <button
-                                  onClick={() => r.id && onUpdateReservationStatus(r.id, 'confirmed')}
+                                  onClick={async () => {
+                                    if (!r.id) return;
+                                    const ok = await confirmAsync('이 예약을 승인하시겠습니까?', '예약 승인');
+                                    if (ok) onUpdateReservationStatus(r.id, 'confirmed');
+                                  }}
                                   className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center bg-green-50 text-green-600 rounded-lg hover:bg-green-100 border border-green-200" title="승인"
                                 >
                                   <Check size={18} />
                                 </button>
                                 <button
-                                  onClick={() => r.id && onUpdateReservationStatus(r.id, 'cancelled')}
+                                  onClick={async () => {
+                                    if (!r.id) return;
+                                    const ok = await confirmAsync('이 예약을 거절하시겠습니까?', '예약 거절');
+                                    if (ok) onUpdateReservationStatus(r.id, 'cancelled');
+                                  }}
                                   className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center bg-red-50 text-red-600 rounded-lg hover:bg-red-100 border border-red-200" title="거절"
                                 >
                                   <X size={18} />

@@ -223,7 +223,6 @@ export const fetchLeads = async (client: SupabaseClient) => {
         .order('created_at', { ascending: false });
 
     if (error) {
-        console.warn('Failed to fetch leads:', error);
         return [];
     }
 

@@ -262,7 +262,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
             // 결제 성공 → DB 구독 업데이트
             if (facilityId) {
                 try {
-                    const subClient = await getAuthClient(session);
+                    const subClient = await getAuthClient(session, { strict: true });
                     const { updateFacilitySubscription } = await import('../lib/queries');
                     await updateFacilitySubscription(facilityId, plan.nameEn, subClient);
                 } catch (e) {

@@ -124,7 +124,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
                 setMessages(initialMessages);
 
                 const newSessionId = `conv_${partnerId}_${Date.now()}`;
-                const startClient = await getAuthClient(session);
+                const startClient = await getAuthClient(session, { strict: true });
                 const newSession = await aiConsultationService.startOrResumeConsultation(startClient, {
                     conversationId: newSessionId,
                     userId: user?.id,
@@ -185,7 +185,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
         setMessages(updatedMsgs);
 
         // 유저 메시지 먼저 저장
-        const actionClient = await getAuthClient(session);
+        const actionClient = await getAuthClient(session, { strict: true });
         await aiConsultationService.appendMessage(actionClient, conversationId, newUserMsg);
 
         let assistantMsg: Message | null = null;
@@ -262,7 +262,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
         setMessages(updatedMsgs);
         setInput('');
 
-        const sendClient = await getAuthClient(session);
+        const sendClient = await getAuthClient(session, { strict: true });
         await aiConsultationService.appendMessage(sendClient, conversationId, newUserMsg);
 
         // If not hijacked, give a simple AI response
@@ -275,7 +275,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
                 };
                 const finalMsgs = [...updatedMsgs, aiReply];
                 setMessages(finalMsgs);
-                const replyClient = await getAuthClient(session);
+                const replyClient = await getAuthClient(session, { strict: true });
                 await aiConsultationService.appendMessage(replyClient, conversationId, aiReply);
             }, 1000);
         }

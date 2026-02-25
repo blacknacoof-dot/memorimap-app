@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, Building2, Phone, User, Send, CheckCircle, Upload, AlertCircle, FileText, MapPin, Search } from 'lucide-react';
-import { useUser } from '../lib/auth';
+import { useUser, useSession } from '../lib/auth';
 
 import { submitPartnerApplication, searchKnownFacilities, PARTNER_CATEGORIES, getFacilitiesByCategory } from '../lib/queries';
 import { useApiRetry } from '../hooks/useApiRetry';
+import { getAuthClient } from '../lib/supabaseClient';
 import { FUNERAL_COMPANIES } from '../constants';
 import { toast } from 'sonner'; // [Phase 2] Error Handler
 
@@ -14,6 +15,7 @@ interface Props {
 
 export const PartnerInquiryView: React.FC<Props> = ({ onBack, onLoginClick }) => {
     const { user, isSignedIn } = useUser();
+    const { session } = useSession();
     const { callWithRetry } = useApiRetry();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -128,7 +130,8 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack, onLoginClick }) =>
         setIsSubmitting(true);
 
         try {
-            await callWithRetry((authClient) => submitPartnerApplication({
+            const client = await getAuthClient(session, { strict: true });
+            await callWithRetry(() => submitPartnerApplication({
                 name: formData.companyName,
                 type: formData.type,
                 address: formData.address,
@@ -143,7 +146,7 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack, onLoginClick }) =>
                 userId: user?.id,
                 privacyConsent: formData.privacyConsent,
                 targetFacilityId: formData.targetFacilityId
-            }, authClient));
+            }, client));
             // Submission success
             setIsSuccess(true);
         } catch (error: unknown) {

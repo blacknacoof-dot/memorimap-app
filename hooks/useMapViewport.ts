@@ -41,8 +41,8 @@ export function useMapViewport({ setFacilities, setCurrentBounds, session }: Use
         if (session) {
           token = await session.getToken({ template: 'supabase' }) || undefined;
         }
-      } catch (e) {
-        console.warn('Failed to get token for map fetch:', e);
+      } catch {
+        // 토큰 획득 실패 — 비인증 요청으로 계속
       }
 
       const fetchedData = await fetchFacilitiesInView(bounds, token);
