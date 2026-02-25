@@ -75,7 +75,7 @@ export interface Reservation {
 }
 
 export interface MemorialSpace {
-    id: number; // [Fixed] BigInt in DB -> number in TS
+    id: string; // UUID in DB
     owner_user_id: string | null; // DB Column (was manager_id)
     manager_id?: string | null; // Alias/Legacy
     name: string;

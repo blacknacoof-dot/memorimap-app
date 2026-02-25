@@ -17,7 +17,7 @@ export const fetchMyFacility = async (userId: string, authClient: SupabaseClient
 };
 
 // 2. 내 시설의 예약 목록 가져오기
-export const fetchFacilityReservations = async (facilityId: string | number, authClient: SupabaseClient) => {
+export const fetchFacilityReservations = async (facilityId: string, authClient: SupabaseClient) => {
     const { data, error } = await authClient
         .from('reservations')
         .select('*')
@@ -56,9 +56,9 @@ export const updateReservationStatus = async (
     rejectionReason: string | undefined,
     authClient: SupabaseClient
 ) => {
-    const updatePayload: { status: Reservation['status']; message?: string } = { status };
+    const updatePayload: { status: Reservation['status']; rejection_reason?: string } = { status };
     if (rejectionReason) {
-        updatePayload.message = rejectionReason;
+        updatePayload.rejection_reason = rejectionReason;
     }
 
     const { data, error } = await authClient
@@ -73,7 +73,7 @@ export const updateReservationStatus = async (
 };
 
 // 4. 시설 정보 수정
-export const updateFacilityInfo = async (facilityId: string | number, updates: Partial<MemorialSpace>, authClient: SupabaseClient) => {
+export const updateFacilityInfo = async (facilityId: string, updates: Partial<MemorialSpace>, authClient: SupabaseClient) => {
     const { data, error } = await authClient
         .from('facilities')
         .update(updates)

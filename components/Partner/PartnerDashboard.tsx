@@ -17,6 +17,7 @@ import { useSession } from '../../lib/auth';
 import { Consultation, getFacilitySubscription, approveReservation, rejectReservation } from '../../lib/queries';
 import { Reservation } from '../../types';
 import { toast } from 'sonner';
+import { confirmAsync } from '@/src/components/common/ConfirmModal';
 
 const SubscriptionPlans = lazy(() => import('../SubscriptionPlans'));
 
@@ -75,15 +76,17 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
 
             if (name) setPartnerName(name);
 
-            // facility_id가 아직 없으면 이름으로 조회
-            if (!isUUID && name) {
-                const { data: facility } = await client
-                    .from('facilities')
-                    .select('id')
-                    .eq('name', name)
+            // facility_id가 아직 없으면 sangjo_hq_admins의 sangjo_id로 시설 조회
+            if (!isUUID) {
+                const { data: hqLink } = await client
+                    .from('sangjo_hq_admins')
+                    .select('sangjo_id')
+                    .eq('sangjo_id', partnerId)
                     .limit(1)
                     .maybeSingle();
-                if (facility) setFacilityId(facility.id);
+                if (hqLink?.sangjo_id) {
+                    setFacilityId(hqLink.sangjo_id);
+                }
             }
         };
         if (!session) return;
@@ -382,7 +385,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                                         <button
                                                             onClick={async () => {
                                                                 if (!res.id) return;
-                                                                if (!confirm('이 예약을 승인하시겠습니까?')) return;
+                                                                if (!await confirmAsync('이 예약을 승인하시겠습니까?', '예약 승인')) return;
                                                                 try {
                                                                     const client = await getAuthClient(session, { strict: true });
                                                                     await approveReservation(res.id, client);
@@ -399,11 +402,11 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                                         <button
                                                             onClick={async () => {
                                                                 if (!res.id) return;
-                                                                if (!confirm('이 예약을 거절하시겠습니까?')) return;
+                                                                if (!await confirmAsync('이 예약을 거절하시겠습니까?', '예약 거절')) return;
                                                                 try {
                                                                     const client = await getAuthClient(session, { strict: true });
                                                                     await rejectReservation(res.id, undefined, client);
-                                                                    setReservations(prev => prev.map(r => r.id === res.id ? { ...r, status: 'cancelled' as const } : r));
+                                                                    setReservations(prev => prev.map(r => r.id === res.id ? { ...r, status: 'rejected' as const } : r));
                                                                     toast.success('예약이 거절되었습니다.');
                                                                 } catch {
                                                                     toast.error('예약 거절 중 오류가 발생했습니다.');

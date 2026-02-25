@@ -47,13 +47,9 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { session } = useSession();
 
-    useEffect(() => {
-        loadData();
-    }, [facilityId]);
-
     const loadData = async () => {
         setLoading(true);
-        const client = await getAuthClient(session);
+        const client = await getAuthClient(session, { strict: true });
 
         const [facilityResult, packagesResult] = await Promise.all([
             client.from('facilities')
@@ -96,6 +92,11 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
 
         setLoading(false);
     };
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        void loadData();
+    }, [facilityId]);
 
     // === 기본 정보 저장 ===
     const handleSaveFacility = async () => {

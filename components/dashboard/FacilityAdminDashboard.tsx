@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSession } from '../../lib/auth';
 import { Reservation, ViewState, Facility } from '../../types';
-import { getFacilityReservations, approveReservation, rejectReservation, getUserFacility, getFacilitySubscription, getFacilityConsultations, answerConsultation, Consultation, markConsultationAsRead, supabase } from '../../lib/queries';
+import { approveReservation, rejectReservation, getFacilitySubscription, answerConsultation, Consultation, markConsultationAsRead, supabase } from '../../lib/queries';
 import { getAuthClient } from '../../lib/supabaseClient';
 import { ReservationList } from '../ReservationList';
 import { ConsultationList } from '../ConsultationList';
@@ -95,7 +95,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                 // consultations loaded
                 setConsultations(cons);
             } else {
-                console.warn('[Dashboard] No facilityId found for user:', user.id);
+                toast.error('관리 중인 시설이 없습니다.');
             }
         } catch (err) {
             toast.error('시설 데이터 로딩 실패');
@@ -112,7 +112,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
 
         // 1. Consultations Subscription
         const consultationChannel = supabase
-            .channel('facility-consultations')
+            .channel(`facility-cons-${myFacilityId}`)
             .on(
                 'postgres_changes',
                 {
@@ -135,7 +135,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
 
         // 2. Reservations Subscription
         const reservationChannel = supabase
-            .channel('facility-reservations')
+            .channel(`facility-res-${myFacilityId}`)
             .on(
                 'postgres_changes',
                 {
@@ -223,7 +223,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
             const client = await getAuthClient(session, { strict: true });
             await rejectReservation(reservationId, reason || undefined, client);
             setReservations(prev => prev.map(r =>
-                r.id === reservationId ? { ...r, status: 'cancelled' as const } : r
+                r.id === reservationId ? { ...r, status: 'rejected' as const } : r
             ));
             setSelectedReservation(null);
             toast.success('예약이 거절되었습니다.');

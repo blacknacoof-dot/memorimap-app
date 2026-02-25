@@ -870,42 +870,28 @@ export const createReview = async (
         created_at: new Date().toISOString()
     };
 
-    try {
-        const { data, error } = await db
-            .from('facility_reviews')
-            .insert([insertData])
-            .select()
-            .single();
+    const { data, error } = await db
+        .from('facility_reviews')
+        .insert([insertData])
+        .select()
+        .single();
 
-        if (error) {
-
-            throw error;
-        }
-        return data;
-    } catch (e: unknown) {
-
-        throw e;
-    }
+    if (error) throw error;
+    return data;
 };
 
 export const deleteReview = async (reviewId: string, client: SupabaseClient) => {
     const db = client;
-    try {
-        const { error } = await db
-            .from('facility_reviews')
-            .update({
-                is_active: false,
-                deleted_at: new Date().toISOString()
-            })
-            .eq('id', reviewId);
+    const { error } = await db
+        .from('facility_reviews')
+        .update({
+            is_active: false,
+            deleted_at: new Date().toISOString()
+        })
+        .eq('id', reviewId);
 
-        if (error) {
-            throw error;
-        }
-        return true;
-    } catch (e: unknown) {
-        throw e;
-    }
+    if (error) throw error;
+    return true;
 };
 
 /**
@@ -949,26 +935,7 @@ export const updateUserProfile = async (userId: string, data: Partial<{
     return result;
 };
 
-export const getFacilityReservations = async (facilityId: string) => {
-    const { data, error } = await supabase
-        .from('reservations')
-        .select('*')
-        .eq('facility_id', facilityId)
-        .order('created_at', { ascending: false });
-    if (error) throw error;
-    // Map to expected UI types (match Reservation interface in types/index.ts)
-    return (data || []).map((item: ReservationRow) => ({
-        ...item,
-        facilityId: item.facility_id,
-        facilityName: item.facility_name,
-        date: new Date(item.visit_date),
-        timeSlot: item.time_slot,
-        visitorName: item.user_name || item.visitorName,
-        visitorCount: item.visitor_count || 1,
-        userPhone: item.user_phone,
-        status: item.status as Reservation['status']
-    }));
-};
+/** @deprecated Dead code. Use facilityAdmin.fetchFacilityReservations with auth client instead. */
 /**
  * 예약 상태 변경 시 유저에게 인앱 알림 전송
  */
@@ -1022,9 +989,9 @@ export const approveReservation = async (id: string, client: SupabaseClient) => 
 };
 
 export const rejectReservation = async (id: string, reason: string | undefined, client: SupabaseClient) => {
-    const updateData: Record<string, string> = { status: 'cancelled' };
+    const updateData: Record<string, string> = { status: 'rejected' };
     if (reason) {
-        updateData.notes = `[거절 사유] ${reason}`;
+        updateData.rejection_reason = reason;
     }
 
     const { data, error } = await client
@@ -1038,7 +1005,7 @@ export const rejectReservation = async (id: string, reason: string | undefined, 
         throw error;
     }
 
-    await notifyReservationStatusChange(data, 'cancelled', client, reason);
+    await notifyReservationStatusChange(data, 'rejected', client, reason);
 
     // 결제된 예약이 거절되면 환불 요청 플래그 기록
     if (data?.payment_id) {
@@ -1250,19 +1217,7 @@ export const getFacilitySubscription = async (facilityId: string, client: Supaba
 /**
  * [추가] 사용자 할당 시설 조회
  */
-export const getUserFacility = async (userId: string) => {
-    const { data, error } = await supabase
-        .from('facilities')
-        .select('id')
-        .eq('user_id', userId)
-        .limit(1);
-
-    if (error) {
-        console.error('Error in getUserFacility:', error);
-        return null;
-    }
-    return data?.[0]?.id || null;
-};
+/** @deprecated Dead code. Dashboard uses inline auth client query. */
 
 /**
  * [추가] 사용자 역할(Role) 조회 함수
@@ -1705,36 +1660,20 @@ export const getPendingFacilities = async () => {
     }
 };
 
-export const approveFacility = async (facilityId: string) => {
-    try {
-        const { error } = await supabase
-            .from('facilities') // Changed from memorial_spaces
-            .update({
-                verified: true,
-                // verified_at: new Date().toISOString() // verified_at might not be in new schema, check if needed
-            })
-            .eq('id', facilityId);
-        if (error) throw error;
-    } catch (e) {
-        throw e;
-    }
+export const approveFacility = async (facilityId: string, client: SupabaseClient) => {
+    const { error } = await client
+        .from('facilities')
+        .update({ verified: true })
+        .eq('id', facilityId);
+    if (error) throw error;
 };
 
-export const rejectFacility = async (facilityId: string, rejectionReason: string = "운영팀 문의 요망") => {
-    try {
-        // Update status to rejected with reason instead of deleting
-        const { error } = await supabase
-            .from('facilities') // Changed from memorial_spaces
-            .update({
-                // status: 'rejected', // 'status' might not exist in facilities table
-                verified: false, // Just keep it unverified for now
-                // rejection_reason: rejectionReason // Check if column exists
-            })
-            .eq('id', facilityId);
-        if (error) throw error;
-    } catch (e) {
-        throw e;
-    }
+export const rejectFacility = async (facilityId: string, _rejectionReason: string = "운영팀 문의 요망", client: SupabaseClient) => {
+    const { error } = await client
+        .from('facilities')
+        .update({ verified: false })
+        .eq('id', facilityId);
+    if (error) throw error;
 };
 
 // --- [Task 2] Dynamic Prompt Injection ---
@@ -1843,20 +1782,15 @@ export const createFuneralConsultation = async (data: ConsultationData, client: 
             .select()
             .single();
 
-        if (error) {
-            console.error('createConsultation error:', error);
-            return null;
-        }
-
+        if (error) throw error;
         return result as Consultation;
-    } catch (e) {
-        console.error('createConsultation exception:', e);
+    } catch {
         return null;
     }
 };
 
 export const createMemorialConsultation = async (data: {
-    facility_id: number;
+    facility_id: string;
     user_id?: string;
     user_name?: string;
     user_phone?: string;
@@ -1866,83 +1800,54 @@ export const createMemorialConsultation = async (data: {
     lighting?: string;
     tier?: string;
     preferences?: Record<string, unknown>;
-}): Promise<Consultation | null> => {
-    try {
-        // [Fix] This seems to rely on 'memorial_consultations' which might be legacy.
-        // Assuming 'consultations' is the unified table now.
-        const { data: result, error } = await supabase
-            .from('consultations') // Changed from memorial_consultations
-            .insert({
-                ...data,
-                status: 'waiting'
-            })
-            .select()
-            .single();
-        if (error) {
-            console.error('createMemorialConsultation error:', error);
-            return null;
-        }
-        return result as Consultation;
-    } catch (e) {
-        console.error('createMemorialConsultation exception:', e);
-        return null;
-    }
+}, client: SupabaseClient): Promise<Consultation | null> => {
+    const { data: result, error } = await client
+        .from('consultations')
+        .insert({
+            ...data,
+            status: 'waiting'
+        })
+        .select()
+        .single();
+    if (error) throw error;
+    return result as Consultation;
 };
 /**
  * Get consultations by facility ID (for facility dashboard)
  */
 export const getConsultationsByFacility = async (
     facilityId: string,
-    status?: string
+    status: string | undefined,
+    client: SupabaseClient
 ): Promise<Consultation[]> => {
-    try {
-        let query = supabase
-            .from('consultations')
-            .select('*')
-            .eq('facility_id', facilityId)
-            .order('created_at', { ascending: false });
+    let query = client
+        .from('consultations')
+        .select('*')
+        .eq('facility_id', facilityId)
+        .order('created_at', { ascending: false });
 
-        if (status) {
-            query = query.eq('status', status);
-        }
-
-        const { data, error } = await query;
-
-        if (error) {
-            console.error('getConsultationsByFacility error:', error);
-            return [];
-        }
-
-        return (data || []) as Consultation[];
-    } catch (e) {
-        console.error('getConsultationsByFacility exception:', e);
-        return [];
+    if (status) {
+        query = query.eq('status', status);
     }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return (data || []) as Consultation[];
 };
 
 /**
  * Get consultations by user ID (for My Page)
  */
-export const getConsultationsByUser = async (userId: string): Promise<Consultation[]> => {
-    try {
-        const { data, error } = await supabase
-            .from('consultations')
-            .select('*')
-            .eq('user_id', userId)
-            .not('status', 'eq', 'cancelled')
-            .order('created_at', { ascending: false });
+export const getConsultationsByUser = async (userId: string, client: SupabaseClient): Promise<Consultation[]> => {
+    const { data, error } = await client
+        .from('consultations')
+        .select('*')
+        .eq('user_id', userId)
+        .not('status', 'eq', 'cancelled')
+        .order('created_at', { ascending: false });
 
-        if (error) {
-            console.error('getConsultationsByUser error:', error);
-            return [];
-        }
-
-        // [Fix] Map visit_date to date Object for UI consistency if used
-        return (data || []) as Consultation[];
-    } catch (e) {
-        console.error('getConsultationsByUser exception:', e);
-        return [];
-    }
+    if (error) throw error;
+    return (data || []) as Consultation[];
 };
 
 /**
@@ -1965,18 +1870,14 @@ export const updateConsultationStatus = async (
             .update(updateData)
             .eq('id', consultationId);
 
-        if (error) {
-            console.error('updateConsultationStatus error:', error);
-            return false;
-        }
-
+        if (error) throw error;
         return true;
-    } catch (e) {
-        console.error('updateConsultationStatus exception:', e);
+    } catch {
         return false;
     }
 };
 
+/** @deprecated Use getConsultationsByFacility directly */
 export const getFacilityConsultations = getConsultationsByFacility;
 
 /**
@@ -1999,13 +1900,9 @@ export const answerConsultation = async (
             })
             .eq('id', consultationId);
 
-        if (error) {
-            console.error('answerConsultation error:', error);
-            return false;
-        }
+        if (error) throw error;
         return true;
-    } catch (e) {
-        console.error('answerConsultation exception:', e);
+    } catch {
         return false;
     }
 };
@@ -2021,8 +1918,7 @@ export const markConsultationAsRead = async (consultationId: string, client: Sup
             .eq('id', consultationId);
 
         return !error;
-    } catch (e) {
-        console.error('markConsultationAsRead exception:', e);
+    } catch {
         return false;
     }
 };
@@ -2041,24 +1937,15 @@ export const updateConsultation = async (id: string, data: Record<string, unknow
 /**
  * Get single consultation by ID
  */
-export const getConsultationById = async (consultationId: string): Promise<Consultation | null> => {
-    try {
-        const { data, error } = await supabase
-            .from('consultations')
-            .select('*')
-            .eq('id', consultationId)
-            .single();
+export const getConsultationById = async (consultationId: string, client: SupabaseClient): Promise<Consultation | null> => {
+    const { data, error } = await client
+        .from('consultations')
+        .select('*')
+        .eq('id', consultationId)
+        .single();
 
-        if (error) {
-            console.error('getConsultationById error:', error);
-            return null;
-        }
-
-        return data as Consultation;
-    } catch (e) {
-        console.error('getConsultationById exception:', e);
-        return null;
-    }
+    if (error) throw error;
+    return data as Consultation;
 };
 
 /**

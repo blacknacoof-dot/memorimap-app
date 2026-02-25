@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { createMemorialConsultation } from '@/lib/queries';
+import { getAuthClient } from '@/lib/supabaseClient';
+import { useSession } from '@/lib/auth';
 import { Loader2, Check, X } from 'lucide-react';
 
 /**
@@ -15,7 +17,7 @@ import { Loader2, Check, X } from 'lucide-react';
  *   - 연락처 입력 → DB 저장
  */
 interface Props {
-    facilityId: number; // memorial_spaces.id
+    facilityId: string; // facilities.id (UUID)
     facilityName: string;
     currentUser?: { id: string; name?: string; phone?: string } | null;
     onClose?: () => void;
@@ -38,6 +40,7 @@ export const MemorialConsultationForm: React.FC<Props> = ({
     currentUser,
     onClose,
 }) => {
+    const { session } = useSession();
     const [step, setStep] = useState(1);
     const [mode, setMode] = useState<'urgent' | 'prepare' | ''>('');
     const [religion, setReligion] = useState('');
@@ -63,6 +66,7 @@ export const MemorialConsultationForm: React.FC<Props> = ({
     const handleSubmit = async () => {
         setLoading(true);
         try {
+            const client = await getAuthClient(session, { strict: true });
             await createMemorialConsultation({
                 facility_id: facilityId,
                 user_id: currentUser?.id ?? '',
@@ -73,7 +77,7 @@ export const MemorialConsultationForm: React.FC<Props> = ({
                 budget,
                 lighting,
                 tier,
-            });
+            }, client);
             // 성공 시 간단한 완료 메시지
             toast.success('상담 요청이 접수되었습니다. 담당자가 연락드리겠습니다.');
             if (onClose) onClose();

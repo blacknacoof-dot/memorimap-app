@@ -21,8 +21,8 @@ export function LikeStatCard({ facilityId }: LikeStatProps) {
 
                 if (error) throw error;
                 setLikeCount(count || 0);
-            } catch (err) {
-                console.error('Failed to fetch like count:', err);
+            } catch {
+                setLikeCount(0);
             } finally {
                 setLoading(false);
             }

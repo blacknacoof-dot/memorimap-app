@@ -83,7 +83,8 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
                 legacyData = data as Consultation[];
             }
         } catch {
-            legacyData = await getConsultationsByUser(userId);
+            const fallbackClient = await getAuthClient(session, { strict: true });
+            legacyData = await getConsultationsByUser(userId, fallbackClient);
         }
 
         // 2. Fetch AI Consultations (인증 클라이언트 사용, deleted 제외)
@@ -99,7 +100,7 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
                 aiData = (aiResult as Array<Record<string, unknown>>).filter(ai => ai.status !== 'cancelled' && ai.status !== 'deleted');
             }
         } catch (e) {
-            console.error('ai_consultations 조회 실패:', e);
+            // ai_consultations 조회 실패 — 빈 배열로 fallback
             // fallback 제거 — 인증 실패 시 빈 배열
             aiData = [];
         }

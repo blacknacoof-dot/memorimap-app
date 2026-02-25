@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { getConsultationsByFacility, updateConsultationStatus, Consultation } from '@/lib/queries';
+import { getAuthClient } from '@/lib/supabaseClient';
 import { Clock, CheckCircle, XCircle, Check, Phone, MapPin, Users, Calendar, ChevronDown, RefreshCw } from 'lucide-react';
 import { aiConsultationService } from '@/lib/api/aiConsultation';
 import { AiConsultationStatus } from '@/types';
@@ -60,12 +61,19 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
 
     const fetchConsultations = async () => {
         setIsLoading(true);
-        const data = await getConsultationsByFacility(
-            facilityId,
-            filter === 'all' ? undefined : filter
-        );
-        setConsultations(data);
-        setIsLoading(false);
+        try {
+            const client = await getAuthClient(session, { strict: true });
+            const data = await getConsultationsByFacility(
+                facilityId,
+                filter === 'all' ? undefined : filter,
+                client
+            );
+            setConsultations(data);
+        } catch {
+            toast.error('상담 목록을 불러올 수 없습니다.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     useEffect(() => {
