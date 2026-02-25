@@ -85,12 +85,17 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
         setter(v);
     };
 
+    const getUploadClient = async () => {
+        return await getAuthClient(session, { strict: true });
+    };
+
     const handleMainImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
         setIsUploading(true);
         try {
-            const url = await uploadFacilityImage(facility.id, file);
+            const client = await getUploadClient();
+            const url = await uploadFacilityImage(facility.id, file, client);
             setImageUrl(url);
         } catch {
             toast.error('이미지 업로드에 실패했습니다.');
@@ -104,7 +109,8 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
         if (!file) return;
         setIsUploading(true);
         try {
-            const url = await uploadFacilityImage(facility.id, file);
+            const client = await getUploadClient();
+            const url = await uploadFacilityImage(facility.id, file, client);
             setGalleryImages(prev => [...prev, url]);
         } catch {
             toast.error('이미지 업로드에 실패했습니다.');
@@ -118,7 +124,8 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
         if (!file) return;
         setIsUploading(true);
         try {
-            const url = await uploadFacilityImage(facility.id, file);
+            const client = await getUploadClient();
+            const url = await uploadFacilityImage(facility.id, file, client);
             setGalleryImages(prev => prev.map((old, i) => i === idx ? url : old));
         } catch {
             toast.error('이미지 업로드에 실패했습니다.');

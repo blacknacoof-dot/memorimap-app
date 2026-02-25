@@ -169,7 +169,7 @@ export const checkExistingReview = async (userId: string, facilityId: string, cl
         .maybeSingle();
 
     if (error) {
-        console.error('Error checking existing review:', error);
+        // error handled by return
         return false;
     }
     return !!data;
@@ -516,7 +516,7 @@ export const searchFacilitiesByRegion = async (
     });
 
     if (error) {
-        console.error('Error searching by region:', error);
+        // silent fallback
         return [];
     }
     return data || [];
@@ -534,7 +534,7 @@ export const getDistinctRegions = async (searchText: string) => {
     });
 
     if (error) {
-        console.error('Error fetching distinct regions:', error);
+        // silent fallback
         return [];
     }
     return data || [];
@@ -557,7 +557,7 @@ export const getDistinctRegionsFromFacilities = async (searchText: string) => {
         .limit(100);
 
     if (error || !data) {
-        console.error('Error fetching regions from facilities:', error);
+        // silent fallback
         return [];
     }
 
@@ -660,7 +660,7 @@ export const getFacility = async (id: string) => {
     const { data, error } = await query.single();
 
     if (error) {
-        console.error('Error fetching facility:', error);
+        // silent fallback
 
         // [Fix] 존재하지 않는 레거시 ID(fc6 등)인 경우 null 반환하여 UI 충돌 방지
         if (error.code === 'PGRST116') {
@@ -821,13 +821,13 @@ export const getReviews = async (facilityId: string) => {
             .order('created_at', { ascending: false });
 
         if (error) {
-            console.error('Error fetching reviews:', error);
+            // silent fallback
             return [];
         }
 
         return (data || []).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     } catch (e) {
-        console.error('Exception in getReviews:', e);
+        // silent fallback
         return [];
     }
 };
@@ -842,7 +842,7 @@ export const getUserReviews = async (userId: string, client: SupabaseClient) => 
         .order('created_at', { ascending: false });
 
     if (error) {
-        console.error('Error fetching user reviews:', error);
+        // silent fallback
         return [];
     }
 
@@ -1018,7 +1018,7 @@ export const rejectReservation = async (id: string, reason: string | undefined, 
                 client,
             });
         } catch (e) {
-            console.error('환불 요청 플래그 기록 실패:', e);
+            // 환불 플래그 실패 — 메인 흐름에 영향 없음
         }
     }
 
@@ -1037,7 +1037,7 @@ export const getMyReservations = async (userId: string, client: SupabaseClient) 
         .order('created_at', { ascending: false });
 
     if (error) {
-        console.error('Error fetching my reservations:', error);
+        // silent fallback
         return [];
     }
 
@@ -1121,41 +1121,31 @@ export const getFacilityFaqs = async (facilityId: string) => {
  * 시설 FAQ 저장 (upsert)
  */
 export const upsertFacilityFaq = async (faq: { id?: string; facility_id: string; question: string; answer: string; order_index?: number; category?: string }, client: SupabaseClient) => {
-    try {
-        const { order, ...rest } = faq as typeof faq & { order?: number };
-        const { data, error } = await client
-            .from('facility_faqs')
-            .upsert({
-                ...rest,
-                order_index: faq.order_index ?? order ?? 0,
-                is_active: true,
-                updated_at: new Date().toISOString(),
-            })
-            .select()
-            .single();
-        if (error) throw error;
-        return data;
-    } catch (e) {
-        console.error('upsertFacilityFaq error:', e);
-        return null;
-    }
+    const { order, ...rest } = faq as typeof faq & { order?: number };
+    const { data, error } = await client
+        .from('facility_faqs')
+        .upsert({
+            ...rest,
+            order_index: faq.order_index ?? order ?? 0,
+            is_active: true,
+            updated_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+    if (error) throw error;
+    return data;
 };
 
 /**
  * 시설 FAQ 삭제 (soft delete)
  */
 export const deleteFacilityFaq = async (faqId: string, client: SupabaseClient) => {
-    try {
-        const { error } = await client
-            .from('facility_faqs')
-            .update({ is_active: false })
-            .eq('id', faqId);
-        if (error) throw error;
-        return true;
-    } catch (e) {
-        console.error('deleteFacilityFaq error:', e);
-        return false;
-    }
+    const { error } = await client
+        .from('facility_faqs')
+        .update({ is_active: false })
+        .eq('id', faqId);
+    if (error) throw error;
+    return true;
 };
 
 /**
@@ -1193,7 +1183,7 @@ export const getFacilitySubscription = async (facilityId: string, client: Supaba
         const { data, error } = await query.maybeSingle();
 
         if (error) {
-            console.error('Error fetching facility subscription:', error);
+            // silent fallback
             return null;
         }
 
@@ -1209,7 +1199,7 @@ export const getFacilitySubscription = async (facilityId: string, client: Supaba
 
         return null;
     } catch (e) {
-        console.error('Exception in getFacilitySubscription:', e);
+        // silent fallback
         return null;
     }
 };
@@ -1231,7 +1221,7 @@ export const getUserRole = async (userId: string, client: SupabaseClient) => {
         const { data, error } = await client.rpc('get_user_role', { p_clerk_id: userId });
 
         if (error) {
-            console.error('get_user_role RPC error:', error.message);
+            // RPC error — fallback to null
             return { role: 'user', isError: true, error: error.message, facilityId: null };
         }
 
@@ -1264,7 +1254,7 @@ export const searchKnownFacilities = async (query: string, type?: string) => {
     const { data, error } = await queryBuilder.limit(10);
 
     if (error) {
-        console.error('Error searching known facilities:', error);
+        // silent fallback
         return [];
     }
     return data || [];
@@ -1292,7 +1282,7 @@ export const getFacilitiesByCategory = async (category: string) => {
         .order('name');
 
     if (error) {
-        console.error('Error fetching facilities by category:', error);
+        // silent fallback
         return [];
     }
 
@@ -1326,8 +1316,8 @@ export const submitPartnerApplication = async (data: PartnerApplicationInput, cl
                 .from('partner_docs')
                 .getPublicUrl(filePath);
             licenseUrl = urlData.publicUrl;
-        } catch (uploadErr: unknown) {
-            console.error('[PartnerUpload] Upload exception:', uploadErr);
+        } catch (uploadErr) {
+            throw uploadErr instanceof Error ? uploadErr : new Error('파일 업로드 실패');
         }
     }
 
@@ -1369,18 +1359,18 @@ export const submitPartnerApplication = async (data: PartnerApplicationInput, cl
 /**
  * [추가] 시설 이미지 업로드
  */
-export const uploadFacilityImage = async (facilityId: string, file: File) => {
+export const uploadFacilityImage = async (facilityId: string, file: File, client: SupabaseClient) => {
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
     const filePath = `${facilityId}/${fileName}`;
 
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await client.storage
         .from('facility-images')
         .upload(filePath, file);
 
     if (uploadError) throw uploadError;
 
-    const { data } = supabase.storage
+    const { data } = client.storage
         .from('facility-images')
         .getPublicUrl(filePath);
 
@@ -1415,7 +1405,7 @@ export const getFacilityImages = async (facilityId: string) => {
         return [];
 
     } catch (e) {
-        console.error('Exception in getFacilityImages:', e);
+        // silent fallback
         return [];
     }
 };
@@ -1627,7 +1617,7 @@ export const getAllSubscriptions = async (client: SupabaseClient) => {
             status: item.status || 'active'
         }));
     } catch (e) {
-        console.error('Error fetching all subscriptions:', e);
+        // silent fallback
         return [];
     }
 };
@@ -1655,7 +1645,7 @@ export const getPendingFacilities = async () => {
             ownerUserId: item.user_id // [Fix] manager_id -> user_id
         }));
     } catch (e) {
-        console.error('getPendingFacilities error:', e);
+        // silent fallback
         return [];
     }
 };
@@ -1723,13 +1713,13 @@ export const getFacilityLatestInfo = async (facilityId: string) => {
         const { data, error } = await query;
 
         if (error) {
-            console.error('getFacilityLatestInfo error:', error);
+            // silent fallback
             return null;
         }
 
         return data;
     } catch (e) {
-        console.error('getFacilityLatestInfo exception:', e);
+        // silent fallback
         return null;
     }
 };
@@ -1977,7 +1967,7 @@ export const fetchFacilitiesInView = async (bounds: MapBounds, token?: string) =
         if (error) throw error;
         return data;
     } catch (e) {
-        console.error('fetchFacilitiesInView error:', e);
+        // silent fallback
         return [];
     }
 };
@@ -2037,7 +2027,7 @@ export const getInquiries = async (client: SupabaseClient) => {
         .order('created_at', { ascending: false });
 
     if (error) {
-        console.error('Error fetching inquiries:', error);
+        // silent fallback
         return [];
     }
 

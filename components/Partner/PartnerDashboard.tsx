@@ -16,6 +16,7 @@ import { supabase, getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
 import { Consultation, getFacilitySubscription, approveReservation, rejectReservation } from '../../lib/queries';
 import { Reservation } from '../../types';
+import type { Subscription, Payment } from '../../types/db';
 import { toast } from 'sonner';
 import { confirmAsync } from '@/src/components/common/ConfirmModal';
 
@@ -33,8 +34,8 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
     const [facilityId, setFacilityId] = useState<string | null>(null);
     const [consultations, setConsultations] = useState<Consultation[]>([]);
     const [reservations, setReservations] = useState<Reservation[]>([]);
-    const [subscription, setSubscription] = useState<{ id: string; plan_name?: string; plan_price?: number; plan_id?: string; next_billing_date?: string; started_at?: string; start_date?: string; status?: string } | null>(null);
-    const [payments, setPayments] = useState<Array<{ id: string; paid_at?: string; billing_period_start?: string; billing_period_end?: string; final_amount?: number; amount?: number; status?: string }>>([]);
+    const [subscription, setSubscription] = useState<Subscription | null>(null);
+    const [payments, setPayments] = useState<Payment[]>([]);
     const [showPlanSelector, setShowPlanSelector] = useState(false);
     const { session } = useSession();
 

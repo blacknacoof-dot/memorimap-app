@@ -119,8 +119,11 @@ export interface Subscription {
     facility_id: string;
     facility?: { name: string }; // Joined property
     plan_name: 'Free' | 'Basic' | 'Premium' | 'Enterprise' | string;
+    plan_price?: number;
+    plan_id?: string;
     status: 'active' | 'expired' | 'cancelled';
     start_date: string;
+    started_at?: string;
     end_date: string | null;
     auto_renew: boolean;
     created_at: string;
@@ -136,11 +139,14 @@ export interface Payment {
     id: string;
     subscription_id: string | null;
     amount: number;
+    final_amount?: number;
     currency: string;
     status: 'succeeded' | 'failed' | 'pending' | 'refunded';
     payment_method: string | null;
     paid_at: string;
-    description?: string; // Added for compatibility
+    billing_period_start?: string;
+    billing_period_end?: string;
+    description?: string;
 }
 
 /**

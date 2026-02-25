@@ -22,7 +22,7 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
     const { session } = useSession();
 
     const loadConversations = async () => {
-        const client = await getAuthClient(session);
+        const client = await getAuthClient(session, { strict: true });
         const { data } = await client
             .from('partner_conversations')
             .select('*')

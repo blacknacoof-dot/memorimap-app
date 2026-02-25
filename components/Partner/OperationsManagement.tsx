@@ -39,7 +39,7 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
     const STAGES: PartnerOperation['operation_stage'][] = ['pending', 'dispatched', 'in_progress', 'completed'];
 
     const loadOperations = async () => {
-        const client = await getAuthClient(session);
+        const client = await getAuthClient(session, { strict: true });
         const { data } = await client
             .from('partner_operations')
             .select('*')
