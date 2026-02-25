@@ -21,6 +21,10 @@ export const NoticeManagement: React.FC = () => {
     const { session } = useSession();
 
     useEffect(() => {
+        if (!session) {
+            setLoading(false);
+            return;
+        }
         loadNotices();
     }, [session]);
 
@@ -31,7 +35,7 @@ export const NoticeManagement: React.FC = () => {
             const data = await getPlatformNotices(undefined, client);
             setNotices(data);
         } catch (err) {
-            // 공지사항 로딩 실패 — toast 없이 조용히 처리
+            toast.error('공지사항 로딩 실패');
         } finally {
             setLoading(false);
         }
@@ -112,6 +116,8 @@ export const NoticeManagement: React.FC = () => {
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-white border rounded-xl">
                         <Search className="w-3.5 h-3.5 text-slate-400" />
                         <input
+                            id="notice-search"
+                            name="notice-search"
                             type="text"
                             placeholder="공지 제목 검색..."
                             className="bg-transparent text-xs outline-none w-48"
@@ -216,6 +222,8 @@ export const NoticeManagement: React.FC = () => {
                             <div>
                                 <label className="block text-xs font-bold text-slate-600 mb-1.5">제목</label>
                                 <input
+                                    id="notice-title"
+                                    name="notice-title"
                                     type="text"
                                     value={formData.title}
                                     onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
@@ -226,6 +234,8 @@ export const NoticeManagement: React.FC = () => {
                             <div>
                                 <label className="block text-xs font-bold text-slate-600 mb-1.5">내용</label>
                                 <textarea
+                                    id="notice-content"
+                                    name="notice-content"
                                     value={formData.content}
                                     onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
                                     placeholder="공지 내용을 입력하세요"

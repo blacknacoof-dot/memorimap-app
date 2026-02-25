@@ -158,8 +158,8 @@ export type PartnerCategoryType = keyof typeof PARTNER_CATEGORIES;
 /**
  * [추가] 중복 리뷰 작성 확인
  */
-export const checkExistingReview = async (userId: string, facilityId: string, client?: SupabaseClient) => {
-    const db = client || supabase;
+export const checkExistingReview = async (userId: string, facilityId: string, client: SupabaseClient) => {
+    const db = client;
     const { data, error } = await db
         .from('facility_reviews')
         .select('id')
@@ -178,8 +178,8 @@ export const checkExistingReview = async (userId: string, facilityId: string, cl
 /**
  * [추가] 리뷰 이미지 업로드
  */
-export const uploadReviewImage = async (userId: string, file: File, client?: SupabaseClient) => {
-    const db = client || supabase;
+export const uploadReviewImage = async (userId: string, file: File, client: SupabaseClient) => {
+    const db = client;
     // [Security] 파일 검증
     const validation = validateImageFile(file);
     if (!validation.valid) {
@@ -594,8 +594,8 @@ export interface LeadInput {
     notes?: string;
 }
 
-export const createLead = async (leadData: LeadInput, client?: SupabaseClient) => {
-    const db = client || supabase;
+export const createLead = async (leadData: LeadInput, client: SupabaseClient) => {
+    const db = client;
     const { data, error } = await db
         .from('leads')
         .insert([{
@@ -619,8 +619,8 @@ export const createLead = async (leadData: LeadInput, client?: SupabaseClient) =
     return data && data[0] ? data[0] : null;
 };
 
-export const createConsultationFromLead = async (leadId: string, facilityId: string, client?: SupabaseClient) => {
-    const db = client || supabase;
+export const createConsultationFromLead = async (leadId: string, facilityId: string, client: SupabaseClient) => {
+    const db = client;
     const { data, error } = await db.rpc('create_consultation_from_lead', {
         p_lead_id: leadId,
         p_facility_id: facilityId
@@ -633,14 +633,11 @@ export const createConsultationFromLead = async (leadId: string, facilityId: str
     return data;
 };
 
-export const getAllLeads = async (client?: SupabaseClient) => {
-    const db = client || supabase;
+export const getAllLeads = async (client: SupabaseClient) => {
+    const db = client;
     const { data, error } = await db
         .from('leads')
-        .select(`
-            *,
-            facilities (name)
-        `) // Changed from memorial_spaces to facilities
+        .select('*')
         .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -694,10 +691,10 @@ export const createConsultation = async (
     userId: string,
     userName: string,
     userPhone: string,
-    notes: string = '',
-    client?: SupabaseClient
+    notes: string,
+    client: SupabaseClient
 ) => {
-    const db = client || supabase;
+    const db = client;
     const { data, error } = await db
         .from('consultations')
         .insert([
@@ -729,10 +726,10 @@ export const createUrgentReservation = async (
     userPhone: string,
     visitDate: Date, // Timestamp
     type: 'single' | 'couple',
-    notes: string = '',
-    client?: SupabaseClient
+    notes: string,
+    client: SupabaseClient
 ) => {
-    const db = client || supabase;
+    const db = client;
     const leadResult = await createLead({
         userId,
         facilityId,
@@ -776,8 +773,8 @@ export const createUrgentReservation = async (
     return data;
 };
 
-export const getConsultationHistory = async (userId: string, client?: SupabaseClient) => {
-    const db = client || supabase;
+export const getConsultationHistory = async (userId: string, client: SupabaseClient) => {
+    const db = client;
     const { data, error } = await db
         .from('consultations')
         .select(`
@@ -800,8 +797,8 @@ export const getConsultationHistory = async (userId: string, client?: SupabaseCl
     return data;
 };
 
-export const deleteConsultation = async (id: string, userId?: string, client?: SupabaseClient) => {
-    const db = client || supabase;
+export const deleteConsultation = async (id: string, userId: string | undefined, client: SupabaseClient) => {
+    const db = client;
     let query = db
         .from('consultations')
         .delete()
@@ -845,8 +842,8 @@ export const getReviews = async (facilityId: string) => {
     }
 };
 
-export const getUserReviews = async (userId: string, client?: SupabaseClient) => {
-    const db = client || supabase;
+export const getUserReviews = async (userId: string, client: SupabaseClient) => {
+    const db = client;
     const { data, error } = await db
         .from('facility_reviews')
         .select('*')
@@ -867,11 +864,11 @@ export const createReview = async (
     userId: string,
     rating: number,
     content: string,
-    userName?: string,
-    images: string[] = [],
-    client?: SupabaseClient
+    userName: string | undefined,
+    images: string[],
+    client: SupabaseClient
 ): Promise<Record<string, unknown> | null> => {
-    const db = client || supabase;
+    const db = client;
     const insertData = {
         facility_id: facilityId,
         user_id: userId,
@@ -902,8 +899,8 @@ export const createReview = async (
     }
 };
 
-export const deleteReview = async (reviewId: string, client?: SupabaseClient) => {
-    const db = client || supabase;
+export const deleteReview = async (reviewId: string, client: SupabaseClient) => {
+    const db = client;
     try {
         const { error } = await db
             .from('facility_reviews')
@@ -929,8 +926,8 @@ export const deleteReview = async (reviewId: string, client?: SupabaseClient) =>
 /**
  * [추가] 시설 정보 업데이트
  */
-export const updateFacility = async (id: string, updates: Record<string, unknown>, client?: SupabaseClient) => {
-    const db = client || supabase;
+export const updateFacility = async (id: string, updates: Record<string, unknown>, client: SupabaseClient) => {
+    const db = client;
     const { data, error } = await db
         .from('facilities') // Changed from memorial_spaces
         .update(updates)
@@ -952,8 +949,8 @@ export const updateUserProfile = async (userId: string, data: Partial<{
     full_name: string;
     phone_number: string;
     avatar_url: string;
-}>, client?: SupabaseClient) => {
-    const db = client || supabase;
+}>, client: SupabaseClient) => {
+    const db = client;
     // upsert: clerk_id 행이 없으면 INSERT, 있으면 UPDATE (406 방지)
     const { data: result, error } = await db
         .from('profiles')
@@ -1085,8 +1082,8 @@ export const rejectReservation = async (id: string, reason: string | undefined, 
 /**
  * 사용자 본인의 예약 목록 조회
  */
-export const getMyReservations = async (userId: string, client?: SupabaseClient) => {
-    const db = client || supabase;
+export const getMyReservations = async (userId: string, client: SupabaseClient) => {
+    const db = client;
     const { data, error } = await db
         .from('reservations')
         .select('*')
@@ -1116,8 +1113,8 @@ export const getMyReservations = async (userId: string, client?: SupabaseClient)
 /**
  * 예약 취소
  */
-export const cancelReservation = async (id: string, client?: SupabaseClient) => {
-    const db = client || supabase;
+export const cancelReservation = async (id: string, client: SupabaseClient) => {
+    const db = client;
     const { data, error } = await db
         .from('reservations')
         .update({ status: 'cancelled' })
@@ -1135,8 +1132,8 @@ export const cancelReservation = async (id: string, client?: SupabaseClient) => 
 /**
  * 사용자 전화번호 조회
  */
-export const getUserPhoneNumber = async (userId: string, client?: SupabaseClient): Promise<string> => {
-    const db = client || supabase;
+export const getUserPhoneNumber = async (userId: string, client: SupabaseClient): Promise<string> => {
+    const db = client;
     const { data, error } = await db
         .from('profiles')
         .select('phone_number')
@@ -1222,9 +1219,9 @@ export const deleteFacilityFaq = async (faqId: string, client: SupabaseClient) =
  */
 export const getReviewsBySpace = getReviews;
 
-export const getFacilitySubscription = async (facilityId: string, client?: SupabaseClient) => {
+export const getFacilitySubscription = async (facilityId: string, client: SupabaseClient) => {
     try {
-        const db = client || supabase;
+        const db = client;
         const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
 
         // [New Strategy] Query both potential columns based on ID type
@@ -1294,91 +1291,26 @@ export const getUserFacility = async (userId: string) => {
  * [추가] 사용자 역할(Role) 조회 함수
  */
 /**
- * [추가] 사용자 역할(Role) 조회 함수
+ * [추가] 사용자 역할(Role) 조회 함수 — get_user_role RPC 사용
+ * SECURITY DEFINER이므로 RLS 우회, 인증 클라이언트 필수
  */
-export const getUserRole = async (userId: string) => {
+export const getUserRole = async (userId: string, client: SupabaseClient) => {
     try {
-        // 0. profiles 테이블 최우선 확인 (Phase III 캐시/동기화 최적화)
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('clerk_id', userId)
-            .maybeSingle();
+        const { data, error } = await client.rpc('get_user_role', { p_clerk_id: userId });
 
-        if (profile && profile.role !== 'user') {
-            return { role: profile.role, isError: false };
+        if (error) {
+            console.error('get_user_role RPC error:', error.message);
+            return { role: 'user', isError: true, error: error.message, facilityId: null };
         }
 
-        // 1. super_admins 테이블 확인
-        const { data: superAdmin } = await supabase
-            .from('super_admins')
-            .select('*')
-            .eq('user_id', userId)
-            .eq('is_active', true)
-            .maybeSingle();
-
-        if (superAdmin) {
-            return { role: 'super_admin', isError: false };
+        if (data && data.length > 0) {
+            const row = data[0] as { role: string; facility_id: string | null };
+            return { role: row.role, isError: false, facilityId: row.facility_id };
         }
 
-        // 2. 시설 관리자 확인 (facilities 테이블의 user_id 확인)
-        const { data: facilityArr } = await supabase
-            .from('facilities')
-            .select('id')
-            .eq('user_id', userId)
-            .limit(1);
-
-        if (facilityArr && facilityArr.length > 0) {
-            return { role: 'facility_admin', isError: false };
-        }
-
-        // 3. 상조 관리자 확인
-        // 상조 쿼리는 별도 파일에서 가져오는 것이 좋으나, 
-        // 순환 참조 방지를 위해 여기서 직접 import하거나 로직 통합 필요.
-        // 여기서는 동적 import를 사용하지 않고 직접 쿼리 (가장 안전)
-        // [주의] getSangjoUser가 lib/sangjoQueries.ts에 있으므로,
-        // 여기서는 직접 테이블 조회하는 것이 깔끔함.
-
-        // 3-1. 본사 관리자 확인
-        let hqAdmin = null;
-        try {
-            const { data } = await supabase
-                .from('sangjo_hq_admins')
-                .select('id')
-                .eq('user_id', userId)
-                .maybeSingle();
-            hqAdmin = data;
-        } catch (e) {
-            // Ignore if table doesn't exist
-        }
-
-        if (hqAdmin) {
-            return { role: 'sangjo_hq_admin', isError: false };
-        }
-
-        // 3-2. 지점 관리자 확인
-        let branchAdmin = null;
-        try {
-            const { data } = await supabase
-                .from('sangjo_users')
-                .select('id')
-                .eq('user_id', userId)
-                .maybeSingle();
-            branchAdmin = data;
-        } catch (e) {
-            // Ignore if table doesn't exist
-        }
-
-        if (branchAdmin) {
-            return { role: 'sangjo_branch_admin', isError: false };
-        }
-
-        // 4. 기본 유저 권한 반환
-        return { role: 'user', isError: false, error: null };
+        return { role: 'user', isError: false, facilityId: null };
     } catch (error: unknown) {
-        // 406 Not Acceptable 등 에러가 나도 기본 유저로 처리
-        // console.error('Role check error:', error);
-        return { role: 'user', isError: false, error: error instanceof Error ? error.message : String(error) };
+        return { role: 'user', isError: true, error: error instanceof Error ? error.message : String(error), facilityId: null };
     }
 };
 
@@ -1749,9 +1681,9 @@ export const getMyFavorites = async (userId: string) => {
 /**
  * [추가] 전체 구독 현황 조회 (Super Admin)
  */
-export const getAllSubscriptions = async (client?: SupabaseClient) => {
+export const getAllSubscriptions = async (client: SupabaseClient) => {
     try {
-        const db = client || supabase;
+        const db = client;
         const { data, error } = await db
             .from('facility_subscriptions')
             .select(`
@@ -2203,12 +2135,13 @@ export interface Inquiry {
     content?: string;
 }
 
-export const createNotice = async (title: string, content: string, client?: SupabaseClient) => {
-    const { data, error } = await (client || supabase)
-        .from('notices')
+export const createNotice = async (title: string, content: string, client: SupabaseClient) => {
+    const { data, error } = await client
+        .from('platform_notices')
         .insert([{
             title,
             content,
+            is_active: true,
         }])
         .select()
         .single();
@@ -2221,9 +2154,11 @@ export const createNotice = async (title: string, content: string, client?: Supa
 };
 
 export const getNotices = async (client?: SupabaseClient) => {
-    const { data, error } = await (client || supabase)
-        .from('notices')
+    const db = client || supabase;
+    const { data, error } = await db
+        .from('platform_notices')
         .select('*')
+        .eq('is_active', true)
         .order('created_at', { ascending: false });
 
     if (error) {
@@ -2240,8 +2175,8 @@ export const getNotices = async (client?: SupabaseClient) => {
     }));
 };
 
-export const getInquiries = async (client?: SupabaseClient) => {
-    const { data, error } = await (client || supabase)
+export const getInquiries = async (client: SupabaseClient) => {
+    const { data, error } = await client
         .from('partner_inquiries')
         .select('*')
         .order('created_at', { ascending: false });

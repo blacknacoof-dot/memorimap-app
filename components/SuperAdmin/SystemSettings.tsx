@@ -76,6 +76,8 @@ export const SystemSettings = () => {
                         <label className="block text-xs font-medium text-slate-500 mb-1">기본 중개 수수료율 (%)</label>
                         <div className="relative">
                             <input
+                                id="commission-rate"
+                                name="commission-rate"
                                 type="number"
                                 value={commission}
                                 onChange={(e) => setCommission(e.target.value)}

@@ -1,6 +1,6 @@
 /**
  * useUserRole - App.tsx에서 추출한 사용자 역할 관리 Hook
- * Phase 4-3: userRole, roleError, isLoadingRole, adminFacilityId, adminSangjoId, sangjoOrgType, fetchUserRole
+ * get_user_role RPC를 사용하여 역할 + facilityId를 한번에 조회
  */
 import { useState, useEffect } from 'react';
 import { ViewState } from '../types';
@@ -36,34 +36,28 @@ export function useUserRole({ isSignedIn, userInfo, viewState, setViewState, sho
       if (isSignedIn && userInfo) {
         setIsLoadingRole(true);
         try {
+          const { supabase, getAuthClient } = await import('../lib/supabaseClient');
+          const { data: { session } } = await supabase.auth.getSession();
+          const authClient = await getAuthClient(session);
+
           const { getUserRole } = await import('../lib/queries');
-          const result = await getUserRole(userInfo.id);
+          const result = await getUserRole(userInfo.id, authClient);
 
           setUserRole(result.role);
 
           if (result.isError) {
             setRoleError(result.error || 'Unknown role error');
-            console.error('❌ Role fetch error:', result.error);
+            console.error('Role fetch error:', result.error);
             showToast(`권한 확인 중 문제가 발생했습니다: ${result.error}`, 'error');
           } else {
             setRoleError(null);
 
-            // Auto-route based on role + set adminFacilityId for facility admins
+            // Auto-route based on role + set adminFacilityId (RPC에서 직접 반환)
             if ((result.role === 'facility_admin' || result.role === 'facility_manager') && viewState === ViewState.MAP) {
               setViewState(ViewState.FACILITY_ADMIN);
-              // facility_admin의 시설 ID 조회
-              try {
-                const { supabase } = await import('../lib/supabaseClient');
-                const { data: facilityData } = await supabase
-                  .from('facilities')
-                  .select('id')
-                  .eq('user_id', userInfo.id)
-                  .limit(1)
-                  .maybeSingle();
-                if (facilityData) {
-                  setAdminFacilityId(facilityData.id);
-                }
-              } catch { /* facility ID lookup failed, non-blocking */ }
+              if (result.facilityId) {
+                setAdminFacilityId(result.facilityId);
+              }
             } else if (result.role.startsWith('sangjo_') && viewState === ViewState.MAP) {
               setViewState(ViewState.SANGJO_DASHBOARD);
             }
@@ -72,14 +66,14 @@ export function useUserRole({ isSignedIn, userInfo, viewState, setViewState, sho
           // Fetch Sangjo Info if role is sangjo-related or super_admin
           if (result.role.includes('sangjo') || result.role === 'super_admin') {
             const { getSangjoUser } = await import('../lib/sangjoQueries');
-            const sangjoInfo = await getSangjoUser(userInfo.id);
+            const sangjoInfo = await getSangjoUser(userInfo.id, authClient);
             if (sangjoInfo) {
               setAdminSangjoId(sangjoInfo.sangjo_id);
               setSangjoOrgType(result.role === 'sangjo_hq_admin' ? 'headquarters' : 'branch');
             }
           }
         } catch (err: unknown) {
-          console.error('❌ Unexpected fetchUserRole error:', err);
+          console.error('Unexpected fetchUserRole error:', err);
           setRoleError('Unexpected error');
           showToast('권한 정보를 불러오지 못했습니다.', 'error');
         } finally {

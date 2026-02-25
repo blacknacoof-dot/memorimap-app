@@ -77,12 +77,15 @@ const MapView: React.FC<MapViewProps> = ({ viewState, setViewState }) => {
         setCurrentBounds(bounds);
     };
 
+    const { signOut } = useClerk();
+
     const handleLogin = () => {
-        // console.log("Login requested");
+        window.dispatchEvent(new Event('open-login-modal'));
     };
 
-    const handleLogout = () => {
-        // console.log("Logout requested");
+    const handleLogout = async () => {
+        await signOut();
+        setViewState(ViewState.MAP);
     };
 
     // Chat Handler

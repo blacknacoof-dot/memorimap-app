@@ -581,7 +581,8 @@ export const ChatInterface: React.FC<Props> = ({
         try {
             if (currentLeadId) {
                 // Handing over lead to facility
-                await createConsultationFromLead(currentLeadId, candidate.id);
+                const authClient = await getAuthClient(session);
+                await createConsultationFromLead(currentLeadId, candidate.id, authClient);
             }
             onAction('RESERVE', candidate);
         } catch (e) {

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getAllSubscriptions } from '../../lib/queries';
+import { supabase, getAuthClient } from '../../lib/supabaseClient';
 import { Loader2, Crown, TrendingUp } from 'lucide-react';
 
 interface SubscriptionItem {
@@ -17,7 +18,9 @@ export const AdminSubscriptions: React.FC = () => {
 
     useEffect(() => {
         const load = async () => {
-            const data = await getAllSubscriptions();
+            const { data: { session } } = await supabase.auth.getSession();
+            const authClient = await getAuthClient(session, { strict: true });
+            const data = await getAllSubscriptions(authClient);
             setSubs(data as SubscriptionItem[]);
             setIsLoading(false);
         };

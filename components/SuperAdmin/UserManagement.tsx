@@ -24,6 +24,8 @@ export const UserManagement: React.FC = () => {
                 <div className="flex-1 flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border">
                     <Search className="text-gray-400" size={18} />
                     <input
+                        id="user-search"
+                        name="user-search"
                         type="text"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}

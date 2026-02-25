@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, Loader2, Building2, MapPin, Phone, FileText, ImagePlus, Trash2, Plus, Mail, Globe, Clock, Package, Tag, Users } from 'lucide-react';
 import { updateFacility, uploadFacilityImage } from '../lib/queries';
+import { getAuthClient } from '../lib/supabaseClient';
+import { useSession } from '../lib/auth';
 import { Facility, FacilityPackage, FacilityManager } from '../types';
 import { toast } from 'sonner';
 
@@ -30,6 +32,7 @@ const EMPTY_PACKAGE: FacilityPackage = { name: '', price: 0, items: [], descript
 const EMPTY_MANAGER: FacilityManager = { name: '', position: '', phone: '' };
 
 export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }) => {
+    const { session } = useSession();
     const [activeTab, setActiveTab] = useState<TabKey>('basic');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -194,6 +197,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
         setIsSubmitting(true);
         try {
             const priceRange = calcPriceRange();
+            const authClient = await getAuthClient(session, { strict: true });
             await updateFacility(facility.id, {
                 name,
                 address,
@@ -208,7 +212,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
                 packages: packages.length > 0 ? packages : [],
                 features: features.length > 0 ? features : [],
                 managers: managers.length > 0 ? managers : [],
-            });
+            }, authClient);
             onSave();
             onClose();
             toast.success('시설 정보가 성공적으로 수정되었습니다.');

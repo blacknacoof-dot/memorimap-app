@@ -24,6 +24,10 @@ export const AdminLogsView: React.FC = () => {
     };
 
     useEffect(() => {
+        if (!session) {
+            setLoading(false);
+            return;
+        }
         loadLogs();
     }, [session]);
 

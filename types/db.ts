@@ -6,7 +6,7 @@
 // ==========================================
 // 1. 공통 Enum & Types
 // ==========================================
-export type UserRole = 'user' | 'facility_admin' | 'sangjo_hq_admin' | 'super_admin';
+export type UserRole = 'user' | 'facility_admin' | 'facility_manager' | 'sangjo_hq_admin' | 'sangjo_branch_admin' | 'super_admin';
 export type ReservationStatus = 'pending' | 'confirmed' | 'rejected' | 'cancelled' | 'completed' | 'no_show' | 'urgent'; // Added 'urgent' to support existing logic
 // export type FacilityType = 'charnel_house' | 'natural_burial' | 'funeral_home' | 'complex' | 'pet'; // DEPRECATED
 // FacilityCategoryType → facility.ts에서 Single Source of Truth로 관리
@@ -38,11 +38,14 @@ export interface SangjoFavorite {
 
 export interface Profile {
     id: string;
+    clerk_id: string;
     email: string;
     full_name: string | null;
     phone_number: string | null;
+    avatar_url: string | null;
     role: UserRole;
     created_at: string;
+    updated_at: string | null;
 }
 
 export interface Reservation {
@@ -103,7 +106,7 @@ export interface PartnerInquiry {
     message: string;
     status: 'pending' | 'approved' | 'rejected';
     created_at: string;
-    target_facility_id?: number | null; // [Fixed] BigInt in DB -> number in TS
+    target_facility_id?: string | null; // UUID in DB
 }
 
 // --- [Phase 4 New Interfaces] ---
@@ -113,7 +116,7 @@ export interface PartnerInquiry {
  */
 export interface Subscription {
     id: string;
-    facility_id: number | string;
+    facility_id: string;
     facility?: { name: string }; // Joined property
     plan_name: 'Free' | 'Basic' | 'Premium' | 'Enterprise' | string;
     status: 'active' | 'expired' | 'cancelled';
@@ -158,7 +161,7 @@ export interface ConsultationLead {
     user_id: string | null;
     user_name: string;
     phone_number: string;
-    facility_id: number | null;
+    facility_id: string | null;
     facility_name?: string;
     type: 'visit' | 'counsel' | 'price' | 'other';
     status: 'new' | 'read' | 'contacted' | 'completed';
@@ -206,7 +209,7 @@ export interface DBConsultation {
 /** bot_data 테이블 */
 export interface BotData {
     id: string;
-    facility_id: number;
+    facility_id: string;
     welcome_message: string | null;
     faq_items: Array<{ question: string; answer: string }>;
     ai_context: string | null;
@@ -220,7 +223,7 @@ export interface BotData {
 /** timeline_events 테이블 */
 export interface TimelineEvent {
     id: string;
-    facility_id: number;
+    facility_id: string;
     reservation_id: string | null;
     user_id: string | null;
     event_type: string;

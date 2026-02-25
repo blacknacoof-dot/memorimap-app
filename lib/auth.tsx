@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from './supabaseClient';
 import type { Session } from '@supabase/supabase-js';
 
@@ -69,10 +69,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await supabase.auth.signOut();
   }, []);
 
-  const user = wrapUser(session);
+  const user = useMemo(() => wrapUser(session), [session]);
+
+  const contextValue = useMemo(() => ({
+    user, session, isSignedIn: !!session, isLoaded, signOut
+  }), [user, session, isLoaded, signOut]);
 
   return (
-    <AuthContext.Provider value={{ user, session, isSignedIn: !!session, isLoaded, signOut }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
@@ -100,17 +104,16 @@ export const useClerk = () => {
 
 export const useSession = () => {
   const { session, user } = useContext(AuthContext);
-  const wrappedSession = session
+  const wrappedSession = useMemo(() => session
     ? {
         ...session,
-        // Clerk-compatible user on session
         user: {
           ...session.user,
           ...user,
         },
         getToken: async (_opts?: Record<string, unknown>): Promise<string | null> => session.access_token || null,
       }
-    : null;
+    : null, [session, user]);
   return { session: wrappedSession, isLoaded: true };
 };
 

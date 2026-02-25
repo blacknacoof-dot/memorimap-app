@@ -1,209 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
-    Activity, AlertCircle, Clock, CheckCircle2,
-    Search, MapPin, Phone, MessageSquare,
-    ChevronRight, BellRing, User
+    Activity, AlertCircle, Clock,
+    MapPin, MessageSquare,
+    ChevronRight, BellRing
 } from 'lucide-react';
-import { supabase, getAuthClient } from '../../lib/supabaseClient';
-import { useSession } from '../../lib/auth';
-import { SangjoContract, AiConsultation, AiConsultationStatus } from '../../types';
-import { aiConsultationService } from '../../lib/api/aiConsultation';
-import { toast } from 'sonner'; // [Phase 2] Error Handler
-import type { SupabaseClient } from '@supabase/supabase-js';
+import { AiConsultationStatus } from '../../types';
+import { toast } from 'sonner';
+import { useContractMonitoring } from '../../hooks/useContractMonitoring';
 
 export const ContractMonitoring: React.FC = () => {
-    const [contracts, setContracts] = useState<SangjoContract[]>([]);
-    const [aiConsultations, setAiConsultations] = useState<AiConsultation[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { contracts, aiConsultations, loading, handleJoinChat } = useContractMonitoring();
     const [activeFilter, setActiveFilter] = useState<'all' | 'critical' | 'urgent' | 'normal' | 'ai_alert'>('all');
-    const [joinedConversationId, setJoinedConversationId] = useState<string | null>(null);
-    const { session } = useSession();
-    const [authClient, setAuthClient] = useState<SupabaseClient | null>(null);
-
-    useEffect(() => {
-        const initAuth = async () => {
-            try {
-                const client = await getAuthClient(session, { strict: true });
-                setAuthClient(client);
-            } catch { /* fallback */ }
-        };
-        initAuth();
-    }, [session]);
-
-    useEffect(() => {
-        if (!authClient) return;
-        loadContracts();
-        loadAiConsultations();
-        const cleanup = setupRealtime();
-        const aiCleanup = setupAiRealtime();
-        return () => {
-            cleanup();
-            aiCleanup();
-        };
-    }, [authClient]);
-
-    const loadContracts = async () => {
-        if (!authClient) return;
-        setLoading(true);
-        try {
-            const { data, error } = await authClient
-                .from('sangjo_contracts')
-                .select('*')
-                .order('created_at', { ascending: false });
-            if (!error && data) setContracts(data as SangjoContract[]);
-        } catch {
-            toast.error('계약 목록 로딩 실패');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const loadAiConsultations = async () => {
-        if (!authClient) return;
-        const { data, error } = await authClient
-            .from('ai_consultations')
-            .select('*')
-            .in('status', [AiConsultationStatus.AGENT_REQUESTED, AiConsultationStatus.AGENT_CONNECTED])
-            .order('updated_at', { ascending: false });
-
-        if (!error && data) setAiConsultations(data as AiConsultation[]);
-    };
-
-    const setupRealtime = () => {
-        const channel = supabase
-            .channel('super-admin-monitoring')
-            .on('postgres_changes', {
-                event: '*',
-                schema: 'public',
-                table: 'sangjo_contracts'
-            }, (payload) => {
-                if (payload.eventType === 'DELETE') {
-                    const old = payload.old as SangjoContract;
-                    if (old?.contract_number) {
-                        setContracts(prev => prev.filter(c => c.contract_number !== old.contract_number));
-                    }
-                    return;
-                }
-                const updated = payload.new as SangjoContract;
-                setContracts(prev => {
-                    const exists = prev.find(c => c.contract_number === updated.contract_number);
-                    if (exists) {
-                        return prev.map(c => c.contract_number === updated.contract_number ? updated : c);
-                    }
-                    return [updated, ...prev];
-                });
-
-                if (updated.emergency_level === 'critical') {
-                    playEmergencySound();
-                }
-            })
-            .subscribe();
-
-        return () => {
-            channel.unsubscribe();
-            supabase.removeChannel(channel);
-        };
-    };
-
-    const setupAiRealtime = () => {
-        const channel = supabase
-            .channel('ai-monitoring')
-            .on('postgres_changes', {
-                event: '*',
-                schema: 'public',
-                table: 'ai_consultations'
-            }, (payload) => {
-                if (payload.eventType === 'DELETE') {
-                    const old = payload.old as AiConsultation;
-                    if (old?.conversation_id) {
-                        setAiConsultations(prev => prev.filter(c => c.conversation_id !== old.conversation_id));
-                    }
-                    return;
-                }
-                const updated = payload.new as AiConsultation;
-
-                setAiConsultations(prev => {
-                    const exists = prev.find(c => c.conversation_id === updated.conversation_id);
-                    if (exists) {
-                        return prev.map(c => c.conversation_id === updated.conversation_id ? updated : c);
-                    }
-                    if (updated.status === AiConsultationStatus.AGENT_REQUESTED) {
-                        return [updated, ...prev];
-                    }
-                    return prev;
-                });
-
-                if (updated.status === AiConsultationStatus.AGENT_REQUESTED) {
-                    playEmergencySound();
-                }
-            })
-            .subscribe();
-
-        return () => {
-            channel.unsubscribe();
-            supabase.removeChannel(channel);
-        };
-    };
-
-    const playEmergencySound = () => {
-        // 실제 구현 시 오디오 파일 경로 추가
-        // Emergency sound notification
-    };
-
-    /**
-     * [Action] 상담 개입 (Join Chat)
-     * Atomic Lock을 통해 동시성 제어
-     */
-    const handleJoinChat = async (consultation: AiConsultation) => {
-        // 이미 연결된 경우 (UI 상 1차 방어)
-        if (consultation.status === AiConsultationStatus.AGENT_CONNECTED) {
-            toast.warning('이미 상담사가 연결된 세션입니다.');
-            return;
-        }
-
-        try {
-            if (!authClient) {
-                toast.error('인증 세션이 필요합니다.');
-                return;
-            }
-
-            // [API] 상태 변경 시도 (Atomic Lock 동작)
-            // lib/api/aiConsultation.ts의 updateStatus는 WHERE status='AI_HANDLING' 조건을 포함함
-            await aiConsultationService.updateStatus(
-                authClient,
-                consultation.conversation_id,
-                AiConsultationStatus.AGENT_CONNECTED
-            );
-
-            // 성공 시 UI 업데이트 (Realtime이 오기 전 즉시 반응)
-            setAiConsultations(prev => prev.map(c =>
-                c.conversation_id === consultation.conversation_id
-                    ? { ...c, status: AiConsultationStatus.AGENT_CONNECTED }
-                    : c
-            ));
-
-            // 채팅 개입 성공: 대화 ID를 추적 상태에 저장
-            setJoinedConversationId(consultation.conversation_id);
-            toast.success(
-                `[성공] ${consultation.facility_name} 상담에 개입했습니다.\n대화 ID: ${consultation.conversation_id}`,
-                { duration: 5000 }
-            );
-
-        } catch (error: unknown) {
-            // Join Chat Error — toast로 사용자에게 알림
-            // 2차 방어: DB 업데이트 실패 (0 rows affecting -> .single() throws error)
-            // PGRST116: The result contains 0 rows
-            const err = error instanceof Error ? error : null;
-            const errCode = (error as { code?: string })?.code;
-            if (errCode === 'PGRST116' || err?.message?.includes('0 rows')) {
-                toast.warning('⚠️ 이미 다른 관리자가 상담을 시작했습니다.');
-                // 최신 데이터로 리프레시
-                loadAiConsultations();
-            } else {
-                toast.error('오류가 발생했습니다. 다시 시도해주세요.');
-            }
-        }
-    };
 
     const filteredShow = [
         ...contracts.map(c => ({ ...c, type: 'contract' as const })),
@@ -219,7 +26,7 @@ export const ContractMonitoring: React.FC = () => {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
-            {/* Realtime Alert Feed (Header) */}
+            {/* Realtime Alert Header */}
             <div className="flex flex-col md:flex-row md:items-center gap-3 p-4 bg-slate-900 rounded-2xl text-white shadow-xl overflow-hidden relative group">
                 <div className="absolute inset-0 bg-blue-600/10 group-hover:bg-blue-600/20 transition-all"></div>
                 <div className="flex items-center gap-3 relative z-10">
@@ -267,7 +74,7 @@ export const ContractMonitoring: React.FC = () => {
                 </div>
             </div>
 
-            {/* Contract List */}
+            {/* Item List */}
             <div className="space-y-4">
                 {loading ? (
                     <div className="py-20 text-center text-slate-400">관제 데이터를 연결 중...</div>
@@ -282,7 +89,6 @@ export const ContractMonitoring: React.FC = () => {
                             }`}
                     >
                         <div className="flex items-center gap-3 md:gap-6">
-                            {/* Status Icon */}
                             <div className={`w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 ${item.type === 'ai' ? 'bg-purple-100 text-purple-600' :
                                 (item.type === 'contract' && item.emergency_level === 'critical') ? 'bg-red-100 text-red-600 animate-pulse' :
                                     (item.type === 'contract' && item.emergency_level === 'urgent') ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-400'
@@ -291,8 +97,6 @@ export const ContractMonitoring: React.FC = () => {
                                     (item.type === 'contract' && item.emergency_level === 'critical') ? <BellRing size={20} /> :
                                         (item.type === 'contract' && item.emergency_level === 'urgent') ? <AlertCircle size={20} /> : <Clock size={20} />}
                             </div>
-
-                            {/* Info */}
                             <div className="min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
                                     <h3 className="text-sm md:text-lg font-black text-slate-800 truncate">
@@ -321,7 +125,6 @@ export const ContractMonitoring: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Action Area */}
                         <div className="flex items-center justify-between md:justify-end gap-3 md:gap-4 border-t md:border-0 border-slate-100 pt-3 md:pt-0">
                             <div className="md:text-right md:mr-4">
                                 <p className="text-[10px] text-slate-400 font-bold uppercase mb-0.5">배정 파트너</p>

@@ -4,8 +4,8 @@ import { Consultation, ConsultationTopic, Message } from '../../types/consultati
 import { ChatBot } from './ChatBot';
 import { streamConsultationMessage } from '../../lib/gemini';
 import { createConsultation, updateConsultation, getFacilityFaqs } from '../../lib/queries';
-import { supabase } from '../../lib/supabaseClient';
-import { useUser } from '../../lib/auth';
+import { getAuthClient } from '../../lib/supabaseClient';
+import { useUser, useSession } from '../../lib/auth';
 import { ArrowLeft, MoreVertical } from 'lucide-react';
 
 interface Props {
@@ -24,6 +24,7 @@ export const ConsultationView: React.FC<Props> = ({
     onOpenLogin
 }) => {
     const { user } = useUser();
+    const { session } = useSession();
     const [messages, setMessages] = useState<Message[]>([]);
     const [topic, setTopic] = useState<ConsultationTopic | undefined>(undefined);
     const [isLoading, setIsLoading] = useState(false);
@@ -62,13 +63,14 @@ export const ConsultationView: React.FC<Props> = ({
 
         if (!consultationId) {
             // Create new consultation
+            const authClient = await getAuthClient(session, { strict: true });
             const result = await createConsultation(
                 facility.id,
                 user.id,
                 user.fullName || user.firstName || '사용자',
                 user.primaryPhoneNumber?.phoneNumber || '',
                 `[${topic || '일반 상담'}] ${newMessages[newMessages.length - 1]?.text || '상담 시작'}`,
-                supabase
+                authClient
             );
             if (result?.id) setConsultationId(result.id);
         } else {

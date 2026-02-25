@@ -3,6 +3,7 @@ import { useSession } from '../../lib/auth';
 import { getAuthClient } from '../../lib/supabaseClient';
 import { useSubscriptions } from '../../hooks/useFinancials';
 import { updateSubscriptionBillingDate } from '../../lib/api/superAdmin';
+import { promptAsync } from '../../src/components/common/ConfirmModal';
 import { toast } from 'sonner';
 import { Building2, CheckCircle2, AlertCircle, Search, Calendar } from 'lucide-react';
 
@@ -19,7 +20,7 @@ export const SubscriptionManager = ({ onManage }: { onManage: (facilityName: str
     if (loading) return <div className="p-10 text-center">로딩 중...</div>;
 
     const handleUpdateBillingDate = async (facilityId: string, current: string) => {
-        const newDate = prompt('새로운 재결제 예정일을 입력하세요 (YYYY-MM-DD):', current?.split('T')[0] || '');
+        const newDate = await promptAsync('새로운 재결제 예정일을 입력하세요', '재결제 예정일 변경', { defaultValue: current?.split('T')[0] || '', placeholder: 'YYYY-MM-DD' });
         if (newDate) {
             try {
                 const client = await getAuthClient(session, { strict: true });
@@ -85,7 +86,7 @@ export const SubscriptionManager = ({ onManage }: { onManage: (facilityName: str
                     <h3 className="text-sm font-bold text-slate-800">구독 시설 목록 <span className="text-slate-400 font-normal">({filteredFacilities.length}건)</span></h3>
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border rounded-lg">
                         <Search className="w-3.5 h-3.5 text-slate-400" />
-                        <input type="text" value={subsSearch} onChange={(e) => setSubsSearch(e.target.value)} placeholder="시설명, 플랜명 검색..." className="bg-transparent text-xs outline-none w-32" />
+                        <input id="subs-search" name="subs-search" type="text" value={subsSearch} onChange={(e) => setSubsSearch(e.target.value)} placeholder="시설명, 플랜명 검색..." className="bg-transparent text-xs outline-none w-32" />
                     </div>
                 </div>
                 <div className="divide-y divide-slate-100 max-h-[500px] overflow-y-auto">

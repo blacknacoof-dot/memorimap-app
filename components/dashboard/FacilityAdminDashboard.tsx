@@ -8,7 +8,7 @@ import { ConsultationList } from '../ConsultationList';
 import { ReservationDetailModal } from '../ReservationDetailModal';
 import { FacilityEditModal } from '../FacilityEditModal';
 import { FacilityFAQManager } from '../FacilityFAQManager';
-import { confirmAsync } from '../../src/components/common/ConfirmModal';
+import { confirmAsync, promptAsync } from '../../src/components/common/ConfirmModal';
 import { Loader2, CheckCircle, XCircle, Clock, ArrowLeft, Home, Edit, Building2, MapPin, Phone, ArrowRight, Siren, HelpCircle, MessageSquare, Calendar } from 'lucide-react';
 import { toast } from 'sonner'; // [Phase 2] Error Handler
 
@@ -37,16 +37,16 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
     } | null>(null);
 
     useEffect(() => {
-        if (user) {
+        if (user?.id) {
             loadData();
         }
-    }, [user]);
+    }, [user?.id]);
 
     const loadData = async () => {
         if (!user) return;
         setIsLoading(true);
         try {
-            const client = await getAuthClient(session);
+            const client = await getAuthClient(session, { strict: true });
             // loadData started
 
             // Get the single facility owned by this user (using auth client for RLS)
@@ -90,7 +90,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                     .select('*')
                     .eq('facility_id', facilityId)
                     .order('created_at', { ascending: false });
-                if (consError) console.error('[Dashboard] consultations error:', consError);
+                if (consError) toast.error('상담 목록 로딩 실패');
                 const cons = (consData || []) as Consultation[];
                 // consultations loaded
                 setConsultations(cons);
@@ -98,7 +98,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                 console.warn('[Dashboard] No facilityId found for user:', user.id);
             }
         } catch (err) {
-            console.error('[Dashboard] Error loading facility data:', err);
+            toast.error('시설 데이터 로딩 실패');
         } finally {
             setIsLoading(false);
         }
@@ -203,7 +203,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
         if (!await confirmAsync('이 예약을 승인하시겠습니까?')) return;
 
         try {
-            const client = await getAuthClient(session);
+            const client = await getAuthClient(session, { strict: true });
             await approveReservation(reservationId, client);
             setReservations(prev => prev.map(r =>
                 r.id === reservationId ? { ...r, status: 'confirmed' as const } : r
@@ -216,10 +216,11 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
     };
 
     const handleReject = async (reservationId: string) => {
-        const reason = prompt('거절 사유를 입력해주세요 (선택):');
+        const reason = await promptAsync('거절 사유를 입력해주세요', '예약 거절', { placeholder: '거절 사유 (선택)' });
+        if (reason === null) return;
 
         try {
-            const client = await getAuthClient(session);
+            const client = await getAuthClient(session, { strict: true });
             await rejectReservation(reservationId, reason || undefined, client);
             setReservations(prev => prev.map(r =>
                 r.id === reservationId ? { ...r, status: 'cancelled' as const } : r
@@ -417,7 +418,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                     consultations={consultations}
                     onAnswer={async (id, text) => {
                         try {
-                            const client = await getAuthClient(session);
+                            const client = await getAuthClient(session, { strict: true });
                             const { error } = await client
                                 .from('consultations')
                                 .update({ answer: text, answered_at: new Date().toISOString(), status: 'accepted', is_read: true })
@@ -428,17 +429,17 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                                 ));
                                 toast.success('답변이 전송되었습니다.');
                             } else {
-                                console.error('[Dashboard] answer error:', error);
+                                // answer error
                                 toast.error('답변 전송 실패');
                             }
                         } catch (e) {
-                            console.error('[Dashboard] answer exception:', e);
+                            // answer exception
                             toast.error('답변 전송 실패');
                         }
                     }}
                     onRead={async (id) => {
                         try {
-                            const client = await getAuthClient(session);
+                            const client = await getAuthClient(session, { strict: true });
                             await client
                                 .from('consultations')
                                 .update({ is_read: true })
@@ -447,7 +448,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                                 c.id === id ? { ...c, is_read: true } : c
                             ));
                         } catch (e) {
-                            console.error('[Dashboard] markRead error:', e);
+                            // markRead error
                         }
                     }}
                 />

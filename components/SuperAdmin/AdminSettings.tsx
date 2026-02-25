@@ -69,11 +69,11 @@ export const AdminSettings = () => {
                 <div className="space-y-3">
                     <div>
                         <label className="block text-xs font-medium text-slate-500 mb-1">관리자 이름</label>
-                        <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full text-sm p-2 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500" />
+                        <input id="admin-fullname" name="admin-fullname" type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full text-sm p-2 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-slate-500 mb-1">연락처</label>
-                        <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="010-0000-0000" className="w-full text-sm p-2 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500" />
+                        <input id="admin-phone" name="admin-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="010-0000-0000" className="w-full text-sm p-2 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500" />
                     </div>
                     <button
                         onClick={handleSaveProfile}

@@ -182,7 +182,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
         const realUuid = data.id;
 
         const [subscription, rawReviews, images] = await Promise.all([
-          getFacilitySubscription(realUuid),
+          getFacilitySubscription(realUuid, supabase),
           import('../lib/queries').then(m => m.getReviewsBySpace(realUuid)),
           import('../lib/queries').then(m => m.getFacilityImages(realUuid))
         ]);

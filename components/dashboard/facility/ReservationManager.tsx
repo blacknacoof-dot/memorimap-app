@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Check, X, Clock, Calendar, MessageSquare } from 'lucide-react';
 import { Reservation } from '@/types/db';
+import { promptAsync } from '@/src/components/common/ConfirmModal';
 
 interface ReservationManagerProps {
     reservations: Reservation[];
@@ -16,8 +17,8 @@ export default function ReservationManager({ reservations, onUpdateStatus }: Res
         return r.status === filter;
     });
 
-    const handleRejectClick = (id: string) => {
-        const reason = prompt("거절 사유를 입력해주세요 (예: 예약 마감, 휴무일 등)");
+    const handleRejectClick = async (id: string) => {
+        const reason = await promptAsync('거절 사유를 입력해주세요', '예약 거절', { placeholder: '예: 예약 마감, 휴무일 등' });
         if (reason) {
             onUpdateStatus(id, 'rejected', reason);
         }

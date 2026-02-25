@@ -88,6 +88,8 @@ export const PartnerAdmissions: React.FC = () => {
             <div className="bg-white p-4 rounded-xl shadow-sm border flex items-center gap-2">
                 <Search className="text-gray-400" size={20} />
                 <input
+                    id="admission-search"
+                    name="admission-search"
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}

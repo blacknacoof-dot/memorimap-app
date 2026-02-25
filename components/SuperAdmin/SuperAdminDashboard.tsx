@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useUser } from '../../lib/auth';
 import {
     Building2, TrendingUp, Users,
-    ChevronRight, LogOut, Menu, X,
-    FileText, Settings, ShieldCheck,
+    LogOut, Menu, X, FileText,
+    Settings, ShieldCheck,
     MonitorStop, MessageSquare,
     CreditCard, History, UserCog
 } from 'lucide-react';
@@ -12,7 +12,7 @@ import { PartnerAdmissions } from './PartnerAdmissions';
 import { ContractMonitoring } from './ContractMonitoring';
 import { RevenueManagement } from './RevenueManagement';
 import { NoticeManagement } from './NoticeManagement';
-import { useLeads } from '../../hooks/useLeads';
+import { AdminLeadsView } from './AdminLeadsView';
 import { UserManagement } from './UserManagement';
 import { FacilityManagement } from './FacilityManagement';
 import { NotificationCenter } from '../NotificationCenter';
@@ -21,6 +21,7 @@ import { AdminCommunication } from '../admin/AdminCommunication';
 import { AdminSettings } from './AdminSettings';
 import { SystemSettings } from './SystemSettings';
 import { SubscriptionManager } from './SubscriptionManager';
+import { SuperAdminGuard } from './SuperAdminGuard';
 
 // MOCK_DATA removed. Using real hooks.
 
@@ -101,66 +102,16 @@ const SideMenuDrawer = ({ isOpen, onClose, onNavigate }: { isOpen: boolean; onCl
     );
 };
 
-// AdminSettings, SystemSettings, SubscriptionManager → extracted to separate files
-
-/** [Tab C] Consultation Leads */
-const AdminLeadsView = () => {
-    const { leads, loading } = useLeads();
-
-    if (loading) return <div className="p-10 text-center">로딩 중...</div>;
-
-    const newLeadsCount = leads.filter(l => l.status === 'new').length;
-
-    return (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="p-3 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                <div>
-                    <h3 className="text-sm font-bold text-slate-800">상담 신청 관리</h3>
-                </div>
-                {newLeadsCount > 0 && (
-                    <span className="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-1 rounded-full animate-pulse">
-                        {newLeadsCount} New
-                    </span>
-                )}
-            </div>
-
-            <div className="divide-y divide-slate-100 h-96 overflow-y-auto">
-                {leads.map((lead) => (
-                    <div key={lead.id} className="group p-3 hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className={`w-2 h-2 rounded-full shrink-0 ${lead.status === 'new' ? 'bg-red-500 ring-2 ring-red-100' : 'bg-slate-300'}`} />
-                            <div className="flex flex-col">
-                                <div className="flex items-center gap-2">
-                                    <span className={`text-sm font-bold ${lead.status === 'new' ? 'text-slate-900' : 'text-slate-600'}`}>
-                                        {lead.contact_name || '고객'}
-                                    </span>
-                                    <span className="text-xs text-slate-400 tracking-tight">
-                                        {lead.contact_phone}
-                                    </span>
-                                </div>
-                                <span className="text-[10px] text-slate-500 mt-0.5">
-                                    {lead.category}
-                                </span>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3 text-right">
-                            <span className="text-[10px] text-slate-400 whitespace-nowrap">
-                                {new Date(lead.created_at).toLocaleDateString()}
-                            </span>
-                            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-slate-500 transition-colors" />
-                        </div>
-                    </div>
-                ))}
-                {leads.length === 0 && (
-                    <div className="p-10 text-center text-gray-400 text-sm">접수된 상담이 없습니다.</div>
-                )}
-            </div>
-        </div>
-    );
-};
-
 /** [Main Container] */
 export default function SuperAdminDashboard({ onBack }: { onBack?: () => void }) {
+    return (
+        <SuperAdminGuard onBack={onBack}>
+            <SuperAdminDashboardInner onBack={onBack} />
+        </SuperAdminGuard>
+    );
+}
+
+function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
     const { user } = useUser();
     const [activeTab, setActiveTab] = useState<'subs' | 'revenue' | 'leads' | 'admissions' | 'facilities' | 'users' | 'notices' | 'logs' | 'communication' | 'admin_settings' | 'system_settings' | 'monitoring'>('monitoring');
     const [isMenuOpen, setIsMenuOpen] = useState(false);

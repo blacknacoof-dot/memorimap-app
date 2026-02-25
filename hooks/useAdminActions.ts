@@ -29,12 +29,17 @@ export function useApprovePartner() {
 
             if (!token) {
                 logger.error('[approvePartner] No auth token available');
-                throw new Error('인증 토큰을 가져올 수 없습니다');
+                throw new Error('인증 토큰을 가져올 수 없습니다. 다시 로그인해주세요.');
             }
 
-            const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/approve-partner`;
+            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+            if (!supabaseUrl) {
+                throw new Error('Supabase URL이 설정되지 않았습니다.');
+            }
 
-            logger.debug('[approvePartner] Token retrieved, sending request to:', functionUrl);
+            const functionUrl = `${supabaseUrl}/functions/v1/approve-partner`;
+
+            logger.debug('[approvePartner] Sending request to:', functionUrl, 'params:', params);
 
             const response = await fetch(functionUrl, {
                 method: 'POST',
@@ -46,15 +51,23 @@ export function useApprovePartner() {
                 body: JSON.stringify(params)
             });
 
-            const result = await response.json();
+            let result: ApprovePartnerResult;
+            try {
+                result = await response.json();
+            } catch {
+                throw new Error(`서버 응답 파싱 실패 (HTTP ${response.status}). Edge Function이 배포되었는지 확인하세요.`);
+            }
 
             if (!response.ok) {
-                throw new Error(result.error || '처리 중 오류가 발생했습니다');
+                const serverError = result.error || `HTTP ${response.status}`;
+                console.error('[approvePartner] Server error:', serverError, result);
+                throw new Error(`승인/거절 실패: ${serverError}`);
             }
 
             return result;
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류';
+            console.error('[approvePartner] Error:', errorMessage, err);
             setError(errorMessage);
             throw err;
         } finally {

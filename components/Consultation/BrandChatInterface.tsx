@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, Bot, X, Phone, FileText, ChevronRight, Check, Star, Shield, Info, ArrowLeft, MessageSquare, BookOpen, Clock, Calendar, User, Smartphone, ChevronDown, Siren } from 'lucide-react';
+import { toast } from 'sonner';
 import { FuneralCompany } from '../../types';
 import { ConsultationForm, QuickMenuBtn } from './BrandChatHelpers';
 import { PetChatInterface } from './PetChatInterface';
 import { sendMessageToGemini, ChatMessage as GeminiMessage } from '../../services/geminiService';
-import { supabase } from '../../lib/supabaseClient';
 
 interface Props {
     company: FuneralCompany;
@@ -227,10 +227,13 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
         // Supabase에 상담 접수 저장
         const isUrgent = formMode === 'urgent';
         const isPhone = formMode === 'phone';
-        const contractNumber = `${isUrgent ? 'URG' : 'REQ'}-2025-${Math.floor(Math.random() * 900000 + 100000)}`;
+        const contractNumber = `${isUrgent ? 'URG' : 'REQ'}-2026-${Math.floor(Math.random() * 900000 + 100000)}`;
 
         try {
             const { saveSangjoContract } = await import('../../lib/sangjoQueries');
+            const { supabase, getAuthClient } = await import('../../lib/supabaseClient');
+            const { data: { session: currentSession } } = await supabase.auth.getSession();
+            const client = await getAuthClient(currentSession, { strict: true });
             await saveSangjoContract({
                 id: `db-${Date.now()}`,
                 contract_number: contractNumber,
@@ -244,9 +247,10 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
                 total_price: 0,
                 emergency_level: isUrgent ? 'critical' : 'normal',
                 created_at: new Date().toISOString()
-            }, supabase);
+            }, client);
         } catch (e) {
-            // saveSangjoContract failed (non-blocking)
+            toast.error('상담 접수 저장에 실패했습니다.');
+            return;
         }
 
         if (isPhone) {

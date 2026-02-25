@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { XCircle, Search as SearchIcon, Building2, MapPin, PlusCircle, CheckCircle } from 'lucide-react';
-import { supabase } from '../../lib/supabaseClient';
+import { getAuthClient } from '../../lib/supabaseClient';
+import { useSession } from '../../lib/auth';
 
 interface Props {
     isOpen: boolean;
@@ -18,6 +19,7 @@ export const FacilityMappingModal: React.FC<Props> = ({ isOpen, onClose, inquiry
     const [searchResults, setSearchResults] = useState<Array<{ id: string; name: string; address: string; type: string; owner_user_id: string | null }>>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedFacility, setSelectedFacility] = useState<string | null>(null);
+    const { session } = useSession();
 
     // Initial search when modal opens
     useEffect(() => {
@@ -28,11 +30,12 @@ export const FacilityMappingModal: React.FC<Props> = ({ isOpen, onClose, inquiry
     }, [isOpen, inquiryData]);
 
     const handleSearch = async (query: string) => {
-        if (!query) return;
+        if (!query || !session) return;
         setIsLoading(true);
         try {
+            const client = await getAuthClient(session, { strict: true });
             const sanitized = query.trim().replace(/[%_\\]/g, '\\$&');
-            const { data, error } = await supabase
+            const { data, error } = await client
                 .from('facilities')
                 .select('id, name, address, type, owner_user_id')
                 .ilike('name', `%${sanitized}%`)
@@ -69,6 +72,8 @@ export const FacilityMappingModal: React.FC<Props> = ({ isOpen, onClose, inquiry
                     <div className="relative">
                         <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
                         <input
+                            id="facility-mapping-search"
+                            name="facility-mapping-search"
                             type="text"
                             placeholder="시설명 검색..."
                             className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"

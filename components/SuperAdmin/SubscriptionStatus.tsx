@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getAllSubscriptions } from '../../lib/queries';
-import { supabase } from '../../lib/supabaseClient';
-import { Search, Zap, Calendar, TrendingUp } from 'lucide-react';
+import { getAuthClient } from '../../lib/supabaseClient';
+import { useSession } from '../../lib/auth';
+import { Search, Zap, TrendingUp } from 'lucide-react';
 
 interface Subscription {
     id: string;
@@ -15,15 +16,19 @@ export const SubscriptionStatus: React.FC = () => {
     const [subs, setSubs] = useState<Subscription[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const { session } = useSession();
 
     useEffect(() => {
+        if (!session) return;
         loadSubscriptions();
-    }, []);
+    }, [session]);
 
     const loadSubscriptions = async () => {
+        if (!session) return;
         setIsLoading(true);
         try {
-            const data = await getAllSubscriptions(supabase);
+            const client = await getAuthClient(session, { strict: true });
+            const data = await getAllSubscriptions(client);
             setSubs(data);
         } catch (error) {
             // getAllSubscriptions failed
@@ -66,6 +71,8 @@ export const SubscriptionStatus: React.FC = () => {
             <div className="bg-white p-4 rounded-xl shadow-sm border flex items-center gap-2">
                 <Search className="text-gray-400" size={20} />
                 <input
+                    id="subscription-search"
+                    name="subscription-search"
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -119,7 +126,6 @@ export const SubscriptionStatus: React.FC = () => {
                                             </td>
                                             <td className="px-2 py-3 text-gray-500 text-center">
                                                 <div className="flex items-center justify-center gap-0.5">
-                                                    {/* <Calendar size={10} className="text-gray-400 shrink-0"/> Space saving */}
                                                     <span className="whitespace-nowrap text-[11px]">{s.expiresAt}</span>
                                                 </div>
                                             </td>

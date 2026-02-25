@@ -6,7 +6,7 @@ import { Facility, ViewState } from './types';
 import { Consultation } from './types/consultation';
 import { AlertCircle, X } from 'lucide-react';
 import { Toaster } from 'sonner';
-import { ConfirmModal } from './src/components/common/ConfirmModal';
+import { ConfirmModal, PromptModal } from './src/components/common/ConfirmModal';
 import { useUser, useClerk, useSession } from './lib/auth';
 import { useProfileSync } from './hooks/useProfileSync';
 import { useLocation } from './hooks/useLocation';
@@ -324,6 +324,7 @@ const App: React.FC = () => {
           {/* [Removed] Duplicate toast rendering — single toast already rendered inside layout */}
         </div>
       <ConfirmModal />
+      <PromptModal />
       </ErrorBoundary>
     </HashRouter>
   );

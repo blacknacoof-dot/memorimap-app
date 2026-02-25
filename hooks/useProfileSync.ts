@@ -18,7 +18,6 @@ export const useProfileSync = () => {
     }
 
     if (!user || !isSupabaseConfigured() || hasSyncedRef.current) return;
-    hasSyncedRef.current = true;
 
     const syncProfile = async () => {
       try {
@@ -41,6 +40,8 @@ export const useProfileSync = () => {
           if (pgError.code !== '42501' && pgError.status !== 401) {
             console.warn('[ProfileSync] Profile sync failed:', pgError.code, pgError.message);
           }
+        } else {
+          hasSyncedRef.current = true;
         }
       } catch (err) {
         console.error('[ProfileSync] Error:', err);

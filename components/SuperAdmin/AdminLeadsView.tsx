@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { getAllLeads } from '../../lib/queries';
-import { supabase } from '../../lib/supabaseClient';
-import { FileText, Phone, MapPin, AlertCircle, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { getAuthClient } from '../../lib/supabaseClient';
+import { useSession } from '../../lib/auth';
+import { Phone, MapPin, Clock } from 'lucide-react';
 
 interface Lead {
     id: string;
@@ -20,17 +22,24 @@ interface Lead {
 export const AdminLeadsView: React.FC = () => {
     const [leads, setLeads] = useState<Lead[]>([]);
     const [loading, setLoading] = useState(true);
+    const { session } = useSession();
 
     useEffect(() => {
+        if (!session) {
+            setLoading(false);
+            return;
+        }
         loadLeads();
-    }, []);
+    }, [session]);
 
     const loadLeads = async () => {
+        if (!session) return;
         try {
-            const data = await getAllLeads(supabase);
+            const client = await getAuthClient(session, { strict: true });
+            const data = await getAllLeads(client);
             setLeads((data || []) as Lead[]);
         } catch (error) {
-            // getAllLeads failed
+            toast.error('리드 목록 로딩 실패');
         } finally {
             setLoading(false);
         }
@@ -63,7 +72,6 @@ export const AdminLeadsView: React.FC = () => {
         if (parts.length === 3) {
             return `${parts[0]}-****-${parts[2]}`;
         }
-        // Fallback for non-standard formats
         return phone.replace(/(\d{3})(\d{3,4})(\d{4})/, '$1-****-$3');
     };
 

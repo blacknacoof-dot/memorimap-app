@@ -39,7 +39,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
 
     useEffect(() => {
         const fetchPartner = async () => {
-            const client = await getAuthClient(session);
+            const client = await getAuthClient(session, { strict: true });
 
             // partnerId는 실제로 facility UUID (sangjo_hq_admins.sangjo_id에서 가져온 값)
             // 바로 facilityId로 설정
@@ -86,8 +86,9 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                 if (facility) setFacilityId(facility.id);
             }
         };
+        if (!session) return;
         fetchPartner();
-    }, [partnerId]);
+    }, [partnerId, session]);
 
     // facility_id가 확보되면 상담/예약 데이터 로드
     useEffect(() => {
@@ -95,7 +96,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
 
         const loadFacilityData = async () => {
             try {
-                const client = await getAuthClient(session);
+                const client = await getAuthClient(session, { strict: true });
                 const [consResult, resResult, subData] = await Promise.all([
                     client.from('consultations').select('*').eq('facility_id', facilityId).order('created_at', { ascending: false }),
                     client.from('reservations').select('*').eq('facility_id', facilityId).order('created_at', { ascending: false }),
@@ -298,7 +299,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                 <ConsultationList
                                     consultations={consultations}
                                     onAnswer={async (id, text) => {
-                                        const client = await getAuthClient(session);
+                                        const client = await getAuthClient(session, { strict: true });
                                         const { error } = await client
                                             .from('consultations')
                                             .update({ answer: text, answered_at: new Date().toISOString(), status: 'accepted', is_read: true })
@@ -313,7 +314,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                         }
                                     }}
                                     onRead={async (id) => {
-                                        const client = await getAuthClient(session);
+                                        const client = await getAuthClient(session, { strict: true });
                                         await client.from('consultations').update({ is_read: true }).eq('id', id);
                                         setConsultations(prev => prev.map(c => c.id === id ? { ...c, is_read: true } : c));
                                     }}
@@ -383,7 +384,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                                                 if (!res.id) return;
                                                                 if (!confirm('이 예약을 승인하시겠습니까?')) return;
                                                                 try {
-                                                                    const client = await getAuthClient(session);
+                                                                    const client = await getAuthClient(session, { strict: true });
                                                                     await approveReservation(res.id, client);
                                                                     setReservations(prev => prev.map(r => r.id === res.id ? { ...r, status: 'confirmed' as const } : r));
                                                                     toast.success('예약이 승인되었습니다.');
@@ -400,7 +401,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                                                 if (!res.id) return;
                                                                 if (!confirm('이 예약을 거절하시겠습니까?')) return;
                                                                 try {
-                                                                    const client = await getAuthClient(session);
+                                                                    const client = await getAuthClient(session, { strict: true });
                                                                     await rejectReservation(res.id, undefined, client);
                                                                     setReservations(prev => prev.map(r => r.id === res.id ? { ...r, status: 'cancelled' as const } : r));
                                                                     toast.success('예약이 거절되었습니다.');

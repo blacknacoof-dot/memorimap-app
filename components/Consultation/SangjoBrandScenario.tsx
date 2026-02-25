@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, X, Bot, Check, ChevronRight, Shield, Star, Phone, FileText, Clock, Siren, Home } from 'lucide-react';
+import { toast } from 'sonner';
 import { FuneralCompany } from '../../types';
 import { ConsultationForm } from './BrandChatHelpers';
-import { supabase } from '../../lib/supabaseClient';
 
 interface Props {
     company: FuneralCompany;
@@ -246,6 +246,9 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
         // Save to DB
         try {
             const { saveSangjoContract } = await import('../../lib/sangjoQueries');
+            const { supabase, getAuthClient } = await import('../../lib/supabaseClient');
+            const { data: { session: currentSession } } = await supabase.auth.getSession();
+            const client = await getAuthClient(currentSession, { strict: true });
             await saveSangjoContract({
                 id: `db-${Date.now()}`,
                 contract_number: contractNumber,
@@ -259,9 +262,10 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
                 total_price: 0,
                 emergency_level: isUrgent ? 'critical' : 'normal',
                 created_at: new Date().toISOString(),
-            }, supabase);
+            }, client);
         } catch (e) {
-            // saveSangjoContract failed (non-blocking)
+            toast.error('상담 접수 저장에 실패했습니다.');
+            return;
         }
 
         const completeText = isUrgent
