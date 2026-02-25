@@ -4,10 +4,11 @@ import {
     CheckCircle, Send,
     MoreHorizontal, Smartphone, Hash, MonitorDot, XCircle, ArrowLeft
 } from 'lucide-react';
-import { toast } from 'sonner'; // [Phase 2] Error Handler
+import { toast } from 'sonner';
 import { supabase, getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
 import { PartnerConversation } from '../../types';
+import { confirmAsync } from '../../src/components/common/ConfirmModal';
 
 interface LiveConsultationProps {
     partnerId: string;
@@ -19,18 +20,6 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
     const [input, setInput] = useState('');
     const scrollRef = useRef<HTMLDivElement>(null);
     const { session } = useSession();
-
-    useEffect(() => {
-        loadConversations();
-        const sub = setupRealtime();
-        return () => { sub(); };
-    }, [partnerId]);
-
-    useEffect(() => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        }
-    }, [selectedId, conversations]);
 
     const loadConversations = async () => {
         const client = await getAuthClient(session);
@@ -69,14 +58,30 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
         };
     };
 
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        void loadConversations();
+        const sub = setupRealtime();
+        return () => { sub(); };
+    }, [partnerId]);
+
+    useEffect(() => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+    }, [selectedId, conversations]);
+
     const handleHijack = async () => {
         if (!selectedId) return;
+        const confirmed = await confirmAsync('이 대화에 직접 개입하시겠습니까?', '상담 개입');
+        if (!confirmed) return;
         const client = await getAuthClient(session, { strict: true });
         const { error } = await client
             .from('partner_conversations')
             .update({ conversation_status: 'agent_connected', priority: 'high' })
             .eq('id', selectedId);
         if (error) toast.error('개입 실패');
+        else toast.success('상담에 개입했습니다.');
     };
 
     const handleSend = async () => {

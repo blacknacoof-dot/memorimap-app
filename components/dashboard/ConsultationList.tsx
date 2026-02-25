@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { getConsultationsByFacility, updateConsultationStatus, Consultation } from '@/lib/queries';
-import { getAuthClient } from '@/lib/supabaseClient';
 import { Clock, CheckCircle, XCircle, Check, Phone, MapPin, Users, Calendar, ChevronDown, RefreshCw } from 'lucide-react';
 import { aiConsultationService } from '@/lib/api/aiConsultation';
 import { AiConsultationStatus } from '@/types';
-import { supabase, getAuthClient } from '@/lib/supabaseClient'; // [Realtime]
+import { supabase, getAuthClient } from '@/lib/supabaseClient';
 import { useApiRetry } from '@/hooks/useApiRetry';
 import { useSession } from '@/lib/auth';
 import { ConsultationActionModal } from './facility/ConsultationActionModal';

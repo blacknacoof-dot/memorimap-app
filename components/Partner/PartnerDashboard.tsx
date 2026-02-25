@@ -600,9 +600,9 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                                         </td>
                                                         <td className="px-3 md:px-6 py-3.5 text-right">
                                                             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                                                p.status === 'paid' || p.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                                                                p.status === 'succeeded' ? 'bg-green-100 text-green-700' : p.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
                                                             }`}>
-                                                                {p.status === 'paid' || p.status === 'completed' ? '완료' : '대기'}
+                                                                {p.status === 'succeeded' ? '완료' : p.status === 'failed' ? '실패' : '대기'}
                                                             </span>
                                                         </td>
                                                     </tr>

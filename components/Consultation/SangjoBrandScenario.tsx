@@ -250,7 +250,7 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
             const { data: { session: currentSession } } = await supabase.auth.getSession();
             const client = await getAuthClient(currentSession, { strict: true });
             await saveSangjoContract({
-                id: `db-${Date.now()}`,
+                id: crypto.randomUUID(),
                 contract_number: contractNumber,
                 sangjo_id: company.id,
                 customer_name: (formData.name as string) || '익명 고객',

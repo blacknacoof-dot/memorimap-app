@@ -233,7 +233,7 @@ export interface SangjoContract {
   religion?: string;
   region?: string;
   total_price: number;
-  status: "상담신청" | "예약대기" | "임종발생" | "현장도착" | "염습중" | "장례식진행" | "완료";
+  status: "상담신청" | "예약대기" | "계약진행" | "임종발생" | "현장도착" | "염습중" | "장례식진행" | "완료";
   emergency_level?: 'normal' | 'urgent' | 'critical';
   platform_fee?: number;
   assigned_counselor?: string;

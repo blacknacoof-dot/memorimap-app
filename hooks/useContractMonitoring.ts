@@ -20,9 +20,12 @@ export function useContractMonitoring() {
             try {
                 const client = await getAuthClient(session, { strict: true });
                 setAuthClient(client);
-            } catch { /* session not ready */ }
+            } catch {
+                toast.error('인증 세션이 만료되었습니다. 다시 로그인해주세요.');
+            }
         };
-        initAuth();
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        void initAuth();
     }, [session]);
 
     const loadContracts = useCallback(async () => {
@@ -33,7 +36,8 @@ export function useContractMonitoring() {
                 .from('sangjo_contracts')
                 .select('*')
                 .order('created_at', { ascending: false });
-            if (!error && data) setContracts(data as SangjoContract[]);
+            if (error) throw error;
+            setContracts((data ?? []) as SangjoContract[]);
         } catch {
             toast.error('계약 목록 로딩 실패');
         } finally {
@@ -43,23 +47,28 @@ export function useContractMonitoring() {
 
     const loadAiConsultations = useCallback(async () => {
         if (!authClient) return;
-        const { data, error } = await authClient
-            .from('ai_consultations')
-            .select('*')
-            .in('status', [AiConsultationStatus.AGENT_REQUESTED, AiConsultationStatus.AGENT_CONNECTED])
-            .order('updated_at', { ascending: false });
-
-        if (!error && data) setAiConsultations(data as AiConsultation[]);
+        try {
+            const { data, error } = await authClient
+                .from('ai_consultations')
+                .select('*')
+                .in('status', [AiConsultationStatus.AGENT_REQUESTED, AiConsultationStatus.AGENT_CONNECTED])
+                .order('updated_at', { ascending: false });
+            if (error) throw error;
+            setAiConsultations((data ?? []) as AiConsultation[]);
+        } catch {
+            toast.error('AI 상담 목록 로딩 실패');
+        }
     }, [authClient]);
 
-    // Realtime: sangjo_contracts
+    // Realtime: sangjo_contracts + ai_consultations
     useEffect(() => {
         if (!authClient) return;
         loadContracts();
         loadAiConsultations();
 
+        const sessionId = session?.user?.id ?? 'anon';
         const contractChannel = supabase
-            .channel('super-admin-monitoring')
+            .channel(`contract-monitor-${sessionId}`)
             .on('postgres_changes', {
                 event: '*', schema: 'public', table: 'sangjo_contracts'
             }, (payload) => {
@@ -80,7 +89,7 @@ export function useContractMonitoring() {
             .subscribe();
 
         const aiChannel = supabase
-            .channel('ai-monitoring')
+            .channel(`ai-monitor-${sessionId}`)
             .on('postgres_changes', {
                 event: '*', schema: 'public', table: 'ai_consultations'
             }, (payload) => {
@@ -107,7 +116,7 @@ export function useContractMonitoring() {
             aiChannel.unsubscribe();
             supabase.removeChannel(aiChannel);
         };
-    }, [authClient, loadContracts, loadAiConsultations]);
+    }, [authClient, loadContracts, loadAiConsultations, session?.user?.id]);
 
     const handleJoinChat = async (consultation: AiConsultation) => {
         if (consultation.status === AiConsultationStatus.AGENT_CONNECTED) {

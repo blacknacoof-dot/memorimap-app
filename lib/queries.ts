@@ -941,7 +941,7 @@ export const updateUserProfile = async (userId: string, data: Partial<{
  */
 const notifyReservationStatusChange = async (
     reservation: Record<string, unknown>,
-    newStatus: 'confirmed' | 'cancelled',
+    newStatus: 'confirmed' | 'cancelled' | 'rejected',
     client: SupabaseClient,
     reason?: string
 ) => {
@@ -1924,12 +1924,17 @@ export const markConsultationAsRead = async (consultationId: string, client: Sup
 };
 
 // Remove Stub or Redirect
-export const updateConsultation = async (id: string, data: Record<string, unknown> | unknown[], client?: SupabaseClient) => {
-    // If data has answer, route to answerConsultation logic?
-    // But better to deprecate this stub.
-    // Deprecated: answerConsultation 또는 updateConsultationStatus 사용 권장
-    if (!Array.isArray(data) && typeof data.answer === 'string' && client) {
+export const updateConsultation = async (id: string, data: Record<string, unknown> | unknown[], client: SupabaseClient) => {
+    if (!Array.isArray(data) && typeof data.answer === 'string') {
         return answerConsultation(id, data.answer, client);
+    }
+    if (Array.isArray(data)) {
+        const { error } = await client
+            .from('consultations')
+            .update({ messages: data, updated_at: new Date().toISOString() })
+            .eq('id', id);
+        if (error) throw error;
+        return true;
     }
     return false;
 };

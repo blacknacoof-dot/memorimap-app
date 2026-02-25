@@ -8,6 +8,7 @@ import { supabase, getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
 import { PartnerOperation } from '../../types';
 import { toast } from 'sonner';
+import { confirmAsync } from '../../src/components/common/ConfirmModal';
 
 interface OperationsManagementProps {
     partnerId: string;
@@ -37,12 +38,6 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
 
     const STAGES: PartnerOperation['operation_stage'][] = ['pending', 'dispatched', 'in_progress', 'completed'];
 
-    useEffect(() => {
-        loadOperations();
-        const sub = setupRealtime();
-        return () => { sub(); };
-    }, [partnerId]);
-
     const loadOperations = async () => {
         const client = await getAuthClient(session);
         const { data } = await client
@@ -63,7 +58,7 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
                 table: 'partner_operations',
                 filter: `partner_id=eq.${partnerId}`
             }, () => {
-                loadOperations(); // Simple reload for Kanban
+                loadOperations();
             })
             .subscribe();
         return () => {
@@ -72,7 +67,16 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
         };
     };
 
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        void loadOperations();
+        const sub = setupRealtime();
+        return () => { sub(); };
+    }, [partnerId]);
+
     const handleMove = async (id: string, nextStage: PartnerOperation['operation_stage']) => {
+        const confirmed = await confirmAsync(`운영 단계를 '${nextStage}'(으)로 변경하시겠습니까?`, '단계 변경');
+        if (!confirmed) return;
         try {
             const client = await getAuthClient(session, { strict: true });
             const { error } = await client
@@ -81,7 +85,7 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
                 .eq('id', id);
             if (error) throw error;
             toast.success('단계가 변경되었습니다.');
-        } catch (err) {
+        } catch {
             toast.error('단계 변경에 실패했습니다.');
         }
     };

@@ -75,7 +75,8 @@ export const ConsultationView: React.FC<Props> = ({
             if (result?.id) setConsultationId(result.id);
         } else {
             // Update existing
-            await updateConsultation(consultationId, newMessages);
+            const updateClient = await getAuthClient(session, { strict: true });
+            await updateConsultation(consultationId, newMessages, updateClient);
         }
     };
 
