@@ -188,7 +188,7 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
             }
 
         } catch (error) {
-            console.error(error);
+            toast.error('AI 응답 중 오류가 발생했습니다.');
             setIsTyping(false);
             setIsLoading(false);
             setMessages(prev => [...prev, {

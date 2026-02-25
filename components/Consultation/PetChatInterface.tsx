@@ -409,7 +409,7 @@ export const PetChatInterface: React.FC<ComponentProps> = ({ company, onClose, o
             }]);
 
         } catch (error) {
-            console.error(error);
+            toast.error('AI 응답 중 오류가 발생했습니다.');
             setMessages(prev => [...prev, {
                 id: (Date.now() + 1).toString(),
                 sender: 'ai',

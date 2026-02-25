@@ -45,7 +45,6 @@ export const useScenarioChat = (facilityId: string, onAction?: (action: string, 
                     .single();
 
                 if (error) {
-                    // console.warn('No scenario found for this facility, using default.', error);
                     // Fallback to a default scenario if none exists
                     setScenario(DEFAULT_SCENARIO);
                     setCurrentNodeId('start_node');

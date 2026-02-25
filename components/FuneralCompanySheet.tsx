@@ -74,9 +74,6 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
     const handleSubmitReview = async () => {
-        // ⭐ 디버깅 로그 추가
-        // console.log('🔍 [DEBUG] company 객체:', company);
-
         if (!isLoggedIn || !currentUser) {
             toast.error('로그인이 필요한 기능입니다.');
             if (onOpenLogin) onOpenLogin();
@@ -122,7 +119,6 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
             setIsWritingReview(false);
             setReviewContent('');
         } catch (error) {
-            console.error('Review submission failed:', error);
             toast.error('후기 등록 중 오류가 발생했습니다.');
         } finally {
             setIsSubmittingReview(false);
@@ -147,7 +143,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                 toast.success('주소가 복사되었습니다!');
             }
         } catch (err) {
-            console.error('Share failed:', err);
+            // Share cancelled or unsupported — no action needed
         }
     };
 
@@ -163,7 +159,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
             const client = await getAuthClient(session, { strict: true });
             await storeToggleFavorite(currentUser.id, company, client);
         } catch (error) {
-            console.error('Like failed:', error);
+            toast.error('좋아요 처리에 실패했습니다.');
         }
     };
 
@@ -526,11 +522,6 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
 
                         <div className="space-y-4">
                             {(() => {
-                                // 🔕 DEBUG LOGS - 나중에 최적화할 때 다시 켜기
-                                // console.log('[FuneralCompanySheet] Company reviews:', company.reviews);
-                                // console.log('[FuneralCompanySheet] Review count:', company.reviewCount);
-                                // console.log('[FuneralCompanySheet] Company ID:', company.id);
-
                                 if (localReviews && localReviews.length > 0) {
                                     return localReviews.map(review => (
                                         <ReviewCard
@@ -547,7 +538,6 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                                                     toast.success('리뷰가 삭제되었습니다.');
                                                     setLocalReviews(prev => prev.filter(r => r.id !== reviewId));
                                                 } catch (error) {
-                                                    console.error('Failed to delete review:', error);
                                                     toast.error('리뷰 삭제에 실패했습니다.');
                                                 }
                                             }}

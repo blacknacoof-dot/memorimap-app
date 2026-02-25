@@ -38,7 +38,7 @@ export const ChatBot: React.FC<Props> = ({
 
     const handleSubmit = (e?: React.FormEvent) => {
         e?.preventDefault();
-        // console.log("ChatBot: handleSubmit triggered", { input, isLoading, topic }); // DEBUG
+
         if (!input.trim() || isLoading) {
             // Validations failed
             return;

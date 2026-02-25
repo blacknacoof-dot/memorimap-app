@@ -312,7 +312,6 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
           });
         }
       }, (err) => {
-        console.error("Geolocation error", err);
         toast.error("위치를 가져올 수 없습니다.");
       });
     },

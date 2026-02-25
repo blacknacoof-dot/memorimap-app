@@ -55,7 +55,7 @@ export function useRealtimeSubscription<T extends RealtimeRecord = RealtimeRecor
                 )
                 .subscribe((status, err) => {
                     if (status === 'SUBSCRIBED') {
-                        // console.log(`[Realtime] Subscribed to ${table} successfully.`);
+                        // Successfully subscribed
                     } else if (status === 'CHANNEL_ERROR') {
                         console.error(`[Realtime] Subscription error for ${table}:`, err);
                     }
@@ -66,7 +66,6 @@ export function useRealtimeSubscription<T extends RealtimeRecord = RealtimeRecor
 
         return () => {
             if (channel) {
-                // console.log(`[Realtime] Unsubscribing from ${table}...`);
                 supabase.removeChannel(channel);
             }
         };

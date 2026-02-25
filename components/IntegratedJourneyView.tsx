@@ -99,7 +99,6 @@ export default function IntegratedJourneyView({
                 });
 
             if (error) {
-                console.error('저장 실패:', error);
                 if (error.code === '42501') {
                     toast.error('보안 정책에 의해 저장이 거부되었습니다. 다시 로그인해주세요.');
                 } else {
@@ -111,7 +110,6 @@ export default function IntegratedJourneyView({
             toast.success('엔딩 노트가 안전하게 저장되었습니다.');
             loadData(); // UI 즉시 갱신
         } catch (err: unknown) {
-            console.error('저장 중 예외 발생:', err);
             toast.error('저장 중 문제가 발생했습니다. 다시 시도해주세요.');
         }
     };
@@ -149,7 +147,6 @@ export default function IntegratedJourneyView({
             });
 
             if (error) {
-                console.error('공유 생성 오류:', error);
                 toast.error('공유 생성 중 오류가 발생했습니다.');
                 return;
             }
@@ -165,7 +162,6 @@ export default function IntegratedJourneyView({
                 toast.success('공유 링크가 생성되었습니다!');
             }
         } catch (err) {
-            console.error('공유 생성 실패:', err);
             toast.error('공유 생성 중 오류가 발생했습니다.');
         } finally {
             setIsCreatingShare(false);

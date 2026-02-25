@@ -205,7 +205,6 @@ export const MyPageView: React.FC<Props> = ({
             setSangjoFavorites(prev => prev.filter(f => f.id !== favId));
             toast.success('즐겨찾기가 해제되었습니다.');
         } catch (err) {
-            console.error('Failed to remove sangjo favorite:', err);
             toast.error('오류가 발생했습니다.');
         }
     };

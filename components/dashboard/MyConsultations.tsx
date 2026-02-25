@@ -197,7 +197,6 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
                         .then(res => res)
                 );
                 if (error) {
-                    console.error('AI 상담 취소 실패:', error);
                     toast.error('취소 중 오류가 발생했습니다.');
                     return;
                 }
@@ -216,7 +215,6 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
             );
             toast.success('상담이 취소되었습니다.');
         } catch (e) {
-            console.error('상담 취소 실패:', e);
             toast.error('취소 중 오류가 발생했습니다.');
         }
     };
@@ -255,7 +253,6 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
             setConsultations(prev => prev.filter(c => c.id !== consultation.id));
             toast.success('상담 내역이 삭제되었습니다.');
         } catch (e) {
-            console.error('삭제 실패:', e);
             toast.error('삭제 중 오류가 발생했습니다. 다시 시도해주세요.');
         }
     };

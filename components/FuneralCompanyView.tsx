@@ -4,6 +4,7 @@ import { FUNERAL_COMPANIES } from '../constants';
 import { Star, Phone, ChevronRight, Award, ShieldCheck, HeartHandshake, Search, Scale, Check, Bot, Heart } from 'lucide-react';
 import { supabase, getAuthClient } from '../lib/supabaseClient';
 
+import { toast } from 'sonner';
 import { SangjoConsultationModal } from './Consultation/SangjoConsultationModal';
 import { sangjoFavoriteService } from '../services/sangjoFavoriteService';
 import { useUser, useSession } from '../lib/auth';
@@ -95,7 +96,6 @@ export const FuneralCompanyView: React.FC<Props> = ({
                     .order('id', { ascending: true });
 
                 if (error) {
-                    console.error('❌ [FuneralCompanyView] Fetch Error:', error);
                     throw error;
                 }
 
@@ -294,7 +294,7 @@ export const FuneralCompanyView: React.FC<Props> = ({
                     setCompanies(sortedCompanies);
                 }
             } catch (err) {
-                console.error("Failed to fetch sangjo companies:", err);
+                toast.error('상조 업체 목록을 불러오지 못했습니다.');
             } finally {
                 setIsLoading(false);
             }
@@ -334,7 +334,7 @@ export const FuneralCompanyView: React.FC<Props> = ({
             const client = await getAuthClient(session, { strict: true });
             await storeToggleFavorite(user.id, company, client);
         } catch (error) {
-            console.error('Failed to toggle sangjo favorite:', error);
+            toast.error('즐겨찾기 변경에 실패했습니다.');
         }
     };
 

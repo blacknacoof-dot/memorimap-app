@@ -28,7 +28,6 @@ export const ConsultationActionModal: React.FC<Props> = ({ isOpen, consultationN
             await onConfirm({ expectedTime, instruction });
             onClose();
         } catch (error) {
-            console.error('Confirmation failed:', error);
             toast.error('처리에 실패했습니다.');
         } finally {
             setIsLoading(false);

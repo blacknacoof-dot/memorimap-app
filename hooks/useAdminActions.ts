@@ -60,14 +60,12 @@ export function useApprovePartner() {
 
             if (!response.ok) {
                 const serverError = result.error || `HTTP ${response.status}`;
-                console.error('[approvePartner] Server error:', serverError, result);
                 throw new Error(`승인/거절 실패: ${serverError}`);
             }
 
             return result;
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류';
-            console.error('[approvePartner] Error:', errorMessage, err);
             setError(errorMessage);
             throw err;
         } finally {

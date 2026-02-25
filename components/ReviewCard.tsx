@@ -38,8 +38,6 @@ export const ReviewCard: React.FC<Props> = ({ review, isOwner, onDelete, facilit
 
     const displayName = isOwner ? (review.userName || '회원') : getMaskedName(review.userName, review.id);
 
-    // console.log('Rendering Review:', { id: review.id, userName: review.userName, displayName }); 
-
     return (
         <div className="border-b last:border-0 pb-4 mb-2 animate-in fade-in slide-in-from-bottom-2">
             {facilityName && (

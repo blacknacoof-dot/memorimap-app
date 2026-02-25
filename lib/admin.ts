@@ -74,7 +74,7 @@ const enrichUsersWithPlans = async (users: AdminUser[]): Promise<AdminUser[]> =>
             `)
             .in('user_id', clerkIds);
 
-        if (facilityError) console.error('[admin.ts] Facility sub fetch error:', facilityError);
+        // facilityError is non-fatal
 
         // 2. Fetch Sangjo Plans (read-only, anon OK)
         const { data: sangjoSubs, error: sangjoError } = await supabase
@@ -82,7 +82,7 @@ const enrichUsersWithPlans = async (users: AdminUser[]): Promise<AdminUser[]> =>
             .select('id, plan_id')
             .in('id', clerkIds);
 
-        if (sangjoError) console.error('[admin.ts] Sangjo sub fetch error:', sangjoError);
+        // sangjoError is non-fatal
 
         const typedFacilitySubs = facilitySubs as FacilitySubJoinRow[] | null;
         const typedSangjoSubs = sangjoSubs as SangjoDashboardRow[] | null;
@@ -111,7 +111,7 @@ const enrichUsersWithPlans = async (users: AdminUser[]): Promise<AdminUser[]> =>
             return { ...user, subscription_plan: planName };
         });
     } catch (err: unknown) {
-        console.error('[admin.ts] enrichUsersWithPlans failed:', err);
+        // enrichUsersWithPlans failed (non-fatal)
         return users;
     }
 };
@@ -142,7 +142,6 @@ export const searchUsers = async (query: string): Promise<AdminUser[]> => {
     const { data, error } = await queryBuilder.limit(20);
 
     if (error) {
-        console.error('Error searching users:', error);
         throw error;
     }
 
@@ -157,7 +156,6 @@ export const updateUserRole = async (userId: string, newRole: string, client: Su
         .eq('clerk_id', userId);
 
     if (error) {
-        console.error('Error updating user role:', error);
         throw error;
     }
 };
@@ -170,7 +168,6 @@ export const getAllUsers = async (): Promise<AdminUser[]> => {
         .limit(50);
 
     if (error) {
-        console.error('Error fetching users:', error);
         throw error;
     }
 
@@ -186,7 +183,6 @@ export const approveSangjoUser = async (userId: string, clerkId: string, sangjoI
         .eq('clerk_id', clerkId);
 
     if (roleError) {
-        console.error('[admin.ts] Role update failed:', roleError);
         throw roleError;
     }
 
@@ -201,7 +197,6 @@ export const approveSangjoUser = async (userId: string, clerkId: string, sangjoI
         });
 
     if (dashError) {
-        console.error('[admin.ts] Dashboard mapping failed:', dashError);
         throw dashError;
     }
 };

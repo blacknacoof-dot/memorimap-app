@@ -263,7 +263,6 @@ export const searchFacilities = async (
     });
 
     if (error) {
-        console.error('Error searching facilities:', error);
         throw error;
     }
 
@@ -613,7 +612,6 @@ export const createLead = async (leadData: LeadInput, client: SupabaseClient) =>
         .select();
 
     if (error) {
-        console.error('Error creating lead:', error);
         throw error;
     }
     return data && data[0] ? data[0] : null;
@@ -627,7 +625,6 @@ export const createConsultationFromLead = async (leadId: string, facilityId: str
     });
 
     if (error) {
-        console.error('Error creating consultation from lead:', error);
         throw error;
     }
     return data;
@@ -667,7 +664,6 @@ export const getFacility = async (id: string) => {
 
         // [Fix] 존재하지 않는 레거시 ID(fc6 등)인 경우 null 반환하여 UI 충돌 방지
         if (error.code === 'PGRST116') {
-            console.warn(`Facility not found for ID: ${id} - This may be legacy data`);
             return null;
         }
 
@@ -711,7 +707,6 @@ export const createConsultation = async (
         .single();
 
     if (error) {
-        console.error('Error creating consultation:', error);
         throw error;
     }
     return data;
@@ -765,9 +760,6 @@ export const createUrgentReservation = async (
         .single();
 
     if (error) {
-        console.error('Error creating urgent reservation:', error);
-        // Only throw if critical, but lead creation succeeded so maybe just log?
-        // Let's propagate error to show fallback UI
         throw error;
     }
     return data;
@@ -791,7 +783,6 @@ export const getConsultationHistory = async (userId: string, client: SupabaseCli
         .order('created_at', { ascending: false });
 
     if (error) {
-        console.error('Error fetching consultation history:', error);
         throw error;
     }
     return data;
@@ -811,7 +802,6 @@ export const deleteConsultation = async (id: string, userId: string | undefined,
     const { error } = await query;
 
     if (error) {
-        console.error('Error deleting consultation:', error);
         throw error;
     }
     return true;
@@ -889,7 +879,6 @@ export const createReview = async (
 
         if (error) {
 
-            console.error('Error creating facility review:', error);
             throw error;
         }
         return data;
@@ -911,14 +900,10 @@ export const deleteReview = async (reviewId: string, client: SupabaseClient) => 
             .eq('id', reviewId);
 
         if (error) {
-            console.error('Error deleting review (Soft Delete):', error);
-            // If RLS denies update, try strict DELETE if user prefers standard delete
-            // But here we stick to Soft Delete.
             throw error;
         }
         return true;
     } catch (e: unknown) {
-        console.error('deleteReview Exception:', e);
         throw e;
     }
 };
@@ -938,9 +923,6 @@ export const updateFacility = async (id: string, updates: Record<string, unknown
     if (error) throw error;
     return data;
 };
-
-// --- Missing Exports Stubs (Restored mostly, keeping others as stubs if needed) ---
-// export const updateConsultation = async (id: string, data: any) => { console.log('STUB: updateConsultation'); }; // Removed in favor of full implementation
 
 /**
  * 사용자 프로필 업데이트
@@ -962,7 +944,6 @@ export const updateUserProfile = async (userId: string, data: Partial<{
         .single();
 
     if (error) {
-        console.error('Error updating user profile:', error);
         throw error;
     }
     return result;
@@ -1033,7 +1014,6 @@ export const approveReservation = async (id: string, client: SupabaseClient) => 
         .single();
 
     if (error) {
-        console.error('Error approving reservation:', error);
         throw error;
     }
 
@@ -1055,7 +1035,6 @@ export const rejectReservation = async (id: string, reason: string | undefined, 
         .single();
 
     if (error) {
-        console.error('Error rejecting reservation:', error);
         throw error;
     }
 
@@ -1123,7 +1102,6 @@ export const cancelReservation = async (id: string, client: SupabaseClient) => {
         .single();
 
     if (error) {
-        console.error('Error cancelling reservation:', error);
         throw error;
     }
     return data;
@@ -1388,7 +1366,6 @@ export const submitPartnerApplication = async (data: PartnerApplicationInput, au
                 });
 
             if (uploadError) {
-                console.error('[PartnerUpload] Upload error:', uploadError);
                 throw new Error(`파일 업로드 실패: ${uploadError.message}`);
             }
 
@@ -1431,7 +1408,6 @@ export const submitPartnerApplication = async (data: PartnerApplicationInput, au
         .single();
 
     if (error) {
-        console.error('Error submitting partner application:', error);
         throw error;
     }
     return result;
@@ -1497,8 +1473,7 @@ export const incrementAiUsage = async (facilityId: string) => {
     try {
         const { error } = await supabase.rpc('increment_ai_usage', { facility_id: facilityId });
         if (error) {
-            // Function might not exist yet, ignore or log
-            // console.warn('increment_ai_usage rpc failed', error);
+            // increment_ai_usage might not exist yet
         }
     } catch (e) {
         // ignore
@@ -1567,7 +1542,6 @@ export const updateFacilitySubscription = async (facilityId: string, planId: str
         .single();
 
     if (subError) {
-        console.error('updateFacilitySubscription error:', subError);
         throw subError;
     }
 
@@ -1591,7 +1565,6 @@ export const updateFacilitySubscription = async (facilityId: string, planId: str
             }]);
 
         if (payError) {
-            console.error('Failed to record subscription payment:', payError);
             throw new Error(`결제 기록 생성 실패: ${payError.message}`);
         }
     }
@@ -1747,7 +1720,6 @@ export const approveFacility = async (facilityId: string) => {
             .eq('id', facilityId);
         if (error) throw error;
     } catch (e) {
-        console.error('approveFacility error:', e);
         throw e;
     }
 };
@@ -1765,7 +1737,6 @@ export const rejectFacility = async (facilityId: string, rejectionReason: string
             .eq('id', facilityId);
         if (error) throw error;
     } catch (e) {
-        console.error('rejectFacility error:', e);
         throw e;
     }
 };
@@ -2147,7 +2118,6 @@ export const createNotice = async (title: string, content: string, client: Supab
         .single();
 
     if (error) {
-        console.error('Error creating notice:', error);
         throw error;
     }
     return data;

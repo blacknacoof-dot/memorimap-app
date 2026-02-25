@@ -126,10 +126,6 @@ export function useFacilities(options: UseFacilitiesOptions = {}): UseFacilities
             // Execute query
             const { data, error: fetchError } = await query;
 
-            // if (data) {
-            //    console.log(`📊 Filter Result: Got ${data.length} items for ${filter?.category || 'all'}`);
-            // }
-
             if (controller.signal.aborted) return; // Cleanup check
 
             if (fetchError) throw fetchError;
@@ -157,8 +153,6 @@ export function useFacilities(options: UseFacilitiesOptions = {}): UseFacilities
             }) as Facility[];
 
             setFacilities(normalizedData);
-
-            // console.log(`✅ Fetched ${normalizedData.length} facilities`);
 
         } catch (err) {
             if (controller.signal.aborted) return; // Ignore abort errors
@@ -220,8 +214,7 @@ export function useFacilities(options: UseFacilitiesOptions = {}): UseFacilities
         // I will leave it empty or minimal for now as the user didn't provide strict replacement for it,
         // but MapView calls it.
         // To prevent errors, I'll implement a basic fetch using useFacility logic essentially.
-        // console.log("loadFacilityDetails called for", facilityId);
-        // Implementation omitted to keep it simple as per user request scope, 
+        // Implementation omitted to keep it simple as per user request scope,
         // but return promise to satisfy interface.
         return Promise.resolve();
     }, []);

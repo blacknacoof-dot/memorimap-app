@@ -107,7 +107,6 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
             setForm(EMPTY_FORM);
             setShowNewModal(false);
         } catch (err) {
-            console.error('Failed to create operation:', err);
             toast.error('작업 접수에 실패했습니다.');
         } finally {
             setIsSaving(false);

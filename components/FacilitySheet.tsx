@@ -109,7 +109,7 @@ export const FacilitySheet: React.FC<Props> = ({
         setIsFavorite(result);
       }
     } catch (e) {
-      console.error('Failed to toggle favorite', e);
+      toast.error('즐겨찾기 변경에 실패했습니다.');
       // Revert on error
       setIsFavorite(!isFavorite);
     }

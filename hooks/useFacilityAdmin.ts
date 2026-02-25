@@ -68,7 +68,6 @@ export function useFacilityAdmin() {
             await refresh();
             toast.success('시설 정보가 수정되었습니다.');
         } catch (e) {
-            console.error(e);
             toast.error('정보 수정 실패');
             throw e;
         }

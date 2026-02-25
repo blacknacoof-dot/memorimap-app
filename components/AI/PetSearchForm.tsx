@@ -92,7 +92,7 @@ const PetSearchForm: React.FC<FormProps> = ({
                 const uniqueResults = merged.slice(0, 8);
                 setSuggestions(uniqueResults);
                 setShowSuggestions(uniqueResults.length > 0);
-            } catch (e) { console.error(e); }
+            } catch { /* autocomplete fail */ }
         }, 300);
         return () => { if (debounceTimer.current) clearTimeout(debounceTimer.current); };
     }, [region]);
@@ -146,7 +146,7 @@ const PetSearchForm: React.FC<FormProps> = ({
             const results = await getIntelligentRecommendations(lat, lng, 'pet', region);
             setRecommendedFacilities(results.slice(0, 5));
         } catch (e) {
-            console.error("Failed to fetch pet recommendations", e);
+            // pet recommendations fetch failed
         } finally {
             setIsLoadingRecommendations(false);
         }
@@ -220,7 +220,6 @@ const PetSearchForm: React.FC<FormProps> = ({
             setBookedIds(prev => new Set(prev).add(consultFacility.id));
             setBookingComplete({ facilityName: consultFacility.name, petType: petLabel });
         } catch (e) {
-            console.error('상담접수 실패:', e);
             toast.error('접수 중 오류가 발생했습니다. 다시 시도해 주세요.');
         } finally {
             setBookingId(null);

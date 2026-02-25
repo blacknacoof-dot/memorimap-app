@@ -76,7 +76,6 @@ export default function EndingNoteEditModal({ isOpen, onClose, currentNote, onSa
             });
             onClose();
         } catch (error) {
-            console.error('Save error:', error);
             toast.error('저장 중 오류가 발생했습니다.');
         } finally {
             setSaving(false);

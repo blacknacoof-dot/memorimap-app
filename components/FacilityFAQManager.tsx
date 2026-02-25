@@ -109,7 +109,6 @@ export const FacilityFAQManager: React.FC<Props> = ({ facilityId }) => {
                     }
 
                     if (error) {
-                        console.error('[FAQ] save error:', error);
                         toast.error(`FAQ 저장 실패: ${error.message}`);
                     } else if (result) {
                         toast.success('FAQ가 저장되었습니다.');
@@ -140,7 +139,6 @@ export const FacilityFAQManager: React.FC<Props> = ({ facilityId }) => {
                     .update({ is_active: false })
                     .eq('id', id);
                 const success = !error;
-                if (error) console.error('[FAQ] delete error:', error);
                 if (success) {
                     toast.success('FAQ가 삭제되었습니다.');
                     setFaqs(prev => prev.filter(f => f.id !== id));

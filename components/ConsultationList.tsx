@@ -44,7 +44,6 @@ export const ConsultationList: React.FC<Props> = ({ consultations, onAnswer, onR
             // Optional: Close expansion or keep open to show result?
             // Keep open to show "Answered just now" logic if parent updates state
         } catch (e) {
-            console.error(e);
             toast.error('답변 전송 실패');
         } finally {
             setIsSubmitting(false);

@@ -103,7 +103,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                 const uniqueResults = merged.slice(0, 8);
                 setSuggestions(uniqueResults);
                 setShowSuggestions(uniqueResults.length > 0);
-            } catch (e) { console.error(e); }
+            } catch { /* autocomplete fail */ }
         }, 300);
         return () => { if (debounceTimer.current) clearTimeout(debounceTimer.current); };
     }, [location]);
@@ -155,7 +155,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
             }
             setRecommendedFacilities(recs.slice(0, 5));
         } catch (e) {
-            console.error("Failed to fetch recommendations", e);
+            // recommendations fetch failed
         } finally {
             setIsLoadingRecommendations(false);
         }
@@ -230,7 +230,6 @@ const FuneralSearchForm: React.FC<FormProps> = ({
             setBookedIds(prev => new Set(prev).add(actualFacilityId));
             setBookingComplete({ facilityName: consultFacility.name, scale: scaleVal, religion: religionVal });
         } catch (e) {
-            console.error('상담접수 실패:', e);
             toast.error('접수 중 오류가 발생했습니다. 다시 시도해 주세요.');
         } finally {
             setBookingId(null);

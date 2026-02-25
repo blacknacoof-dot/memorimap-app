@@ -118,7 +118,6 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
 
 
         } catch (error) {
-            console.error('Status Update Failed:', error);
             toast.error('상태 변경에 실패했습니다. (권한이 없거나 이미 처리됨)');
         }
     };
@@ -148,7 +147,6 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
 
             toast.success('예약이 확정되었습니다.');
         } catch (error) {
-            console.error('Confirm Failed:', error);
             toast.error('확인 처리에 실패했습니다.');
         }
     };
