@@ -1,8 +1,8 @@
 # 추모맵 출시 전 단계별 검증 프레임워크
 
-> 최종 업데이트: 2026-02-26
-> 빌드 상태: ✅ 성공 (13.79s)
-> 코드 품질: any 0건, 하드코딩 0건, anon write 0건
+> 최종 업데이트: 2026-02-26 (PHASE 1~4 코드 점검 완료)
+> 빌드 상태: ✅ 성공 (25s, index.js 777KB)
+> 코드 품질: any 0건, 하드코딩 0건, anon write 0건, @ts-ignore 0건
 
 ---
 
@@ -18,74 +18,72 @@
 
 ---
 
-## PHASE 1: 코드 품질 최종 점검 (로컬, 즉시 실행 가능)
-
-> 목표: 빌드 안정성 + 런타임 에러 0건 확인
+## PHASE 1: 코드 품질 최종 점검 ✅ 완료 (커밋: 9d61ff8)
 
 ### 1-1. 빌드 검증
-- [x] `npm run build` 성공 확인 ✅ (2/26 확인됨)
+- [x] `npm run build` 성공 확인
 - [x] 빌드 경고(warning) 목록 확인 → 치명적 경고 0건
-- [x] `dist/` 번들 크기 확인 (index.js 777KB — 모니터링 대상)
+- [x] `dist/` 번들 크기 확인 (index.js 777KB)
 
-### 1-2. console.error 검토 (29건)
-> 프로덕션에서 사용자에게 노출되면 안 되는 에러 로깅 정리
-
-| 파일 | 건수 | 조치 |
-|------|------|------|
-| faq.tsx:29 | fetch 실패 | [x] toast.error 추가 완료 |
-| faq.tsx:44 | save 실패 | [x] toast.error 추가 완료 |
-| ConfirmModal.tsx:43 | 공통 catch | [x] 호출측 처리 — 유지 |
-| StatusTracker.tsx:46,53 | fetch 에러 | [x] 초기 로드 무음 — 유지 |
-| StatusTracker.tsx:103 | update 에러 | [x] toast.error 이미 존재 |
-| StatusTracker.tsx:111 | update 예외 | [x] toast.error 추가 완료 |
-
-**추가 수정**: StatusTracker.tsx anon→auth 클라이언트 전환 (쓰기 작업)
+### 1-2. console.error 검토 (7건 → 전수 확인)
+- [x] faq.tsx: fetch/save 실패 → toast.error 추가
+- [x] ConfirmModal.tsx: 공통 catch → 유지
+- [x] StatusTracker.tsx: fetch 에러 → 무음 유지, update 에러 → toast.error 추가
+- [x] StatusTracker.tsx: anon→auth 클라이언트 전환
 
 ### 1-3. TypeScript 엄격 검증
-- [x] `any` 타입 0건 ✅
-- [x] `@ts-ignore` / `@ts-expect-error` 0건 ✅
-- [x] `as unknown as` 강제 캐스팅 0건 ✅
+- [x] `any` 타입 0건
+- [x] `@ts-ignore` / `@ts-expect-error` 0건
+- [x] `as unknown as` 강제 캐스팅 0건
 
 ### 1-4. 보안 점검
-- [x] `.gitignore` 완비 ✅ (.env, .env.local, *.csv, debug_*.json, /*.sql)
-- [x] 소스코드 내 API 키/시크릿 하드코딩 0건 ✅
-- [x] `VITE_` 접두사 남용 0건 ✅
-- [ ] `git diff --cached` 최종 확인 (커밋 직전)
+- [x] `.gitignore` 완비
+- [x] 소스코드 내 API 키/시크릿 하드코딩 0건
+- [x] `VITE_` 접두사 남용 0건
 
 ---
 
-## PHASE 2: Supabase 백엔드 검증 (Dashboard 필요)
-
-> 목표: DB + Auth + Edge Function 정상 동작 확인
+## PHASE 2: Supabase 백엔드 검증 — 코드 ✅ / Dashboard ⏳ (커밋: 2b133fd)
 
 ### 2-1. DB 데이터 무결성
-- [x] facilities 2,139건, funeral_companies 50건 ✅
-- [x] 이미지 없는 시설/상조 0건 ✅
-- [x] 분류 오류/중복/비표준 type 0건 ✅
-- [ ] RPC 함수 4종 정상 호출 테스트
-  - [ ] `search_facilities` → 결과 반환 확인
-  - [ ] `search_facilities_by_text` → 한글 검색 정상
-  - [ ] `search_facilities_in_view` → 좌표 범위 정상
-  - [ ] `search_facilities_v2` → 필터 조합 정상
+- [x] facilities 2,139건, funeral_companies 50건
+- [x] 이미지 없는 시설/상조 0건
+- [x] 분류 오류/중복/비표준 type 0건
 
-### 2-2. RLS 정책 검증
+### 2-2. 코드 레벨 검증 (완료)
+- [x] Edge Function 4개: CORS localhost:5173 제거
+- [x] approve-partner, verify-payment: @ts-nocheck 제거
+- [x] useNotifications.ts: anon→getAuthClient(strict) 전환 (write 3건)
+- [x] Edge Function auth 검증: 4개 모두 Bearer + getUser 정상
+- [x] lib/queries.ts: client 파라미터 주입 방식 정상
+- [x] services/: client 파라미터 주입 방식 정상
+- [x] fallback 패턴 (token ? auth : anon): 0건
+
+### 2-3. RPC 함수 테스트 (수동 — dev 서버에서 확인)
+- [ ] `search_facilities` → 결과 반환 확인
+- [ ] `search_facilities_by_text` → 한글 검색 정상
+- [ ] `search_facilities_in_view` → 좌표 범위 정상
+- [ ] `search_facilities_v2` → 필터 조합 정상
+
+### 2-4. RLS 정책 검증 (수동)
 - [ ] 비로그인 사용자: 시설 목록 조회 가능, 쓰기 불가
 - [ ] 로그인 사용자: 본인 데이터만 수정 가능
 - [ ] 관리자: 담당 시설 데이터만 접근 가능
 - [ ] 슈퍼관리자: 전체 데이터 접근 가능
 
-### 2-3. Edge Function 재배포 ⚠️ (수동 작업 필수)
-> Supabase Dashboard → Edge Functions에서 각각 재배포
+### 2-5. Edge Function 재배포 ⚠️ (Supabase Dashboard 필수)
 
-| Function | 상태 | 검증 방법 |
-|----------|------|-----------|
-| `approve-partner` | [ ] 재배포 | 파트너 승인 API 호출 테스트 |
-| `gemini-proxy` | [ ] 재배포 | AI 상담 챗봇 응답 확인 |
-| `verify-payment` | [ ] 재배포 | 결제 검증 플로우 테스트 |
+| Function | 코드 수정 | 재배포 | 검증 |
+|----------|:---------:|:------:|:----:|
+| `approve-partner` | [x] CORS+@ts-nocheck | [ ] | [ ] 파트너 승인 테스트 |
+| `gemini-proxy` | [x] CORS | [ ] | [ ] AI 챗봇 응답 확인 |
+| `verify-payment` | [x] CORS+@ts-nocheck | [ ] | [ ] 결제 검증 테스트 |
+| `deploy-bot-data` | [x] CORS | [ ] | [ ] 봇 데이터 배포 테스트 |
 
-### 2-4. Auth 설정 (Dashboard)
+### 2-6. Auth 설정 (Supabase Dashboard 필수)
+
 | 항목 | 상태 | 비고 |
-|------|------|------|
+|------|:----:|------|
 | Email Templates 한글화 | [ ] | 회원가입 확인, 비밀번호 재설정, 매직링크 |
 | Google OAuth | [ ] | Client ID/Secret 설정 |
 | Kakao OAuth | [ ] | REST API Key/Secret 설정 |
@@ -93,70 +91,79 @@
 
 ---
 
-## PHASE 3: 프론트엔드 기능 검증 (브라우저, 로컬 dev 서버)
+## PHASE 3: 프론트엔드 기능 검증 — 코드 ✅ / 브라우저 ⏳ (커밋: 2829d2a)
 
-> 목표: 핵심 사용자 플로우 정상 동작 확인
-> `npm run dev` 실행 후 Chrome DevTools 열고 테스트
+### 3-0. 코드 레벨 점검 (완료)
+- [x] 라우팅: HashRouter + ContentRouter 정상
+- [x] getAuthClient strict 누락: 0건
+- [x] fallback 패턴: 0건
+- [x] IntegratedJourneyView 로그인 버그 수정 (window.location→onLoginClick)
+- [x] 삭제 작업 auth 클라이언트 사용: 정상
+- [x] isSubmitting 중복 클릭 방지: 11개 컴포넌트 적용
+- [x] Lazy loading + Suspense: 12개 뷰 컴포넌트 적용
+- [x] 역할 기반 접근 제어: 4종 가드 정상
 
-### 3-1. 인증 플로우
+### 3-1. 인증 플로우 (수동)
 - [ ] 이메일 회원가입 → 확인 이메일 수신 → 로그인
-- [ ] 이메일 로그인 → 프로필 동기화 (profiles.clerk_id 저장)
-- [ ] 로그아웃 → 세션 정리 → 공개 페이지만 접근 가능
+- [ ] 이메일 로그인 → 프로필 동기화
+- [ ] 로그아웃 → 세션 정리
 - [ ] Google 소셜 로그인 (OAuth 설정 후)
 - [ ] Kakao 소셜 로그인 (OAuth 설정 후)
 - [ ] 비밀번호 재설정 플로우
 
-### 3-2. 핵심 기능 — 시설 검색/조회
+### 3-2. 핵심 기능 — 시설 검색/조회 (수동)
 - [ ] 지도 로드 → 마커 표시 (카테고리별 색상/아이콘)
 - [ ] 검색어 입력 → 결과 목록 표시
-- [ ] 지역 필터 ("서울" ↔ "서울특별시" alias 정상)
-- [ ] 시설 유형 필터 (장례식장, 묘지, 납골당 등)
-- [ ] 시설 클릭 → 상세 시트 열림
-- [ ] 시설 상세 → 리뷰 목록 조회
+- [ ] 지역 필터 ("서울" ↔ "서울특별시" alias)
+- [ ] 시설 유형 필터
+- [ ] 시설 클릭 → 상세 시트
+- [ ] 시설 상세 → 리뷰 목록
 
-### 3-3. 핵심 기능 — 상조 서비스
+### 3-3. 핵심 기능 — 상조 서비스 (수동)
 - [ ] 상조 업체 목록 조회
-- [ ] 상조 상세 → 서비스 구성/가격 표시
+- [ ] 상조 상세 → 서비스 구성/가격
 - [ ] 상담 신청 모달 → 제출 성공
 - [ ] 상조 예약 플로우 (스텝 1→2→3→4)
 
-### 3-4. 사용자 기능
+### 3-4. 사용자 기능 (수동)
 - [ ] 마이페이지 → 프로필 조회/수정
 - [ ] 즐겨찾기 추가/제거
 - [ ] 엔딩노트 작성/편집/공유
 - [ ] AI 채팅 상담 (gemini-proxy 배포 후)
 
-### 3-5. 런타임 에러 확인
-- [ ] DevTools Console 빨간 에러 0건 확인
-- [ ] Network 탭 → 4xx/5xx 응답 0건 확인
-- [ ] React StrictMode 경고 확인
+### 3-5. 런타임 에러 확인 (수동)
+- [ ] DevTools Console 빨간 에러 0건
+- [ ] Network 탭 → 4xx/5xx 응답 0건
 
 ---
 
-## PHASE 4: 관리자 기능 검증
+## PHASE 4: 관리자 기능 검증 — 코드 ✅ / 수동 ⏳ (커밋: 69cc62e)
 
-> 목표: 관리자/슈퍼관리자 대시보드 정상 작동
+### 4-0. 코드 레벨 점검 (완료)
 
-### 4-1. 슈퍼관리자 대시보드
+| 관리자 유형 | auth client | confirm dialog | 역할 가드 |
+|-------------|:-----------:|:--------------:|:---------:|
+| 슈퍼관리자 (9파일) | ✅ strict:true | ✅ | ✅ |
+| 시설관리자 (3파일) | ✅ strict:true | ✅ | ✅ |
+| 상조관리자 (5파일) | ✅ strict:true | ✅ | ✅ |
+| FacilityInfoEditor | ✅ | ✅ confirm 2건 추가 | ✅ |
+
+### 4-1. 슈퍼관리자 대시보드 (수동)
 - [ ] 로그인 후 관리자 메뉴 접근
-- [ ] 파트너 승인 요청 목록 조회
-- [ ] 파트너 승인/거절 (confirm dialog 표시 확인) ⚠️ approve-partner 배포 필수
+- [ ] 파트너 승인/거절 (confirm dialog) ⚠️ approve-partner 배포 필수
 - [ ] 시설 관리 (목록/수정)
 - [ ] 사용자 관리
 
-### 4-2. 시설 관리자 대시보드
-- [ ] 시설 관리자 계정 로그인
+### 4-2. 시설 관리자 대시보드 (수동)
 - [ ] 담당 시설 정보 조회/수정
 - [ ] 예약 목록 조회
 - [ ] 상담 내역 조회
 - [ ] 구독/매출 현황
 
-### 4-3. 상조 관리자 대시보드
-- [ ] 상조 관리자 계정 로그인
+### 4-3. 상조 관리자 대시보드 (수동)
 - [ ] 예약 관리 (목록/상세/상태 변경)
 - [ ] 상담 관리
-- [ ] 구독 관리
-- [ ] 매출 분석
+- [ ] 구독/매출 분석
 
 ---
 
@@ -164,7 +171,7 @@
 
 > 목표: 모바일 UX 확인 + 프로덕션 배포
 
-### 5-1. 모바일 UI 점검 (Chrome DevTools 모바일 모드 → 실기기)
+### 5-1. 모바일 UI 점검
 
 | 항목 | Chrome 시뮬 | iOS 실기기 | Android 실기기 |
 |------|:-----------:|:----------:|:--------------:|
@@ -178,31 +185,33 @@
 | AI 채팅 입력 | [ ] | [ ] | [ ] |
 
 ### 5-2. 성능 체크
-- [ ] Lighthouse 점수 확인 (모바일 기준)
-  - Performance: 목표 60+
-  - Accessibility: 목표 80+
-  - Best Practices: 목표 80+
-- [ ] 초기 로딩 시간 확인 (index.js 777KB — CDN 캐시 의존)
-- [ ] 이미지 로딩 속도 (기본 이미지 CDN 정상)
+- [ ] Lighthouse 점수 (모바일): Performance 60+, Accessibility 80+, Best Practices 80+
+- [ ] 초기 로딩 시간 확인
+- [ ] 이미지 로딩 속도
 
 ### 5-3. Vercel 배포
-- [ ] `git push` → Vercel 자동 빌드 트리거
-- [ ] 빌드 로그 확인 → 에러 0건
-- [ ] 이전 빌드 캐시 정리 (필요 시)
+- [ ] `git push` → Vercel 자동 빌드
+- [ ] 빌드 로그 → 에러 0건
 - [ ] 프로덕션 URL 접속 → 정상 로드
-- [ ] 환경변수 확인 (Vercel Dashboard → Environment Variables)
-  - [ ] `VITE_SUPABASE_URL`
-  - [ ] `VITE_SUPABASE_ANON_KEY`
-  - [ ] 기타 VITE_ 변수
+- [ ] 환경변수 확인 (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY)
 
-### 5-4. 프로덕션 스모크 테스트
-> 배포 직후 5분 내 핵심 플로우 재확인
-
+### 5-4. 프로덕션 스모크 테스트 (배포 직후 5분)
 - [ ] 메인 페이지 로드 (지도 + 시설 목록)
 - [ ] 검색 동작
 - [ ] 회원가입/로그인
 - [ ] 시설 상세 조회
 - [ ] 상조 서비스 조회
+
+---
+
+## 커밋 이력
+
+| 커밋 | PHASE | 내용 |
+|------|-------|------|
+| `9d61ff8` | 1 | toast.error 3건 + StatusTracker anon→auth + faq useEffect lint |
+| `2b133fd` | 2 | Edge Function CORS localhost 4건 제거 + @ts-nocheck 2건 + useNotifications anon→auth |
+| `2829d2a` | 3 | IntegratedJourneyView 로그인 버그 (HashRouter 호환) |
+| `69cc62e` | 4 | FacilityInfoEditor confirm dialog 2건 추가 |
 
 ---
 
@@ -237,33 +246,40 @@
 ```
 1. Supabase Dashboard → Edge Functions → Logs
 2. Bearer 토큰 검증 로직 확인
-3. CORS 설정 확인 (localhost 포함 여부)
+3. CORS 설정 확인 (localhost 제거 완료)
 4. 함수 재배포 후 재테스트
 ```
 
 ---
 
-## 체크리스트 요약
+## 남은 수동 작업 요약
 
-| PHASE | 항목 수 | 자동 | 수동 | 외부의존 |
-|-------|---------|------|------|----------|
-| 1. 코드 품질 | 12 | 8 | 4 | 없음 |
-| 2. Supabase | 14 | 2 | 8 | Dashboard 4 |
-| 3. 프론트엔드 | 20 | 0 | 20 | dev 서버 |
-| 4. 관리자 | 12 | 0 | 12 | 테스트 계정 |
-| 5. 모바일+배포 | 18 | 2 | 14 | Vercel+실기기 |
-| **합계** | **76** | **12** | **58** | **6** |
+### 즉시 가능 (로컬)
+1. `npm run dev` → 브라우저 수동 테스트 (PHASE 3, 4 수동 항목)
+2. Chrome DevTools 모바일 시뮬레이션 (PHASE 5-1 Chrome 열)
+
+### Supabase Dashboard 필요
+3. Edge Function 4개 재배포
+4. Auth Email Templates 한글화
+5. Google/Kakao OAuth Provider 설정
+6. Redirect URL 프로덕션 도메인 등록
+
+### Vercel 필요
+7. `git push` → 프로덕션 배포
+8. 환경변수 확인
+9. 스모크 테스트
+
+### 실기기 필요
+10. iOS Safari 테스트 (Safe Area, 100vh)
+11. Android Chrome 테스트
 
 ---
 
-## 권장 실행 순서
+## 진행률
 
-```
-PHASE 1 (30분) → PHASE 2 (1시간, Dashboard 작업)
-→ PHASE 3 (1시간, 로컬 테스트) → PHASE 4 (30분, 관리자 테스트)
-→ PHASE 5 (1시간, 배포+모바일)
-```
-
-**총 예상: 약 4시간** (이슈 없을 경우)
-
-각 PHASE 완료 시 이 문서에 체크(✅) 표시하고, 이슈 발견 시 해당 항목 옆에 🔴 + 사유 기록.
+| 구분 | 완료 | 남음 | 진행률 |
+|------|------|------|--------|
+| 코드 레벨 (자동) | 32 | 0 | **100%** |
+| 수동 테스트 | 0 | 38 | 0% |
+| 외부 설정 | 0 | 6 | 0% |
+| **전체** | **32** | **44** | **42%** |
