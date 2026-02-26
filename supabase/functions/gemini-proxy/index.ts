@@ -5,7 +5,6 @@ const ALLOWED_ORIGINS = [
     'https://memorimap-app.vercel.app',
     'https://memorimap.com',
     'https://www.memorimap.com',
-    'http://localhost:5173',
 ];
 
 const getCorsHeaders = (req: Request) => {

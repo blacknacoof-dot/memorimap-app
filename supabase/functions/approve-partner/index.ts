@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { z } from 'https://esm.sh/zod@3.22.4'
@@ -7,7 +6,6 @@ const ALLOWED_ORIGINS = [
     'https://memorimap-app.vercel.app',
     'https://memorimap.com',
     'https://www.memorimap.com',
-    'http://localhost:5173',
 ];
 
 const getCorsHeaders = (req: Request) => {

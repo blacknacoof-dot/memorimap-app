@@ -1,11 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase, getAuthClient } from '@/lib/supabaseClient';
 import { UserNotification } from '@/types/db';
-import { useAuth } from '../lib/auth';
+import { useAuth, useSession } from '../lib/auth';
 
 export function useNotifications() {
     const { userId } = useAuth();
+    const { session } = useSession();
     const queryClient = useQueryClient();
 
     // 알림 페칭
@@ -53,7 +54,8 @@ export function useNotifications() {
     // 읽음 처리 Mutation
     const markAsRead = useMutation({
         mutationFn: async (notificationId: string) => {
-            const { error } = await supabase
+            const client = await getAuthClient(session, { strict: true });
+            const { error } = await client
                 .from('user_notifications')
                 .update({ is_read: true })
                 .eq('id', notificationId);
@@ -69,7 +71,8 @@ export function useNotifications() {
     const markAllAsRead = useMutation({
         mutationFn: async () => {
             if (!userId) return;
-            const { error } = await supabase
+            const client = await getAuthClient(session, { strict: true });
+            const { error } = await client
                 .from('user_notifications')
                 .update({ is_read: true })
                 .eq('user_id', userId)
@@ -85,7 +88,8 @@ export function useNotifications() {
     // 개별 삭제
     const deleteNotification = useMutation({
         mutationFn: async (notificationId: string) => {
-            const { error } = await supabase
+            const client = await getAuthClient(session, { strict: true });
+            const { error } = await client
                 .from('user_notifications')
                 .delete()
                 .eq('id', notificationId);
