@@ -7,6 +7,7 @@ import {
 import { toast } from 'sonner';
 import { getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
+import { confirmAsync } from '../../src/components/common/ConfirmModal';
 
 interface FacilityInfoEditorProps {
     facilityId: string;
@@ -163,6 +164,7 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
 
     const handleRemoveImage = async (index: number) => {
         if (!facility) return;
+        if (!await confirmAsync('이미지를 삭제하시겠습니까?', '이미지 삭제')) return;
         const newImages = facility.images.filter((_, i) => i !== index);
         const client = await getAuthClient(session, { strict: true });
         const { error } = await client.from('facilities')
@@ -215,11 +217,14 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
     };
 
     const handleSavePackages = async () => {
+        const toDelete = packages.filter(p => p._isDeleted && p.id);
+        if (toDelete.length > 0) {
+            if (!await confirmAsync(`삭제 표시된 패키지 ${toDelete.length}건이 영구 삭제됩니다. 계속하시겠습니까?`, '패키지 저장')) return;
+        }
         setSaving(true);
         const client = await getAuthClient(session, { strict: true });
 
         // 삭제
-        const toDelete = packages.filter(p => p._isDeleted && p.id);
         for (const p of toDelete) {
             await client.from('facility_packages').delete().eq('id', p.id!);
         }
