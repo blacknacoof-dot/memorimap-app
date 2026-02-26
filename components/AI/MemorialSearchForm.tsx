@@ -113,12 +113,29 @@ const MemorialSearchForm: React.FC<FormProps> = ({
         return () => { if (debounceTimer.current) clearTimeout(debounceTimer.current); };
     }, [location]);
 
-    const canSubmit = timing && location;
+    const isDirectFacility = !!(facilityId && facilityId !== 'maum-i');
+    const canSubmit = isDirectFacility ? !!timing : !!(timing && location);
 
     const handleSubmit = async () => {
         if (!canSubmit) return;
         setIsSaving(true);
 
+        const timingLabel = MEMORIAL_TIMING_OPTIONS.find(o => o.id === timing)?.label || timing;
+        const religionLabel = MEMORIAL_RELIGION_OPTIONS.find(o => o.id === religion)?.label || '미선택';
+        const budgetLabel = MEMORIAL_BUDGET_OPTIONS.find(o => o.id === budget)?.label || '미선택';
+
+        if (isDirectFacility) {
+            // 시설 직접 모드: 지역 검색 건너뛰고 바로 ConsultationForm 진입
+            const finalText = `[추모시설 상담]\n| 구분 | 선택 |\n|---|---|\n| 시설 | ${facilityName} |\n| 상황 | ${timingLabel} |\n| 종교 | ${religionLabel} |\n| 예산 | ${budgetLabel} |`;
+
+            setIsSaving(false);
+            setIsSubmitted(true);
+            onSubmit({ text: finalText, data: { category: initialCategory, timing, religion, budget, facilityId, facilityName } });
+            setConsultFacility({ id: facilityId!, name: facilityName || '' });
+            return;
+        }
+
+        // 마음이 모드: 기존 검색 → 추천 흐름
         const searchData = {
             category: initialCategory,
             timing,
@@ -127,10 +144,6 @@ const MemorialSearchForm: React.FC<FormProps> = ({
             budget,
         };
 
-        const timingLabel = MEMORIAL_TIMING_OPTIONS.find(o => o.id === timing)?.label || timing;
-        const religionLabel = MEMORIAL_RELIGION_OPTIONS.find(o => o.id === religion)?.label || '미선택';
-        const budgetLabel = MEMORIAL_BUDGET_OPTIONS.find(o => o.id === budget)?.label || '미선택';
-
         const finalText = `[추모시설 찾기]\n| 구분 | 선택 |\n|---|---|\n| 상황 | ${timingLabel} |\n| 지역 | ${location} |\n| 종교 | ${religionLabel} |\n| 예산 | ${budgetLabel} |`;
 
         setIsSaving(false);
@@ -138,59 +151,12 @@ const MemorialSearchForm: React.FC<FormProps> = ({
         addSearchHistory(location, 'memorial');
         onSubmit({ text: finalText, data: searchData });
 
-        // Save to DB for facility-specific
-        if (facilityId && currentUser) {
-            try {
-                const authClient = await getAuthClient(session, { strict: true });
-
-                // 카테고리별 1건 제한: 기존 추모시설 예약 체크
-                const { data: existingRes } = await authClient
-                    .from('reservations')
-                    .select('id, facility_id')
-                    .eq('user_id', currentUser.id)
-                    .eq('purpose', 'memorial')
-                    .in('status', ['pending', 'urgent'])
-                    .limit(1);
-                if (existingRes && existingRes.length > 0) {
-                    const willReplace = await confirmAsync('이미 접수된 추모시설 예약이 있습니다.\n새 시설로 변경하시겠습니까? (기존 예약은 자동 취소됩니다)');
-                    if (!willReplace) return;
-                    await authClient.from('reservations')
-                        .update({ status: 'cancelled' })
-                        .eq('id', existingRes[0].id);
-                }
-
-                await authClient.from('reservations').insert({
-                    facility_id: facilityId,
-                    facility_name: facilityName || '',
-                    user_id: currentUser.id,
-                    visitor_name: currentUser.firstName || 'Unknown',
-                    contact_number: '',
-                    visit_date: new Date().toISOString(),
-                    time_slot: '상담예약',
-                    visitor_count: 1,
-                    purpose: 'memorial',
-                    special_requests: `시설: ${facilityName || ''}\n${finalText}`,
-                    status: 'pending',
-                    payment_amount: 0,
-                });
-            } catch (e) {
-                console.error('[MemorialSearchForm] Exception saving:', e);
-            }
-        }
-
         // Fetch recommendations
         setIsLoadingRecommendations(true);
         try {
-            if (facilityId && facilityName) {
-                setRecommendedFacilities([{
-                    id: facilityId, name: facilityName,
-                    address: '현재 상담 중인 시설', phone: '010-0000-0000'
-                }]);
-            } else {
-                const recs = await getIntelligentRecommendations(0, 0, 'memorial', location);
-                setRecommendedFacilities(recs.slice(0, 5));
-            }
-        } catch (e) {
+            const recs = await getIntelligentRecommendations(0, 0, 'memorial', location);
+            setRecommendedFacilities(recs.slice(0, 5));
+        } catch {
             // recommendations fetch failed
         } finally {
             setIsLoadingRecommendations(false);
@@ -279,18 +245,6 @@ const MemorialSearchForm: React.FC<FormProps> = ({
 
     // Results view
     if (isSubmitted) {
-        // Facility-specific completion
-        if (facilityId && facilityName) {
-            return (
-                <div className="mt-3 space-y-3 animate-in fade-in duration-300">
-                    <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
-                        <p className="text-sm text-green-700 font-bold"><Check size={14} className="inline mr-1" /><strong>{facilityName}</strong> 상담 접수 완료</p>
-                    </div>
-                    <button onClick={onClose} className="w-full bg-emerald-600 text-white text-sm font-bold py-3 rounded-xl">확인</button>
-                </div>
-            );
-        }
-
         // Booking complete confirmation
         if (bookingComplete) {
             return (
@@ -346,57 +300,61 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                     </div>
                 )}
 
+                {!isDirectFacility && (
                 <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
                     <p className="text-sm text-green-700 font-bold"><Check size={14} className="inline mr-1" />접수 완료 — <strong>{location}</strong> 지역 추천 시설</p>
                 </div>
+                )}
 
-                {isLoadingRecommendations ? (
-                    <div className="flex flex-col items-center py-6 space-y-2 bg-white border border-slate-200 rounded-xl">
-                        <Loader2 className="animate-spin text-emerald-600" size={28} />
-                        <span className="text-xs text-slate-500">맞춤 시설을 찾고 있습니다...</span>
-                    </div>
-                ) : recommendedFacilities.length > 0 ? (
-                    <div className="max-h-[320px] overflow-y-auto space-y-2 pr-1">
-                        {recommendedFacilities.map((f, idx) => {
-                            const fId = String(typeof f.id === 'object' ? (f.id as Record<string, unknown>).id || (f as Record<string, unknown>).facilityId : f.id);
-                            const isBooked = bookedIds.has(fId);
+                {!isDirectFacility && (
+                    isLoadingRecommendations ? (
+                        <div className="flex flex-col items-center py-6 space-y-2 bg-white border border-slate-200 rounded-xl">
+                            <Loader2 className="animate-spin text-emerald-600" size={28} />
+                            <span className="text-xs text-slate-500">맞춤 시설을 찾고 있습니다...</span>
+                        </div>
+                    ) : recommendedFacilities.length > 0 ? (
+                        <div className="max-h-[320px] overflow-y-auto space-y-2 pr-1">
+                            {recommendedFacilities.map((f, idx) => {
+                                const fId = String(typeof f.id === 'object' ? (f.id as Record<string, unknown>).id || (f as Record<string, unknown>).facilityId : f.id);
+                                const isBooked = bookedIds.has(fId);
 
-                            const imgUrl = f.image_url || f.imageUrl || ((f.images?.length ?? 0) > 0 ? f.images![0] : null);
-                            return (
-                                <div key={fId} className="bg-white border border-slate-200 rounded-xl p-3 space-y-2">
-                                    <div className="flex gap-3">
-                                        {imgUrl ? (
-                                            <img src={imgUrl} alt={f.name} className="w-[60px] h-[60px] rounded-lg object-cover shrink-0 bg-slate-100" />
-                                        ) : (
-                                            <div className="w-[60px] h-[60px] rounded-lg bg-slate-100 shrink-0 flex items-center justify-center text-slate-300 text-lg">🕊️</div>
-                                        )}
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-start">
-                                                <button onClick={() => onSwitchToFacility?.({ id: f.id, name: f.name, address: f.address, phone: f.phone })} className="font-bold text-sm text-emerald-700 hover:underline truncate text-left">{f.name}</button>
-                                                <span className="bg-emerald-50 text-emerald-600 text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ml-1">추천 {idx + 1}</span>
+                                const imgUrl = f.image_url || f.imageUrl || ((f.images?.length ?? 0) > 0 ? f.images![0] : null);
+                                return (
+                                    <div key={fId} className="bg-white border border-slate-200 rounded-xl p-3 space-y-2">
+                                        <div className="flex gap-3">
+                                            {imgUrl ? (
+                                                <img src={imgUrl} alt={f.name} className="w-[60px] h-[60px] rounded-lg object-cover shrink-0 bg-slate-100" />
+                                            ) : (
+                                                <div className="w-[60px] h-[60px] rounded-lg bg-slate-100 shrink-0 flex items-center justify-center text-slate-300 text-lg">🕊️</div>
+                                            )}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex justify-between items-start">
+                                                    <button onClick={() => onSwitchToFacility?.({ id: f.id, name: f.name, address: f.address, phone: f.phone })} className="font-bold text-sm text-emerald-700 hover:underline truncate text-left">{f.name}</button>
+                                                    <span className="bg-emerald-50 text-emerald-600 text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ml-1">추천 {idx + 1}</span>
+                                                </div>
+                                                <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5 truncate"><MapPin size={11} className="shrink-0" /> {f.address || f.jibun_address || '주소 없음'}</div>
+                                                <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5"><Phone size={11} className="shrink-0" /> {f.phone || '연락처 없음'}</div>
                                             </div>
-                                            <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5 truncate"><MapPin size={11} className="shrink-0" /> {f.address || f.jibun_address || '주소 없음'}</div>
-                                            <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5"><Phone size={11} className="shrink-0" /> {f.phone || '연락처 없음'}</div>
                                         </div>
-                                    </div>
 
-                                    {isBooked ? (
-                                        <div className="bg-green-50 border border-green-200 text-green-700 text-xs font-bold py-2 rounded-lg text-center flex items-center justify-center gap-1">
-                                            <Check size={14} /> 접수 완료
-                                        </div>
-                                    ) : (
-                                        <button onClick={() => setConsultFacility({ id: fId, name: f.name, phone: f.phone })} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-1">
-                                            <Calendar size={14} /> 상담 신청
-                                        </button>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-                ) : (
-                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-center">
-                        <p className="text-sm text-slate-600">추천 가능한 시설이 없습니다.</p>
-                    </div>
+                                        {isBooked ? (
+                                            <div className="bg-green-50 border border-green-200 text-green-700 text-xs font-bold py-2 rounded-lg text-center flex items-center justify-center gap-1">
+                                                <Check size={14} /> 접수 완료
+                                            </div>
+                                        ) : (
+                                            <button onClick={() => setConsultFacility({ id: fId, name: f.name, phone: f.phone })} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-1">
+                                                <Calendar size={14} /> 상담 신청
+                                            </button>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-center">
+                            <p className="text-sm text-slate-600">추천 가능한 시설이 없습니다.</p>
+                        </div>
+                    )
                 )}
 
                 <button onClick={() => onGoToMyPage ? onGoToMyPage() : onClose?.()} className="w-full bg-slate-900 text-white text-sm font-bold py-3 rounded-xl flex items-center justify-center gap-2">
@@ -424,7 +382,8 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                 </div>
             </div>
 
-            {/* Section 2: Location */}
+            {/* Section 2: Location (마음이 모드에서만 표시) */}
+            {!isDirectFacility && (
             <div>
                 <label className="text-xs font-bold text-slate-700 mb-2 block">희망 지역</label>
                 <div className="flex flex-wrap gap-1.5 mb-2">
@@ -459,6 +418,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                     )}
                 </div>
             </div>
+            )}
 
             {/* Section 3: Religion */}
             <div>
@@ -496,7 +456,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                 disabled={!canSubmit || isSaving}
                 className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white text-sm font-bold py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
             >
-                {isSaving ? <Loader2 size={16} className="animate-spin" /> : <><Check size={16} /> 맞춤 추모시설 찾기</>}
+                {isSaving ? <Loader2 size={16} className="animate-spin" /> : <><Check size={16} /> {isDirectFacility ? '상담 신청' : '맞춤 추모시설 찾기'}</>}
             </button>
         </div>
     );

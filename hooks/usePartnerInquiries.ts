@@ -1,23 +1,20 @@
 import { useQuery } from '@tanstack/react-query';
-import { getAuthClient } from '@/lib/supabaseClient';
-import { useSession } from '@/lib/auth';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { PartnerInquiry } from '@/types/db';
 
 interface UsePartnerInquiriesOptions {
     status?: 'pending' | 'approved' | 'rejected';
     page?: number;
     pageSize?: number;
+    client: SupabaseClient;
 }
 
-export function usePartnerInquiries(options: UsePartnerInquiriesOptions = {}) {
-    const { status, page = 1, pageSize = 20 } = options;
-    const { session } = useSession();
+export function usePartnerInquiries(options: UsePartnerInquiriesOptions) {
+    const { status, page = 1, pageSize = 20, client } = options;
 
     return useQuery({
-        queryKey: ['partner-inquiries', status, page, !!session],
+        queryKey: ['partner-inquiries', status, page],
         queryFn: async () => {
-            const client = await getAuthClient(session, { strict: true });
-
             let query = client
                 .from('partner_inquiries')
                 .select('*', { count: 'exact' })
@@ -36,8 +33,7 @@ export function usePartnerInquiries(options: UsePartnerInquiriesOptions = {}) {
 
             if (error) throw error;
 
-            // [Fix] Deduplicate by company_name (User Feedback: "Prevent duplicate applications")
-            // We keep the latest one (since we ordered by created_at DESC)
+            // Deduplicate by company_name (keep latest — already sorted by created_at DESC)
             const uniqueData: PartnerInquiry[] = [];
             const seen = new Set<string>();
 
@@ -48,13 +44,16 @@ export function usePartnerInquiries(options: UsePartnerInquiriesOptions = {}) {
                 }
             }
 
+            // totalCount는 dedup 후 실제 건수 사용
+            const dedupCount = uniqueData.length;
+
             return {
                 data: uniqueData,
-                totalCount: count ?? uniqueData.length,
-                totalPages: Math.ceil((count ?? uniqueData.length) / pageSize),
+                totalCount: dedupCount,
+                totalPages: Math.ceil((count ?? dedupCount) / pageSize),
                 currentPage: page
             };
         },
-        enabled: !!session,
+        enabled: !!client,
     });
 }

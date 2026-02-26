@@ -4,35 +4,20 @@ import { useApprovePartner } from '../../hooks/useAdminActions';
 import { CheckCircle, XCircle, Search, FileText, Phone, MapPin, Building2, User, MessageSquare } from 'lucide-react';
 import { PartnerInquiry } from '../../types/db';
 import { useConfirmModal } from '../../src/components/common/ConfirmModal';
-import { useSuperAdmin } from '../../hooks/useSuperAdmin';
-import { toast } from 'sonner'; // [Phase 2] Error Handler
+import { useSuperAdminClient } from './SuperAdminGuard';
+import { toast } from 'sonner';
 
 export const PartnerAdmissions: React.FC = () => {
-    const { isSuperAdmin, loading: adminLoading } = useSuperAdmin();
-    const { data: inquiryData, isLoading, refetch } = usePartnerInquiries({ status: 'pending' });
+    const client = useSuperAdminClient();
+    const { data: inquiryData, isLoading, refetch } = usePartnerInquiries({ status: 'pending', client });
     const facilities = inquiryData?.data || [];
-    const { approvePartner } = useApprovePartner();
+    const { approvePartner } = useApprovePartner(client);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedTab, setSelectedTab] = useState('all');
     const confirmModal = useConfirmModal();
-
-    if (adminLoading) {
-        return (
-            <div className="p-6 text-center text-gray-500">권한 확인 중...</div>
-        );
-    }
-
-    if (!isSuperAdmin) {
-        return (
-            <div className="p-6 bg-red-50 border border-red-200 rounded-xl flex items-center justify-center gap-3">
-                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center text-red-500 font-bold shrink-0">!</div>
-                <div>
-                    <h3 className="text-red-800 font-bold">권한이 없습니다</h3>
-                    <p className="text-red-600 text-sm mt-0.5">이 페이지는 슈퍼관리자만 접근할 수 있습니다.</p>
-                </div>
-            </div>
-        );
-    }
+    const [rejectTarget, setRejectTarget] = useState<{ id: string; name: string } | null>(null);
+    const [rejectReason, setRejectReason] = useState('');
+    const [isRejecting, setIsRejecting] = useState(false);
 
     const handleApprove = (inquiry: PartnerInquiry) => {
         confirmModal.open({
@@ -44,26 +29,30 @@ export const PartnerAdmissions: React.FC = () => {
                     toast.success('승인되었습니다.');
                     refetch();
                 } catch (error: unknown) {
-                    toast.error('승인 처리 중 오류가 발생했습니다: ' + (error instanceof Error ? error.message : '알 수 없는 오류'));
+                    toast.error('승인 처리 중 오류: ' + (error instanceof Error ? error.message : '알 수 없는 오류'));
                 }
             }
         });
     };
 
-    const handleReject = (id: string, name: string) => {
-        confirmModal.open({
-            title: '입점 반려 확인',
-            message: `${name} 업체의 입점을 거절하시겠습니까? (반려 사유: "운영팀 문의 요망")`,
-            onConfirm: async () => {
-                try {
-                    await approvePartner({ inquiryId: id, action: 'reject', rejectionReason: '운영팀 문의 요망' });
-                    toast.success('거절되었습니다.');
-                    refetch();
-                } catch (error: unknown) {
-                    toast.error('거절 처리 중 오류가 발생했습니다: ' + (error instanceof Error ? error.message : '알 수 없는 오류'));
-                }
-            }
-        });
+    const handleRejectSubmit = async () => {
+        if (!rejectTarget || isRejecting) return;
+        setIsRejecting(true);
+        try {
+            await approvePartner({
+                inquiryId: rejectTarget.id,
+                action: 'reject',
+                rejectionReason: rejectReason.trim() || '운영팀 문의 요망'
+            });
+            toast.success('거절되었습니다.');
+            setRejectTarget(null);
+            setRejectReason('');
+            refetch();
+        } catch (error: unknown) {
+            toast.error('거절 처리 중 오류: ' + (error instanceof Error ? error.message : '알 수 없는 오류'));
+        } finally {
+            setIsRejecting(false);
+        }
     };
 
     const filtered = facilities.filter(f => {
@@ -73,7 +62,6 @@ export const PartnerAdmissions: React.FC = () => {
         if (!matchesSearch) return false;
 
         if (selectedTab === 'all') return true;
-        // Simple mapping if needed, or just partial match
         if (selectedTab === 'funeral' && f.business_type === 'funeral_home') return true;
         if (selectedTab === 'memorial' && f.business_type === 'memorial_park') return true;
         if (selectedTab === 'sangjo' && f.business_type === 'sangjo') return true;
@@ -120,13 +108,9 @@ export const PartnerAdmissions: React.FC = () => {
                                                     f.business_type === 'sangjo' ? '상조회사' :
                                                         f.business_type === 'pet_funeral' ? '동물장묘' : f.business_type}
                                         </span>
-                                        <span className={`px-2 py-0.5 text-xs rounded border font-bold flex items-center gap-1 whitespace-nowrap ${f.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                                            f.status === 'rejected' ? 'bg-red-50 text-red-600 border-red-100' :
-                                                'bg-green-50 text-green-600 border-green-100'
-                                            }`}>
+                                        <span className="px-2 py-0.5 text-xs rounded border font-bold flex items-center gap-1 whitespace-nowrap bg-amber-50 text-amber-600 border-amber-100">
                                             <FileText size={10} />
-                                            {f.status === 'pending' ? '승인 대기' :
-                                                f.status === 'rejected' ? '반려됨' : '승인됨'}
+                                            승인 대기
                                         </span>
                                     </div>
                                 </div>
@@ -165,7 +149,7 @@ export const PartnerAdmissions: React.FC = () => {
                                     <CheckCircle size={18} /> 승인
                                 </button>
                                 <button
-                                    onClick={() => handleReject(f.id, f.company_name)}
+                                    onClick={() => { setRejectTarget({ id: f.id, name: f.company_name }); setRejectReason(''); }}
                                     data-testid="reject-button"
                                     className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-6 py-2.5 bg-red-50 text-red-600 border border-red-100 rounded-xl hover:bg-red-100 font-bold text-sm transition-all active:scale-95 whitespace-nowrap min-w-[100px]"
                                 >
@@ -176,6 +160,40 @@ export const PartnerAdmissions: React.FC = () => {
                     ))
                 )}
             </div>
+
+            {/* 거절 사유 입력 모달 */}
+            {rejectTarget && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
+                        <h3 className="text-lg font-bold text-slate-800">거절 사유 입력</h3>
+                        <p className="text-sm text-slate-500">
+                            <strong>{rejectTarget.name}</strong> 업체의 입점을 거절합니다.
+                        </p>
+                        <textarea
+                            value={rejectReason}
+                            onChange={(e) => setRejectReason(e.target.value)}
+                            placeholder="거절 사유를 입력하세요 (미입력 시 '운영팀 문의 요망')"
+                            rows={3}
+                            className="w-full border border-slate-200 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-red-200 resize-none"
+                        />
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => setRejectTarget(null)}
+                                className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+                            >
+                                취소
+                            </button>
+                            <button
+                                onClick={handleRejectSubmit}
+                                disabled={isRejecting}
+                                className={`px-4 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors ${isRejecting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                                {isRejecting ? '처리 중...' : '거절 확인'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

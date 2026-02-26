@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Bell, X, CheckCircle, AlertTriangle, Info, Trash2, Check } from 'lucide-react';
 import { useNotifications } from '../hooks/useNotifications';
 import { useNavigate } from 'react-router-dom';
@@ -57,13 +58,15 @@ const NotificationModal: React.FC<{
     const [filter, setFilter] = useState<FilterTab>('전체');
     const [isClosing, setIsClosing] = useState(false);
 
-    // Reset filter when modal opens
-    useEffect(() => {
+    // Reset filter when modal opens (React: derive state from props)
+    const [prevIsOpen, setPrevIsOpen] = useState(false);
+    if (isOpen !== prevIsOpen) {
+        setPrevIsOpen(isOpen);
         if (isOpen) {
             setFilter('전체');
             setIsClosing(false);
         }
-    }, [isOpen]);
+    }
 
     // Prevent body scroll when modal is open
     useEffect(() => {
@@ -318,18 +321,21 @@ export const NotificationCenter: React.FC = () => {
                 )}
             </button>
 
-            {/* Notification Modal */}
-            <NotificationModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                notifications={notifications}
-                unreadCount={unreadCount}
-                isLoading={isLoading}
-                onMarkAsRead={markAsRead}
-                onMarkAllAsRead={markAllAsRead}
-                onDelete={deleteNotification}
-                onNavigate={handleNavigate}
-            />
+            {/* Notification Modal — portal to body to escape backdrop-filter containing block */}
+            {createPortal(
+                <NotificationModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    notifications={notifications}
+                    unreadCount={unreadCount}
+                    isLoading={isLoading}
+                    onMarkAsRead={markAsRead}
+                    onMarkAllAsRead={markAllAsRead}
+                    onDelete={deleteNotification}
+                    onNavigate={handleNavigate}
+                />,
+                document.body
+            )}
         </>
     );
 };

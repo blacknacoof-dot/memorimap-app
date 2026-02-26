@@ -1,0 +1,705 @@
+================================================================================
+ Memorimap 전체 아키텍처 맵
+ 생성일: 2026-02-23
+================================================================================
+
+프로젝트 루트
+================================================================================
+
+memorimap/ (프로젝트 루트)
+│
+├── index.html              - Vite SPA 진입 HTML
+├── index.tsx                - React 앱 마운트 (ReactDOM.render)
+├── index.css                - 전역 CSS (Tailwind)
+├── App.tsx                  - 최상위 React 컴포넌트 (라우팅/인증/상태)
+├── constants.ts             - 전역 상수 (FUNERAL_COMPANIES 45개사, 카테고리 등)
+├── CLAUDE.md                - AI 코딩 지침 문서
+├── package.json             - 의존성 정의
+├── vite.config.ts           - Vite 빌드 설정
+├── tsconfig.json            - TypeScript 설정
+├── tsconfig.scripts.json    - 스크립트 전용 TS 설정
+├── tailwind.config.js       - Tailwind CSS 설정
+├── postcss.config.js        - PostCSS 설정
+├── vercel.json              - Vercel 배포 설정 (SPA fallback)
+├── playwright.config.ts     - Playwright E2E 테스트 설정
+├── cypress.config.ts        - Cypress E2E 테스트 설정
+├── .eslintrc.cjs            - ESLint 설정
+├── .gitignore               - Git 제외 파일
+├── .vercelignore            - Vercel 배포 제외 파일
+├── next-env.d.ts            - Next.js 타입 (레거시, 미사용)
+├── README.md                - 프로젝트 README
+├── system.md                - 시스템 프롬프트 문서
+│
+├── *.sql (루트 ~120+개)     - 일회성 DB 마이그레이션/패치 (대부분 실행 완료)
+├── *.csv (루트 ~20+개)      - 데이터 백업/임포트 파일
+├── *.md (루트 ~40+개)       - 작업 계획/보고서/검증 문서
+├── *.json (루트 ~10개)      - 임시 데이터/리포트
+└── *.txt (루트 ~10개)       - 로그/메모
+
+
+================================================================================
+components/ — UI 컴포넌트 (핵심)
+================================================================================
+
+components/
+├── index.ts                         - 컴포넌트 배럴 export
+│
+│ ── [최상위 레이아웃/라우팅] ──
+├── ContentRouter.tsx                - ViewState별 화면 라우팅 (MAP, FACILITY_ADMIN, SANGJO_DASHBOARD, SUPER_ADMIN 등)
+├── TopBar.tsx                       - 상단 헤더 (로고, 검색, 메뉴 아이콘)
+├── BottomNav.tsx                    - 하단 네비게이션 바 (모바일)
+├── SideMenu.tsx                     - 사이드 메뉴 (로그인/설정/관리자)
+├── FilterBar.tsx                    - 카테고리/지역 필터 바
+├── ModalContainer.tsx               - 모달 오버레이 래퍼
+├── ErrorBoundary.tsx                - React 에러 바운더리
+├── AuthGuard.tsx                    - 인증 가드 (로그인 필수 래퍼)
+│
+│ ── [지도/시설 목록] ──
+├── MapContainer.tsx                 - 네이버 지도 메인 컴포넌트
+├── MapContainer.legacy.tsx          - 레거시 지도 (미사용)
+├── FacilityList.tsx                 - 시설 목록 (좌측 패널)
+├── FacilityItem.tsx                 - 시설 목록 개별 아이템
+├── FacilitySheet.tsx                - 시설 상세 바텀시트
+├── FuneralCompanySheet.tsx          - 장례식장 상세 바텀시트
+├── FuneralCompanyView.tsx           - 장례식장 상세 뷰 (확장)
+├── FacilityEditModal.tsx            - 시설 정보 수정 모달
+├── FacilityFAQManager.tsx           - 시설 FAQ 관리 컴포넌트
+├── ComparisonModal.tsx              - 시설 비교 모달
+├── SangjoComparisonModal.tsx        - 상조 회사 비교 모달
+├── RecommendationStarter.tsx        - 추천 시작 카드
+│
+│ ── [인증/회원] ──
+├── LoginModal.tsx                   - 로그인 모달 (Supabase Auth)
+├── SignUpModal.tsx                  - 회원가입 모달 (약관동의 포함)
+├── EditProfileModal.tsx             - 프로필 수정 모달
+├── PhoneNumberModal.tsx             - 전화번호 입력 모달
+├── LegalModal.tsx                   - 이용약관/개인정보 모달
+│
+│ ── [마이페이지/리뷰/즐겨찾기] ──
+├── MyPageView.tsx                   - 마이페이지 메인 뷰
+├── ConsultationList.tsx             - 상담 내역 목록 (마이페이지)
+├── ReviewCard.tsx                   - 리뷰 카드 단위
+├── ReviewForm.tsx                   - 리뷰 작성 폼
+├── ReviewList.tsx                   - 리뷰 목록
+├── ReservationCard.tsx              - 예약 카드
+├── ReservationList.tsx              - 예약 목록
+├── ReservationModal.tsx             - 예약 모달
+├── ReservationDetailModal.tsx       - 예약 상세 모달
+│
+│ ── [엔딩노트/여정] ──
+├── EndingNoteEditModal.tsx          - 엔딩노트 작성/수정 모달
+├── IntegratedJourneyView.tsx        - 통합 여정 뷰
+├── JourneyProgressGraph.tsx         - 여정 진행 그래프
+│
+│ ── [구독/결제] ──
+├── SubscriptionPlans.tsx            - 구독 요금제 (시설/상조 공용)
+├── PersonalSubscriptionPlans.tsx    - 개인 사용자 구독 요금제
+├── InquiryModal.tsx                 - 파트너 문의 모달
+├── PartnerInquiryView.tsx           - 파트너 문의 상세 뷰
+│
+│ ── [기타] ──
+├── NotificationCenter.tsx           - 알림 센터
+├── Stats.tsx                        - 통계 표시
+├── StaticViews.tsx                  - 정적 페이지들
+├── AdminView.tsx                    - 관리자 뷰 (레거시 래퍼)
+├── AdminUserDetailPage.tsx          - 사용자 상세 관리 페이지
+│
+│ ── admin/ — 관리자 서브컴포넌트 ──
+├── admin/
+│   ├── AdminApprovals.tsx           - 파트너 승인 관리
+│   ├── AdminCommunication.tsx       - 관리자 커뮤니케이션
+│   └── AdminSubscriptions.tsx       - 구독 관리
+│
+│ ── AI/ — AI 검색/추천 ──
+├── AI/
+│   ├── ChatInterface.tsx            - AI 채팅 인터페이스 (메인)
+│   ├── FuneralSearchForm.tsx        - 장례식장 AI 검색 폼
+│   ├── MemorialSearchForm.tsx       - 추모시설 AI 검색 폼
+│   ├── MemorialConsultationForm.tsx - 추모시설 상담 폼
+│   ├── PetSearchForm.tsx            - 반려동물 장례 AI 검색 폼
+│   ├── RecommendList.tsx            - AI 추천 결과 리스트
+│   ├── ScenarioBot.tsx              - 시나리오 기반 봇
+│   └── SmartSearchInput.tsx         - 스마트 검색 입력 컴포넌트
+│
+│ ── Consultation/ — 상담/채팅 ──
+├── Consultation/
+│   ├── BookingPreStep.tsx           - 예약 전 단계
+│   ├── BrandChatHelpers.tsx         - 브랜드 채팅 헬퍼 (스텝별 UI)
+│   ├── BrandChatInterface.tsx       - 브랜드 채팅 인터페이스
+│   ├── ChatBot.tsx                  - 채팅봇 메인
+│   ├── ChatMessage.tsx              - 채팅 메시지 컴포넌트
+│   ├── ConsultationHistoryView.tsx  - 상담 이력 뷰
+│   ├── ConsultationView.tsx         - 상담 뷰
+│   ├── PetChatInterface.tsx         - 반려동물 채팅
+│   ├── petPartnerData.ts            - 반려동물 파트너 데이터
+│   ├── SangjoBrandScenario.tsx      - 상조 브랜드 시나리오
+│   ├── SangjoConsultationModal.tsx  - 상조 상담 모달
+│   └── SangjoContractModal.tsx      - 상조 계약 모달
+│
+│ ── dashboard/ — 시설 관리자 대시보드 ──
+├── dashboard/
+│   ├── FacilityAdminDashboard.tsx   - 시설 관리자 대시보드 메인
+│   ├── ConsultationList.tsx         - 대시보드 상담 목록
+│   ├── LikeStatCard.tsx             - 좋아요 통계 카드
+│   ├── MyConsultations.tsx          - 내 상담 관리
+│   └── facility/
+│       ├── ConsultationActionModal.tsx - 상담 처리 모달
+│       └── ReservationManager.tsx      - 예약 관리자
+│
+│ ── filters/ — 필터 컴포넌트 ──
+├── filters/
+│   └── CategoryFilter.tsx           - 카테고리 필터
+│
+│ ── forms/ — 폼 컴포넌트 ──
+├── forms/
+│   ├── FacilityEditForm.tsx         - 시설 수정 폼
+│   └── PartnerApplyForm.tsx         - 파트너 신청 폼
+│
+│ ── map/ — 지도 관련 ──
+├── map/
+│   └── CategoryFilter.tsx           - 지도 카테고리 필터
+│
+│ ── modals/ — 모달 공용 ──
+├── modals/
+│   └── ConfirmModalWrapper.tsx      - 확인 모달 래퍼
+│
+│ ── Partner/ — 상조 파트너 대시보드 ──
+├── Partner/
+│   ├── PartnerDashboard.tsx         - 파트너(상조) 대시보드 메인
+│   ├── AIConfiguration.tsx          - AI 설정 관리
+│   ├── FacilityInfoEditor.tsx       - 시설 정보 에디터
+│   ├── LiveConsultation.tsx         - 실시간 상담
+│   └── OperationsManagement.tsx     - 운영 관리
+│
+│ ── SuperAdmin/ — 슈퍼관리자 ──
+├── SuperAdmin/
+│   ├── SuperAdminDashboard.tsx      - 슈퍼관리자 메인 대시보드
+│   ├── AdminLeadsView.tsx           - 리드 관리
+│   ├── AdminLogsView.tsx            - 감사 로그 뷰
+│   ├── ContractMonitoring.tsx       - 계약 모니터링
+│   ├── FacilityManagement.tsx       - 시설 관리
+│   ├── FacilityMappingModal.tsx     - 시설 매핑 모달
+│   ├── NoticeManagement.tsx         - 공지사항 관리
+│   ├── PartnerAdmissions.tsx        - 파트너 가입 승인
+│   ├── PartnerManagement.tsx        - 파트너 관리
+│   ├── RevenueManagement.tsx        - 매출 관리
+│   ├── SubscriptionStatus.tsx       - 구독 현황
+│   └── UserManagement.tsx           - 사용자 관리
+│
+│ ── ui/ — 공용 UI ──
+├── ui/
+│   ├── LoadingFallback.tsx          - 로딩 스피너 컴포넌트
+│   ├── OptimizedImage.tsx           - 최적화 이미지
+│   └── SkeletonCard.tsx             - 스켈레톤 로딩 카드
+│
+│ ── views/ — 뷰 컴포넌트 ──
+├── views/
+│   └── MapView.tsx                  - 지도 뷰 래퍼
+│
+└── SangjoDashboard.tsx              - 상조 대시보드 래퍼 (-> PartnerDashboard)
+
+
+================================================================================
+hooks/ — 커스텀 React 훅
+================================================================================
+
+hooks/
+├── useUserRole.ts              - 사용자 역할 감지 + ViewState 자동 라우팅
+├── useProfileSync.ts           - 로그인 시 profiles 테이블 동기화
+├── useFacilityData.ts          - 시설 데이터 fetch + 상조 필터링
+├── useFacilities.ts            - 시설 목록 조회 (기본)
+├── useFacilityAdmin.ts         - 시설 관리자 데이터
+├── useFacilityChat.ts          - 시설 채팅 기능
+├── useFavorites.ts             - 즐겨찾기 관리
+├── useReviews.ts               - 리뷰 CRUD
+├── useReservations.ts          - 예약 관리
+├── useNotifications.ts         - 알림 관리
+├── useComparison.ts            - 시설 비교 기능
+├── useCompanySelect.ts         - 상조 회사 선택
+├── useFinancials.ts            - 매출/결제 데이터
+├── useLeads.ts                 - 리드(잠재고객) 관리
+├── useNotices.ts               - 공지사항 관리
+├── usePartnerInquiries.ts      - 파트너 문의 관리
+├── useAdminActions.ts          - 관리자 액션
+├── useAdminFacilities.ts       - 관리자 시설 관리
+├── useAuditLogs.ts             - 감사 로그
+├── useIsSuperAdmin.ts          - 슈퍼관리자 여부 확인
+├── useSuperAdmin.ts            - 슈퍼관리자 기능
+├── useUsers.ts                 - 사용자 관리
+├── useLocation.ts              - 위치 정보 (GPS)
+├── useMapViewport.ts           - 지도 뷰포트 상태
+├── useScenarioChat.ts          - 시나리오 채팅
+├── useRealtimeSubscription.ts  - Supabase Realtime 구독
+├── useApiRetry.ts              - API 재시도 로직
+└── useToast.ts                 - 토스트 알림
+
+
+================================================================================
+lib/ — 핵심 비즈니스 로직/유틸
+================================================================================
+
+lib/
+├── auth.tsx                    - AuthProvider + 인증 훅 (Supabase Auth)
+├── supabaseClient.ts          - Supabase 클라이언트 싱글톤
+├── queries.ts                  - 메인 DB 쿼리 모음 (getUserRole, getIntelligentRecommendations, strictFilter 등)
+├── sangjoQueries.ts           - 상조 전용 쿼리 (getSangjoUser, saveSangjoContract 등)
+├── scenario_queries.ts        - 시나리오봇 쿼리
+├── schemas.ts                  - Zod 스키마 검증
+├── admin.ts                    - 관리자 유틸
+├── gemini.ts                   - Gemini AI API 호출
+├── mockAI.ts                   - AI 목업 (테스트용)
+├── portone.ts                  - PortOne 결제 연동
+├── facilityUtils.ts           - 시설 유틸 함수
+├── featureFlags.ts            - 기능 플래그
+├── errorHandler.ts            - 에러 핸들러
+├── logger.ts                   - 로거
+├── apiRetry.ts                - API 재시도 유틸
+│
+├── api/
+│   ├── aiConsultation.ts      - AI 상담 API
+│   ├── facilityAdmin.ts       - 시설 관리자 API
+│   └── superAdmin.ts          - 슈퍼관리자 API
+│
+├── queries/
+│   └── consultation.ts        - 상담 쿼리 (분리)
+│
+├── security/
+│   ├── auditLog.ts            - 감사 로그 기록
+│   ├── fileValidation.ts      - 파일 업로드 검증
+│   ├── sqlSanitize.ts         - SQL 인젝션 방어
+│   └── xssSanitize.ts         - XSS 방어
+│
+├── utils/
+│   └── dataMerge.ts           - 데이터 병합 유틸
+│
+├── queries.ts_temp_append      - 임시 (미사용)
+├── queries_backup.ts.bak       - 백업 (미사용)
+├── queries_original.ts.bak     - 백업 (미사용)
+└── query_restore.txt           - 복구 메모 (미사용)
+
+
+================================================================================
+types/ — TypeScript 타입 정의
+================================================================================
+
+types/
+├── index.ts                    - 메인 타입 export (Partner, SangjoContract, Facility 등)
+├── db.ts                       - DB 테이블 타입
+├── facility.ts                 - Facility 타입
+├── consultation.ts             - 상담 타입
+├── favorites.ts                - 즐겨찾기 타입
+└── map.ts                      - 지도 관련 타입
+
+
+================================================================================
+utils/ — 유틸리티
+================================================================================
+
+utils/
+├── facilityNormalizer.ts       - 시설 타입 정규화 (normalizeType, isSangjoByName)
+├── mapHelpers.ts               - 지도 헬퍼 (마커/클러스터)
+├── naverMapHelper.ts           - 네이버 지도 API 헬퍼
+├── searchHistory.ts            - 검색 기록 관리
+├── confirmAction.ts            - 확인 액션 유틸
+└── logger.ts                   - 로거 유틸
+
+
+================================================================================
+stores/ — 상태 관리 (Zustand)
+================================================================================
+
+stores/
+├── useFilterStore.ts           - 필터 상태 (카테고리, 지역)
+├── useSangjoFavoriteStore.ts   - 상조 즐겨찾기 상태
+└── conversationStore.ts        - 대화 상태
+
+
+================================================================================
+constants/ — 상수 모듈
+================================================================================
+
+constants/
+├── maumAiConstants.ts         - 마음AI 관련 상수
+└── regions.ts                  - 지역 데이터 (시/도/군/구)
+
+
+================================================================================
+services/ — 서비스 레이어
+================================================================================
+
+services/
+├── favoriteService.ts          - 즐겨찾기 서비스
+├── geminiService.ts            - Gemini AI 서비스
+└── sangjoFavoriteService.ts    - 상조 즐겨찾기 서비스
+
+
+================================================================================
+pages/ — 페이지 컴포넌트
+================================================================================
+
+pages/
+└── ShareJourneyView.tsx        - 여정 공유 페이지 (외부 링크용)
+
+
+================================================================================
+src/ — 레거시/보조 소스
+================================================================================
+
+src/
+├── components/
+│   ├── common/
+│   │   └── ConfirmModal.tsx     - 확인 모달 (레거시)
+│   └── partner/
+│       └── StatusTracker.tsx    - 파트너 상태 추적기
+├── pages/
+│   ├── ExternalBrowserGuidePage.tsx - 외부 브라우저 안내
+│   └── admin/facility/
+│       └── faq.tsx              - FAQ 관리 페이지
+├── types/
+│   └── zustand.d.ts            - Zustand 타입 선언
+└── utils/
+    └── browserDetection.ts     - 브라우저 감지 유틸
+
+
+================================================================================
+supabase/ — Supabase 설정/함수/마이그레이션
+================================================================================
+
+supabase/
+├── config.toml                  - Supabase 로컬 설정
+├── schema.sql                   - DB 스키마 정의
+│
+├── functions/ — Edge Functions (Deno)
+│   ├── deno.json                - Deno 설정
+│   ├── approve-partner/
+│   │   └── index.ts             - 파트너 승인 Edge Function
+│   ├── deploy-bot-data/
+│   │   └── index.ts             - 봇 데이터 배포
+│   ├── gemini-proxy/
+│   │   └── index.ts             - Gemini AI 프록시
+│   └── verify-payment/
+│       └── index.ts             - 결제 검증
+│
+├── migrations/ — DB 마이그레이션 (63개)
+│   ├── 20260106_add_business_type.sql
+│   ├── 20260106_complete_partner_schema.sql
+│   ├── 20260106_consultations_schema.sql
+│   ├── 20260106_enhance_partner_inquiries.sql
+│   ├── 20260106_fix_partner_inquiries.sql
+│   ├── 20260108_search_bot_foundation.sql
+│   ├── 20260108_search_bot_rpc_v2.sql
+│   ├── 20260123_restrict_super_admin.sql
+│   ├── 20260130_fix_search_facilities_rpc.sql
+│   ├── 20260202_create_admin_notifications.sql
+│   ├── 20260202_fix_consultations_schema.sql
+│   ├── 20260202_reapply_lead_rpc.sql
+│   ├── 20260202_sangjo_chat_events.sql
+│   ├── 20260203_backup_before_cleanup.sql
+│   ├── 20260203_cleanup_leads_rls.sql
+│   ├── 20260203_cleanup_unused_features.sql
+│   ├── 20260203_fix_consultation_facility_id_type.sql
+│   ├── 20260203_fix_db_functions_security.sql
+│   ├── 20260203_fix_leads_status.sql
+│   ├── 20260203_fix_rpc_overloading.sql
+│   ├── 20260203_harden_db_functions.sql
+│   ├── 20260203_restore_search_facilities_v2.sql
+│   ├── 20260204_p0_security_fix.sql
+│   ├── 20260204_rls_fix_v8.sql
+│   ├── 20260204_security_hardening.sql
+│   ├── 20260204_security_hardening_comprehensive.sql
+│   ├── 20260204_user_journey.sql
+│   ├── 20260205_critical_security_fix.sql
+│   ├── 20260205_fix_rls_clerk.sql
+│   ├── 20260205_journey_share.sql
+│   ├── 20260205101500_emergency_rls_fix.sql
+│   ├── 20260205130000_fix_public_inserts.sql
+│   ├── 20260205151200_fix_admin_rls_clerk.sql
+│   ├── 20260205160000_fix_sangjo_hq_admins_500_error.sql
+│   ├── 20260205161000_fix_profiles_500_error.sql
+│   ├── 20260205162000_fix_profiles_complete.sql
+│   ├── 20260205163000_kill_all_500_errors.sql
+│   ├── 20260205164000_rls_diagnostic_recovery.sql
+│   ├── 20260205165000_fix_user_notifications_400.sql
+│   ├── 20260205170000_fix_consultations_rls_type_mismatch.sql
+│   ├── 20260210_fix_sangjo_favorites_rls.sql
+│   ├── 20260213_add_category_to_consultations.sql
+│   ├── 20260213_fix_all_favorites_rls.sql
+│   ├── 20260215_fix_approve_partner_e2e.sql
+│   ├── 20260215_qa_cleanup.sql
+│   ├── 20260215_qa_super_test_account.sql
+│   ├── 20260219_fix_auth_uid_rls_policies.sql
+│   ├── 20260219_fix_auth_uid_rls_v2.sql
+│   ├── 20260219_protect_profiles_role.sql
+│   ├── 20260220_fix_admin_users_rls.sql
+│   ├── 20260220_fix_favorite_rpc_auth_uid.sql
+│   ├── 20260220_fix_is_super_admin_function.sql
+│   ├── 20260220_fix_superadmin_rls.sql
+│   ├── 20260220_fix_superadmin_tables_rls.sql
+│   ├── 20260220_get_user_role_rpc.sql
+│   ├── 20260221_cleanup_duplicate_rls.sql
+│   ├── 20260221_db_fixes_batch1.sql
+│   ├── 20260221_db_fixes_batch2.sql
+│   ├── 20260221_fix_consultation_status.sql
+│   ├── 20260221_fix_reservations_consultations_rls.sql
+│   ├── 20260222_clerk_to_supabase_auth.sql
+│   └── 20260222_fix_is_super_admin_final.sql
+│
+└── patches/ — DB 패치 (8개)
+    ├── 01_add_partner_columns.sql
+    ├── 02_fix_favorites_schema.sql
+    ├── 03_fix_favorites_forced.sql
+    ├── 04_fix_favorites_userid_text.sql
+    ├── 05_fix_admins_and_favorites.sql
+    ├── 06_final_fix_cascade.sql
+    ├── 07_complete_fix_images_favorites.sql
+    └── 08_admin_prep_final.sql
+
+
+================================================================================
+scripts/ — 운영/데이터 스크립트 (~750+개)
+================================================================================
+
+scripts/
+├── create_sangjo_test_user.cjs  - 상조 테스트 계정 생성
+├── generate-sitemap.cjs         - 사이트맵 생성
+├── *.ts / *.cjs / *.sql / *.py  - 데이터 마이그레이션, 검증, 크롤링, 이미지 처리 등
+├── data/
+│   └── districts.ts             - 지역구 데이터
+└── week3/
+    ├── apply_rls_policies_v2.sql
+    └── create_timeline_proc_v2.sql
+
+
+================================================================================
+tests/ — E2E 테스트
+================================================================================
+
+tests/e2e/
+├── db.utils.ts                              - DB 테스트 유틸
+├── facilityAdmin.confirmReservation.spec.ts  - 시설관리자 예약확인 테스트
+├── review-delete.spec.ts                     - 리뷰 삭제 테스트
+├── superAdmin.joinChat.spec.ts               - 슈퍼관리자 채팅 참여
+└── user.resumeChat.spec.ts                   - 사용자 채팅 재개
+
+
+================================================================================
+cypress/ — Cypress E2E 테스트
+================================================================================
+
+cypress/
+├── cypress.d.ts
+├── e2e/
+│   ├── admin_flow.cy.ts        - 관리자 플로우
+│   ├── facility-detail.cy.ts   - 시설 상세
+│   ├── facility-list.cy.ts     - 시설 목록
+│   ├── home.cy.ts              - 홈 화면
+│   ├── login.cy.ts             - 로그인
+│   └── reservation.cy.ts       - 예약
+├── fixtures/
+│   └── user.json               - 테스트 사용자 데이터
+└── support/
+    ├── commands.ts              - 커스텀 커맨드
+    └── e2e.ts                   - E2E 설정
+
+
+================================================================================
+docs/ — 문서
+================================================================================
+
+docs/
+├── E2E_TEST_SCENARIOS.md              - E2E 테스트 시나리오
+├── INTEGRITY_CHECKLIST.md             - 무결성 체크리스트
+├── LAUNCH_READINESS_REPORT.md         - 출시 준비 보고서
+├── MANUAL_TEST_CHECKLIST.md           - 수동 테스트 체크리스트
+├── MOBILE_UI_AUDIT_REPORT.md          - 모바일 UI 감사
+├── PRELAUNCH_CROSSCHECK.md            - 출시 전 크로스체크
+├── implementation_plan_phase_2.md     - 구현 계획 Phase 2
+├── walkthrough_release_v1.8.0.md      - v1.8.0 워크스루
+├── 01-plan/features/                  - 기능 계획 문서
+├── 02-design/features/               - 기능 설계 문서
+├── 03-analysis/                       - 분석 보고서
+├── 04-report/                         - 완료 보고서
+├── refactoring/                       - 리팩토링 계획
+└── security_hardening/               - 보안 강화 문서
+
+
+================================================================================
+public/ — 정적 파일
+================================================================================
+
+public/
+├── favicon.ico                  - 파비콘
+├── manifest.json               - PWA 매니페스트
+├── robots.txt                   - 크롤러 설정
+├── sitemap.xml                  - 사이트맵
+├── og-image.png                 - OG 이미지
+├── MarkerClustering.js         - 네이버 지도 마커 클러스터링
+├── admin/index.html             - 관리자 HTML
+├── images/                      - 이미지 (시설/로고/기본/상조 등)
+│   ├── defaults/                - 기본 이미지 (cemetery, natural)
+│   ├── facilities/              - 시설별 이미지 (eden, sian, utopia 등)
+│   ├── logos/                   - 회사 로고
+│   ├── pet_logos/               - 반려동물 장례 로고
+│   └── sangjo/                  - 상조 이미지 + gallery/
+└── sangjo-gallery/             - 상조 갤러리 이미지
+
+
+================================================================================
+기타 설정 폴더
+================================================================================
+
+.github/workflows/
+├── cypress.yml                  - Cypress CI
+└── deploy.yml                   - 배포 CI
+
+.vercel/                        - Vercel 프로젝트 설정
+.vscode/                        - VS Code 설정
+.agent/workflows/               - AI 에이전트 워크플로우
+.antigravity/                   - 커스텀 인스트럭션
+
+tools/bkit/                     - bkit 개발 도구 (별도 서브모듈, 자체 구조)
+data/                           - 원본 데이터 (CSV, 이미지, 지역별 폴더)
+migrations/                     - 레거시 마이그레이션 (supabase/migrations/ 이전 것들)
+
+router/                         - (현재 빈 폴더 — ContentRouter가 실질적 라우터)
+
+
+================================================================================
+1. 전체 아키텍처 요약
+================================================================================
+
+항목            | 내용
+----------------|--------------------------------------------------------------
+프레임워크      | React 18 + TypeScript + Vite
+스타일링        | Tailwind CSS
+상태관리        | Zustand (stores/) + React hooks
+인증            | Supabase Auth (Clerk에서 전환 완료)
+DB/백엔드       | Supabase (PostgreSQL + RLS + Edge Functions)
+지도            | Naver Maps API
+AI              | Google Gemini API (Edge Function 프록시)
+결제            | PortOne (lib/portone.ts)
+배포            | Vercel (SPA)
+테스트          | Playwright + Cypress
+라우팅 패턴     | SPA — ContentRouter (ViewState enum으로 화면 전환, URL 라우터 없음)
+권한 체계       | user -> facility_admin/facility_manager -> sangjo_hq_admin/sangjo_branch_admin -> super_admin
+
+
+================================================================================
+2. 핵심 진입점 목록
+================================================================================
+
+진입점          | 파일                              | 역할
+----------------|-----------------------------------|------------------------------------------
+HTML            | index.html                        | Vite SPA 진입점
+React 마운트    | index.tsx                         | ReactDOM.render -> App
+앱 루트         | App.tsx                           | AuthProvider + 전역 상태 + ContentRouter
+라우터          | components/ContentRouter.tsx       | ViewState별 화면 분기
+                |                                   | (MAP, FACILITY_ADMIN, SANGJO_DASHBOARD, SUPER_ADMIN)
+인증            | lib/auth.tsx                      | AuthProvider + useUser/useSession/useAuth
+역할 감지       | hooks/useUserRole.ts              | 로그인 시 역할 판별 + 자동 라우팅
+DB 클라이언트   | lib/supabaseClient.ts             | Supabase 싱글톤
+Edge Functions  | supabase/functions/*/index.ts     | 서버사이드
+                |                                   | (approve-partner, gemini-proxy, verify-payment, deploy-bot-data)
+
+
+================================================================================
+3. 주요 데이터 흐름
+================================================================================
+
+사용자 브라우저
+  |
+  v
+index.html -> index.tsx -> App.tsx
+  |
+  v
+AuthProvider (lib/auth.tsx) -> Supabase Auth 세션 확인
+  |
+  v
+useUserRole (hooks/useUserRole.ts)
+  -> getUserRole (lib/queries.ts) -> profiles/super_admins/sangjo_dashboard_users 조회
+  -> ViewState 자동 결정
+  |
+  v
+ContentRouter (components/ContentRouter.tsx)
+  |-- MAP             -> MapContainer + FacilityList + FilterBar + AI ChatInterface
+  |-- FACILITY_ADMIN  -> FacilityAdminDashboard
+  |-- SANGJO_DASHBOARD -> SangjoDashboard -> PartnerDashboard
+  |-- SUPER_ADMIN     -> SuperAdminDashboard
+  |
+  v
+useFacilityData (hooks/useFacilityData.ts)
+  -> lib/queries.ts -> Supabase RPC (search_facilities_v2 등)
+  -> facilityNormalizer.ts (타입 정규화, 상조 필터링)
+  |
+  v
+사용자 상호작용 -> 상담/예약/리뷰/즐겨찾기
+  -> lib/queries.ts / lib/sangjoQueries.ts -> Supabase DB
+  -> Edge Functions (결제 검증, AI 프록시, 파트너 승인)
+
+
+================================================================================
+4. 다음 단계 검증을 위해 집중해야 할 폴더
+================================================================================
+
+우선순위 | 폴더/파일                                | 이유
+---------|------------------------------------------|------------------------------------------
+P0       | components/ContentRouter.tsx              | 모든 화면 라우팅의 중심. 최근 수정
+P0       | hooks/useUserRole.ts                      | 역할 감지 + 자동 라우팅. 최근 수정
+P0       | lib/queries.ts                            | 검색/추천/필터 로직 핵심. 다수 버그 수정
+P0       | lib/auth.tsx                              | 인증 전체 흐름
+P1       | components/Partner/PartnerDashboard.tsx   | 상조 대시보드 메인 (구독/예약/매출)
+P1       | components/AI/ 전체                       | AI 검색 폼 3종 (장례/추모/반려동물)
+P1       | components/Consultation/ 전체             | 상담/채팅 흐름
+P1       | components/SuperAdmin/ 전체               | 슈퍼관리자 기능
+P2       | supabase/functions/                       | Edge Functions 4개 재배포 필요
+P2       | supabase/migrations/                      | 최신 마이그레이션 실행 상태 확인
+P3       | 루트 *.sql / *.csv                        | 정리 필요 (120+ SQL, 20+ CSV가 루트에 산재)
+P3       | scripts/ (750+개)                         | 대부분 일회성 — 정리 후보
+
+
+================================================================================
+5. 파일 간 핵심 의존성 그래프
+================================================================================
+
+index.tsx
+  └-> App.tsx
+       ├-> lib/auth.tsx (AuthProvider)
+       │    └-> lib/supabaseClient.ts
+       ├-> hooks/useUserRole.ts
+       │    ├-> lib/queries.ts (getUserRole)
+       │    └-> lib/sangjoQueries.ts (getSangjoUser)
+       ├-> components/ContentRouter.tsx
+       │    ├-> components/MapContainer.tsx
+       │    │    └-> utils/naverMapHelper.ts
+       │    ├-> components/FacilityList.tsx
+       │    │    └-> hooks/useFacilityData.ts
+       │    │         ├-> lib/queries.ts (getIntelligentRecommendations, strictFilter)
+       │    │         └-> utils/facilityNormalizer.ts
+       │    ├-> components/AI/ChatInterface.tsx
+       │    │    ├-> components/AI/FuneralSearchForm.tsx
+       │    │    ├-> components/AI/MemorialSearchForm.tsx
+       │    │    └-> components/AI/PetSearchForm.tsx
+       │    ├-> components/dashboard/FacilityAdminDashboard.tsx
+       │    │    └-> hooks/useFacilityAdmin.ts
+       │    ├-> components/SangjoDashboard.tsx
+       │    │    └-> components/Partner/PartnerDashboard.tsx
+       │    │         ├-> lib/sangjoQueries.ts
+       │    │         └-> components/SubscriptionPlans.tsx
+       │    └-> components/SuperAdmin/SuperAdminDashboard.tsx
+       │         ├-> lib/api/superAdmin.ts
+       │         └-> components/SuperAdmin/*.tsx
+       ├-> stores/useFilterStore.ts (Zustand)
+       ├-> hooks/useProfileSync.ts
+       │    └-> lib/supabaseClient.ts
+       └-> constants.ts (FUNERAL_COMPANIES 등)
+
+Edge Functions (서버사이드):
+  supabase/functions/approve-partner/index.ts  <- SuperAdmin 파트너 승인
+  supabase/functions/gemini-proxy/index.ts     <- AI 채팅 Gemini 호출
+  supabase/functions/verify-payment/index.ts   <- PortOne 결제 검증
+  supabase/functions/deploy-bot-data/index.ts  <- 봇 데이터 배포
+
+
+================================================================================
+끝
+================================================================================

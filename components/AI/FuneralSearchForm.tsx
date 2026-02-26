@@ -258,7 +258,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                 <div className="mt-3 space-y-3 animate-in fade-in duration-300">
                     <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center space-y-3">
                         <Check className="text-green-500 mx-auto" size={40} />
-                        <p className="text-lg font-bold text-green-700">바로 예약 되었습니다</p>
+                        <p className="text-lg font-bold text-green-700">상담 접수 완료</p>
                         <p className="text-sm text-slate-600 font-semibold">{bookingComplete.facilityName}</p>
                         <p className="text-xs text-slate-500">
                             빈소: {bookingComplete.scale} | 종교: {bookingComplete.religion}
@@ -349,7 +349,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                                             </div>
                                         ) : (
                                             <button onClick={() => setConsultFacility({ id: fId, name: f.name, phone: f.phone })} className="w-full bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-1">
-                                                <Calendar size={14} /> 바로 예약 접수
+                                                <Calendar size={14} /> 상담 신청
                                             </button>
                                         )}
                                     </div>
@@ -464,7 +464,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                 disabled={!canSubmit || isSaving}
                 className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white text-sm font-bold py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
             >
-                {isSaving ? <Loader2 size={16} className="animate-spin" /> : <><Check size={16} /> {isDirectFacility ? '예약하기' : '맞춤 장례식장 찾기'}</>}
+                {isSaving ? <Loader2 size={16} className="animate-spin" /> : <><Check size={16} /> {isDirectFacility ? '상담 신청' : '맞춤 장례식장 찾기'}</>}
             </button>
         </div>
     );

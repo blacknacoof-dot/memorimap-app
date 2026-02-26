@@ -65,6 +65,12 @@ export const requestPayment = async (params: PaymentRequest): Promise<PaymentRes
         mobile: 'POPUP' as const
     };
 
+    // PortOne은 빈 문자열을 거부 (NON_EMPTY_STRING) → 빈 필드 제거
+    const customer: Record<string, string> = {};
+    if (params.customer.fullName) customer.fullName = params.customer.fullName;
+    if (params.customer.phoneNumber) customer.phoneNumber = params.customer.phoneNumber;
+    if (params.customer.email) customer.email = params.customer.email;
+
     try {
         const response = await window.PortOne.requestPayment({
             storeId: params.storeId,
@@ -74,7 +80,7 @@ export const requestPayment = async (params: PaymentRequest): Promise<PaymentRes
             totalAmount: params.totalAmount,
             currency: params.currency,
             payMethod: params.payMethod,
-            customer: params.customer,
+            ...(Object.keys(customer).length > 0 && { customer }),
             windowType: windowType, // ✅ 객체 형식으로 전달
         });
 
@@ -187,9 +193,9 @@ interface PortOneRequestPaymentParams {
     totalAmount: number;
     currency: string;
     payMethod: string;
-    customer: {
-        fullName: string;
-        phoneNumber: string;
+    customer?: {
+        fullName?: string;
+        phoneNumber?: string;
         email?: string;
     };
     windowType?: {

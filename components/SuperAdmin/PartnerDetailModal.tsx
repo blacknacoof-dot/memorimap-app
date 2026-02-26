@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-    Users, CheckCircle2, XCircle, AlertCircle,
+    Users, CheckCircle2, AlertCircle,
     Building2, Mail, Phone, Calendar, X
 } from 'lucide-react';
 import { Partner } from '../../types';
@@ -33,10 +33,13 @@ export const PartnerDetailModal: React.FC<Props> = ({ partner, onClose, onStatus
                         <div>
                             <h4 className="text-lg font-bold text-slate-800">{partner.company_name}</h4>
                             <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${partner.status === 'approved' ? 'bg-green-100 text-green-600' :
-                                    partner.status === 'pending' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'
+                                    partner.status === 'pending' ? 'bg-blue-100 text-blue-600' :
+                                        partner.status === 'suspended' ? 'bg-orange-100 text-orange-600' :
+                                            'bg-red-100 text-red-600'
                                 }`}>
                                 {partner.status === 'approved' ? '승인됨' :
-                                    partner.status === 'pending' ? '대기중' : '정지/반려'}
+                                    partner.status === 'pending' ? '대기중' :
+                                        partner.status === 'suspended' ? '정지' : '반려'}
                             </span>
                         </div>
                     </div>
@@ -81,20 +84,9 @@ export const PartnerDetailModal: React.FC<Props> = ({ partner, onClose, onStatus
 
                     <div className="flex gap-2 pt-2">
                         {partner.status === 'pending' && (
-                            <>
-                                <button
-                                    onClick={async () => { await onStatusChange(partner.id, 'approved'); onClose(); }}
-                                    className="flex-1 bg-blue-600 text-white py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-1.5"
-                                >
-                                    <CheckCircle2 size={16} /> 승인
-                                </button>
-                                <button
-                                    onClick={async () => { await onStatusChange(partner.id, 'rejected'); onClose(); }}
-                                    className="flex-1 bg-white text-red-500 border border-red-200 py-2.5 rounded-xl text-sm font-bold hover:bg-red-50 transition-all flex items-center justify-center gap-1.5"
-                                >
-                                    <XCircle size={16} /> 거절
-                                </button>
-                            </>
+                            <div className="flex-1 text-center py-2.5 text-sm text-amber-600 bg-amber-50 rounded-xl border border-amber-100 font-medium">
+                                "신규 입점 신청"에서 승인/거절 처리
+                            </div>
                         )}
                         {partner.status === 'approved' && (
                             <button
@@ -102,6 +94,14 @@ export const PartnerDetailModal: React.FC<Props> = ({ partner, onClose, onStatus
                                 className="flex-1 bg-white text-slate-600 border border-slate-200 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-50 transition-all"
                             >
                                 서비스 일시정지
+                            </button>
+                        )}
+                        {partner.status === 'suspended' && (
+                            <button
+                                onClick={async () => { await onStatusChange(partner.id, 'approved'); onClose(); }}
+                                className="flex-1 bg-blue-600 text-white py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-1.5"
+                            >
+                                <CheckCircle2 size={16} /> 서비스 재개
                             </button>
                         )}
                         <button

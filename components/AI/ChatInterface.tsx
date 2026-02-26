@@ -88,22 +88,11 @@ export const ChatInterface: React.FC<Props> = ({
     // [PDCA VERIFICATION] Trace ID Generator
     const generateTraceId = () => Math.random().toString(36).substring(2, 11).toUpperCase();
 
-    // [PDCA] System Logging Helper
+    // [PDCA] System Logging Helper — system_logs는 서버(Edge Function)에서만 INSERT 가능
+    // 클라이언트에서는 console로만 기록 (RLS가 클라이언트 INSERT 차단)
     const logToSystem = async (level: 'INFO' | 'WARN' | 'ERROR', message: string, traceId?: string, meta: Record<string, unknown> = {}) => {
-        try {
-            const client = await getAuthClient(session, { strict: true });
-            // Fire and forget - don't await execution to avoid blocking UI
-            client.from('system_logs').insert({
-                level,
-                message,
-                trace_id: traceId || 'UNKNOWN_TRACE',
-                meta,
-                source: 'client:ChatInterface'
-            }).then(({ error }) => {
-                if (error) console.error('Failed to log to system:', error);
-            });
-        } catch (e) {
-            console.error('Exception logging to system:', e);
+        if (level === 'ERROR') {
+            console.error(`[${level}] ${message}`, { traceId, ...meta });
         }
     };
 
