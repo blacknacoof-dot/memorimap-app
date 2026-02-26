@@ -618,6 +618,7 @@ export const MyPageView: React.FC<Props> = ({
                     sangjoFavoriteCount={sangjoFavorites.length}
                     consultationCount={consultationCount}
                     refreshTrigger={journeyRefreshKey}
+                    onLoginClick={onLoginClick}
                 />
             </div>
 

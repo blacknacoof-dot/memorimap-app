@@ -26,6 +26,7 @@ interface IntegratedJourneyViewProps {
     sangjoFavoriteCount?: number;
     consultationCount?: number;
     refreshTrigger?: number;
+    onLoginClick?: () => void;
 }
 
 export default function IntegratedJourneyView({
@@ -33,6 +34,7 @@ export default function IntegratedJourneyView({
     sangjoFavoriteCount = 0,
     consultationCount = 0,
     refreshTrigger = 0,
+    onLoginClick,
 }: IntegratedJourneyViewProps) {
     const { isLoaded, isSignedIn, user } = useUser();
     const { session } = useSession();
@@ -194,7 +196,7 @@ export default function IntegratedJourneyView({
             <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-8 text-center mx-1 mb-8">
                 <p className="text-gray-500 text-sm mb-4">로그인하시면 나의 여정 기록을 관리할 수 있습니다.</p>
                 <button
-                    onClick={() => window.location.href = '/login'}
+                    onClick={() => onLoginClick?.()}
                     className="px-6 py-2 bg-pink-500 text-white rounded-xl text-sm font-bold shadow-sm"
                 >
                     로그인 / 시작하기
