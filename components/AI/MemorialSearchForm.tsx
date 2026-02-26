@@ -170,7 +170,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                     visitor_count: 1,
                     purpose: 'memorial',
                     special_requests: `시설: ${facilityName || ''}\n${finalText}`,
-                    status: 'waiting',
+                    status: 'pending',
                     payment_amount: 0,
                 });
             } catch (e) {
@@ -250,7 +250,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                 visitor_count: 1,
                 purpose: 'memorial',
                 special_requests: notes,
-                status: 'waiting',
+                status: 'pending',
                 payment_amount: 0,
             });
             if (error) throw error;

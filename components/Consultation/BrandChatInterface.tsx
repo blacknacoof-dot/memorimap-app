@@ -16,10 +16,6 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
     // Check if company is for Pet Funeral
     const isPetCompany = company.id.startsWith('pet_');
 
-    if (isPetCompany) {
-        return <PetChatInterface company={company} onClose={onClose} onBack={onBack} />;
-    }
-
     const BRAND_CONFIG = {
         name: company.name,
         themeColor: isPetCompany ? "bg-[#78350F]" : "bg-[#005B50]", // Amber-900 (Brown) for Pets
@@ -111,6 +107,11 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
     useEffect(() => {
         scrollToBottom();
     }, [messages, isTyping]);
+
+    // Pet company → delegate to PetChatInterface (after hooks to satisfy rules-of-hooks)
+    if (isPetCompany) {
+        return <PetChatInterface company={company} onClose={onClose} onBack={onBack} />;
+    }
 
     // Integrated Gemini AI Response
     const handleAiResponse = async (userText: string) => {
@@ -230,17 +231,26 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
         const contractNumber = `${isUrgent ? 'URG' : 'REQ'}-2026-${Math.floor(Math.random() * 900000 + 100000)}`;
 
         try {
-            const { saveSangjoContract } = await import('../../lib/sangjoQueries');
+            const { saveSangjoContract, resolveSangjoDbId } = await import('../../lib/sangjoQueries');
             const { supabase, getAuthClient } = await import('../../lib/supabaseClient');
             const { data: { session: currentSession } } = await supabase.auth.getSession();
             const client = await getAuthClient(currentSession, { strict: true });
+            const userId = currentSession?.user?.id || '';
+            const customerName = (formData.name as string) || '익명 고객';
+            const customerPhone = (formData.phone as string) || '';
+            const serviceType = isUrgent ? '긴급 출동' : (isPhone ? '전화 상담' : ((formData.type as string) || '채팅 상담'));
+
+            // 가짜 ID('fc_new_1' 등)를 DB 실제 UUID로 변환
+            const dbSangjoId = await resolveSangjoDbId(company.id, company.name, client);
+
+            // 1. sangjo_contracts (계약/관리용)
             await saveSangjoContract({
-                id: `db-${Date.now()}`,
+                id: crypto.randomUUID(),
                 contract_number: contractNumber,
-                sangjo_id: company.id,
-                customer_name: (formData.name as string) || '익명 고객',
-                customer_phone: (formData.phone as string) || '',
-                service_type: isUrgent ? '긴급 출동' : (isPhone ? '전화 상담' : ((formData.type as string) || '채팅 상담')),
+                sangjo_id: dbSangjoId,
+                customer_name: customerName,
+                customer_phone: customerPhone,
+                service_type: serviceType,
                 status: '상담신청',
                 application_type: 'CONSULTATION',
                 preferred_call_time: (formData.time as string) || '',
@@ -248,6 +258,17 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
                 emergency_level: isUrgent ? 'critical' : 'normal',
                 created_at: new Date().toISOString()
             }, client);
+
+            // 2. consultations (유저 마이페이지 + 업체 대시보드 표시용)
+            await client.from('consultations').insert({
+                facility_id: dbSangjoId,
+                user_id: userId,
+                user_name: customerName,
+                user_phone: customerPhone,
+                status: 'waiting',
+                notes: `[상조 상담] ${company.name} - ${serviceType}\n접수번호: ${contractNumber}${(formData.time as string) ? `\n희망 연락 시간: ${formData.time}` : ''}`,
+                category: 'sangjo',
+            });
         } catch (e) {
             toast.error('상담 접수 저장에 실패했습니다.');
             return;

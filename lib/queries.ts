@@ -377,8 +377,8 @@ export const getIntelligentRecommendations = async (
 
     // 1. Region Search (Primary)
     if (regionText && regionText !== '내 위치 주변') {
-        // A. Exact 'Dong' Search (e.g. "식사동")
-        let regionResults = await searchFacilitiesByRegion(regionText, undefined);
+        // A. Exact 'Dong' Search (e.g. "식사동") — 카테고리 필터 적용
+        let regionResults = await searchFacilitiesByRegion(regionText, searchCategory);
         regionResults = strictFilter(regionResults, regionText);
 
         finalData = [...regionResults];
@@ -424,7 +424,7 @@ export const getIntelligentRecommendations = async (
 
                 for (const radius of radiusList) {
                     if (finalData.length >= 3) break;
-                    const { data: nearbyData } = await searchFacilitiesV2(baseLat, baseLng, radius, undefined, 10);
+                    const { data: nearbyData } = await searchFacilitiesV2(baseLat, baseLng, radius, searchCategory, 10);
                     if (nearbyData) {
                         const filtered = strictFilter(nearbyData, regionText);
                         for (const f of filtered) {

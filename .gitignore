@@ -60,3 +60,8 @@ supabase/.temp/
 
 # Claude Code
 .claude/
+
+# Sensitive local files (secrets/tokens)
+구글 로그인 값 저장.txt
+슈파베이스 Access Tokens.txt
+작업내용.txt

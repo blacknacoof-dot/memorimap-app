@@ -243,19 +243,28 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
         const isPhone = formMode === 'phone';
         const contractNumber = `${isUrgent ? 'URG' : 'REQ'}-2026-${Math.floor(Math.random() * 900000 + 100000)}`;
 
-        // Save to DB
+        // Save to DB (sangjo_contracts + consultations dual write)
         try {
-            const { saveSangjoContract } = await import('../../lib/sangjoQueries');
+            const { saveSangjoContract, resolveSangjoDbId } = await import('../../lib/sangjoQueries');
             const { supabase, getAuthClient } = await import('../../lib/supabaseClient');
             const { data: { session: currentSession } } = await supabase.auth.getSession();
             const client = await getAuthClient(currentSession, { strict: true });
+            const userId = currentSession?.user?.id || '';
+            const serviceType = isUrgent ? '긴급 출동' : (isPhone ? '전화 상담' : ((formData.type as string) || '채팅 상담'));
+            const customerName = (formData.name as string) || '익명 고객';
+            const customerPhone = (formData.phone as string) || '';
+
+            // 가짜 ID('fc_new_1' 등)를 DB 실제 UUID로 변환
+            const dbSangjoId = await resolveSangjoDbId(company.id, company.name, client);
+
+            // 1. sangjo_contracts (계약/관리용)
             await saveSangjoContract({
                 id: crypto.randomUUID(),
                 contract_number: contractNumber,
-                sangjo_id: company.id,
-                customer_name: (formData.name as string) || '익명 고객',
-                customer_phone: (formData.phone as string) || '',
-                service_type: isUrgent ? '긴급 출동' : (isPhone ? '전화 상담' : ((formData.type as string) || '채팅 상담')),
+                sangjo_id: dbSangjoId,
+                customer_name: customerName,
+                customer_phone: customerPhone,
+                service_type: serviceType,
                 status: '상담신청',
                 application_type: 'CONSULTATION',
                 preferred_call_time: (formData.time as string) || '',
@@ -263,6 +272,17 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
                 emergency_level: isUrgent ? 'critical' : 'normal',
                 created_at: new Date().toISOString(),
             }, client);
+
+            // 2. consultations (유저 마이페이지 + 업체 대시보드 표시용)
+            await client.from('consultations').insert({
+                facility_id: dbSangjoId,
+                user_id: userId,
+                user_name: customerName,
+                user_phone: customerPhone,
+                status: 'waiting',
+                notes: `[상조 상담] ${company.name} - ${serviceType}\n접수번호: ${contractNumber}${(formData.time as string) ? `\n희망 연락 시간: ${formData.time}` : ''}`,
+                category: 'sangjo',
+            });
         } catch (e) {
             toast.error('상담 접수 저장에 실패했습니다.');
             return;

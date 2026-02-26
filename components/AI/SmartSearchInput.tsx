@@ -45,7 +45,7 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
   const query = controlledValue !== undefined ? controlledValue : storeQuery;
   const setQuery = controlledOnChange || storeSetQuery;
 
-  const [showDropdown, setShowDropdown] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -55,16 +55,14 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
   const hasActions = !!detectedRegion || isUrgent;
   const showQuickChips = isFocused && !query;
 
-  // Show dropdown when text has actions or show quick chips on empty focus
-  useEffect(() => {
-    setShowDropdown((query.length > 0 && hasActions) || showQuickChips);
-  }, [query, hasActions, showQuickChips]);
+  // Derived dropdown visibility (no useEffect needed)
+  const showDropdown = !isDismissed && ((query.length > 0 && hasActions) || showQuickChips);
 
   // Click outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setShowDropdown(false);
+        setIsDismissed(true);
         setIsFocused(false);
       }
     };
@@ -74,7 +72,7 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
 
   const handleAction = useCallback((type: 'urgent' | 'search' | 'map') => {
     onAction?.(type, detectedRegion || query);
-    setShowDropdown(false);
+    setIsDismissed(true);
   }, [onAction, detectedRegion, query]);
 
   const handleChipClick = useCallback((label: string) => {
@@ -97,7 +95,7 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => {
               setIsFocused(true);
-              if (query.length > 0 && hasActions) setShowDropdown(true);
+              setIsDismissed(false);
             }}
             placeholder="지역, 시설, 또는 '급해요' 입력"
             className={`w-full h-full outline-none bg-transparent text-gray-900 placeholder:text-gray-400 font-medium ${
@@ -118,19 +116,19 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
 
       {/* Smart Dropdown */}
       {showDropdown && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
           {/* Quick Chips (empty input) */}
           {showQuickChips && (
-            <div className="p-3">
-              <p className="text-[11px] text-gray-300 font-medium mb-2">이렇게 검색해 보세요</p>
-              <div className="flex flex-wrap gap-1.5">
+            <div className="p-2.5">
+              <p className="text-[10px] text-gray-300 font-medium mb-1.5">이렇게 검색해 보세요</p>
+              <div className="flex flex-wrap gap-1">
                 {QUICK_CHIPS.map((chip) => (
                   <button
                     key={chip.label}
                     onClick={() => handleChipClick(chip.label)}
-                    className="flex items-center gap-1 px-2.5 py-1.5 bg-gray-50/70 hover:bg-gray-100/90 rounded-full text-xs font-medium text-gray-400 hover:text-gray-600 transition-colors"
+                    className="flex items-center gap-1 px-2 py-1 bg-gray-50/70 hover:bg-gray-100/90 rounded-full text-[11px] font-medium text-gray-400 hover:text-gray-600 transition-colors"
                   >
-                    <span className="opacity-60">{chip.icon}</span>
+                    <span className="opacity-60 text-xs">{chip.icon}</span>
                     <span>{chip.label}</span>
                   </button>
                 ))}
@@ -140,26 +138,26 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
 
           {/* Action Items */}
           {hasActions && (
-            <div className="py-2">
+            <div className="py-1">
               {/* Urgent */}
               {isUrgent && (
                 <button
                   onClick={() => handleAction('urgent')}
-                  className="w-full flex items-center gap-4 px-5 py-4 hover:bg-red-50 transition-colors border-b border-gray-50 group text-left"
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-red-50 transition-colors border-b border-gray-50 group text-left"
                 >
-                  <div className="bg-red-100 p-2.5 rounded-xl group-hover:scale-110 transition-transform">
-                    <AlertCircle size={22} className="text-red-600" />
+                  <div className="bg-red-100 p-1.5 rounded-lg group-hover:scale-110 transition-transform shrink-0">
+                    <AlertCircle size={16} className="text-red-600" />
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-red-600 text-base">긴급 장례 상담</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-red-600 text-sm">긴급 장례 상담</span>
                       {detectedRegion && (
-                        <span className="text-sm font-semibold text-red-500 bg-red-50 px-2 py-0.5 rounded-lg">
-                          {detectedRegion} 지역
+                        <span className="text-xs font-semibold text-red-500 bg-red-50 px-1.5 py-0.5 rounded">
+                          {detectedRegion}
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-red-400 font-medium mt-0.5">상담 전문가 바로 연결</p>
+                    <p className="text-xs text-red-400 font-medium">전문가 바로 연결</p>
                   </div>
                 </button>
               )}
@@ -168,14 +166,14 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
               {detectedRegion && (
                 <button
                   onClick={() => handleAction('search')}
-                  className="w-full flex items-center gap-4 px-5 py-4 hover:bg-blue-50 transition-colors border-b border-gray-50 group text-left"
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-blue-50 transition-colors border-b border-gray-50 group text-left"
                 >
-                  <div className="bg-blue-100 p-2.5 rounded-xl group-hover:scale-110 transition-transform">
-                    <Building2 size={22} className="text-blue-600" />
+                  <div className="bg-blue-100 p-1.5 rounded-lg group-hover:scale-110 transition-transform shrink-0">
+                    <Building2 size={16} className="text-blue-600" />
                   </div>
-                  <div className="flex-1">
-                    <span className="font-bold text-gray-800 text-base">'{detectedRegion}' 장례식장 검색</span>
-                    <p className="text-sm text-gray-500 font-medium mt-0.5">검색 결과 및 상세 정보 보기</p>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-bold text-gray-800 text-sm">'{detectedRegion}' 장례식장 검색</span>
+                    <p className="text-xs text-gray-500 font-medium">검색 결과 및 상세 정보</p>
                   </div>
                 </button>
               )}
@@ -184,14 +182,14 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
               {detectedRegion && (
                 <button
                   onClick={() => handleAction('map')}
-                  className="w-full flex items-center gap-4 px-5 py-4 hover:bg-emerald-50 transition-colors group text-left"
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-emerald-50 transition-colors group text-left"
                 >
-                  <div className="bg-emerald-100 p-2.5 rounded-xl group-hover:scale-110 transition-transform">
-                    <MapIcon size={22} className="text-emerald-600" />
+                  <div className="bg-emerald-100 p-1.5 rounded-lg group-hover:scale-110 transition-transform shrink-0">
+                    <MapIcon size={16} className="text-emerald-600" />
                   </div>
-                  <div className="flex-1">
-                    <span className="font-bold text-gray-800 text-base">'{detectedRegion}' 주변 추모시설</span>
-                    <p className="text-sm text-gray-500 font-medium mt-0.5">봉안당, 수목장 등 지도에서 찾기</p>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-bold text-gray-800 text-sm">'{detectedRegion}' 추모시설</span>
+                    <p className="text-xs text-gray-500 font-medium">봉안당, 수목장 등 지도에서 찾기</p>
                   </div>
                 </button>
               )}

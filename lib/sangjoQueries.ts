@@ -11,6 +11,38 @@ export interface SangjoTimelineEvent {
     created_at: string;
 }
 
+/**
+ * 상조 업체 이름으로 funeral_companies DB에서 실제 UUID를 조회
+ * constants.ts의 가짜 ID('fc_new_1' 등)를 실제 DB UUID로 변환
+ */
+export const resolveSangjoDbId = async (
+    companyId: string,
+    companyName: string,
+    client: SupabaseClient
+): Promise<string> => {
+    // 이미 UUID 형식이면 그대로 반환
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(companyId)) {
+        return companyId;
+    }
+    // 이름으로 DB에서 실제 UUID 조회
+    const { data } = await client
+        .from('funeral_companies')
+        .select('id')
+        .ilike('name', companyName)
+        .limit(1)
+        .maybeSingle();
+    if (data?.id) return data.id;
+    // 부분 매칭 시도
+    const { data: partial } = await client
+        .from('funeral_companies')
+        .select('id')
+        .ilike('name', `%${companyName.slice(0, 4)}%`)
+        .limit(1)
+        .maybeSingle();
+    if (partial?.id) return partial.id;
+    throw new Error(`상조 업체 '${companyName}'을 DB에서 찾을 수 없습니다.`);
+};
+
 export const saveSangjoContract = async (contract: SangjoContract, client: SupabaseClient) => {
     // 동일 고객(전화번호) 활성 계약 1건 제한
     if (contract.customer_phone) {

@@ -64,21 +64,43 @@ export const useFacilityChat = () => {
 
                 case 'create_sangjo_contract': {
                     // 상조 계약 생성 로직
+                    const { resolveSangjoDbId } = await import('../lib/sangjoQueries');
+                    const dbId = await resolveSangjoDbId(
+                        args.sangjo_company_id || '',
+                        args.company_name || args.sangjo_company_id || '',
+                        client
+                    );
+                    const contractNum = `REQ-2026-${Math.floor(Math.random() * 900000 + 100000)}`;
                     const { data, error } = await client
                         .from('sangjo_contracts')
                         .insert({
-                            sangjo_company_id: args.sangjo_company_id,
-                            user_id: currentUser?.id,
-                            customer_name: args.customer_name,
-                            customer_phone: args.customer_phone,
-                            package_type: args.package_type,
-                            monthly_payment: args.monthly_payment,
-                            status: 'pending'
+                            id: crypto.randomUUID(),
+                            contract_number: contractNum,
+                            sangjo_id: dbId,
+                            customer_name: args.customer_name || '',
+                            customer_phone: args.customer_phone || '',
+                            service_type: args.package_type || '채팅 상담',
+                            status: '상담신청',
+                            application_type: 'CONSULTATION',
+                            total_price: 0,
+                            emergency_level: 'normal',
+                            created_at: new Date().toISOString(),
                         })
                         .select()
                         .single();
 
                     if (error) throw error;
+
+                    // consultations dual write
+                    await client.from('consultations').insert({
+                        facility_id: dbId,
+                        user_id: currentUser?.id || '',
+                        user_name: args.customer_name || '',
+                        user_phone: args.customer_phone || '',
+                        status: 'waiting',
+                        notes: `[상조 AI 상담] ${args.company_name || ''}\n접수번호: ${contractNum}`,
+                        category: 'sangjo',
+                    });
 
                     return {
                         success: true,

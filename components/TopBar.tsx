@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Menu, Settings, X, Ticket } from 'lucide-react';
 import { ViewState } from '../types';
 import { NotificationCenter } from './NotificationCenter';
 import { FilterBar } from './FilterBar';
 import { SmartSearchInput } from './AI/SmartSearchInput';
+import { useFilterStore } from '../stores/useFilterStore';
+import { useChatStore } from '../stores/useChatStore';
 
 interface TopBarProps {
   viewState: ViewState;
@@ -17,13 +19,26 @@ interface TopBarProps {
 export const TopBar: React.FC<TopBarProps> = ({
   viewState, setViewState, isMenuOpen, setIsMenuOpen, showPromo, setShowPromo,
 }) => {
+  const setSearchQuery = useFilterStore(s => s.setSearchQuery);
+  const openChat = useChatStore(s => s.openChat);
   const isMainView = viewState === ViewState.MAP || viewState === ViewState.LIST || viewState === ViewState.MY_PAGE;
+
+  const handleSearchAction = useCallback((type: 'urgent' | 'search' | 'map', region: string) => {
+    if (type === 'urgent') {
+      setViewState(ViewState.MAP);
+      openChat('funeral_home');
+    } else {
+      setSearchQuery(region);
+      setViewState(ViewState.LIST);
+    }
+  }, [setSearchQuery, setViewState, openChat]);
+
   if (!isMainView) return null;
 
   return (
     <>
       {/* Header — 검색창 통합 레이아웃 */}
-      <div className={`absolute z-30 flex items-center gap-1.5 md:gap-2 transition-all duration-300 ${
+      <div className={`absolute z-40 flex items-center gap-1.5 md:gap-2 transition-all duration-300 ${
         viewState === ViewState.LIST
           ? 'top-0 left-0 right-0 p-2 md:p-4 bg-white/95 backdrop-blur shadow-sm'
           : 'top-2 left-3 right-3 md:top-4 md:left-4 md:right-4'
@@ -42,7 +57,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           </div>
         ) : (
           <div className="flex-1 min-w-0">
-            <SmartSearchInput compact />
+            <SmartSearchInput compact onAction={handleSearchAction} />
           </div>
         )}
 
@@ -63,7 +78,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
       {/* FilterBar (카테고리만) — 검색창 아래 */}
       {viewState !== ViewState.MY_PAGE && !isMenuOpen && (
-        <div className="absolute top-[3rem] md:top-[4.5rem] left-0 right-0 z-40 px-3 md:px-4 pointer-events-none animate-in fade-in slide-in-from-top-1 duration-300">
+        <div className="absolute top-[3rem] md:top-[4.5rem] left-0 right-0 z-30 px-3 md:px-4 pointer-events-none animate-in fade-in slide-in-from-top-1 duration-300">
           <div className="pointer-events-auto">
             <FilterBar />
           </div>

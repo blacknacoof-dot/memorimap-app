@@ -11,6 +11,7 @@ import { ChatInterface } from './AI/ChatInterface';
 import { toast as sonnerToast } from 'sonner';
 import { useConversationStore, generateContextSummary } from '../stores/conversationStore';
 import { useFilterStore } from '../stores/useFilterStore';
+import { useChatStore } from '../stores/useChatStore';
 
 const FuneralCompanySheet = React.lazy(() => import('./FuneralCompanySheet').then(m => ({ default: m.FuneralCompanySheet })));
 const SangjoConsultationModal = React.lazy(() => import('./Consultation/SangjoConsultationModal').then(m => ({ default: m.SangjoConsultationModal })));
@@ -112,6 +113,16 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
   } = props;
 
   const setSearchQuery = useFilterStore(state => state.setSearchQuery);
+
+  // 글로벌 채팅 스토어 구독 (TopBar 긴급 버튼 등에서 채팅 열기)
+  const { isOpen: globalChatOpen, intent: globalChatIntent, closeChat: globalCloseChat } = useChatStore();
+  React.useEffect(() => {
+    if (globalChatOpen && globalChatIntent) {
+      setInitialChatIntent(globalChatIntent);
+      setAiChatFacility({ name: '통합 AI 마음이', id: 'maum-i', type: 'assistant', address: '' } as Facility);
+      globalCloseChat();
+    }
+  }, [globalChatOpen, globalChatIntent, globalCloseChat, setInitialChatIntent, setAiChatFacility]);
 
   const handleAiChatAction = (action: string, data?: unknown) => {
     const isGlobalAI = aiChatFacility?.id === 'maum-i';
