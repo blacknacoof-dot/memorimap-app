@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { useSession } from '@/lib/auth';
 import { getAuthClient } from '@/lib/supabaseClient';
 import { useConfirmModal } from '@/src/components/common/ConfirmModal';
@@ -19,20 +20,20 @@ const FAQPage: React.FC = () => {
 
     // Load FAQs on mount
     useEffect(() => {
-        fetchFaqs();
-    }, []);
-
-    const fetchFaqs = async () => {
-        const client = await getAuthClient(session, { strict: true });
-        const { data, error } = await client.from('bot_data').select('id, faq').maybeSingle();
-        if (error) {
-            console.error('Failed to fetch FAQs', error);
-            return;
-        }
-        const list = (data?.faq as { question: string; answer: string }[]) || [];
-        const mapped = list.map((item, idx) => ({ id: idx + 1, question: item.question, answer: item.answer }));
-        setFaqs(mapped);
-    };
+        const loadFaqs = async () => {
+            const client = await getAuthClient(session, { strict: true });
+            const { data, error } = await client.from('bot_data').select('id, faq').maybeSingle();
+            if (error) {
+                console.error('Failed to fetch FAQs', error);
+                toast.error('FAQ 목록을 불러오지 못했습니다.');
+                return;
+            }
+            const list = (data?.faq as { question: string; answer: string }[]) || [];
+            const mapped = list.map((item, idx) => ({ id: idx + 1, question: item.question, answer: item.answer }));
+            setFaqs(mapped);
+        };
+        loadFaqs();
+    }, [session]);
 
     const handleSave = async () => {
         const client = await getAuthClient(session, { strict: true });
@@ -42,6 +43,7 @@ const FAQPage: React.FC = () => {
         const { error } = await client.from('bot_data').upsert(payload, { onConflict: 'id' });
         if (error) {
             console.error('Save failed', error);
+            toast.error('FAQ 저장에 실패했습니다.');
         } else {
             setFaqs(updated);
             setQuestion('');

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabaseClient';
+import { useSession } from '@/lib/auth';
+import { supabase, getAuthClient } from '@/lib/supabaseClient';
 import { CheckCircle2, Circle, Loader2 } from 'lucide-react';
 
 // 5단계 상태 정의
@@ -25,6 +26,7 @@ export const StatusTracker: React.FC<StatusTrackerProps> = ({
     isPartner = false,
     onStatusChange
 }) => {
+    const { session } = useSession();
     const [currentStatus, setCurrentStatus] = useState<ProgressStatus>('WAITING');
     const [isLoading, setIsLoading] = useState(true);
     const [isUpdating, setIsUpdating] = useState(false);
@@ -88,8 +90,9 @@ export const StatusTracker: React.FC<StatusTrackerProps> = ({
 
         setIsUpdating(true);
         try {
+            const client = await getAuthClient(session, { strict: true });
             // Upsert: 없으면 INSERT, 있으면 UPDATE
-            const { error } = await supabase
+            const { error } = await client
                 .from('funeral_progress')
                 .upsert({
                     contract_number: contractNumber,
@@ -101,7 +104,7 @@ export const StatusTracker: React.FC<StatusTrackerProps> = ({
 
             if (error) {
                 console.error('Status update error:', error);
-                toast.error('상태 업데이트 실패');
+                toast.error('상태 업데이트에 실패했습니다.');
                 return;
             }
 
@@ -109,6 +112,7 @@ export const StatusTracker: React.FC<StatusTrackerProps> = ({
             onStatusChange?.(newStatus);
         } catch (e) {
             console.error('Status update exception:', e);
+            toast.error('상태 업데이트 중 오류가 발생했습니다.');
         } finally {
             setIsUpdating(false);
         }
