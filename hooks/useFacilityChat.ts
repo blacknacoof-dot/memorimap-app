@@ -91,17 +91,6 @@ export const useFacilityChat = () => {
 
                     if (error) throw error;
 
-                    // consultations dual write
-                    await client.from('consultations').insert({
-                        facility_id: dbId,
-                        user_id: currentUser?.id || '',
-                        user_name: args.customer_name || '',
-                        user_phone: args.customer_phone || '',
-                        status: 'waiting',
-                        notes: `[상조 AI 상담] ${args.company_name || ''}\n접수번호: ${contractNum}`,
-                        category: 'sangjo',
-                    });
-
                     return {
                         success: true,
                         contract_id: data.id,

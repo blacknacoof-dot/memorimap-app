@@ -1,4 +1,3 @@
-import { supabase } from '../lib/supabaseClient';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { FuneralCompany } from '../types';
 
@@ -11,45 +10,31 @@ export interface SangjoFavorite {
 }
 
 export const sangjoFavoriteService = {
-    async getFavorites(userId: string): Promise<SangjoFavorite[]> {
-        try {
-            const { data, error } = await supabase
-                .from('sangjo_favorites')
-                .select('*')
-                .eq('user_id', userId)
-                .order('created_at', { ascending: false });
+    async getFavorites(userId: string, client: SupabaseClient): Promise<SangjoFavorite[]> {
+        const { data, error } = await client
+            .from('sangjo_favorites')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false });
 
-            if (error) {
-                console.error('Error fetching sangjo favorites:', error);
-                throw error;
-            }
-            return data || [];
-        } catch (e) {
-            console.error('Exception fetching sangjo favorites:', e);
-            throw e;
-        }
+        if (error) throw error;
+        return data || [];
     },
 
-    async checkFavorite(userId: string, companyId: string): Promise<boolean> {
-        try {
-            const { data, error } = await supabase
-                .from('sangjo_favorites')
-                .select('id')
-                .eq('user_id', userId)
-                .eq('company_id', companyId)
-                .maybeSingle();
+    async checkFavorite(userId: string, companyId: string, client: SupabaseClient): Promise<boolean> {
+        const { data, error } = await client
+            .from('sangjo_favorites')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('company_id', companyId)
+            .maybeSingle();
 
-            if (error && error.code !== 'PGRST116') {
-                if (error.code === '42501' || error.code === '401') {
-                    throw error;
-                }
-                console.error('Error checking sangjo favorite:', error);
+        if (error && error.code !== 'PGRST116') {
+            if (error.code === '42501' || error.code === '401') {
+                throw error;
             }
-            return !!data;
-        } catch (e) {
-            console.error('Error in checkFavorite:', e);
-            return false;
         }
+        return !!data;
     },
 
     async toggleFavorite(
@@ -57,45 +42,28 @@ export const sangjoFavoriteService = {
         company: FuneralCompany,
         client: SupabaseClient
     ): Promise<boolean> {
-        try {
+        const isFav = await this.checkFavorite(userId, company.id, client);
 
-            const isFav = await this.checkFavorite(userId, company.id);
+        if (isFav) {
+            const { error } = await client
+                .from('sangjo_favorites')
+                .delete()
+                .eq('user_id', userId)
+                .eq('company_id', company.id);
 
-            if (isFav) {
-                const { error } = await client
-                    .from('sangjo_favorites')
-                    .delete()
-                    .eq('user_id', userId)
-                    .eq('company_id', company.id);
+            if (error) throw error;
+            return false;
+        } else {
+            const { error } = await client
+                .from('sangjo_favorites')
+                .insert({
+                    user_id: userId,
+                    company_id: company.id,
+                    company_name: company.name
+                });
 
-                if (error) {
-                    console.error('Error removing sangjo favorite:', error);
-                    throw error;
-                }
-                return false;
-            } else {
-                const { error } = await client
-                    .from('sangjo_favorites')
-                    .insert({
-                        user_id: userId,
-                        company_id: company.id,
-                        company_name: company.name
-                    });
-
-                if (error) {
-                    console.error('Error adding sangjo favorite:', error);
-                    throw error;
-                }
-                return true;
-            }
-        } catch (e: unknown) {
-            if (e instanceof Object && 'code' in e) {
-                const pgError = e as { code: string; status?: number };
-                if (pgError.code === '42501' || pgError.status === 401) {
-                    throw e;
-                }
-            }
-            throw e;
+            if (error) throw error;
+            return true;
         }
     }
 };

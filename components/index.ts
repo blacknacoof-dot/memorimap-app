@@ -4,7 +4,7 @@ export * from './Consultation/SangjoConsultationModal';
 
 export * from './Consultation/PetChatInterface';
 export * from './FacilitySheet';
-export * from './FuneralCompanySheet';
+export * from './sangjo/SangjoCompanySheet';
 export * from './LoginModal';
 export * from './MapContainer';
 export * from './MyPageView';

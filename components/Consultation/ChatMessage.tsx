@@ -8,9 +8,10 @@ import { FuneralCompany } from '../../types';
 interface Props {
     message: Message;
     isStreaming?: boolean;
+    onCompanySelect?: (company: FuneralCompany) => void;
 }
 
-export const ChatMessage: React.FC<Props> = ({ message, isStreaming }) => {
+export const ChatMessage: React.FC<Props> = ({ message, isStreaming, onCompanySelect }) => {
     const isUser = message.role === 'user';
 
     return (
@@ -64,8 +65,7 @@ export const ChatMessage: React.FC<Props> = ({ message, isStreaming }) => {
                                     </div>
                                     <button
                                         onClick={() => {
-                                            const event = new CustomEvent('connectToPartner', { detail: company });
-                                            window.dispatchEvent(event);
+                                            onCompanySelect?.(company);
                                         }}
                                         className="self-end py-1 px-2.5 bg-gray-900 text-white rounded-lg text-[11px] font-bold hover:bg-black transition-colors flex items-center gap-0.5"
                                     >

@@ -12,6 +12,9 @@ import { toast as sonnerToast } from 'sonner';
 import { useConversationStore, generateContextSummary } from '../stores/conversationStore';
 import { useFilterStore } from '../stores/useFilterStore';
 import { useChatStore } from '../stores/useChatStore';
+import { useSession } from '../lib/auth';
+import { getAuthClient } from '../lib/supabaseClient';
+import { saveSangjoContract, resolveSangjoDbId } from '../lib/sangjoQueries';
 
 const FuneralCompanySheet = React.lazy(() => import('./FuneralCompanySheet').then(m => ({ default: m.FuneralCompanySheet })));
 const SangjoConsultationModal = React.lazy(() => import('./Consultation/SangjoConsultationModal').then(m => ({ default: m.SangjoConsultationModal })));
@@ -113,6 +116,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
   } = props;
 
   const setSearchQuery = useFilterStore(state => state.setSearchQuery);
+  const { session } = useSession();
 
   // 글로벌 채팅 스토어 구독 (TopBar 긴급 버튼 등에서 채팅 열기)
   const { isOpen: globalChatOpen, intent: globalChatIntent, closeChat: globalCloseChat } = useChatStore();
@@ -301,25 +305,27 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
           <SangjoContractModal
             company={selectedFuneralCompany}
             onClose={() => { setShowSangjoContract(false); setSelectedFuneralCompany(null); }}
-            onConfirm={(data) => {
-              const contractReservation: Reservation = {
-                id: `CONT-${Date.now()}`,
-                facility_id: String(data.companyId),
-                facility_name: data.companyName,
-                visit_date: new Date().toISOString(),
-                time_slot: data.callTime,
-                visitor_name: data.name,
-                visitor_count: 1,
-                contact_number: data.phone,
-                purpose: '상조 가입 상담',
-                special_requests: `연락처: ${data.phone}`,
-                status: 'pending',
-                payment_amount: 0,
-                user_id: userId || '',
-                funeral_company_id: String(data.companyId),
-                funeral_company_name: data.companyName,
-              };
-              handleBookingConfirm(contractReservation);
+            onConfirm={async (data) => {
+              try {
+                const client = await getAuthClient(session, { strict: true });
+                const sangjoId = await resolveSangjoDbId(String(data.companyId), data.companyName, client);
+                await saveSangjoContract({
+                  id: crypto.randomUUID(),
+                  contract_number: `SC-${Date.now()}`,
+                  sangjo_id: sangjoId,
+                  customer_name: data.name,
+                  customer_phone: data.phone,
+                  total_price: 0,
+                  status: '상담신청',
+                  application_type: 'CONSULTATION',
+                  preferred_call_time: data.callTime,
+                  created_at: new Date().toISOString(),
+                }, client);
+                showToast('상담 신청이 완료되었습니다!');
+              } catch (err) {
+                console.error('Sangjo contract error:', err);
+                showToast('상담 신청 중 오류가 발생했습니다.', 'error');
+              }
             }}
           />
         </Suspense>

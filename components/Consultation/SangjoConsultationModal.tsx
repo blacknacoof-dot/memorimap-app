@@ -44,19 +44,12 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
         }
     }, [activeCompany]);
 
-    // Event Listener for 'connectToPartner' from ChatMessage
-    useEffect(() => {
-        const handleConnect = (e: CustomEvent<FuneralCompany>) => {
-            if (e.detail) {
-                setActiveCompany(e.detail);
-                if (onCompanySelect) {
-                    onCompanySelect(e.detail);
-                }
-            }
-        };
-        window.addEventListener('connectToPartner', handleConnect as EventListener);
-        return () => window.removeEventListener('connectToPartner', handleConnect as EventListener);
-    }, [onCompanySelect]);
+    const handleCompanyConnect = (selectedCompany: FuneralCompany) => {
+        setActiveCompany(selectedCompany);
+        if (onCompanySelect) {
+            onCompanySelect(selectedCompany);
+        }
+    };
 
     // Auto-scroll on messages change
     useEffect(() => {
@@ -173,7 +166,7 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
                 {/* Chat Area */}
                 <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-4">
                     {messages.map((msg, idx) => (
-                        <ChatMessage key={idx} message={msg} />
+                        <ChatMessage key={idx} message={msg} onCompanySelect={handleCompanyConnect} />
                     ))}
 
                     {isLoading && (

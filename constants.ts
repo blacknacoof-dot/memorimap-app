@@ -1,4 +1,5 @@
 import { Facility, FuneralCompany } from './types';
+import { SANGJO_PRODUCTS } from './sangjoProductData';
 
 export const FUNERAL_COMPANIES: FuneralCompany[] = [
   {
@@ -558,6 +559,17 @@ export const FUNERAL_COMPANIES: FuneralCompany[] = [
     benefits: ["온라인 가입 추가 할인"]
   }
 ];
+
+// Apply real product data from CSV to matching companies
+const fmtPrice = (n: number) => n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+for (const company of FUNERAL_COMPANIES) {
+  const products = SANGJO_PRODUCTS[company.id];
+  if (products) {
+    company.products = products;
+    const prices = products.map(p => p.price);
+    company.priceRange = `월 ${fmtPrice(Math.min(...prices))}원 ~ ${fmtPrice(Math.max(...prices))}원`;
+  }
+}
 
 export const FACILITIES: Facility[] = [
   {

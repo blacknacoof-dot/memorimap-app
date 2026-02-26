@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase, getAuthClient } from '../lib/supabaseClient';
+import { getAuthClient } from '../lib/supabaseClient';
 import { useSession } from '../lib/auth';
 import { SangjoContract, AiConsultation, AiConsultationStatus } from '../types';
 import { aiConsultationService } from '../lib/api/aiConsultation';
@@ -24,7 +24,6 @@ export function useContractMonitoring() {
                 toast.error('인증 세션이 만료되었습니다. 다시 로그인해주세요.');
             }
         };
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         void initAuth();
     }, [session]);
 
@@ -60,14 +59,14 @@ export function useContractMonitoring() {
         }
     }, [authClient]);
 
-    // Realtime: sangjo_contracts + ai_consultations
+    // Realtime: sangjo_contracts + ai_consultations — authClient 사용
     useEffect(() => {
         if (!authClient) return;
         loadContracts();
         loadAiConsultations();
 
         const sessionId = session?.user?.id ?? 'anon';
-        const contractChannel = supabase
+        const contractChannel = authClient
             .channel(`contract-monitor-${sessionId}`)
             .on('postgres_changes', {
                 event: '*', schema: 'public', table: 'sangjo_contracts'
@@ -88,7 +87,7 @@ export function useContractMonitoring() {
             })
             .subscribe();
 
-        const aiChannel = supabase
+        const aiChannel = authClient
             .channel(`ai-monitor-${sessionId}`)
             .on('postgres_changes', {
                 event: '*', schema: 'public', table: 'ai_consultations'
@@ -112,9 +111,9 @@ export function useContractMonitoring() {
 
         return () => {
             contractChannel.unsubscribe();
-            supabase.removeChannel(contractChannel);
+            authClient.removeChannel(contractChannel);
             aiChannel.unsubscribe();
-            supabase.removeChannel(aiChannel);
+            authClient.removeChannel(aiChannel);
         };
     }, [authClient, loadContracts, loadAiConsultations, session?.user?.id]);
 
