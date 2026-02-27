@@ -309,7 +309,7 @@ export const ChatInterface: React.FC<Props> = ({
 
     const handleSend = async (textOverride?: string | { text: string, data: Record<string, unknown> }) => {
         const traceId = generateTraceId(); // [PDCA] Generate Trace ID for this transaction
-        logToSystem('INFO', 'Action Started', traceId, { intent: initialIntent, facilityId: facility.id }); // Replaced console.log
+        logToSystem('INFO', 'Action Started', traceId, { intent: initialIntent, facilityId: facility.id }); // [PDCA]
 
         const textToSend = typeof textOverride === 'object' ? textOverride.text : (textOverride || input);
         const structuredData = typeof textOverride === 'object' ? textOverride.data : null;
@@ -416,7 +416,7 @@ export const ChatInterface: React.FC<Props> = ({
                     setSearchContext(regionText);
                 }
 
-                logToSystem('INFO', 'Real DB Search Start', traceId, { category, regionText }); // Replaced console.log
+                logToSystem('INFO', 'Real DB Search Start', traceId, { category, regionText }); // [PDCA]
 
                 // [PDCA] Location Check - 위치 없으면 전국 검색 허용
                 if (!regionText && !userLocation?.lat) {
@@ -436,7 +436,7 @@ export const ChatInterface: React.FC<Props> = ({
 
                 if (realResults.length > 0) {
                     // 1. Use Real DB Data
-                    logToSystem('INFO', `Real DB Found facilities: ${realResults.length}`, traceId, { count: realResults.length }); // Replaced console.log
+                    logToSystem('INFO', `Real DB Found facilities: ${realResults.length}`, traceId, { count: realResults.length }); // [PDCA]
                     // Attach to message for rendering
                     aiMsg.facilities = realResults;
 
