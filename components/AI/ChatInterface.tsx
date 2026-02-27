@@ -14,6 +14,8 @@ import MemorialSearchForm from './MemorialSearchForm';
 import PetSearchForm from './PetSearchForm';
 import { useClerk, useSession } from '../../lib/auth'; // For login modal + auth client
 import { logger } from '../../utils/logger';
+import type { AiConsultCategory, QuotaCheckResult } from '../../types/subscription';
+import UpgradePrompt from '../UpgradePrompt';
 
 interface Props {
     facility: Facility;
@@ -85,6 +87,9 @@ export const ChatInterface: React.FC<Props> = ({
     // [NEW] Modal State for ConsultationForm
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [formMode, setFormMode] = useState<'chat' | 'phone'>('chat');
+    // [Quota] 세션별 쿼터 체크 (re-mount 중복 방지)
+    const sessionQuotaCheckedRef = useRef(false);
+    const [quotaExceeded, setQuotaExceeded] = useState<QuotaCheckResult | null>(null);
     // [PDCA VERIFICATION] Trace ID Generator
     const generateTraceId = () => Math.random().toString(36).substring(2, 11).toUpperCase();
 
@@ -291,6 +296,17 @@ export const ChatInterface: React.FC<Props> = ({
         />;
     }
 
+    // facility.type → AiConsultCategory 매핑
+    const getAiCategory = (): AiConsultCategory => {
+        if (initialIntent === 'funeral_home') return 'funeral_home';
+        if (initialIntent === 'pet_funeral') return 'pet_funeral';
+        if (initialIntent === 'memorial_facility') return 'memorial_facility';
+        const t = facility.type || '';
+        if (t === 'funeral_home' || t === '장례식장') return 'funeral_home';
+        if (t === 'pet_funeral' || t === '동물장례' || t === 'pet') return 'pet_funeral';
+        return 'memorial_facility';
+    };
+
     const handleSend = async (textOverride?: string | { text: string, data: Record<string, unknown> }) => {
         const traceId = generateTraceId(); // [PDCA] Generate Trace ID for this transaction
         logToSystem('INFO', 'Action Started', traceId, { intent: initialIntent, facilityId: facility.id }); // Replaced console.log
@@ -299,6 +315,29 @@ export const ChatInterface: React.FC<Props> = ({
         const structuredData = typeof textOverride === 'object' ? textOverride.data : null;
 
         if (!textToSend.trim() || isLoading) return;
+
+        // [Quota] 첫 메시지 시 쿼터 체크 (세션당 1회)
+        if (messages.length === 0 && !sessionQuotaCheckedRef.current && currentUser) {
+            try {
+                const client = await getAuthClient(session, { strict: true });
+                const { data, error } = await client.rpc('check_and_increment_user_quota', {
+                    p_quota_type: 'ai_consult',
+                    p_category: getAiCategory(),
+                });
+                if (!error && data) {
+                    const result = data as QuotaCheckResult;
+                    if (!result.allowed) {
+                        setQuotaExceeded(result);
+                        return;
+                    }
+                }
+                sessionQuotaCheckedRef.current = true;
+            } catch (err) {
+                // fail-open
+                console.error('[ChatInterface] quota check fail-open:', err);
+                sessionQuotaCheckedRef.current = true;
+            }
+        }
 
         if (typeof textOverride !== 'object' && !textOverride) setInput('');
 
@@ -596,6 +635,7 @@ export const ChatInterface: React.FC<Props> = ({
     );
 
     return (
+        <>
         <div className="flex flex-col h-full bg-slate-50 relative overflow-hidden shadow-inner">
             {/* [NEW] Consultation Form Modal */}
             {isFormOpen && (
@@ -889,5 +929,16 @@ export const ChatInterface: React.FC<Props> = ({
                 )
             }
         </div >
+
+            {/* 쿼터 초과 모달 */}
+            <UpgradePrompt
+                isOpen={!!quotaExceeded}
+                onClose={() => setQuotaExceeded(null)}
+                featureName={`AI 상담 (${getAiCategory() === 'funeral_home' ? '장례식장' : getAiCategory() === 'pet_funeral' ? '반려동물' : '추모시설'})`}
+                current={quotaExceeded?.current ?? 0}
+                limit={quotaExceeded?.limit ?? 0}
+                onNavigateToPlan={onGoToMyPage}
+            />
+        </>
     );
 };

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Heart, Phone, FileText, Check } from 'lucide-react';
+import { X, Save, Heart, Phone, FileText, Check, Lock } from 'lucide-react';
 import { toast } from 'sonner';
+import type { EndingNoteLevel } from '../types/subscription';
 
 interface EndingNote {
     preferences: string[];
@@ -14,6 +15,8 @@ interface EndingNoteEditModalProps {
     onClose: () => void;
     currentNote: EndingNote | null;
     onSave: (updates: Partial<EndingNote>) => Promise<void>;
+    endingNoteLevel?: EndingNoteLevel;
+    onUpgrade?: () => void;
 }
 
 const PREFERENCE_OPTIONS = [
@@ -21,7 +24,7 @@ const PREFERENCE_OPTIONS = [
     "산골", "수목장 + 가족 참여", "전통 장례", "간소한 장례"
 ];
 
-export default function EndingNoteEditModal({ isOpen, onClose, currentNote, onSave }: EndingNoteEditModalProps) {
+export default function EndingNoteEditModal({ isOpen, onClose, currentNote, onSave, endingNoteLevel = 'full', onUpgrade }: EndingNoteEditModalProps) {
     const [preferences, setPreferences] = useState<string[]>([]);
     const [contact, setContact] = useState('');
     const [memo, setMemo] = useState('');
@@ -123,31 +126,67 @@ export default function EndingNoteEditModal({ isOpen, onClose, currentNote, onSa
                     </div>
 
                     {/* 2. 비상 연락망 */}
-                    <div className="space-y-3">
+                    <div className="space-y-3 relative">
                         <h3 className="text-[11px] font-bold text-gray-800 flex items-center gap-1.5">
                             <Phone size={12} className="text-gray-400" /> 비상 연락망
                         </h3>
-                        <input
-                            type="text"
-                            value={contact}
-                            onChange={(e) => setContact(e.target.value)}
-                            placeholder="예: 아들 김철수 (010-1234-5678)"
-                            className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-[11px] focus:outline-none focus:ring-1 focus:ring-pink-300 transition-all placeholder:text-gray-300"
-                        />
+                        {endingNoteLevel === 'basic' ? (
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    disabled
+                                    placeholder="예: 아들 김철수 (010-1234-5678)"
+                                    className="w-full px-3.5 py-2.5 bg-gray-100 border border-gray-100 rounded-xl text-[11px] text-gray-300"
+                                />
+                                <div className="absolute inset-0 bg-white/70 rounded-xl flex items-center justify-center gap-1.5">
+                                    <Lock size={12} className="text-gray-400" />
+                                    <span className="text-[10px] text-gray-500 font-medium">베이직 플랜 이상</span>
+                                    {onUpgrade && (
+                                        <button onClick={onUpgrade} className="text-[10px] text-pink-500 font-bold underline ml-1">플랜 보기</button>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            <input
+                                type="text"
+                                value={contact}
+                                onChange={(e) => setContact(e.target.value)}
+                                placeholder="예: 아들 김철수 (010-1234-5678)"
+                                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-[11px] focus:outline-none focus:ring-1 focus:ring-pink-300 transition-all placeholder:text-gray-300"
+                            />
+                        )}
                     </div>
 
                     {/* 3. 한 줄 메모 */}
-                    <div className="space-y-3">
+                    <div className="space-y-3 relative">
                         <h3 className="text-[11px] font-bold text-gray-800 flex items-center gap-1.5">
                             <FileText size={12} className="text-gray-400" /> 한 줄 메모
                         </h3>
-                        <textarea
-                            value={memo}
-                            onChange={(e) => setMemo(e.target.value)}
-                            rows={3}
-                            placeholder="예: 장례식에는 웃는 얼굴 사진을 사용해주세요"
-                            className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-[11px] focus:outline-none focus:ring-1 focus:ring-pink-300 transition-all resize-none placeholder:text-gray-300 leading-relaxed"
-                        />
+                        {endingNoteLevel === 'basic' ? (
+                            <div className="relative">
+                                <textarea
+                                    disabled
+                                    rows={3}
+                                    placeholder="예: 장례식에는 웃는 얼굴 사진을 사용해주세요"
+                                    className="w-full px-3.5 py-2.5 bg-gray-100 border border-gray-100 rounded-xl text-[11px] resize-none text-gray-300"
+                                />
+                                <div className="absolute inset-0 bg-white/70 rounded-xl flex items-center justify-center gap-1.5">
+                                    <Lock size={12} className="text-gray-400" />
+                                    <span className="text-[10px] text-gray-500 font-medium">베이직 플랜 이상</span>
+                                    {onUpgrade && (
+                                        <button onClick={onUpgrade} className="text-[10px] text-pink-500 font-bold underline ml-1">플랜 보기</button>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            <textarea
+                                value={memo}
+                                onChange={(e) => setMemo(e.target.value)}
+                                rows={3}
+                                placeholder="예: 장례식에는 웃는 얼굴 사진을 사용해주세요"
+                                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-[11px] focus:outline-none focus:ring-1 focus:ring-pink-300 transition-all resize-none placeholder:text-gray-300 leading-relaxed"
+                            />
+                        )}
                     </div>
                 </div>
 

@@ -5,8 +5,9 @@ import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { ChevronRight, Edit2, Share2, Lock, Copy, X } from 'lucide-react';
-import EndingNoteEditModal from './EndingNoteEditModal'; // 신규 에디터 모달 임포트
+import EndingNoteEditModal from './EndingNoteEditModal';
 import JourneyProgressGraph, { computeJourneySteps } from './JourneyProgressGraph';
+import { useUserPlan } from '../hooks/useUserPlan';
 
 interface JourneyLog {
     title: string;
@@ -38,6 +39,7 @@ export default function IntegratedJourneyView({
 }: IntegratedJourneyViewProps) {
     const { isLoaded, isSignedIn, user } = useUser();
     const { session } = useSession();
+    const { data: userPlan } = useUserPlan();
     const [logs, setLogs] = useState<JourneyLog[]>([]);
     const [note, setNote] = useState<EndingNote | null>(null);
     const [loading, setLoading] = useState(true);
@@ -340,6 +342,7 @@ export default function IntegratedJourneyView({
                 onClose={() => setIsEditModalOpen(false)}
                 currentNote={note}
                 onSave={handleSaveEndingNote}
+                endingNoteLevel={userPlan?.limits?.ending_note ?? 'basic'}
             />
 
             {/* 공유 모달 */}

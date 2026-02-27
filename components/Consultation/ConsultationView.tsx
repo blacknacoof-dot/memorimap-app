@@ -7,6 +7,9 @@ import { createConsultation, updateConsultation, getFacilityFaqs } from '../../l
 import { getAuthClient } from '../../lib/supabaseClient';
 import { useUser, useSession } from '../../lib/auth';
 import { ArrowLeft, MoreVertical } from 'lucide-react';
+import { useQuotaGate } from '../../hooks/useQuotaGate';
+import type { AiConsultCategory } from '../../types/subscription';
+import UpgradePrompt from '../UpgradePrompt';
 
 interface Props {
     facility: Facility;
@@ -25,12 +28,14 @@ export const ConsultationView: React.FC<Props> = ({
 }) => {
     const { user } = useUser();
     const { session } = useSession();
+    const { checkQuota } = useQuotaGate();
     const [messages, setMessages] = useState<Message[]>([]);
     const [topic, setTopic] = useState<ConsultationTopic | undefined>(undefined);
     const [isLoading, setIsLoading] = useState(false);
     const [streamingText, setStreamingText] = useState('');
     const [consultationId, setConsultationId] = useState<string | null>(null);
     const [faqs, setFaqs] = useState<Array<{ id: string; question: string; answer: string }>>([]);
+    const [quotaExceeded, setQuotaExceeded] = useState<{ current: number; limit: number } | null>(null);
 
     // Initialize from existing consultation if provided
     useEffect(() => {
@@ -58,13 +63,29 @@ export const ConsultationView: React.FC<Props> = ({
         loadFaqs();
     }, [facility.id]);
 
+    // facility.type → AiConsultCategory 매핑
+    const getAiCategory = (): AiConsultCategory => {
+        const t = (facility as { type?: string }).type || '';
+        if (t === 'funeral_home' || t === '장례식장') return 'funeral_home';
+        if (t === 'pet_funeral' || t === '동물장례') return 'pet_funeral';
+        return 'memorial_facility';
+    };
+
     const saveMessage = async (newMessages: Message[]) => {
         if (!user) return;
 
         if (!consultationId) {
+            // 새 상담 생성 전 쿼터 체크
+            const category = getAiCategory();
+            const result = await checkQuota('ai_consult', category);
+            if (!result.allowed) {
+                setQuotaExceeded({ current: result.current, limit: result.limit });
+                return;
+            }
+
             // Create new consultation
             const authClient = await getAuthClient(session, { strict: true });
-            const result = await createConsultation(
+            const createResult = await createConsultation(
                 facility.id,
                 user.id,
                 user.fullName || user.firstName || '사용자',
@@ -72,7 +93,7 @@ export const ConsultationView: React.FC<Props> = ({
                 `[${topic || '일반 상담'}] ${newMessages[newMessages.length - 1]?.text || '상담 시작'}`,
                 authClient
             );
-            if (result?.id) setConsultationId(result.id);
+            if (createResult?.id) setConsultationId(createResult.id);
         } else {
             // Update existing
             const updateClient = await getAuthClient(session, { strict: true });
@@ -166,6 +187,15 @@ export const ConsultationView: React.FC<Props> = ({
                     onTopicSelect={handleTopicSelect}
                 />
             </div>
+
+            {/* 쿼터 초과 모달 */}
+            <UpgradePrompt
+                isOpen={!!quotaExceeded}
+                onClose={() => setQuotaExceeded(null)}
+                featureName={`AI 상담 (${getAiCategory() === 'funeral_home' ? '장례식장' : getAiCategory() === 'pet_funeral' ? '반려동물' : '추모시설'})`}
+                current={quotaExceeded?.current ?? 0}
+                limit={quotaExceeded?.limit ?? 0}
+            />
         </div>
     );
 };

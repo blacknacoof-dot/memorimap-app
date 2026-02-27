@@ -16,6 +16,7 @@ export type { FacilityCategoryType };
 // --- [Phase 4 New Types] ---
 export type SubscriptionPlan = 'free' | 'basic' | 'premium' | 'enterprise';
 export type SubscriptionStatus = 'active' | 'expired' | 'cancelled';
+export type UserSubscriptionPlan = 'personal_free' | 'personal_basic' | 'personal_premium';
 export type TargetAudience = 'all' | 'facility_admin' | 'user';
 
 export interface Favorite {

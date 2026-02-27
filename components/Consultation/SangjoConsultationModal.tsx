@@ -5,6 +5,10 @@ import { Loader2, ShieldCheck, X } from 'lucide-react';
 
 import { FuneralCompany } from '../../types';
 import { FUNERAL_COMPANIES } from '../../constants';
+import { useSession } from '../../lib/auth';
+import { getAuthClient } from '../../lib/supabaseClient';
+import type { QuotaCheckResult } from '../../types/subscription';
+import UpgradePrompt from '../UpgradePrompt';
 
 interface Props {
     onClose: () => void;
@@ -26,23 +30,23 @@ import { SangjoBrandScenario } from './SangjoBrandScenario';
 import { PetChatInterface } from './PetChatInterface';
 
 export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onCompanySelect, currentUser }) => {
+    const { session } = useSession();
     const [activeCompany, setActiveCompany] = useState<FuneralCompany | null | undefined>(company);
 
-    const [messages, setMessages] = useState<Message[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const scrollRef = useRef<HTMLDivElement>(null);
-
-    // Initialize/Reset Chat when activeCompany changes (Maum-i mode only)
-    useEffect(() => {
-        if (!activeCompany) {
-            const initialMsg: Message = {
-                role: 'model',
+    const [messages, setMessages] = useState<Message[]>(() => {
+        if (!company) {
+            return [{
+                role: 'model' as const,
                 text: `안녕하십니까! 통합 비교 AI **'마음이'**입니다.\n\n수많은 상조 회사 중 어디를 선택해야 할지 고민이신가요?\n아래 버튼을 눌러 고객님의 상황을 알려주시면, **Best 3 업체를 비교 분석**하여 추천해 드립니다.`,
                 timestamp: new Date()
-            };
-            setMessages([initialMsg]);
+            }];
         }
-    }, [activeCompany]);
+        return [];
+    });
+    const [isLoading, setIsLoading] = useState(false);
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const quotaCheckedRef = useRef(false);
+    const [quotaExceeded, setQuotaExceeded] = useState<QuotaCheckResult | null>(null);
 
     const handleCompanyConnect = (selectedCompany: FuneralCompany) => {
         setActiveCompany(selectedCompany);
@@ -90,6 +94,28 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
 
     // Maum-i Mode (rule-based chip → recommendation)
     const handleChipSelect = async (text: string) => {
+        // 첫 chip 클릭 시 쿼터 체크 (중복 방지)
+        if (!quotaCheckedRef.current && currentUser) {
+            try {
+                const client = await getAuthClient(session, { strict: true });
+                const { data, error } = await client.rpc('check_and_increment_user_quota', {
+                    p_quota_type: 'sangjo_compare',
+                    p_category: null,
+                });
+                if (!error && data) {
+                    const result = data as QuotaCheckResult;
+                    if (!result.allowed) {
+                        setQuotaExceeded(result);
+                        return;
+                    }
+                }
+            } catch (err) {
+                // fail-open
+                console.error('[SangjoConsultation] quota check fail-open:', err);
+            }
+            quotaCheckedRef.current = true;
+        }
+
         const userMsg: Message = { role: 'user', text, timestamp: new Date() };
         setMessages(prev => [...prev, userMsg]);
         setIsLoading(true);
@@ -204,6 +230,15 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
                     </p>
                 </div>
             </div>
+
+            {/* 쿼터 초과 모달 */}
+            <UpgradePrompt
+                isOpen={!!quotaExceeded}
+                onClose={() => setQuotaExceeded(null)}
+                featureName="상조 비교 상담"
+                current={quotaExceeded?.current ?? 0}
+                limit={quotaExceeded?.limit ?? 0}
+            />
         </div>
     );
 };
