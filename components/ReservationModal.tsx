@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Facility, Reservation as LegacyReservation } from '../types';
 import { ReservationSchema, ReservationFormValues } from '../lib/schemas';
 import { format, addDays, startOfToday } from 'date-fns';
 
-import { Check, X, Clock, CreditCard, AlertCircle, Loader2, Landmark, Phone, PawPrint } from 'lucide-react';
+import { Check, X, Clock, CreditCard, AlertCircle, Loader2, Landmark, Phone, PawPrint, ArrowLeft } from 'lucide-react';
 import { requestPayment, verifyPayment, PORTONE_CONFIG } from '../lib/portone';
 import { FUNERAL_COMPANIES } from '../constants';
 
@@ -28,7 +28,28 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
   const [step, setStep] = useState(0);
   const isPetFacility = facility.type === 'pet';
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+
+  const cancelPayment = useCallback(() => {
+    const bodyChildren = document.body.children;
+    const appRoot = document.getElementById('root');
+    const toRemove: Element[] = [];
+    for (let i = 0; i < bodyChildren.length; i++) {
+      const el = bodyChildren[i];
+      if (el === appRoot || ['SCRIPT', 'LINK', 'STYLE', 'NOSCRIPT'].includes(el.tagName)) continue;
+      if (el.tagName === 'IFRAME' || (el.tagName === 'DIV' && el !== appRoot)) {
+        toRemove.push(el);
+      }
+    }
+    toRemove.forEach(el => el.remove());
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    setIsPaymentOpen(false);
+    setIsProcessingPayment(false);
+  }, []);
 
   // [Step 1] Safe Refactoring: Use React Hook Form with Zod
   const form = useForm<ReservationFormValues>({
@@ -186,6 +207,7 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
     }
 
     try {
+      setIsPaymentOpen(true);
       const paymentId = `PAY-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
       const response = await requestPayment({
         storeId: PORTONE_CONFIG.STORE_ID,
@@ -216,9 +238,13 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
       setStep(4);
     } catch (error: unknown) {
       console.error('Payment Error:', error);
-      setPaymentError(error instanceof Error ? error.message : '결제 진행 중 오류가 발생했습니다.');
+      const msg = error instanceof Error ? error.message : '';
+      if (!msg.includes('취소')) {
+        setPaymentError(msg || '결제 진행 중 오류가 발생했습니다.');
+      }
     } finally {
       setIsProcessingPayment(false);
+      setIsPaymentOpen(false);
     }
   };
 
@@ -540,6 +566,16 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
 
   return (
     <div className="fixed inset-0 z-[300] flex items-end md:items-center justify-center bg-black/50 backdrop-blur-sm">
+      {/* 결제 진행 중 취소 버튼 */}
+      {isPaymentOpen && (
+        <button
+          onClick={cancelPayment}
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[2147483646] bg-white text-slate-700 px-6 py-3.5 rounded-full shadow-2xl border border-slate-200 font-bold text-sm flex items-center gap-2 active:scale-95 transition-transform"
+        >
+          <ArrowLeft size={18} />
+          결제 취소하고 돌아가기
+        </button>
+      )}
       <div className="bg-white w-full max-w-lg md:rounded-2xl rounded-t-3xl max-h-[90dvh] h-auto flex flex-col shadow-2xl">
         <div className="p-4 border-b flex justify-between items-center sticky top-0 bg-white z-10">
           <h2 className="text-lg font-bold flex items-center gap-2">

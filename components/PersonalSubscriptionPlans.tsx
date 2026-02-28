@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     Check, X, Sparkles, Crown, Zap, ChevronDown, ChevronUp,
     Heart, MessageCircle, FileText, Shield, Users, Gift,
-    Star, Ban, ShieldCheck
+    Star, Ban, ShieldCheck, ArrowLeft
 } from 'lucide-react';
 import { requestPayment, verifyPayment, PORTONE_CONFIG } from '../lib/portone';
 import { toast } from 'sonner';
@@ -104,7 +104,32 @@ export default function PersonalSubscriptionPlans({ onBack }: PersonalSubscripti
     const [expandedPlan, setExpandedPlan] = useState<string | null>('personal_basic');
     const [currentPlan, setCurrentPlan] = useState<string>('personal_free');
     const [isLoading, setIsLoading] = useState(true);
+    const [isPaymentOpen, setIsPaymentOpen] = useState(false);
     const { session } = useSession();
+
+    const cancelPayment = useCallback(() => {
+        // PortOne이 body에 직접 추가한 모든 overlay/iframe 제거
+        const bodyChildren = document.body.children;
+        const appRoot = document.getElementById('root');
+        const toRemove: Element[] = [];
+        for (let i = 0; i < bodyChildren.length; i++) {
+            const el = bodyChildren[i];
+            // React root, script, link, style 태그는 보존
+            if (el === appRoot || ['SCRIPT', 'LINK', 'STYLE', 'NOSCRIPT'].includes(el.tagName)) continue;
+            // PortOne이 생성한 div/iframe 제거
+            if (el.tagName === 'IFRAME' || (el.tagName === 'DIV' && el !== appRoot)) {
+                toRemove.push(el);
+            }
+        }
+        toRemove.forEach(el => el.remove());
+        // body 스크롤 복원
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        setIsPaymentOpen(false);
+        toast('결제가 취소되었습니다.');
+    }, []);
 
     useEffect(() => {
         loadCurrentPlan();
@@ -162,6 +187,7 @@ export default function PersonalSubscriptionPlans({ onBack }: PersonalSubscripti
         }
 
         try {
+            setIsPaymentOpen(true);
             const paymentId = `psub_${Date.now()}`;
             const response = await requestPayment({
                 storeId: PORTONE_CONFIG.STORE_ID,
@@ -214,7 +240,12 @@ export default function PersonalSubscriptionPlans({ onBack }: PersonalSubscripti
             setCurrentPlan(plan.id);
             toast.success(`${plan.name} 구독이 시작되었습니다!`);
         } catch (error) {
-            toast.error('결제 중 오류가 발생했습니다.');
+            const msg = error instanceof Error ? error.message : '';
+            if (!msg.includes('취소')) {
+                toast.error('결제 중 오류가 발생했습니다.');
+            }
+        } finally {
+            setIsPaymentOpen(false);
         }
     };
 
@@ -227,7 +258,17 @@ export default function PersonalSubscriptionPlans({ onBack }: PersonalSubscripti
     }
 
     return (
-        <div className="min-h-full bg-slate-50 flex flex-col">
+        <div className="min-h-full bg-slate-50 flex flex-col relative">
+            {/* 결제 진행 중 취소 버튼 */}
+            {isPaymentOpen && (
+                <button
+                    onClick={cancelPayment}
+                    className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[2147483646] bg-white text-slate-700 px-6 py-3.5 rounded-full shadow-2xl border border-slate-200 font-bold text-sm flex items-center gap-2 active:scale-95 transition-transform"
+                >
+                    <ArrowLeft size={18} />
+                    결제 취소하고 돌아가기
+                </button>
+            )}
             {/* Header */}
             <div className="px-6 py-8 text-center bg-white border-b">
                 <div className="inline-block px-3 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-full mb-3">

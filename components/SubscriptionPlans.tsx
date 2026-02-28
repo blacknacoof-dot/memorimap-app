@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { Check, X, Sparkles, Crown, Zap, ChevronDown, ChevronUp, MessageCircle, Mail, BarChart3, Star, ShieldCheck } from 'lucide-react';
+import React, { useState, useMemo, useCallback } from 'react';
+import { Check, X, Sparkles, Crown, Zap, ChevronDown, ChevronUp, MessageCircle, Mail, BarChart3, Star, ShieldCheck, ArrowLeft } from 'lucide-react';
 import { requestPayment, verifyPayment, PORTONE_CONFIG } from '../lib/portone';
 import { toast } from 'sonner';
 import { useUser, useSession } from '../lib/auth';
@@ -193,6 +193,28 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
     const [inquiryForm, setInquiryForm] = useState({ name: '', phone: '', email: '', message: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+
+    const cancelPayment = useCallback(() => {
+        const bodyChildren = document.body.children;
+        const appRoot = document.getElementById('root');
+        const toRemove: Element[] = [];
+        for (let i = 0; i < bodyChildren.length; i++) {
+            const el = bodyChildren[i];
+            if (el === appRoot || ['SCRIPT', 'LINK', 'STYLE', 'NOSCRIPT'].includes(el.tagName)) continue;
+            if (el.tagName === 'IFRAME' || (el.tagName === 'DIV' && el !== appRoot)) {
+                toRemove.push(el);
+            }
+        }
+        toRemove.forEach(el => el.remove());
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        setIsPaymentOpen(false);
+        setIsProcessing(false);
+        toast('결제가 취소되었습니다.');
+    }, []);
 
     React.useEffect(() => {
         const loadSub = async () => {
@@ -227,6 +249,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
         }
 
         setIsProcessing(true);
+        setIsPaymentOpen(true);
         try {
             const paymentId = `sub_${Date.now()}`;
             const response = await requestPayment({
@@ -274,14 +297,28 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
             onSelectPlan?.(plan.id);
             toast.success(`${plan.name} 구독이 시작되었습니다!`);
         } catch (error) {
-            toast.error('결제 중 오류가 발생했습니다.');
+            const msg = error instanceof Error ? error.message : '';
+            if (!msg.includes('취소')) {
+                toast.error('결제 중 오류가 발생했습니다.');
+            }
         } finally {
             setIsProcessing(false);
+            setIsPaymentOpen(false);
         }
     };
 
     return (
-        <div className="min-h-full bg-slate-50 flex flex-col pt-4">
+        <div className="min-h-full bg-slate-50 flex flex-col pt-4 relative">
+            {/* 결제 진행 중 취소 버튼 */}
+            {isPaymentOpen && (
+                <button
+                    onClick={cancelPayment}
+                    className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[2147483646] bg-white text-slate-700 px-6 py-3.5 rounded-full shadow-2xl border border-slate-200 font-bold text-sm flex items-center gap-2 active:scale-95 transition-transform"
+                >
+                    <ArrowLeft size={18} />
+                    결제 취소하고 돌아가기
+                </button>
+            )}
             {/* Header Area */}
             <div className="px-6 py-8 text-center bg-white border-b">
                 <div className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full mb-3">
