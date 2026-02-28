@@ -12,13 +12,40 @@ import { FacilityInfoEditor } from './FacilityInfoEditor';
 import { PartnerReservationsTab } from './PartnerReservationsTab';
 import { PartnerRevenueTab } from './PartnerRevenueTab';
 import { NotificationCenter } from '../NotificationCenter';
-import { ConsultationList } from '../ConsultationList';
+import { PartnerConsultationsTab } from './PartnerConsultationsTab';
 import { supabase, getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
 import { Consultation, getFacilitySubscription } from '../../lib/queries';
 import { Reservation } from '../../types';
+import type { SangjoContract } from '../../types/sangjo';
 import type { Subscription, Payment } from '../../types/db';
 import { toast } from 'sonner';
+
+/** sangjo_contracts → Consultation 매핑 (ConsultationList에서 표시용) */
+function mapSangjoContractToConsultation(sc: SangjoContract): Consultation {
+    const statusMap: Record<string, Consultation['status']> = {
+        '상담신청': 'pending', '예약대기': 'waiting',
+        '계약진행': 'accepted', '임종발생': 'accepted', '현장도착': 'accepted',
+        '염습중': 'accepted', '장례식진행': 'accepted', '완료': 'completed',
+    };
+    return {
+        id: sc.id,
+        facility_id: sc.sangjo_id,
+        user_name: sc.customer_name || '',
+        user_phone: sc.customer_phone || '',
+        urgency: sc.emergency_level || 'normal',
+        scale: '', religion: sc.religion || '', schedule: sc.preferred_call_time || '',
+        status: statusMap[sc.status] || 'pending',
+        notes: [
+            sc.contract_number ? `계약번호: ${sc.contract_number}` : '',
+            sc.preferred_call_time ? `희망시간: ${sc.preferred_call_time}` : '',
+            sc.application_type === 'CONSULTATION' ? '유형: 상담신청' : '유형: 계약신청',
+        ].filter(Boolean).join(' | '),
+        created_at: sc.created_at, updated_at: sc.created_at,
+        is_read: sc.status !== '상담신청',
+        is_ai_response: false, metadata: {}, source: 'sangjo_contract',
+    };
+}
 
 interface PartnerDashboardProps {
     partnerId: string;
@@ -35,26 +62,36 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
     const [subscription, setSubscription] = useState<Subscription | null>(null);
     const [payments, setPayments] = useState<Payment[]>([]);
     const [showPlanSelector, setShowPlanSelector] = useState(false);
+    const [isSangjo, setIsSangjo] = useState(false);
     const { session } = useSession();
 
     useEffect(() => {
         const fetchPartner = async () => {
             const client = await getAuthClient(session, { strict: true });
 
-            // partnerId는 실제로 facility UUID (sangjo_hq_admins.sangjo_id에서 가져온 값)
-            // 바로 facilityId로 설정
             const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(partnerId);
 
             if (isUUID) {
                 setFacilityId(partnerId);
-                // 시설 이름으로 파트너명 설정
                 const { data: facility } = await client
                     .from('facilities')
-                    .select('name')
+                    .select('name, type')
                     .eq('id', partnerId)
                     .maybeSingle();
                 if (facility?.name) {
                     setPartnerName(facility.name);
+                    setIsSangjo(facility.type === 'sangjo');
+                    return;
+                }
+                // facilities에 없으면 funeral_companies에서 이름 조회 (마이그레이션 미실행 fallback)
+                const { data: fc } = await client
+                    .from('funeral_companies')
+                    .select('name')
+                    .eq('id', partnerId)
+                    .maybeSingle();
+                if (fc?.name) {
+                    setPartnerName(fc.name);
+                    setIsSangjo(true);
                     return;
                 }
             }
@@ -99,12 +136,19 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
         const loadFacilityData = async () => {
             try {
                 const client = await getAuthClient(session, { strict: true });
-                const [consResult, resResult, subData] = await Promise.all([
+                const [consResult, resResult, subData, contractsResult] = await Promise.all([
                     client.from('consultations').select('*').eq('facility_id', facilityId).order('created_at', { ascending: false }),
                     client.from('reservations').select('*').eq('facility_id', facilityId).order('created_at', { ascending: false }),
                     getFacilitySubscription(facilityId, client),
+                    client.from('sangjo_contracts').select('*').eq('sangjo_id', facilityId).order('created_at', { ascending: false }),
                 ]);
-                if (consResult.data) setConsultations(consResult.data as Consultation[]);
+                // consultations + sangjo_contracts 병합
+                const dbConsultations = (consResult.data || []) as Consultation[];
+                const mappedContracts = (contractsResult.data || []).map((sc: SangjoContract) => mapSangjoContractToConsultation(sc));
+                const merged = [...dbConsultations, ...mappedContracts].sort(
+                    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+                );
+                setConsultations(merged);
                 if (resResult.data) setReservations(resResult.data as Reservation[]);
                 if (subData) {
                     setSubscription(subData);
@@ -148,9 +192,24 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
             })
             .subscribe();
 
+        // sangjo_contracts Realtime 구독
+        const contractChannel = supabase
+            .channel(`partner-contracts-${facilityId}`)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'sangjo_contracts', filter: `sangjo_id=eq.${facilityId}` }, (payload) => {
+                const mapped = mapSangjoContractToConsultation(payload.new as SangjoContract);
+                if (payload.eventType === 'INSERT') {
+                    setConsultations(prev => [mapped, ...prev]);
+                    toast.info('새 상조 상담 신청이 접수되었습니다.');
+                } else if (payload.eventType === 'UPDATE') {
+                    setConsultations(prev => prev.map(c => c.id === (payload.new as SangjoContract).id ? mapped : c));
+                }
+            })
+            .subscribe();
+
         return () => {
             supabase.removeChannel(consChannel);
             supabase.removeChannel(resChannel);
+            supabase.removeChannel(contractChannel);
         };
     }, [facilityId]);
 
@@ -283,45 +342,11 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                 <div className="flex-1 overflow-y-auto p-4 md:p-10 bg-slate-50">
                     <div className="max-w-[1400px] mx-auto">
                         {activeTab === 'consultations' && (
-                            <div className="space-y-6">
-                                <div className="flex items-center justify-between">
-                                    <h2 className="text-lg font-black text-slate-800 flex items-center gap-2">
-                                        <ClipboardList className="text-blue-600" size={20} />
-                                        상담 문의 관리
-                                    </h2>
-                                    <div className="flex gap-2 text-xs">
-                                        <span className="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-xl font-bold border border-amber-100">
-                                            대기 {consultations.filter(c => c.status === 'pending' || c.status === 'waiting').length}
-                                        </span>
-                                        <span className="px-3 py-1.5 bg-green-50 text-green-700 rounded-xl font-bold border border-green-100">
-                                            완료 {consultations.filter(c => c.status === 'accepted' || c.status === 'completed').length}
-                                        </span>
-                                    </div>
-                                </div>
-                                <ConsultationList
-                                    consultations={consultations}
-                                    onAnswer={async (id, text) => {
-                                        const client = await getAuthClient(session, { strict: true });
-                                        const { error } = await client
-                                            .from('consultations')
-                                            .update({ answer: text, answered_at: new Date().toISOString(), status: 'accepted', is_read: true })
-                                            .eq('id', id);
-                                        if (!error) {
-                                            setConsultations(prev => prev.map(c =>
-                                                c.id === id ? { ...c, answer: text, answered_at: new Date().toISOString(), status: 'accepted', is_read: true } : c
-                                            ));
-                                            toast.success('답변이 전송되었습니다.');
-                                        } else {
-                                            toast.error('답변 전송 실패');
-                                        }
-                                    }}
-                                    onRead={async (id) => {
-                                        const client = await getAuthClient(session, { strict: true });
-                                        await client.from('consultations').update({ is_read: true }).eq('id', id);
-                                        setConsultations(prev => prev.map(c => c.id === id ? { ...c, is_read: true } : c));
-                                    }}
-                                />
-                            </div>
+                            <PartnerConsultationsTab
+                                consultations={consultations}
+                                setConsultations={setConsultations}
+                                session={session}
+                            />
                         )}
                         {activeTab === 'reservations' && (
                             <PartnerReservationsTab
