@@ -109,9 +109,8 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
                         return;
                     }
                 }
-            } catch (err) {
-                // fail-open
-                console.error('[SangjoConsultation] quota check fail-open:', err);
+            } catch {
+                // fail-open: 쿼터 체크 실패 시 통과
             }
             quotaCheckedRef.current = true;
         }

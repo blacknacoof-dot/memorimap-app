@@ -37,6 +37,7 @@ export const AdminCommunication: React.FC = () => {
     // Notice Form
     const [noticeTitle, setNoticeTitle] = useState('');
     const [noticeContent, setNoticeContent] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const loadData = async () => {
         setIsLoading(true);
@@ -68,6 +69,8 @@ export const AdminCommunication: React.FC = () => {
 
     const handleNoticeSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isSubmitting) return;
+        setIsSubmitting(true);
         try {
             const client = await getAuthClient(session, { strict: true });
             await createNotice(noticeTitle, noticeContent, client);
@@ -78,6 +81,8 @@ export const AdminCommunication: React.FC = () => {
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : '권한 오류';
             toast.error('공지사항 등록 실패: ' + message);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -142,8 +147,9 @@ export const AdminCommunication: React.FC = () => {
                                     />
                                 </div>
                                 <div className="text-right">
-                                    <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-bold flex items-center gap-2 ml-auto">
-                                        <Send size={16} /> 등록하기
+                                    <button type="submit" disabled={isSubmitting} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-bold flex items-center gap-2 ml-auto disabled:opacity-50 disabled:cursor-not-allowed">
+                                        {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                                        {isSubmitting ? '등록 중...' : '등록하기'}
                                     </button>
                                 </div>
                             </form>

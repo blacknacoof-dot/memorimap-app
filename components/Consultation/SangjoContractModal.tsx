@@ -2,10 +2,19 @@ import React, { useState } from 'react';
 import { FuneralCompany } from '../../types';
 import { X, Check, Phone, User, Clock, ShieldCheck, HeartHandshake, Loader2 } from 'lucide-react';
 
+interface ContractData {
+    companyId: string | number;
+    companyName: string;
+    name: string;
+    phone: string;
+    callTime: string;
+    status: string;
+}
+
 interface Props {
     company: FuneralCompany;
     onClose: () => void;
-    onConfirm: (data: { companyId: string | number; companyName: string; name: string; phone: string; callTime: string; status: string }) => void;
+    onConfirm: (data: ContractData) => Promise<void> | void;
 }
 
 export const SangjoContractModal: React.FC<Props> = ({ company, onClose, onConfirm }) => {
@@ -15,11 +24,13 @@ export const SangjoContractModal: React.FC<Props> = ({ company, onClose, onConfi
     const [callTime, setCallTime] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmit = () => {
+    const [submitError, setSubmitError] = useState(false);
+
+    const handleSubmit = async () => {
         setIsSubmitting(true);
-        // Simulate API call
-        setTimeout(() => {
-            onConfirm({
+        setSubmitError(false);
+        try {
+            await onConfirm({
                 companyId: company.id,
                 companyName: company.name,
                 name,
@@ -28,8 +39,11 @@ export const SangjoContractModal: React.FC<Props> = ({ company, onClose, onConfi
                 status: 'pending'
             });
             setStep(3);
+        } catch {
+            setSubmitError(true);
+        } finally {
             setIsSubmitting(false);
-        }, 1500);
+        }
     };
 
     return (
@@ -146,6 +160,9 @@ export const SangjoContractModal: React.FC<Props> = ({ company, onClose, onConfi
                                     {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : '상담 신청 완료'}
                                 </button>
                             </div>
+                            {submitError && (
+                                <p className="text-xs text-red-500 text-center font-medium">상담 신청 중 오류가 발생했습니다. 다시 시도해주세요.</p>
+                            )}
                             <p className="text-[10px] text-gray-400 text-center">
                                 본 신청은 예약 대기 상태이며, 최종 계약은 업체 담당자와의 유선 상담 후 확정됩니다.
                             </p>

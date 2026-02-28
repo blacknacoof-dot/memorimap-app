@@ -441,7 +441,7 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
                         {facility.features.map((f, idx) => (
                             <span key={idx} className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full text-xs font-bold border border-emerald-100">
                                 {f}
-                                <button onClick={() => removeFeature(idx)} className="hover:text-red-500 transition-colors">
+                                <button onClick={async () => { if (await confirmAsync('이 특징을 삭제하시겠습니까?')) removeFeature(idx); }} className="hover:text-red-500 transition-colors">
                                     <X size={12} />
                                 </button>
                             </span>
@@ -522,7 +522,7 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
                                             )}
                                         </div>
                                         <button
-                                            onClick={() => removePackage(idx)}
+                                            onClick={async () => { if (await confirmAsync('이 패키지를 삭제하시겠습니까?')) removePackage(idx); }}
                                             className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                         >
                                             <Trash2 size={14} />

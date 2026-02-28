@@ -7,13 +7,15 @@ interface Props {
     facility?: Facility;
     onClose: () => void;
     onCancel?: () => void;
+    adminActions?: React.ReactNode;
 }
 
 export const ReservationDetailModal: React.FC<Props> = ({
     reservation,
     facility,
     onClose,
-    onCancel
+    onCancel,
+    adminActions
 }) => {
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
@@ -106,6 +108,9 @@ export const ReservationDetailModal: React.FC<Props> = ({
                         )}
                     </div>
                 </div>
+
+                {/* 관리자 액션 버튼 (외부에서 주입) */}
+                {adminActions}
             </div>
         </div>
     );

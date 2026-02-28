@@ -89,6 +89,7 @@ export const ChatInterface: React.FC<Props> = ({
     const [formMode, setFormMode] = useState<'chat' | 'phone'>('chat');
     // [Quota] 세션별 쿼터 체크 (re-mount 중복 방지)
     const sessionQuotaCheckedRef = useRef(false);
+    const facilityQuotaCheckedRef = useRef(false);
     const [quotaExceeded, setQuotaExceeded] = useState<QuotaCheckResult | null>(null);
     // [PDCA VERIFICATION] Trace ID Generator
     const generateTraceId = () => Math.random().toString(36).substring(2, 11).toUpperCase();
@@ -336,6 +337,29 @@ export const ChatInterface: React.FC<Props> = ({
                 // fail-open
                 console.error('[ChatInterface] quota check fail-open:', err);
                 sessionQuotaCheckedRef.current = true;
+            }
+        }
+
+        // [Quota] 시설 AI 채팅 쿼터 체크 (세션당 1회)
+        if (messages.length === 0 && !facilityQuotaCheckedRef.current && facility.id) {
+            try {
+                const client = await getAuthClient(session, { strict: true });
+                const { data, error } = await client.rpc('check_and_increment_facility_quota', {
+                    p_facility_id: facility.id,
+                    p_quota_type: 'ai_chat',
+                });
+                if (!error && data) {
+                    const result = data as QuotaCheckResult;
+                    if (!result.allowed) {
+                        setQuotaExceeded(result);
+                        return;
+                    }
+                }
+                facilityQuotaCheckedRef.current = true;
+            } catch (err) {
+                // fail-open
+                console.error('[ChatInterface] facility quota check fail-open:', err);
+                facilityQuotaCheckedRef.current = true;
             }
         }
 

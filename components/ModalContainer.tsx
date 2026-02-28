@@ -97,7 +97,7 @@ export interface ModalContainerProps {
   userLocation: { lat: number; lng: number; type: string };
   getCurrentPosition: () => void;
   handoverContext: Record<string, unknown> | string | null;
-  setHandoverContext: (ctx: Record<string, unknown> | string | null) => void;
+  setHandoverContext: React.Dispatch<React.SetStateAction<Record<string, unknown> | string | null>>;
 }
 
 export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
@@ -323,7 +323,6 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
                 }, client);
                 showToast('상담 신청이 완료되었습니다!');
               } catch (err) {
-                console.error('Sangjo contract error:', err);
                 showToast('상담 신청 중 오류가 발생했습니다.', 'error');
               }
             }}

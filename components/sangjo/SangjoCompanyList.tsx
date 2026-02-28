@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { FuneralCompany } from '../../types';
-import { FUNERAL_COMPANIES } from '../../constants';
 import { Search, Award, Scale, Bot, ChevronRight } from 'lucide-react';
-import { supabase, getAuthClient } from '../../lib/supabaseClient';
+import { getAuthClient } from '../../lib/supabaseClient';
 import { toast } from 'sonner';
 import { SangjoConsultationModal } from '../Consultation/SangjoConsultationModal';
 import { useUser, useSession } from '../../lib/auth';
 import { useSangjoFavoriteStore } from '../../stores/useSangjoFavoriteStore';
+import { useSangjoCompanies } from '../../hooks/sangjo/useSangjoCompanies';
 import { SangjoCompanyCard } from './SangjoCompanyCard';
-import { ReviewRow, mapDbCompanyToFuneralCompany } from './sangjoCompanyHelpers';
 
 interface Props {
     onCompanySelect: (company: FuneralCompany, startChat?: boolean) => void;
@@ -31,81 +30,11 @@ export const SangjoCompanyList: React.FC<Props> = ({
 }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [showConsultation, setShowConsultation] = useState(false);
-    const [companies, setCompanies] = useState<FuneralCompany[]>(FUNERAL_COMPANIES);
-    const [isLoading, setIsLoading] = useState(true);
+    const { companies, isLoading } = useSangjoCompanies();
     const { user } = useUser();
     const { session } = useSession();
 
     const { favoritedIds, fetchFavorites, toggleFavorite: storeToggleFavorite } = useSangjoFavoriteStore();
-
-    // Fetch companies from Supabase on mount
-    React.useEffect(() => {
-        const fetchCompanies = async () => {
-            try {
-                const { data, error } = await supabase
-                    .from('funeral_companies')
-                    .select('*')
-                    .order('id', { ascending: true });
-
-                if (error) {
-                    throw error;
-                }
-
-                if (data && data.length > 0) {
-                    const companyIds = data.map(item => item.id);
-                    const staticIds = data.map(item => {
-                        const match = FUNERAL_COMPANIES.find(c => c.name.replace(/\s/g, '') === item.name.replace(/\s/g, ''));
-                        return match?.id;
-                    }).filter(Boolean) as string[];
-
-                    const allTargetIds = Array.from(new Set([...companyIds, ...staticIds]));
-
-                    const { data: allReviews, error: reviewError } = await supabase
-                        .from('facility_reviews')
-                        .select('*')
-                        .in('facility_id', allTargetIds)
-                        .eq('is_active', true)
-                        .order('created_at', { ascending: false });
-
-                    if (reviewError) {
-                        toast.error('리뷰 데이터를 불러오는 중 오류가 발생했습니다.');
-                    }
-
-                    // Group reviews by facility_id
-                    const reviewsByCompany = new Map<string, ReviewRow[]>();
-                    allReviews?.forEach(review => {
-                        const cid = review.facility_id?.toString().trim();
-                        if (cid) {
-                            if (!reviewsByCompany.has(cid)) {
-                                reviewsByCompany.set(cid, []);
-                            }
-                            reviewsByCompany.get(cid)!.push(review as ReviewRow);
-                        }
-                    });
-
-                    // Map DB rows to FuneralCompany objects
-                    const mappedCompanies: FuneralCompany[] = data.map((item, idx) => {
-                        const staticMatch = FUNERAL_COMPANIES.find(c => c.name.replace(/\s/g, '') === item.name.replace(/\s/g, ''));
-                        return mapDbCompanyToFuneralCompany(item as Record<string, unknown>, staticMatch, reviewsByCompany, idx);
-                    });
-
-                    // Sort by Sales Rank (Order in FUNERAL_COMPANIES constant)
-                    const sortedCompanies = mappedCompanies.sort((a, b) => {
-                        const indexA = FUNERAL_COMPANIES.findIndex(fc => fc.name.replace(/\s/g, '') === a.name.replace(/\s/g, ''));
-                        const indexB = FUNERAL_COMPANIES.findIndex(fc => fc.name.replace(/\s/g, '') === b.name.replace(/\s/g, ''));
-                        return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
-                    });
-
-                    setCompanies(sortedCompanies);
-                }
-            } catch (err) {
-                toast.error('상조 업체 목록을 불러오지 못했습니다.');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchCompanies();
-    }, []);
 
     const handleOpenConsultation = () => {
         if (!isLoggedIn) {

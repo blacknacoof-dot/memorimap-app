@@ -3,7 +3,7 @@ import { useSession } from '../../lib/auth';
 import { Reservation, ViewState, Facility } from '../../types';
 import { approveReservation, rejectReservation, getFacilitySubscription, answerConsultation, Consultation, markConsultationAsRead, supabase } from '../../lib/queries';
 import { getAuthClient } from '../../lib/supabaseClient';
-import { ReservationList } from '../ReservationList';
+import ReservationManager from './facility/ReservationManager';
 import { ConsultationList } from '../ConsultationList';
 import { ReservationDetailModal } from '../ReservationDetailModal';
 import { FacilityEditModal } from '../FacilityEditModal';
@@ -349,9 +349,9 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                 </div>
             )}
 
-            {/* Stats Cards */}
+            {/* Stats Cards — 클릭 시 해당 탭으로 전환 */}
             <div className="grid grid-cols-3 gap-2 mb-4">
-                <div className="bg-white rounded-xl p-3 border">
+                <button onClick={() => setActiveTab('pending')} className={`bg-white rounded-xl p-3 border text-left transition-all ${activeTab === 'pending' ? 'ring-2 ring-yellow-400 border-yellow-300' : 'hover:shadow-md'}`}>
                     <div className="flex items-center gap-1.5 text-yellow-600 mb-0.5">
                         <Clock size={14} />
                         <span className="text-[11px] font-medium">대기</span>
@@ -364,21 +364,21 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                             긴급 {reservations.filter(r => r.status === 'urgent').length}건
                         </p>
                     )}
-                </div>
-                <div className="bg-white rounded-xl p-3 border">
+                </button>
+                <button onClick={() => setActiveTab('confirmed')} className={`bg-white rounded-xl p-3 border text-left transition-all ${activeTab === 'confirmed' ? 'ring-2 ring-green-400 border-green-300' : 'hover:shadow-md'}`}>
                     <div className="flex items-center gap-1.5 text-green-600 mb-0.5">
                         <CheckCircle size={14} />
                         <span className="text-[11px] font-medium">확정</span>
                     </div>
                     <p className="text-xl font-bold">{reservations.filter(r => r.status === 'confirmed').length}</p>
-                </div>
-                <div className="bg-white rounded-xl p-3 border">
+                </button>
+                <button onClick={() => setActiveTab('cancelled')} className={`bg-white rounded-xl p-3 border text-left transition-all ${activeTab === 'cancelled' ? 'ring-2 ring-gray-400 border-gray-300' : 'hover:shadow-md'}`}>
                     <div className="flex items-center gap-1.5 text-gray-600 mb-0.5">
                         <XCircle size={14} />
                         <span className="text-[11px] font-medium">취소</span>
                     </div>
                     <p className="text-xl font-bold">{reservations.filter(r => r.status === 'cancelled').length}</p>
-                </div>
+                </button>
             </div>
 
             {/* Tabs */}
@@ -459,30 +459,36 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                     <Loader2 size={32} className="animate-spin text-primary mx-auto" />
                 </div>
             ) : myFacilityId ? (
-                <ReservationList
-                    reservations={reservations.filter(r => activeTab === 'pending' ? (r.status === 'pending' || r.status === 'urgent') : r.status === activeTab)}
-                    onViewDetails={setSelectedReservation}
-                    emptyMessage={
-                        activeTab === 'pending' ? '대기중인 예약이 없습니다.' :
-                            activeTab === 'confirmed' ? '확정된 예약이 없습니다.' :
-                                '취소된 예약이 없습니다.'
-                    }
+                <ReservationManager
+                    reservations={reservations}
+                    onUpdateStatus={async (id, status, reason) => {
+                        if (status === 'confirmed') {
+                            await handleApprove(id);
+                        } else if (status === 'rejected') {
+                            try {
+                                const client = await getAuthClient(session, { strict: true });
+                                await rejectReservation(id, reason, client);
+                                setReservations(prev => prev.map(r =>
+                                    r.id === id ? { ...r, status: 'rejected' as const, rejection_reason: reason || null } : r
+                                ));
+                                toast.success('예약이 거절되었습니다.');
+                            } catch {
+                                toast.error('예약 거절 중 오류가 발생했습니다.');
+                            }
+                        }
+                    }}
                 />
             ) : null}
 
             {/* Reservation Detail Modal with Admin Actions */}
             {selectedReservation && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-                    <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden">
-                        <ReservationDetailModal
-                            reservation={selectedReservation}
-                            facility={facilities.find(f => f.id === selectedReservation.facility_id)}
-                            onClose={() => setSelectedReservation(null)}
-                            onCancel={undefined}
-                        />
-
-                        {/* Admin Action Buttons */}
-                        {(selectedReservation.status === 'pending' || selectedReservation.status === 'urgent') && (
+                <ReservationDetailModal
+                    reservation={selectedReservation}
+                    facility={facilities.find(f => f.id === selectedReservation.facility_id)}
+                    onClose={() => setSelectedReservation(null)}
+                    onCancel={undefined}
+                    adminActions={
+                        (selectedReservation.status === 'pending' || selectedReservation.status === 'urgent') ? (
                             <div className="p-6 border-t flex gap-3">
                                 <button
                                     onClick={() => selectedReservation.id && handleReject(selectedReservation.id)}
@@ -497,9 +503,9 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                                     승인하기
                                 </button>
                             </div>
-                        )}
-                    </div>
-                </div>
+                        ) : undefined
+                    }
+                />
             )}
 
             {/* Facility Edit Modal */}

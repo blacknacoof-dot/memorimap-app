@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Check, X, Clock, Calendar, MessageSquare } from 'lucide-react';
+import { Check, X, Clock, Calendar, MessageSquare, Loader2 } from 'lucide-react';
 import { Reservation } from '@/types/db';
-import { promptAsync } from '@/src/components/common/ConfirmModal';
+import { promptAsync, confirmAsync } from '@/src/components/common/ConfirmModal';
 
 interface ReservationManagerProps {
     reservations: Reservation[];
@@ -10,6 +10,7 @@ interface ReservationManagerProps {
 
 export default function ReservationManager({ reservations, onUpdateStatus }: ReservationManagerProps) {
     const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed'>('all');
+    const [processingId, setProcessingId] = useState<string | null>(null);
 
     const filteredList = reservations.filter(r => {
         if (filter === 'all') return true;
@@ -17,10 +18,28 @@ export default function ReservationManager({ reservations, onUpdateStatus }: Res
         return r.status === filter;
     });
 
+    const handleApproveClick = async (id: string) => {
+        if (processingId) return;
+        const ok = await confirmAsync('이 예약을 승인하시겠습니까?', '예약 승인');
+        if (!ok) return;
+        setProcessingId(id);
+        try {
+            onUpdateStatus(id, 'confirmed');
+        } finally {
+            setProcessingId(null);
+        }
+    };
+
     const handleRejectClick = async (id: string) => {
+        if (processingId) return;
         const reason = await promptAsync('거절 사유를 입력해주세요', '예약 거절', { placeholder: '예: 예약 마감, 휴무일 등' });
-        if (reason) {
-            onUpdateStatus(id, 'rejected', reason);
+        if (reason !== null) {
+            setProcessingId(id);
+            try {
+                onUpdateStatus(id, 'rejected', reason || undefined);
+            } finally {
+                setProcessingId(null);
+            }
         }
     };
 
@@ -86,16 +105,18 @@ export default function ReservationManager({ reservations, onUpdateStatus }: Res
                             {(res.status === 'pending' || res.status === 'urgent') && (
                                 <div className="flex md:flex-col gap-2 justify-center border-t md:border-t-0 md:border-l pt-4 md:pt-0 md:pl-4">
                                     <button
-                                        onClick={() => res.id && onUpdateStatus(res.id, 'confirmed')}
-                                        className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors"
+                                        onClick={() => res.id && handleApproveClick(res.id)}
+                                        disabled={processingId === res.id}
+                                        className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        <Check size={18} /> 승인하기
+                                        {processingId === res.id ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />} 승인하기
                                     </button>
                                     <button
                                         onClick={() => res.id && handleRejectClick(res.id)}
-                                        className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
+                                        disabled={processingId === res.id}
+                                        className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        <X size={18} /> 거절하기
+                                        {processingId === res.id ? <Loader2 size={18} className="animate-spin" /> : <X size={18} />} 거절하기
                                     </button>
                                 </div>
                             )}

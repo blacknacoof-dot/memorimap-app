@@ -32,7 +32,7 @@ export function useMyFavorites() {
 export function useToggleFavorite() {
     const queryClient = useQueryClient();
     const { session } = useSession();
-    const { checkQuota } = useQuotaGate();
+    const { checkQuota, decrementFavorite } = useQuotaGate();
 
     return useMutation({
         mutationFn: async (params: {
@@ -50,6 +50,7 @@ export function useToggleFavorite() {
                 .maybeSingle();
 
             // 새 추가인 경우 쿼터 체크
+            let quotaIncremented = false;
             if (!existing) {
                 const result = await checkQuota('favorite', 'facility');
                 if (!result.allowed) {
@@ -59,15 +60,24 @@ export function useToggleFavorite() {
                         limit: result.limit,
                     });
                 }
+                quotaIncremented = true;
             }
 
-            const { data, error } = await client.rpc('toggle_favorite', {
-                p_facility_id: params.facility_id,
-                p_private_memo: params.private_memo,
-                p_private_rating: params.private_rating,
-            });
-            if (error) throw error;
-            return data;
+            try {
+                const { data, error } = await client.rpc('toggle_favorite', {
+                    p_facility_id: params.facility_id,
+                    p_private_memo: params.private_memo,
+                    p_private_rating: params.private_rating,
+                });
+                if (error) throw error;
+                return data;
+            } catch (err) {
+                // INSERT 실패 시 이미 증가된 쿼터 롤백
+                if (quotaIncremented) {
+                    await decrementFavorite(false);
+                }
+                throw err;
+            }
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['my-favorites'] });

@@ -39,6 +39,8 @@ export const useSangjoFavoriteStore = create<SangjoFavoriteState>((set) => ({
     toggleFavorite: async (userId: string, company: FuneralCompany, client: SupabaseClient) => {
         if (!userId) return false;
 
+        let quotaIncremented = false;
+
         try {
             // 기존 즐겨찾기 여부 확인
             const isFav = await sangjoFavoriteService.checkFavorite(userId, company.id, client);
@@ -57,10 +59,10 @@ export const useSangjoFavoriteStore = create<SangjoFavoriteState>((set) => ({
                             toast.error(`즐겨찾기 한도(${result.limit}개)에 도달했습니다.`);
                             return false;
                         }
+                        quotaIncremented = true;
                     }
-                } catch (quotaErr) {
+                } catch {
                     // fail-open: 쿼터 체크 실패 시 통과
-                    console.error('[SangjoFavorite] quota check fail-open:', quotaErr);
                 }
             }
 
@@ -70,8 +72,8 @@ export const useSangjoFavoriteStore = create<SangjoFavoriteState>((set) => ({
                 // 삭제 시 카운터 감소
                 try {
                     await client.rpc('decrement_user_favorites_count', { p_is_sangjo: true });
-                } catch (decErr) {
-                    console.error('[SangjoFavorite] decrement error:', decErr);
+                } catch {
+                    // decrement 실패 무시
                 }
             }
 
@@ -86,7 +88,15 @@ export const useSangjoFavoriteStore = create<SangjoFavoriteState>((set) => ({
             });
 
             return isAdded;
-        } catch {
+        } catch (err) {
+            // INSERT 실패 시 이미 증가된 쿼터 롤백
+            if (quotaIncremented) {
+                try {
+                    await client.rpc('decrement_user_favorites_count', { p_is_sangjo: true });
+                } catch {
+                    // rollback 실패 무시
+                }
+            }
             toast.error('즐겨찾기 변경에 실패했습니다.');
             return false;
         }

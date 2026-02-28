@@ -4,6 +4,7 @@ import { Bell, X, CheckCircle, AlertTriangle, Info, Trash2, Check } from 'lucide
 import { useNotifications } from '../hooks/useNotifications';
 import { useNavigate } from 'react-router-dom';
 import { UserNotification } from '@/types/db';
+import { confirmAsync } from '../src/components/common/ConfirmModal';
 
 // Relative time display in Korean
 const getRelativeTime = (date: string): string => {
@@ -119,9 +120,11 @@ const NotificationModal: React.FC<{
         }
     };
 
-    const handleDelete = (e: React.MouseEvent, id: string) => {
+    const handleDelete = async (e: React.MouseEvent, id: string) => {
         e.stopPropagation();
-        onDelete(id);
+        if (await confirmAsync('이 알림을 삭제하시겠습니까?')) {
+            onDelete(id);
+        }
     };
 
     return (

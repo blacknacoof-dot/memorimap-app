@@ -80,7 +80,7 @@ const App: React.FC = () => {
   const { session } = useSession();
 
   const [initialChatIntent, setInitialChatIntent] = useState<'funeral_home' | 'memorial_facility' | 'pet_funeral' | null>(null);
-  const [handoverContext, setHandoverContext] = useState<{ urgency?: string; location?: { text?: string }; [key: string]: unknown } | null>(null);
+  const [handoverContext, setHandoverContext] = useState<Record<string, unknown> | string | null>(null);
 
   // Map Viewport Hook
   const {

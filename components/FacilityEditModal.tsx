@@ -5,6 +5,7 @@ import { getAuthClient } from '../lib/supabaseClient';
 import { useSession } from '../lib/auth';
 import { Facility, FacilityPackage, FacilityManager } from '../types';
 import { toast } from 'sonner';
+import { confirmAsync } from '../src/components/common/ConfirmModal';
 
 interface Props {
     facility: Facility;
@@ -354,7 +355,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
                                                             <ImagePlus size={14} />
                                                             <input type="file" className="hidden" accept="image/*" onChange={handleMainImageChange} />
                                                         </label>
-                                                        <button type="button" onClick={() => setImageUrl('')} className="p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600" title="삭제">
+                                                        <button type="button" onClick={async () => { if (await confirmAsync('대표 이미지를 삭제하시겠습니까?')) setImageUrl(''); }} className="p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600" title="삭제">
                                                             <Trash2 size={14} />
                                                         </button>
                                                     </div>
@@ -382,7 +383,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
                                                             <ImagePlus size={12} />
                                                             <input type="file" className="hidden" accept="image/*" onChange={(e) => handleReplaceGalleryImage(e, idx)} />
                                                         </label>
-                                                        <button type="button" onClick={() => setGalleryImages(prev => prev.filter((_, i) => i !== idx))} className="p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600" title="삭제">
+                                                        <button type="button" onClick={async () => { if (await confirmAsync('이 갤러리 이미지를 삭제하시겠습니까?')) setGalleryImages(prev => prev.filter((_, i) => i !== idx)); }} className="p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600" title="삭제">
                                                             <Trash2 size={12} />
                                                         </button>
                                                     </div>
@@ -422,7 +423,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
                                     <div key={pkgIdx} className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50/50">
                                         <div className="flex items-center justify-between">
                                             <span className="text-xs font-bold text-gray-500">패키지 {pkgIdx + 1}</span>
-                                            <button type="button" onClick={() => removePackage(pkgIdx)} className="text-red-400 hover:text-red-600 text-xs font-bold flex items-center gap-1">
+                                            <button type="button" onClick={async () => { if (await confirmAsync('이 패키지를 삭제하시겠습니까?')) removePackage(pkgIdx); }} className="text-red-400 hover:text-red-600 text-xs font-bold flex items-center gap-1">
                                                 <Trash2 size={12} /> 삭제
                                             </button>
                                         </div>
@@ -445,7 +446,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
                                                 {pkg.items.map((item, itemIdx) => (
                                                     <span key={itemIdx} className="inline-flex items-center gap-1 bg-primary/10 text-primary text-xs px-2.5 py-1 rounded-full">
                                                         {item}
-                                                        <button type="button" onClick={() => removePackageItem(pkgIdx, itemIdx)} className="hover:text-red-500">
+                                                        <button type="button" onClick={async () => { if (await confirmAsync('이 구성품을 삭제하시겠습니까?')) removePackageItem(pkgIdx, itemIdx); }} className="hover:text-red-500">
                                                             <X size={12} />
                                                         </button>
                                                     </span>
@@ -520,7 +521,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
                                             {features.filter(f => f.startsWith('커스텀:')).map(f => (
                                                 <span key={f} className="inline-flex items-center gap-1 bg-orange-100 text-orange-700 text-xs px-2.5 py-1 rounded-full">
                                                     {f.replace('커스텀:', '')}
-                                                    <button type="button" onClick={() => setFeatures(prev => prev.filter(x => x !== f))} className="hover:text-red-500">
+                                                    <button type="button" onClick={async () => { if (await confirmAsync('이 태그를 삭제하시겠습니까?')) setFeatures(prev => prev.filter(x => x !== f)); }} className="hover:text-red-500">
                                                         <X size={12} />
                                                     </button>
                                                 </span>
