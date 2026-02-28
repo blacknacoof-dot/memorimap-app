@@ -71,10 +71,11 @@ export const useFacilityChat = () => {
                         client
                     );
                     const contractNum = `REQ-2026-${Math.floor(Math.random() * 900000 + 100000)}`;
-                    const { data, error } = await client
+                    const contractId = crypto.randomUUID();
+                    const { error } = await client
                         .from('sangjo_contracts')
                         .insert({
-                            id: crypto.randomUUID(),
+                            id: contractId,
                             contract_number: contractNum,
                             sangjo_id: dbId,
                             customer_name: args.customer_name || '',
@@ -84,16 +85,13 @@ export const useFacilityChat = () => {
                             application_type: 'CONSULTATION',
                             total_price: 0,
                             emergency_level: 'normal',
-                            created_at: new Date().toISOString(),
-                        })
-                        .select()
-                        .single();
+                        });
 
                     if (error) throw error;
 
                     return {
                         success: true,
-                        contract_id: data.id,
+                        contract_id: contractId,
                         message: `계약 신청이 완료되었습니다. 담당자가 24시간 내 연락드립니다.`
                     };
                 }

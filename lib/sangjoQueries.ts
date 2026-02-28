@@ -42,16 +42,14 @@ export const saveSangjoContract = async (contract: SangjoContract, client: Supab
         }
     }
 
-    const { data, error } = await client
+    const { error } = await client
         .from('sangjo_contracts')
-        .insert([contract])
-        .select();
+        .insert([contract]);
 
     if (error) {
-        // Error saving sangjo contract
         throw error;
     }
-    return data;
+    return contract;
 };
 
 export const getSangjoContracts = async (sangjoId: string, client: SupabaseClient) => {
