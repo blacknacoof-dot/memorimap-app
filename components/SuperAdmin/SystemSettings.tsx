@@ -52,12 +52,19 @@ export const SystemSettings = () => {
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" className="sr-only peer" onChange={async (e) => {
+                            const checked = e.target.checked;
+                            const label = checked ? '활성화' : '비활성화';
+                            if (!await confirmAsync(`점검 모드를 ${label}하시겠습니까?\n${checked ? '일반 사용자의 접속이 차단됩니다.' : ''}`)) {
+                                e.target.checked = !checked;
+                                return;
+                            }
                             try {
                                 const client = await getAuthClient(session, { strict: true });
-                                await updateSystemSetting('maintenance_mode', e.target.checked, client);
-                                toast.success(`점검 모드가 ${e.target.checked ? '활성화' : '비활성화'} 되었습니다.`);
+                                await updateSystemSetting('maintenance_mode', checked, client);
+                                toast.success(`점검 모드가 ${label} 되었습니다.`);
                             } catch {
                                 toast.error('점검 모드 설정 실패');
+                                e.target.checked = !checked;
                             }
                         }} />
                         <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
@@ -88,7 +95,10 @@ export const SystemSettings = () => {
                         <p className="text-[10px] text-slate-400 mt-1">모든 예약 및 결제 건에 적용되는 기본 수수료입니다.</p>
                     </div>
                     <button
-                        onClick={handleSaveSystemSettings}
+                        onClick={async () => {
+                            if (!await confirmAsync(`수수료율을 ${commission}%로 변경하시겠습니까?`)) return;
+                            handleSaveSystemSettings();
+                        }}
                         className="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
                     >
                         설정 저장

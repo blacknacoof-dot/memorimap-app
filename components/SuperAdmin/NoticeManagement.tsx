@@ -18,6 +18,7 @@ export const NoticeManagement: React.FC = () => {
     const [editingNotice, setEditingNotice] = useState<PlatformNotice | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [formData, setFormData] = useState({ title: '', content: '', notice_type: 'info' as string });
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const { session } = useSession();
 
     useEffect(() => {
@@ -70,6 +71,8 @@ export const NoticeManagement: React.FC = () => {
             toast.error('제목과 내용을 입력해주세요.');
             return;
         }
+        if (isSubmitting) return;
+        setIsSubmitting(true);
         try {
             const client = await getAuthClient(session, { strict: true });
             if (editingNotice) {
@@ -83,6 +86,8 @@ export const NoticeManagement: React.FC = () => {
             loadNotices();
         } catch (err) {
             toast.error('저장 중 오류가 발생했습니다.');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -253,9 +258,10 @@ export const NoticeManagement: React.FC = () => {
                             </button>
                             <button
                                 onClick={handleSubmit}
-                                className="flex-1 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all"
+                                disabled={isSubmitting}
+                                className={`flex-1 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
-                                {editingNotice ? '수정하기' : '등록하기'}
+                                {isSubmitting ? '처리 중...' : editingNotice ? '수정하기' : '등록하기'}
                             </button>
                         </div>
                     </div>

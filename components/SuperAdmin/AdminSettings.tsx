@@ -120,7 +120,7 @@ export const AdminSettings = () => {
                                 <p className="text-[10px] text-slate-400">{item.desc}</p>
                             </div>
                             <label className="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" className="sr-only peer" defaultChecked />
+                                <input type="checkbox" className="sr-only peer" defaultChecked onChange={() => toast.info('알림 설정 기능은 준비 중입니다.')} />
                                 <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
                             </label>
                         </div>

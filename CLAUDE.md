@@ -108,6 +108,7 @@
 - [x] SuperAdminDashboard 컴포넌트 분리 (300줄 원칙 적용)
 - [x] 데이터 분류 정리 마이그레이션 (`20260224_data_classification_cleanup.sql`)
 - [x] 이미지 없는 시설 38건 + 상조 10건 기본 이미지 배정 (`scripts/fill_missing_images.cjs`)
+- [x] 요금제 Feature Gating 구현 (RPC 4개 + 훅 3개 + UpgradePrompt + 7파일 통합)
 
 ## DB 검증 결과 (2026-02-24 최신)
 - facilities: 2,139건 (funeral_home:1042, cemetery:585, columbarium:320, natural_burial:118, pet_funeral:69, sea_burial:5)

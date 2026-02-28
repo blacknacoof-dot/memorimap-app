@@ -160,6 +160,19 @@ const App: React.FC = () => {
   // Handlers
   const handleLoginClick = () => { setIsMenuOpen(false); setShowLoginModal(true); };
   const handleLogout = async () => { await signOut(); setViewState(ViewState.MAP); showToast("로그아웃 되었습니다.", 'info'); };
+  const handleBottomNavChange = (view: ViewState) => {
+    setSelectedFacility(null);
+    setShowComparison(false);
+    setSelectedFuneralCompany(null);
+    setShowSangjoAIConsult(false);
+    setShowSangjoContract(false);
+    setShowSangjoComparison(false);
+    setAiChatFacility(null);
+    setInitialChatIntent(null);
+    setIsBooking(false);
+    setIsMenuOpen(false);
+    setViewState(view);
+  };
   const handleViewOnMap = () => {
     if (selectedFacility) {
       setTargetMapCenter([selectedFacility.lat || 0, selectedFacility.lng || 0]);
@@ -269,7 +282,7 @@ const App: React.FC = () => {
             </div>
 
             {/* Bottom Navigation */}
-            <BottomNav viewState={viewState} setViewState={setViewState} />
+            <BottomNav viewState={viewState} setViewState={handleBottomNavChange} />
 
             {/* Toast */}
             {toast && (
