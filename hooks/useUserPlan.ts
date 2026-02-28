@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabaseClient';
+import { getAuthClient } from '@/lib/supabaseClient';
 import { useAuth, useSession } from '../lib/auth';
 import type { UserPlanInfo } from '../types/subscription';
 
@@ -25,15 +25,10 @@ export function useUserPlan() {
   const query = useQuery({
     queryKey: ['user-plan'],
     queryFn: async (): Promise<UserPlanInfo> => {
-      // 세션 재확인 — SDK 내부 토큰 만료 대비
-      const { data: { session: freshSession } } = await supabase.auth.getSession();
-      if (!freshSession?.access_token) {
-        return FREE_PLAN_DEFAULT;
-      }
+      const client = await getAuthClient(session, { strict: true });
 
-      const { data, error } = await supabase.rpc('get_user_plan_info');
+      const { data, error } = await client.rpc('get_user_plan_info');
       if (error) {
-        // 400/401 등 인증 관련 에러 시 기본값 반환 (콘솔 에러 방지)
         if (error.code === 'PGRST301' || error.message?.includes('Not authenticated')) {
           return FREE_PLAN_DEFAULT;
         }

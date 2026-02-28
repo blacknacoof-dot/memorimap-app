@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { getAuthClient } from '@/lib/supabaseClient';
+import { useSession } from '@/lib/auth';
 
 export interface Notice {
     id: string;
@@ -10,49 +11,45 @@ export interface Notice {
     created_at: string;
 }
 
+interface NoticeRow {
+    id: string;
+    title: string;
+    content: string;
+    target_audience?: string;
+    category?: string;
+    is_published?: boolean;
+    created_at: string;
+    [key: string]: unknown;
+}
+
+function mapNoticeRow(item: NoticeRow): Notice {
+    return {
+        id: item.id,
+        title: item.title,
+        content: item.content,
+        target_audience: (item.target_audience || item.category || 'all') as Notice['target_audience'],
+        is_published: item.is_published !== undefined ? item.is_published : true,
+        created_at: item.created_at,
+    };
+}
+
 export function useNotices() {
     const [notices, setNotices] = useState<Notice[]>([]);
     const [loading, setLoading] = useState(true);
+    const { session } = useSession();
 
     const fetchNotices = async () => {
         setLoading(true);
         try {
-            // Trying 'admin_notices' table based on SQL file, but fields might mismatch.
-            // Component expects 'target_audience', 'is_published'.
-            // If table lacks them, this will error. 
-            // We'll perform a soft select or try to adapt.
-            // For now, write strictly what component expects.
-            const { data, error } = await supabase
-                .from('notices') // [Fix] Changed from admin_notices
+            const client = await getAuthClient(session, { strict: true });
+            const { data, error } = await client
+                .from('notices')
                 .select('*')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-
-            // [Fix] Map fields if DB uses different names than frontend expects
-            interface NoticeRow {
-                id: string;
-                title: string;
-                content: string;
-                target_audience?: string;
-                category?: string;
-                is_published?: boolean;
-                created_at: string;
-                [key: string]: unknown;
-            }
-            const mappedData: Notice[] = ((data || []) as NoticeRow[]).map(item => ({
-                id: item.id,
-                title: item.title,
-                content: item.content,
-                target_audience: (item.target_audience || item.category || 'all') as Notice['target_audience'],
-                is_published: item.is_published !== undefined ? item.is_published : true,
-                created_at: item.created_at
-            }));
-
-            setNotices(mappedData);
-        } catch (error) {
-            console.error('Fetch notices failed:', error);
-            // Fallback for safety
+            setNotices(((data || []) as NoticeRow[]).map(mapNoticeRow));
+        } catch {
             setNotices([]);
         } finally {
             setLoading(false);
@@ -60,36 +57,22 @@ export function useNotices() {
     };
 
     const create = async (notice: Omit<Notice, 'id' | 'created_at'>) => {
-        const { error } = await supabase
-            .from('notices') // [Fix] Changed from admin_notices
-            .insert([{
-                ...notice,
-                // Optional: Map fields if DB schema is different, e.g. 
-                // category: notice.target_audience
-            }]);
-
+        const client = await getAuthClient(session, { strict: true });
+        const { error } = await client.from('notices').insert([{ ...notice }]);
         if (error) throw error;
         await fetchNotices();
     };
 
     const remove = async (id: string) => {
-        const { error } = await supabase
-            .from('notices') // [Fix] Changed from admin_notices
-            .delete()
-            .eq('id', id);
-
+        const client = await getAuthClient(session, { strict: true });
+        const { error } = await client.from('notices').delete().eq('id', id);
         if (error) throw error;
         await fetchNotices();
     };
 
     useEffect(() => {
-        fetchNotices();
-    }, []);
+        if (session) fetchNotices();
+    }, [session]);
 
-    return {
-        data: notices,
-        loading,
-        create,
-        remove
-    };
+    return { data: notices, loading, create, remove };
 }
