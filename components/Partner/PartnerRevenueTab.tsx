@@ -15,15 +15,14 @@ interface Props {
     reservations: Reservation[];
     subscription: Subscription | null;
     payments: Payment[];
-    facilityId: string | null;
-    partnerId: string;
+    facilityId: string; // facilities.id UUID
     showPlanSelector: boolean;
     setShowPlanSelector: (v: boolean) => void;
 }
 
 export const PartnerRevenueTab: React.FC<Props> = ({
     consultations, reservations, subscription, payments,
-    facilityId, partnerId, showPlanSelector, setShowPlanSelector
+    facilityId, showPlanSelector, setShowPlanSelector
 }) => {
     return (
         <div className="space-y-6">
@@ -43,7 +42,7 @@ export const PartnerRevenueTab: React.FC<Props> = ({
                         <SubscriptionPlans
                             type="sangjo"
                             currentPlan={subscription?.plan_id}
-                            facilityId={facilityId || partnerId}
+                            facilityId={facilityId}
                             onSelectPlan={(planId) => {
                                 toast.success(`${planId} 플랜 신청이 접수되었습니다.`);
                                 setShowPlanSelector(false);

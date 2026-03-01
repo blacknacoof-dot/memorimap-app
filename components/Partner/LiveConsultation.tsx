@@ -11,10 +11,10 @@ import { PartnerConversation } from '../../types';
 import { confirmAsync } from '../../src/components/common/ConfirmModal';
 
 interface LiveConsultationProps {
-    partnerId: string;
+    facilityId: string; // facilities.id UUID
 }
 
-export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId }) => {
+export const LiveConsultation: React.FC<LiveConsultationProps> = ({ facilityId }) => {
     const [conversations, setConversations] = useState<PartnerConversation[]>([]);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [input, setInput] = useState('');
@@ -26,19 +26,19 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
         const { data } = await client
             .from('partner_conversations')
             .select('*')
-            .eq('partner_id', partnerId)
+            .eq('partner_id', facilityId)
             .order('last_message_at', { ascending: false });
         if (data) setConversations(data as PartnerConversation[]);
     };
 
     const setupRealtime = () => {
         const channel = supabase
-            .channel(`partner-live-${partnerId}`)
+            .channel(`partner-live-${facilityId}`)
             .on('postgres_changes', {
                 event: '*',
                 schema: 'public',
                 table: 'partner_conversations',
-                filter: `partner_id=eq.${partnerId}`
+                filter: `partner_id=eq.${facilityId}`
             }, (payload) => {
                 const updated = payload.new as PartnerConversation;
                 setConversations(prev => {
@@ -63,7 +63,7 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
         void loadConversations();
         const sub = setupRealtime();
         return () => { sub(); };
-    }, [partnerId]);
+    }, [facilityId]);
 
     useEffect(() => {
         if (scrollRef.current) {

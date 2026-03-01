@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { confirmAsync } from '../../src/components/common/ConfirmModal';
 
 interface OperationsManagementProps {
-    partnerId: string;
+    facilityId: string; // facilities.id UUID
 }
 
 interface NewOperationForm {
@@ -28,7 +28,7 @@ const EMPTY_FORM: NewOperationForm = {
     notes: '',
 };
 
-export const OperationsManagement: React.FC<OperationsManagementProps> = ({ partnerId }) => {
+export const OperationsManagement: React.FC<OperationsManagementProps> = ({ facilityId }) => {
     const [operations, setOperations] = useState<PartnerOperation[]>([]);
     const [loading, setLoading] = useState(true);
     const [showNewModal, setShowNewModal] = useState(false);
@@ -43,7 +43,7 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
         const { data } = await client
             .from('partner_operations')
             .select('*')
-            .eq('partner_id', partnerId)
+            .eq('partner_id', facilityId)
             .order('created_at', { ascending: false });
         if (data) setOperations(data as PartnerOperation[]);
         setLoading(false);
@@ -51,12 +51,12 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
 
     const setupRealtime = () => {
         const channel = supabase
-            .channel(`partner-ops-${partnerId}`)
+            .channel(`partner-ops-${facilityId}`)
             .on('postgres_changes', {
                 event: '*',
                 schema: 'public',
                 table: 'partner_operations',
-                filter: `partner_id=eq.${partnerId}`
+                filter: `partner_id=eq.${facilityId}`
             }, () => {
                 loadOperations();
             })
@@ -72,7 +72,7 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
         void loadOperations();
         const sub = setupRealtime();
         return () => { sub(); };
-    }, [partnerId]);
+    }, [facilityId]);
 
     const handleMove = async (id: string, nextStage: PartnerOperation['operation_stage']) => {
         const confirmed = await confirmAsync(`운영 단계를 '${nextStage}'(으)로 변경하시겠습니까?`, '단계 변경');
@@ -99,7 +99,7 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
         try {
             const client = await getAuthClient(session, { strict: true });
             const { error } = await client.from('partner_operations').insert({
-                partner_id: partnerId,
+                partner_id: facilityId,
                 operation_stage: 'pending',
                 deceased_name: form.deceased_name.trim(),
                 funeral_director: form.funeral_director.trim() || null,

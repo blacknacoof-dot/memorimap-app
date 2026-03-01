@@ -353,20 +353,19 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                                 session={session}
                             />
                         )}
-                        {activeTab === 'revenue' && (
+                        {activeTab === 'revenue' && facilityId && (
                             <PartnerRevenueTab
                                 consultations={consultations}
                                 reservations={reservations}
                                 subscription={subscription}
                                 payments={payments}
                                 facilityId={facilityId}
-                                partnerId={partnerId}
                                 showPlanSelector={showPlanSelector}
                                 setShowPlanSelector={setShowPlanSelector}
                             />
                         )}
-                        {activeTab === 'chat' && <LiveConsultation partnerId={partnerId} />}
-                        {activeTab === 'ops' && <OperationsManagement partnerId={partnerId} />}
+                        {activeTab === 'chat' && facilityId && <LiveConsultation facilityId={facilityId} />}
+                        {activeTab === 'ops' && facilityId && <OperationsManagement facilityId={facilityId} />}
                         {activeTab === 'settings' && (
                             facilityId ? (
                                 <FacilityInfoEditor facilityId={facilityId} />
