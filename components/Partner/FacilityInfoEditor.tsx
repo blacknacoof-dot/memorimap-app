@@ -222,19 +222,38 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
             if (!await confirmAsync(`삭제 표시된 패키지 ${toDelete.length}건이 영구 삭제됩니다. 계속하시겠습니까?`, '패키지 저장')) return;
         }
         setSaving(true);
-        const client = await getAuthClient(session, { strict: true });
+        try {
+            const client = await getAuthClient(session, { strict: true });
 
-        // 삭제
-        for (const p of toDelete) {
-            await client.from('facility_packages').delete().eq('id', p.id!);
-        }
+            // 삭제
+            for (const p of toDelete) {
+                const { error: delErr } = await client.from('facility_packages').delete().eq('id', p.id!);
+                if (delErr) throw delErr;
+            }
 
-        // 신규
-        const toInsert = packages.filter(p => p._isNew && !p._isDeleted && p.name.trim());
-        if (toInsert.length > 0) {
-            const { error } = await client.from('facility_packages').insert(
-                toInsert.map(p => ({
-                    facility_id: facilityId,
+            // 신규
+            const toInsert = packages.filter(p => p._isNew && !p._isDeleted && p.name.trim());
+            if (toInsert.length > 0) {
+                const { error } = await client.from('facility_packages').insert(
+                    toInsert.map(p => ({
+                        facility_id: facilityId,
+                        name: p.name,
+                        category: p.category || null,
+                        price: p.price,
+                        price_label: p.price_label || null,
+                        description: p.description || null,
+                        included_items: p.included_items.length > 0 ? p.included_items : null,
+                        sort_order: p.sort_order,
+                        is_active: p.is_active,
+                    }))
+                );
+                if (error) throw error;
+            }
+
+            // 수정 (기존 항목)
+            const toUpdate = packages.filter(p => !p._isNew && !p._isDeleted && p.id);
+            for (const p of toUpdate) {
+                const { error: updErr } = await client.from('facility_packages').update({
                     name: p.name,
                     category: p.category || null,
                     price: p.price,
@@ -243,33 +262,18 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
                     included_items: p.included_items.length > 0 ? p.included_items : null,
                     sort_order: p.sort_order,
                     is_active: p.is_active,
-                }))
-            );
-            if (error) {
-                toast.error('패키지 추가 실패: ' + error.message);
-                setSaving(false);
-                return;
+                }).eq('id', p.id!);
+                if (updErr) throw updErr;
             }
-        }
 
-        // 수정 (기존 항목)
-        const toUpdate = packages.filter(p => !p._isNew && !p._isDeleted && p.id);
-        for (const p of toUpdate) {
-            await client.from('facility_packages').update({
-                name: p.name,
-                category: p.category || null,
-                price: p.price,
-                price_label: p.price_label || null,
-                description: p.description || null,
-                included_items: p.included_items.length > 0 ? p.included_items : null,
-                sort_order: p.sort_order,
-                is_active: p.is_active,
-            }).eq('id', p.id!);
+            toast.success('패키지가 저장되었습니다.');
+            await loadData();
+        } catch (err) {
+            console.error('패키지 저장 오류:', err);
+            toast.error('패키지 저장에 실패했습니다.');
+        } finally {
+            setSaving(false);
         }
-
-        toast.success('패키지가 저장되었습니다.');
-        await loadData(); // 리로드
-        setSaving(false);
     };
 
     if (loading) {

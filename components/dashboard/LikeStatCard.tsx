@@ -1,7 +1,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { Heart } from 'lucide-react';
-import { supabase } from '@/lib/supabaseClient';
+import { getAuthClient } from '@/lib/supabaseClient';
+import { useSession } from '@/lib/auth';
 
 interface LikeStatProps {
     facilityId: string;
@@ -10,11 +11,13 @@ interface LikeStatProps {
 export function LikeStatCard({ facilityId }: LikeStatProps) {
     const [likeCount, setLikeCount] = useState<number>(0);
     const [loading, setLoading] = useState(true);
+    const { session } = useSession();
 
     useEffect(() => {
         const fetchLikeCount = async () => {
             try {
-                const { count, error } = await supabase
+                const client = await getAuthClient(session, { strict: true });
+                const { count, error } = await client
                     .from('user_likes')
                     .select('*', { count: 'exact', head: true })
                     .eq('target_id', facilityId);
@@ -28,8 +31,8 @@ export function LikeStatCard({ facilityId }: LikeStatProps) {
             }
         };
 
-        fetchLikeCount();
-    }, [facilityId]);
+        if (session) fetchLikeCount();
+    }, [facilityId, session]);
 
     return (
         <div className="flex-1 rounded-xl p-3 border bg-white/10 border-white/10">

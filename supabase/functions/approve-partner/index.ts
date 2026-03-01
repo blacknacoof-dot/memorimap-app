@@ -173,13 +173,12 @@ serve(async (req) => {
 
             // Direct log insert
             await supabaseAdmin.from('audit_logs').insert([{
-                actor_id: user.id || 'SYSTEM',
-                actor_email: user.email,
+                user_id: user.id || 'SYSTEM',
                 action: 'REJECT_PARTNER',
-                action_category: 'ADMIN_ACTION',
-                target_resource: 'partner_inquiries',
-                target_id: inquiryId,
-                details: {
+                resource_type: 'partner_inquiries',
+                resource_id: inquiryId,
+                metadata: {
+                    actor_email: user.email,
                     reason: rejectionReason || '운영 정책 부적합',
                     bulk: true,
                     company_name: v_inquiry.company_name

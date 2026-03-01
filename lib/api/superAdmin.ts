@@ -42,12 +42,12 @@ export const updateUserRole = async (userId: string, newRole: string, client: Su
 
     const { error: auditError } = await client.from('audit_logs').insert([{
         action: 'UPDATE_ROLE',
-        target_resource: 'profiles',
-        target_id: userId,
-        details: { new_role: newRole },
-        actor_id: actorId || 'system'
+        resource_type: 'profiles',
+        resource_id: userId,
+        metadata: { new_role: newRole },
+        user_id: actorId || 'system'
     }]);
-    if (auditError) console.warn('[updateUserRole] audit_log insert failed:', auditError.message);
+    if (auditError) console.error('[updateUserRole] audit_log insert failed:', auditError.message);
 };
 
 // --- 시설 통합 관리 API ---

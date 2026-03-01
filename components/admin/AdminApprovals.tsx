@@ -42,10 +42,15 @@ export const AdminApprovals: React.FC = () => {
             title: '입점 승인 확인',
             message: `${name} 업체의 입점을 승인하시겠습니까?`,
             onConfirm: async () => {
-                const client = await getAuthClient(session, { strict: true });
-                await approveFacility(id, client);
-                toast.success('승인되었습니다.');
-                loadData();
+                try {
+                    const client = await getAuthClient(session, { strict: true });
+                    await approveFacility(id, client);
+                    toast.success('승인되었습니다.');
+                    loadData();
+                } catch (err) {
+                    console.error('입점 승인 실패:', err);
+                    toast.error('승인 처리에 실패했습니다.');
+                }
             }
         });
     };
@@ -55,10 +60,15 @@ export const AdminApprovals: React.FC = () => {
             title: '입점 반려 확인',
             message: `${name} 업체의 입점을 거절(삭제)하시겠습니까?`,
             onConfirm: async () => {
-                const client = await getAuthClient(session, { strict: true });
-                await rejectFacility(id, undefined, client);
-                toast.success('거절되었습니다.');
-                loadData();
+                try {
+                    const client = await getAuthClient(session, { strict: true });
+                    await rejectFacility(id, undefined, client);
+                    toast.success('거절되었습니다.');
+                    loadData();
+                } catch (err) {
+                    console.error('입점 거절 실패:', err);
+                    toast.error('거절 처리에 실패했습니다.');
+                }
             }
         });
     };
