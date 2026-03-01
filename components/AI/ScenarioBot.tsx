@@ -6,13 +6,24 @@ import {
     Siren, ClipboardList, CreditCard, Calendar
 } from 'lucide-react';
 import { supabase, getAuthClient } from '../../lib/supabaseClient';
-import { Partner, AiConsultationStatus, Message as DbMessage } from '../../types';
+import { AiConsultationStatus } from '../../types';
 import { aiConsultationService } from '../../lib/api/aiConsultation';
 import { useUser, useClerk, useSession } from '../../lib/auth';
 
+interface FacilityInfo {
+    name: string;
+    description?: string;
+    phone?: string;
+    ai_context?: {
+        welcome_message?: string;
+        tone?: string;
+        emphasis?: string[];
+        forbidden?: string[];
+    };
+}
 
 interface ScenarioBotProps {
-    partnerId: string;
+    facilityId: string; // facilities.id UUID
     onClose: () => void;
 }
 
@@ -23,9 +34,9 @@ interface Message {
     type?: 'text' | 'pricing' | 'location' | 'contact';
 }
 
-export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) => {
+export const ScenarioBot: React.FC<ScenarioBotProps> = ({ facilityId, onClose }) => {
     const [messages, setMessages] = useState<Message[]>([]);
-    const [partner, setPartner] = useState<Partner | null>(null);
+    const [facility, setFacility] = useState<FacilityInfo | null>(null);
     const [loading, setLoading] = useState(true);
     const [conversationId, setConversationId] = useState<string | null>(null);
     const [isHijacked, setIsHijacked] = useState(false);
@@ -39,7 +50,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
 
     useEffect(() => {
         initBot();
-    }, [partnerId]);
+    }, [facilityId]);
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -62,42 +73,55 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
         setLoading(true);
         setError(null);
         try {
-            const { data: partnerData, error: partnerError } = await supabase.from('partners').select('*').eq('id', partnerId).single();
-            if (partnerError) throw partnerError;
+            const initClient = await getAuthClient(session);
+            const { data: facilityData, error: fetchError } = await initClient
+                .from('facilities')
+                .select('name, description, phone, ai_context')
+                .eq('id', facilityId)
+                .single();
+            if (fetchError) throw fetchError;
 
-            setPartner(partnerData as Partner);
+            const aiCtx = typeof facilityData.ai_context === 'string'
+                ? JSON.parse(facilityData.ai_context)
+                : (facilityData.ai_context || {});
+            const info: FacilityInfo = {
+                name: facilityData.name,
+                description: facilityData.description,
+                phone: facilityData.phone,
+                ai_context: aiCtx,
+            };
+            setFacility(info);
 
             // 세션 복구 시도 (SessionStorage for security)
-            const savedSessionId = sessionStorage.getItem(`conv_id_${partnerId}`);
-            let session = null;
+            const savedSessionId = sessionStorage.getItem(`conv_id_${facilityId}`);
+            let prevSession = null;
 
             if (savedSessionId) {
                 setIsSyncing(true);
-                const client = await getAuthClient(session);
-                session = await aiConsultationService.getConsultation(client, savedSessionId);
+                const restoreClient = await getAuthClient(session);
+                prevSession = await aiConsultationService.getConsultation(restoreClient, savedSessionId);
 
                 // [Hardening] 소유권 검증 - 본인의 세션이 아니면 복구 거부
-                if (session && user && session.user_id !== user.id) {
+                if (prevSession && user && prevSession.user_id !== user.id) {
                     console.warn('[Security] Session ownership mismatch. Discarding old session.');
-                    session = null;
-                    sessionStorage.removeItem(`conv_id_${partnerId}`);
+                    prevSession = null;
+                    sessionStorage.removeItem(`conv_id_${facilityId}`);
                 }
                 setIsSyncing(false);
             }
 
-            if (session) {
-                setConversationId(session.conversation_id);
-                setMessages(session.messages as Message[]);
-                if (session.status === AiConsultationStatus.AGENT_CONNECTED) {
+            if (prevSession) {
+                setConversationId(prevSession.conversation_id);
+                setMessages(prevSession.messages as Message[]);
+                if (prevSession.status === AiConsultationStatus.AGENT_CONNECTED) {
                     setIsHijacked(true);
                 }
-                // listenToEvents는 useEffect에서 처리
             } else {
                 // [Security] 비로그인 사용자 체크 (로그인 사용자 전용)
                 if (!isSignedIn) {
                     const authRequiredMsg: Message = {
                         role: 'assistant',
-                        content: `안녕하세요, ${partnerData.name} AI 상담사입니다.\n\nAI 상담 서비스는 **로그인 후 이용 가능**합니다.\n로그인하시면 1:1 맞춤 상담과 혜택 안내를 받으실 수 있습니다.`,
+                        content: `안녕하세요, ${info.name} AI 상담사입니다.\n\nAI 상담 서비스는 **로그인 후 이용 가능**합니다.\n로그인하시면 1:1 맞춤 상담과 혜택 안내를 받으실 수 있습니다.`,
                         options: [
                             { label: '로그인하고 상담 시작하기', action: 'go_login', icon: <User className="text-[#006442] w-5 h-5" /> }
                         ]
@@ -108,7 +132,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
                 }
 
                 // 신규 세션 시작
-                const welcomeMsg = partnerData.ai_context?.welcome_message || `안녕하세요, ${partnerData.name}입니다.\n\n소중한 시간에 방문해 주셔서 감사합니다.\n무엇을 도와드릴까요?`;
+                const welcomeMsg = info.ai_context?.welcome_message || `안녕하세요, ${info.name}입니다.\n\n소중한 시간에 방문해 주셔서 감사합니다.\n무엇을 도와드릴까요?`;
                 const initialMessages: Message[] = [
                     {
                         role: 'assistant',
@@ -123,27 +147,25 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
                 ];
                 setMessages(initialMessages);
 
-                const newSessionId = `conv_${partnerId}_${Date.now()}`;
+                const newSessionId = `conv_${facilityId}_${Date.now()}`;
                 const startClient = await getAuthClient(session, { strict: true });
                 const newSession = await aiConsultationService.startOrResumeConsultation(startClient, {
                     conversationId: newSessionId,
                     userId: user?.id,
-                    facilityId: partnerId,
-                    facilityName: partnerData.name,
+                    facilityId: facilityId,
+                    facilityName: info.name,
                     category: 'funeral',
                     initialMessage: initialMessages[0]
                 });
 
                 if (newSession) {
                     setConversationId(newSession.conversation_id);
-                    sessionStorage.setItem(`conv_id_${partnerId}`, newSession.conversation_id);
-                    // listenToEvents는 useEffect에서 처리
+                    sessionStorage.setItem(`conv_id_${facilityId}`, newSession.conversation_id);
                 }
             }
         } catch (err: unknown) {
             console.error('Bot init failed:', err);
             if (retryCount < 2) {
-                // Retrying init
                 setTimeout(() => initBot(retryCount + 1), 1000);
             } else {
                 setError('상담 내역을 불러오지 못했습니다. 네트워크 상태를 확인해 주세요.');
@@ -205,7 +227,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
             case 'show_pricing':
                 assistantMsg = {
                     role: 'assistant',
-                    content: partner?.ai_context?.prices ? `현재 저희 서비스 가격 정보입니다:\n${partner.ai_context.prices}` : '현재 준비된 정찰 가격표가 없습니다. 상담사를 통해 자세한 견적을 받아보시겠어요?',
+                    content: '현재 준비된 정찰 가격표가 없습니다. 상담사를 통해 자세한 견적을 받아보시겠어요?',
                     options: [
                         { label: '자세한 견적 요청', action: 'agent_request', icon: <Phone className="text-green-600 w-5 h-5" /> },
                         { label: '메인 메뉴로', action: 'restart' }
@@ -215,7 +237,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
             case 'show_info':
                 assistantMsg = {
                     role: 'assistant',
-                    content: partner?.ai_context?.description || `${partner?.name}은 유가족분들의 마음을 다해 정직하고 품격 있는 장례 서비스를 제공합니다.`,
+                    content: facility?.description || `${facility?.name}은 유가족분들의 마음을 다해 정직하고 품격 있는 장례 서비스를 제공합니다.`,
                     options: [
                         { label: '상세 서비스 보기', action: 'agent_request', icon: <ChevronRight className="w-5 h-5" /> },
                         { label: '메인 메뉴로', action: 'restart' }
@@ -298,7 +320,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ partnerId, onClose }) 
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
-                                <h3 className="font-bold text-base tracking-tight text-white">{partner?.name || 'Loading...'}</h3>
+                                <h3 className="font-bold text-base tracking-tight text-white">{facility?.name || 'Loading...'}</h3>
                             </div>
                             <div className="flex items-center gap-1.5 opacity-90">
                                 <span className="text-[10px] font-medium tracking-wide text-white">AI 상담 · 24시간 운영</span>
