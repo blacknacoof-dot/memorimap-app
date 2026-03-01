@@ -2,21 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { fetchAuditLogs, AuditLog } from '../../lib/api/superAdmin';
 import { History, User, ExternalLink, Clock } from 'lucide-react';
 import { toast } from 'sonner';
-import { getAuthClient } from '../../lib/supabaseClient';
-import { useSession } from '../../lib/auth';
+import { useSuperAdminClient } from './SuperAdminGuard';
 
 export const AdminLogsView: React.FC = () => {
     const [logs, setLogs] = useState<AuditLog[]>([]);
     const [loading, setLoading] = useState(true);
-    const { session } = useSession();
+    const client = useSuperAdminClient();
 
     const loadLogs = async () => {
         setLoading(true);
         try {
-            const client = await getAuthClient(session, { strict: true });
             const data = await fetchAuditLogs(client);
             setLogs(data);
-        } catch (error) {
+        } catch {
             toast.error('활동 로그 로딩 실패');
         } finally {
             setLoading(false);
@@ -24,12 +22,8 @@ export const AdminLogsView: React.FC = () => {
     };
 
     useEffect(() => {
-        if (!session) {
-            setLoading(false);
-            return;
-        }
         loadLogs();
-    }, [session]);
+    }, [client]);
 
     const getActionLabel = (action: string) => {
         switch (action) {
@@ -73,8 +67,8 @@ export const AdminLogsView: React.FC = () => {
                                             {getActionLabel(log.action)}
                                         </span>
                                         <span className="text-sm font-medium text-gray-900">
-                                            {log.details?.reason ? `반려 사유: ${log.details.reason}` :
-                                                log.details?.facility_id ? `시설 생성됨 (ID: ${String(log.details.facility_id).slice(0, 8)}...)` :
+                                            {log.metadata?.reason ? `반려 사유: ${log.metadata.reason}` :
+                                                log.metadata?.facility_id ? `시설 생성됨 (ID: ${String(log.metadata.facility_id).slice(0, 8)}...)` :
                                                     ''}
                                         </span>
                                     </div>
@@ -87,11 +81,11 @@ export const AdminLogsView: React.FC = () => {
                                 <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
                                     <div className="flex items-center gap-1">
                                         <User size={12} className="text-gray-400" />
-                                        <span className="text-gray-700">{log.actor_email || log.actor_id || '시스템'}</span>
+                                        <span className="text-gray-700">{log.user_id || '시스템'}</span>
                                     </div>
                                     <div className="flex items-center gap-1">
                                         <ExternalLink size={12} className="text-gray-400" />
-                                        <span>Target: {log.target_resource} ({log.target_id?.slice(0, 8) || 'N/A'})</span>
+                                        <span>Target: {log.resource_type} ({log.resource_id?.slice(0, 8) || 'N/A'})</span>
                                     </div>
                                 </div>
                             </div>

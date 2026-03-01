@@ -3,8 +3,7 @@ import { toast } from 'sonner';
 import { getPendingFacilities, approveFacility, rejectFacility } from '../../lib/queries';
 import { Loader2, Check, X, FileText, Building2 } from 'lucide-react';
 import { useConfirmModal } from '../../src/components/common/ConfirmModal';
-import { useSession } from '@/lib/auth';
-import { getAuthClient } from '@/lib/supabaseClient';
+import { useSuperAdminClient } from '../SuperAdmin/SuperAdminGuard';
 
 interface PendingFacilityItem {
     id: string;
@@ -21,21 +20,25 @@ export const AdminApprovals: React.FC = () => {
     const [facilities, setFacilities] = useState<PendingFacilityItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [refreshKey, setRefreshKey] = useState(0);
 
     const confirmModal = useConfirmModal();
-    const { session } = useSession();
-
-    const loadData = async () => {
-        setIsLoading(true);
-        const data = await getPendingFacilities();
-        setFacilities(data as PendingFacilityItem[]);
-        setIsLoading(false);
-    };
+    const client = useSuperAdminClient();
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        void loadData();
-    }, []);
+        let cancelled = false;
+        (async () => {
+            setIsLoading(true);
+            const data = await getPendingFacilities();
+            if (!cancelled) {
+                setFacilities(data as PendingFacilityItem[]);
+                setIsLoading(false);
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [refreshKey]);
+
+    const reloadData = () => setRefreshKey(k => k + 1);
 
     const handleApprove = (id: string, name: string) => {
         confirmModal.open({
@@ -43,12 +46,10 @@ export const AdminApprovals: React.FC = () => {
             message: `${name} 업체의 입점을 승인하시겠습니까?`,
             onConfirm: async () => {
                 try {
-                    const client = await getAuthClient(session, { strict: true });
                     await approveFacility(id, client);
                     toast.success('승인되었습니다.');
-                    loadData();
-                } catch (err) {
-                    console.error('입점 승인 실패:', err);
+                    reloadData();
+                } catch {
                     toast.error('승인 처리에 실패했습니다.');
                 }
             }
@@ -61,12 +62,10 @@ export const AdminApprovals: React.FC = () => {
             message: `${name} 업체의 입점을 거절(삭제)하시겠습니까?`,
             onConfirm: async () => {
                 try {
-                    const client = await getAuthClient(session, { strict: true });
                     await rejectFacility(id, undefined, client);
                     toast.success('거절되었습니다.');
-                    loadData();
-                } catch (err) {
-                    console.error('입점 거절 실패:', err);
+                    reloadData();
+                } catch {
                     toast.error('거절 처리에 실패했습니다.');
                 }
             }

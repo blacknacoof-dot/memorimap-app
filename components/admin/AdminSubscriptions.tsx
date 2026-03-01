@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getAllSubscriptions } from '../../lib/queries';
-import { supabase, getAuthClient } from '../../lib/supabaseClient';
 import { Loader2, Crown, TrendingUp } from 'lucide-react';
+import { useSuperAdminClient } from '../SuperAdmin/SuperAdminGuard';
 
 interface SubscriptionItem {
     id: string;
@@ -15,17 +15,16 @@ interface SubscriptionItem {
 export const AdminSubscriptions: React.FC = () => {
     const [subs, setSubs] = useState<SubscriptionItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const client = useSuperAdminClient();
 
     useEffect(() => {
         const load = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            const authClient = await getAuthClient(session, { strict: true });
-            const data = await getAllSubscriptions(authClient);
+            const data = await getAllSubscriptions(client);
             setSubs(data as SubscriptionItem[]);
             setIsLoading(false);
         };
         load();
-    }, []);
+    }, [client]);
 
     const totalRevenue = subs.reduce((sum: number, s: SubscriptionItem) => sum + (s.price || 0), 0);
 

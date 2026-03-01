@@ -1,21 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { MonitorStop, Percent, History } from 'lucide-react';
-import { useSession } from '../../lib/auth';
-import { getAuthClient } from '../../lib/supabaseClient';
 import { updateSystemSetting } from '../../lib/api/superAdmin';
 import { toast } from 'sonner';
 import { confirmAsync } from '../../src/components/common/ConfirmModal';
+import { useSuperAdminClient } from './SuperAdminGuard';
 
 export const SystemSettings = () => {
     const [commission, setCommission] = useState('3.5');
-    const { session } = useSession();
+    const [isSaving, setIsSaving] = useState(false);
+    const client = useSuperAdminClient();
 
     // DB에서 수수료율 로드
     useEffect(() => {
-        if (!session) return;
         const load = async () => {
             try {
-                const client = await getAuthClient(session, { strict: true });
                 const { data } = await client
                     .from('system_settings')
                     .select('value')
@@ -25,15 +23,18 @@ export const SystemSettings = () => {
             } catch { /* 기본값 유지 */ }
         };
         load();
-    }, [session]);
+    }, [client]);
 
     const handleSaveSystemSettings = async () => {
+        if (isSaving) return;
+        setIsSaving(true);
         try {
-            const client = await getAuthClient(session, { strict: true });
             await updateSystemSetting('commission_rate', commission, client);
             toast.success('시스템 설정이 저장되었습니다.');
-        } catch (e) {
+        } catch {
             toast.error('설정 저장 중 오류가 발생했습니다.');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -59,7 +60,6 @@ export const SystemSettings = () => {
                                 return;
                             }
                             try {
-                                const client = await getAuthClient(session, { strict: true });
                                 await updateSystemSetting('maintenance_mode', checked, client);
                                 toast.success(`점검 모드가 ${label} 되었습니다.`);
                             } catch {
@@ -99,9 +99,10 @@ export const SystemSettings = () => {
                             if (!await confirmAsync(`수수료율을 ${commission}%로 변경하시겠습니까?`)) return;
                             handleSaveSystemSettings();
                         }}
-                        className="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                        disabled={isSaving}
+                        className={`w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                        설정 저장
+                        {isSaving ? '저장 중...' : '설정 저장'}
                     </button>
                 </div>
             </div>

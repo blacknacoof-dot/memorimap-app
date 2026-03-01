@@ -1,34 +1,33 @@
 import React, { useState } from 'react';
-import { useSession } from '../../lib/auth';
-import { getAuthClient } from '../../lib/supabaseClient';
 import { useSubscriptions } from '../../hooks/useFinancials';
 import { updateSubscriptionBillingDate } from '../../lib/api/superAdmin';
 import { promptAsync } from '../../src/components/common/ConfirmModal';
 import { toast } from 'sonner';
 import { Building2, CheckCircle2, AlertCircle, Search, Calendar } from 'lucide-react';
-
-interface SubscriptionManagerProps {
-  onManage: (facilityName: string) => void;
-}
+import { useSuperAdminClient } from './SuperAdminGuard';
 
 export const SubscriptionManager = ({ onManage }: { onManage: (facilityName: string) => void }) => {
     const { data: facilities, loading } = useSubscriptions();
-    const { session } = useSession();
+    const client = useSuperAdminClient();
     const [subsSearch, setSubsSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+    const [isUpdating, setIsUpdating] = useState(false);
 
     if (loading) return <div className="p-10 text-center">로딩 중...</div>;
 
     const handleUpdateBillingDate = async (facilityId: string, current: string) => {
         const newDate = await promptAsync('새로운 재결제 예정일을 입력하세요', '재결제 예정일 변경', { defaultValue: current?.split('T')[0] || '', placeholder: 'YYYY-MM-DD' });
         if (newDate) {
+            if (isUpdating) return;
+            setIsUpdating(true);
             try {
-                const client = await getAuthClient(session, { strict: true });
                 const isoDate = new Date(newDate).toISOString();
                 await updateSubscriptionBillingDate(facilityId, isoDate, client);
                 toast.success('재결제 예정일이 업데이트되었습니다.');
-            } catch (e) {
+            } catch {
                 toast.error('날짜 형식이 올바르지 않거나 업데이트에 실패했습니다.');
+            } finally {
+                setIsUpdating(false);
             }
         }
     };

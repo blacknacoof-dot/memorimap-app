@@ -8,8 +8,7 @@ import { toast } from 'sonner';
 import { getPlatformNotices, createPlatformNotice, updatePlatformNotice, deletePlatformNotice } from '../../lib/sangjoQueries';
 import { PlatformNotice } from '../../types';
 import { confirmAsync } from '../../src/components/common/ConfirmModal';
-import { getAuthClient } from '../../lib/supabaseClient';
-import { useSession } from '../../lib/auth';
+import { useSuperAdminClient } from './SuperAdminGuard';
 
 export const NoticeManagement: React.FC = () => {
     const [notices, setNotices] = useState<PlatformNotice[]>([]);
@@ -19,23 +18,18 @@ export const NoticeManagement: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [formData, setFormData] = useState({ title: '', content: '', notice_type: 'info' as string });
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { session } = useSession();
+    const client = useSuperAdminClient();
 
     useEffect(() => {
-        if (!session) {
-            setLoading(false);
-            return;
-        }
         loadNotices();
-    }, [session]);
+    }, [client]);
 
     const loadNotices = async () => {
         setLoading(true);
         try {
-            const client = await getAuthClient(session, { strict: true });
             const data = await getPlatformNotices(undefined, client);
             setNotices(data);
-        } catch (err) {
+        } catch {
             toast.error('공지사항 로딩 실패');
         } finally {
             setLoading(false);
@@ -57,11 +51,10 @@ export const NoticeManagement: React.FC = () => {
     const handleDelete = async (notice: PlatformNotice) => {
         if (!await confirmAsync(`"${notice.title}" 공지를 삭제하시겠습니까?`)) return;
         try {
-            const client = await getAuthClient(session, { strict: true });
             await deletePlatformNotice(notice.id, client);
             setNotices(prev => prev.filter(n => n.id !== notice.id));
             toast.success('공지가 삭제되었습니다.');
-        } catch (err) {
+        } catch {
             toast.error('삭제 중 오류가 발생했습니다.');
         }
     };
@@ -74,7 +67,6 @@ export const NoticeManagement: React.FC = () => {
         if (isSubmitting) return;
         setIsSubmitting(true);
         try {
-            const client = await getAuthClient(session, { strict: true });
             if (editingNotice) {
                 await updatePlatformNotice(editingNotice.id, formData, client);
                 toast.success('공지가 수정되었습니다.');
@@ -84,7 +76,7 @@ export const NoticeManagement: React.FC = () => {
             }
             setIsModalOpen(false);
             loadNotices();
-        } catch (err) {
+        } catch {
             toast.error('저장 중 오류가 발생했습니다.');
         } finally {
             setIsSubmitting(false);

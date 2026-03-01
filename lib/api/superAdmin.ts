@@ -260,13 +260,11 @@ export const fetchLeads = async (client: SupabaseClient) => {
 // --- 관리 활동 로그 API ---
 export interface AuditLog {
     id: string;
-    actor_id: string;
-    actor_email: string | null;
+    user_id: string;
     action: string;
-    target_resource: string;
-    target_id: string;
-    details: Record<string, unknown> | null;
-    status: string;
+    resource_type: string;
+    resource_id: string;
+    metadata: Record<string, unknown> | null;
     created_at: string;
 }
 

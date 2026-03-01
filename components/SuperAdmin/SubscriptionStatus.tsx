@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getAllSubscriptions } from '../../lib/queries';
-import { getAuthClient } from '../../lib/supabaseClient';
-import { useSession } from '../../lib/auth';
 import { Search, Zap, TrendingUp } from 'lucide-react';
+import { useSuperAdminClient } from './SuperAdminGuard';
 
 interface Subscription {
     id: string;
@@ -16,21 +15,18 @@ export const SubscriptionStatus: React.FC = () => {
     const [subs, setSubs] = useState<Subscription[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-    const { session } = useSession();
+    const client = useSuperAdminClient();
 
     useEffect(() => {
-        if (!session) return;
         loadSubscriptions();
-    }, [session]);
+    }, [client]);
 
     const loadSubscriptions = async () => {
-        if (!session) return;
         setIsLoading(true);
         try {
-            const client = await getAuthClient(session, { strict: true });
             const data = await getAllSubscriptions(client);
             setSubs(data);
-        } catch (error) {
+        } catch {
             // getAllSubscriptions failed
         } finally {
             setIsLoading(false);

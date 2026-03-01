@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { getAllLeads } from '../../lib/queries';
-import { getAuthClient } from '../../lib/supabaseClient';
-import { useSession } from '../../lib/auth';
 import { Phone, MapPin, Clock } from 'lucide-react';
+import { useSuperAdminClient } from './SuperAdminGuard';
 
 interface Lead {
     id: string;
@@ -22,23 +21,17 @@ interface Lead {
 export const AdminLeadsView: React.FC = () => {
     const [leads, setLeads] = useState<Lead[]>([]);
     const [loading, setLoading] = useState(true);
-    const { session } = useSession();
+    const client = useSuperAdminClient();
 
     useEffect(() => {
-        if (!session) {
-            setLoading(false);
-            return;
-        }
         loadLeads();
-    }, [session]);
+    }, [client]);
 
     const loadLeads = async () => {
-        if (!session) return;
         try {
-            const client = await getAuthClient(session, { strict: true });
             const data = await getAllLeads(client);
             setLeads((data || []) as Lead[]);
-        } catch (error) {
+        } catch {
             toast.error('리드 목록 로딩 실패');
         } finally {
             setLoading(false);

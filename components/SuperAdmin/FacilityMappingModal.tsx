@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { XCircle, Search as SearchIcon, Building2, MapPin, PlusCircle, CheckCircle } from 'lucide-react';
-import { getAuthClient } from '../../lib/supabaseClient';
-import { useSession } from '../../lib/auth';
+import { useSuperAdminClient } from './SuperAdminGuard';
 
 interface Props {
     isOpen: boolean;
@@ -19,7 +18,7 @@ export const FacilityMappingModal: React.FC<Props> = ({ isOpen, onClose, inquiry
     const [searchResults, setSearchResults] = useState<Array<{ id: string; name: string; address: string; type: string; owner_user_id: string | null }>>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedFacility, setSelectedFacility] = useState<string | null>(null);
-    const { session } = useSession();
+    const client = useSuperAdminClient();
 
     // Initial search when modal opens
     useEffect(() => {
@@ -30,10 +29,9 @@ export const FacilityMappingModal: React.FC<Props> = ({ isOpen, onClose, inquiry
     }, [isOpen, inquiryData]);
 
     const handleSearch = async (query: string) => {
-        if (!query || !session) return;
+        if (!query) return;
         setIsLoading(true);
         try {
-            const client = await getAuthClient(session, { strict: true });
             const sanitized = query.trim().replace(/[%_\\]/g, '\\$&');
             const { data, error } = await client
                 .from('facilities')

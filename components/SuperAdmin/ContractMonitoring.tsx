@@ -7,9 +7,11 @@ import {
 import { AiConsultationStatus } from '../../types';
 import { toast } from 'sonner';
 import { useContractMonitoring } from '../../hooks/useContractMonitoring';
+import { useSuperAdminClient } from './SuperAdminGuard';
 
 export const ContractMonitoring: React.FC = () => {
-    const { contracts, aiConsultations, loading, handleJoinChat } = useContractMonitoring();
+    const client = useSuperAdminClient();
+    const { contracts, aiConsultations, loading, handleJoinChat } = useContractMonitoring(client);
     const [activeFilter, setActiveFilter] = useState<'all' | 'critical' | 'urgent' | 'normal' | 'ai_alert'>('all');
 
     const filteredShow = [

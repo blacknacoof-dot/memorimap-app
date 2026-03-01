@@ -1,33 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { useUser, useSession } from '../../lib/auth';
-import { supabase, getAuthClient } from '../../lib/supabaseClient';
+import { useUser } from '../../lib/auth';
+import { supabase } from '../../lib/supabaseClient';
 import { toast } from 'sonner';
 import { UserCog, Lock, BellRing } from 'lucide-react';
+import { useSuperAdminClient } from './SuperAdminGuard';
 
 export const AdminSettings = () => {
     const { user } = useUser();
-    const { session } = useSession();
+    const client = useSuperAdminClient();
     const [fullName, setFullName] = useState(user?.fullName || '');
     const [phone, setPhone] = useState('');
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
-        if (!user?.id || !session) return;
+        if (!user?.id) return;
         const loadPhone = async () => {
             try {
-                const client = await getAuthClient(session, { strict: true });
                 const { data } = await client.from('profiles').select('phone').eq('clerk_id', user.id).single();
                 if (data?.phone) setPhone(data.phone);
             } catch { /* ignore */ }
         };
         loadPhone();
-    }, [user?.id, session]);
+    }, [user?.id, client]);
 
     const handleSaveProfile = async () => {
         if (!user?.id) return;
         setSaving(true);
         try {
-            const client = await getAuthClient(session, { strict: true });
             const { error } = await client
                 .from('profiles')
                 .update({ full_name: fullName, phone })

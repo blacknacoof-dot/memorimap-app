@@ -1,37 +1,19 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getAuthClient } from '../lib/supabaseClient';
-import { useSession } from '../lib/auth';
 import { SangjoContract, AiConsultation, AiConsultationStatus } from '../types';
 import { aiConsultationService } from '../lib/api/aiConsultation';
 import { toast } from 'sonner';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-export function useContractMonitoring() {
+export function useContractMonitoring(client: SupabaseClient) {
     const [contracts, setContracts] = useState<SangjoContract[]>([]);
     const [aiConsultations, setAiConsultations] = useState<AiConsultation[]>([]);
     const [loading, setLoading] = useState(true);
     const [joinedConversationId, setJoinedConversationId] = useState<string | null>(null);
-    const { session } = useSession();
-    const [authClient, setAuthClient] = useState<SupabaseClient | null>(null);
-
-    useEffect(() => {
-        const initAuth = async () => {
-            if (!session) return;
-            try {
-                const client = await getAuthClient(session, { strict: true });
-                setAuthClient(client);
-            } catch {
-                toast.error('인증 세션이 만료되었습니다. 다시 로그인해주세요.');
-            }
-        };
-        void initAuth();
-    }, [session]);
 
     const loadContracts = useCallback(async () => {
-        if (!authClient) return;
         setLoading(true);
         try {
-            const { data, error } = await authClient
+            const { data, error } = await client
                 .from('sangjo_contracts')
                 .select('*')
                 .order('created_at', { ascending: false });
@@ -42,12 +24,11 @@ export function useContractMonitoring() {
         } finally {
             setLoading(false);
         }
-    }, [authClient]);
+    }, [client]);
 
     const loadAiConsultations = useCallback(async () => {
-        if (!authClient) return;
         try {
-            const { data, error } = await authClient
+            const { data, error } = await client
                 .from('ai_consultations')
                 .select('*')
                 .in('status', [AiConsultationStatus.AGENT_REQUESTED, AiConsultationStatus.AGENT_CONNECTED])
@@ -57,17 +38,15 @@ export function useContractMonitoring() {
         } catch {
             toast.error('AI 상담 목록 로딩 실패');
         }
-    }, [authClient]);
+    }, [client]);
 
-    // Realtime: sangjo_contracts + ai_consultations — authClient 사용
     useEffect(() => {
-        if (!authClient) return;
         loadContracts();
         loadAiConsultations();
 
-        const sessionId = session?.user?.id ?? 'anon';
-        const contractChannel = authClient
-            .channel(`contract-monitor-${sessionId}`)
+        const channelSuffix = Date.now();
+        const contractChannel = client
+            .channel(`contract-monitor-${channelSuffix}`)
             .on('postgres_changes', {
                 event: '*', schema: 'public', table: 'sangjo_contracts'
             }, (payload) => {
@@ -87,8 +66,8 @@ export function useContractMonitoring() {
             })
             .subscribe();
 
-        const aiChannel = authClient
-            .channel(`ai-monitor-${sessionId}`)
+        const aiChannel = client
+            .channel(`ai-monitor-${channelSuffix}`)
             .on('postgres_changes', {
                 event: '*', schema: 'public', table: 'ai_consultations'
             }, (payload) => {
@@ -111,11 +90,11 @@ export function useContractMonitoring() {
 
         return () => {
             contractChannel.unsubscribe();
-            authClient.removeChannel(contractChannel);
+            client.removeChannel(contractChannel);
             aiChannel.unsubscribe();
-            authClient.removeChannel(aiChannel);
+            client.removeChannel(aiChannel);
         };
-    }, [authClient, loadContracts, loadAiConsultations, session?.user?.id]);
+    }, [client, loadContracts, loadAiConsultations]);
 
     const handleJoinChat = async (consultation: AiConsultation) => {
         if (consultation.status === AiConsultationStatus.AGENT_CONNECTED) {
@@ -123,12 +102,8 @@ export function useContractMonitoring() {
             return;
         }
         try {
-            if (!authClient) {
-                toast.error('인증 세션이 필요합니다.');
-                return;
-            }
             await aiConsultationService.updateStatus(
-                authClient,
+                client,
                 consultation.conversation_id,
                 AiConsultationStatus.AGENT_CONNECTED
             );
