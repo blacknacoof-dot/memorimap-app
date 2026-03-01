@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { createNotice, getNotices, getInquiries, Inquiry } from '../../lib/queries';
 import { Loader2, Send, MessageSquare, Megaphone, CheckCircle } from 'lucide-react';
-import { getAuthClient } from '../../lib/supabaseClient';
-import { useSession } from '../../lib/auth';
+import { useSuperAdminClient } from '../SuperAdmin/SuperAdminGuard';
 
 interface NoticeItem {
     id: string;
@@ -32,7 +31,7 @@ export const AdminCommunication: React.FC = () => {
     const [supportInquiries, setSupportInquiries] = useState<SupportInquiryItem[]>([]);
     const [expandedSupport, setExpandedSupport] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const { session } = useSession();
+    const client = useSuperAdminClient();
 
     // Notice Form
     const [noticeTitle, setNoticeTitle] = useState('');
@@ -42,9 +41,8 @@ export const AdminCommunication: React.FC = () => {
     const loadData = async () => {
         setIsLoading(true);
         try {
-            const client = await getAuthClient(session, { strict: true });
             if (activeTab === 'notices') {
-                const data = await getNotices();
+                const data = await getNotices(client);
                 setNotices(data);
             } else if (activeTab === 'customer_support') {
                 const data = await getInquiries(client);
@@ -64,15 +62,14 @@ export const AdminCommunication: React.FC = () => {
     };
 
     useEffect(() => {
-        if (session) loadData();
-    }, [activeTab, session]);
+        loadData();
+    }, [activeTab, client]);
 
     const handleNoticeSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (isSubmitting) return;
         setIsSubmitting(true);
         try {
-            const client = await getAuthClient(session, { strict: true });
             await createNotice(noticeTitle, noticeContent, client);
             toast.success('공지사항이 등록되었습니다.');
             setNoticeTitle('');

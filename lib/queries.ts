@@ -2000,8 +2000,9 @@ export const createNotice = async (title: string, content: string, client: Supab
     return data;
 };
 
-export const getNotices = async () => {
-    const { data, error } = await supabase
+export const getNotices = async (client?: SupabaseClient) => {
+    const db = client || supabase;
+    const { data, error } = await db
         .from('platform_notices')
         .select('*')
         .eq('is_active', true)
@@ -2015,7 +2016,6 @@ export const getNotices = async () => {
         id: n.id,
         title: n.title,
         content: n.content,
-        // Assuming 'created_at' exists
         date: n.created_at ? new Date(n.created_at).toLocaleDateString() : 'Unknown date'
     }));
 };

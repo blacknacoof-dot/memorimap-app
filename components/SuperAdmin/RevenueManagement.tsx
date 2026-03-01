@@ -23,8 +23,21 @@ export const RevenueManagement: React.FC = () => {
     const monthlyRevenue = monthlyPayments.reduce((acc, p) => acc + (p.amount || 0), 0);
     const monthlyCommission = Math.round(monthlyRevenue * commissionRate);
 
-    // 정산 데이터 — 실 결제 데이터 기반으로 추후 구현 예정
-    const settlements: { id: number; company: string; amount: number; fee: number; status: string }[] = [];
+    // 정산 데이터 — 결제 데이터를 시설별로 그룹핑
+    const settlements = Object.values(
+        payments.reduce<Record<string, { id: string; company: string; amount: number; fee: number; status: string; lastPaidAt: string }>>((acc, p) => {
+            const key = p.facility_name || 'unknown';
+            if (!acc[key]) {
+                acc[key] = { id: key, company: key, amount: 0, fee: 0, status: 'settled', lastPaidAt: p.paid_at };
+            }
+            acc[key].amount += p.amount || 0;
+            acc[key].fee += Math.round((p.amount || 0) * commissionRate);
+            if (new Date(p.paid_at) > new Date(acc[key].lastPaidAt)) {
+                acc[key].lastPaidAt = p.paid_at;
+            }
+            return acc;
+        }, {})
+    ).sort((a, b) => b.amount - a.amount);
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -124,8 +137,8 @@ export const RevenueManagement: React.FC = () => {
                     ) : settlements.length === 0 ? (
                         <div className="p-12 text-center text-slate-400">
                             <DollarSign className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                            <p className="text-sm font-bold">정산 데이터 준비 중</p>
-                            <p className="text-xs mt-1">결제 시스템 연동 후 정산 현황이 표시됩니다.</p>
+                            <p className="text-sm font-bold">정산 내역 없음</p>
+                            <p className="text-xs mt-1">결제가 발생하면 시설별 정산 현황이 표시됩니다.</p>
                         </div>
                     ) : (
                         settlements.map((s) => (
@@ -136,7 +149,7 @@ export const RevenueManagement: React.FC = () => {
                                     </div>
                                     <div>
                                         <p className="text-sm font-bold text-slate-800">{s.company}</p>
-                                        <p className="text-[10px] text-slate-400">정산 대상금액: ₩ {s.amount.toLocaleString()}</p>
+                                        <p className="text-[10px] text-slate-400">누적 결제: ₩ {s.amount.toLocaleString()}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-6">
@@ -144,13 +157,9 @@ export const RevenueManagement: React.FC = () => {
                                         <p className="text-[10px] text-slate-400 font-bold uppercase">수수료 수익</p>
                                         <p className="text-sm font-black text-blue-600">₩ {s.fee.toLocaleString()}</p>
                                     </div>
-                                    <button
-                                        onClick={() => s.status === 'pending' && toast.info('정산 승인 기능은 준비 중입니다.')}
-                                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${s.status === 'pending' ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md cursor-pointer' : 'bg-slate-100 text-slate-400 cursor-default'
-                                        }`}
-                                    >
-                                        {s.status === 'pending' ? '정산 승인' : '정산 완료'}
-                                    </button>
+                                    <span className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-400">
+                                        정산 완료
+                                    </span>
                                 </div>
                             </div>
                         ))
