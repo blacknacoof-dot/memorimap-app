@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import {
     MessageSquare, Truck,
     Settings, LogOut, User,
-    Menu, X, Sparkles, TrendingUp,
+    Menu, X, TrendingUp,
     Calendar, ClipboardList, Wallet
 } from 'lucide-react';
 import { LiveConsultation } from './LiveConsultation';
 import { OperationsManagement } from './OperationsManagement';
-import { AIConfiguration } from './AIConfiguration';
 import { FacilityInfoEditor } from './FacilityInfoEditor';
 import { PartnerReservationsTab } from './PartnerReservationsTab';
 import { PartnerRevenueTab } from './PartnerRevenueTab';
@@ -53,7 +52,7 @@ interface PartnerDashboardProps {
 }
 
 export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, onLogout }) => {
-    const [activeTab, setActiveTab] = useState<'overview' | 'chat' | 'ops' | 'ai_config' | 'consultations' | 'reservations' | 'revenue' | 'settings'>('consultations');
+    const [activeTab, setActiveTab] = useState<'overview' | 'chat' | 'ops' | 'consultations' | 'reservations' | 'revenue' | 'settings'>('consultations');
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [partnerName, setPartnerName] = useState('상조 파트너');
     const [facilityId, setFacilityId] = useState<string | null>(null);
@@ -222,7 +221,6 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
         { id: 'revenue', label: '구독/매출', icon: Wallet },
         { id: 'chat', label: '실시간 채팅', icon: MessageSquare, badge: 'LIVE' },
         { id: 'ops', label: '운영 현황', icon: Truck },
-        { id: 'ai_config', label: 'AI 시나리오', icon: Sparkles },
         { id: 'settings', label: '회사 정보', icon: Settings },
     ];
 
@@ -369,7 +367,6 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                         )}
                         {activeTab === 'chat' && <LiveConsultation partnerId={partnerId} />}
                         {activeTab === 'ops' && <OperationsManagement partnerId={partnerId} />}
-                        {activeTab === 'ai_config' && <AIConfiguration partnerId={partnerId} />}
                         {activeTab === 'settings' && (
                             facilityId ? (
                                 <FacilityInfoEditor facilityId={facilityId} />
