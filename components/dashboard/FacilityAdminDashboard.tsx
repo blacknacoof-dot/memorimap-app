@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSession } from '../../lib/auth';
 import { Reservation, ViewState, Facility } from '../../types';
-import { approveReservation, rejectReservation, getFacilitySubscription, answerConsultation, Consultation, markConsultationAsRead, supabase } from '../../lib/queries';
+import { approveReservation, rejectReservation, getFacilitySubscription, answerConsultation, FuneralConsultation, markConsultationAsRead, supabase } from '../../lib/queries';
 import { getAuthClient } from '../../lib/supabaseClient';
 import ReservationManager from './facility/ReservationManager';
 import { ConsultationList } from '../ConsultationList';

@@ -14,7 +14,7 @@ import { NotificationCenter } from '../NotificationCenter';
 import { PartnerConsultationsTab } from './PartnerConsultationsTab';
 import { supabase, getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
-import { Consultation, getFacilitySubscription } from '../../lib/queries';
+import { FuneralConsultation, getFacilitySubscription } from '../../lib/queries';
 import { Reservation } from '../../types';
 import type { SangjoContract } from '../../types/sangjo';
 import type { Subscription, Payment } from '../../types/db';

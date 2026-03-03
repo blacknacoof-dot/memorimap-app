@@ -61,7 +61,6 @@ export interface FuneralCompany {
 
 export interface Review {
   id: string;
-  userId?: string;
   user_id?: string;
   userName: string;
   userImage?: string;
@@ -280,7 +279,6 @@ export function generateDefaultReviews(companyId: string): Review[] {
     const date = new Date(now - daysAgo * 86400000);
     return {
       id: `default_${companyId}_${i}`,
-      userId: '',
       user_id: '',
       userName: DEFAULT_NAMES[i],
       facility_id: companyId,

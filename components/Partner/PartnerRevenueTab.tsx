@@ -3,7 +3,7 @@ import {
     TrendingUp, Calendar, Clock, Crown,
     Wallet, CreditCard, BarChart3, X
 } from 'lucide-react';
-import { Consultation } from '../../lib/queries';
+import { FuneralConsultation } from '../../lib/queries';
 import { Reservation } from '../../types';
 import type { Subscription, Payment } from '../../types/db';
 import { toast } from 'sonner';

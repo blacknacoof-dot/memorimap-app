@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Consultation } from '../lib/queries';
+import { FuneralConsultation } from '../lib/queries';
 import { Clock, CheckCircle, XCircle, ChevronDown, ChevronUp, MessageSquare, Send } from 'lucide-react';
 import { toast } from 'sonner';
 

@@ -9,13 +9,13 @@ export interface Message {
 
 export interface Consultation {
     id: string;
-    userId: string;
-    spaceId: string;
-    facilityName: string;
+    user_id: string;
+    facility_id: string;
+    facilities?: { id: number; name: string; address?: string; images?: string[]; type?: string } | null;
     topic: string;
     messages: Message[];
-    createdAt: Date;
-    updatedAt: Date;
+    created_at: string;
+    updated_at: string;
 }
 
 export type ConsultationTopic =

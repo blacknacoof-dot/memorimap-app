@@ -968,7 +968,7 @@ const notifyReservationStatusChange = async (
             type,
         }]);
     } catch (e) {
-        // 알림 실패는 예약 처리를 블록하지 않음
+        console.error('[notifyReservationStatusChange]:', e);
     }
 };
 
@@ -1514,12 +1514,12 @@ export const updateFacilitySubscription = async (facilityId: string, planId: str
     try {
         const { data: superAdmins } = await db
             .from('profiles')
-            .select('id')
+            .select('clerk_id')
             .eq('role', 'super_admin');
 
         if (superAdmins && superAdmins.length > 0) {
             const notifications = superAdmins.map(admin => ({
-                user_id: admin.id,
+                user_id: admin.clerk_id,
                 title: '신규 구독 발생',
                 message: `${planData?.name || planId} 플랜 결제가 완료되었습니다.`,
                 type: 'success',
@@ -1742,7 +1742,7 @@ export interface ConsultationData {
     notes?: string;
 }
 
-export interface Consultation extends ConsultationData {
+export interface FuneralConsultation extends ConsultationData {
     id: string;
     created_at: string;
     updated_at: string;
@@ -1761,7 +1761,7 @@ export interface Consultation extends ConsultationData {
 /**
  * Create a new funeral consultation (for AI chat form)
  */
-export const createFuneralConsultation = async (data: ConsultationData, client: SupabaseClient): Promise<Consultation | null> => {
+export const createFuneralConsultation = async (data: ConsultationData, client: SupabaseClient): Promise<FuneralConsultation | null> => {
     try {
         const { data: result, error } = await client
             .from('consultations')
@@ -1773,7 +1773,7 @@ export const createFuneralConsultation = async (data: ConsultationData, client: 
             .single();
 
         if (error) throw error;
-        return result as Consultation;
+        return result as FuneralConsultation;
     } catch {
         return null;
     }
@@ -1790,7 +1790,7 @@ export const createMemorialConsultation = async (data: {
     lighting?: string;
     tier?: string;
     preferences?: Record<string, unknown>;
-}, client: SupabaseClient): Promise<Consultation | null> => {
+}, client: SupabaseClient): Promise<FuneralConsultation | null> => {
     const { data: result, error } = await client
         .from('consultations')
         .insert({
@@ -1800,7 +1800,7 @@ export const createMemorialConsultation = async (data: {
         .select()
         .single();
     if (error) throw error;
-    return result as Consultation;
+    return result as FuneralConsultation;
 };
 /**
  * Get consultations by facility ID (for facility dashboard)
@@ -1809,7 +1809,7 @@ export const getConsultationsByFacility = async (
     facilityId: string,
     status: string | undefined,
     client: SupabaseClient
-): Promise<Consultation[]> => {
+): Promise<FuneralConsultation[]> => {
     let query = client
         .from('consultations')
         .select('*')
@@ -1822,13 +1822,13 @@ export const getConsultationsByFacility = async (
 
     const { data, error } = await query;
     if (error) throw error;
-    return (data || []) as Consultation[];
+    return (data || []) as FuneralConsultation[];
 };
 
 /**
  * Get consultations by user ID (for My Page)
  */
-export const getConsultationsByUser = async (userId: string, client: SupabaseClient): Promise<Consultation[]> => {
+export const getConsultationsByUser = async (userId: string, client: SupabaseClient): Promise<FuneralConsultation[]> => {
     const { data, error } = await client
         .from('consultations')
         .select('*')
@@ -1837,7 +1837,7 @@ export const getConsultationsByUser = async (userId: string, client: SupabaseCli
         .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return (data || []) as Consultation[];
+    return (data || []) as FuneralConsultation[];
 };
 
 /**
@@ -1932,7 +1932,7 @@ export const updateConsultation = async (id: string, data: Record<string, unknow
 /**
  * Get single consultation by ID
  */
-export const getConsultationById = async (consultationId: string, client: SupabaseClient): Promise<Consultation | null> => {
+export const getConsultationById = async (consultationId: string, client: SupabaseClient): Promise<FuneralConsultation | null> => {
     const { data, error } = await client
         .from('consultations')
         .select('*')
@@ -1940,7 +1940,7 @@ export const getConsultationById = async (consultationId: string, client: Supaba
         .single();
 
     if (error) throw error;
-    return data as Consultation;
+    return data as FuneralConsultation;
 };
 
 /**

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { getConsultationsByFacility, updateConsultationStatus, Consultation } from '@/lib/queries';
+import { getConsultationsByFacility, updateConsultationStatus, FuneralConsultation } from '@/lib/queries';
 import { Clock, CheckCircle, XCircle, Check, Phone, MapPin, Users, Calendar, ChevronDown, RefreshCw } from 'lucide-react';
 import { aiConsultationService } from '@/lib/api/aiConsultation';
 import { AiConsultationStatus } from '@/types';
