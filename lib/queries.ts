@@ -187,7 +187,7 @@ export const uploadReviewImage = async (userId: string, file: File, client: Supa
     }
 
     const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const fileName = `${Date.now()}_${crypto.randomUUID().slice(0, 8)}.${fileExt}`;
     const filePath = `review-images/${userId}/${fileName}`;
 
     const { error: uploadError } = await db.storage
@@ -1298,7 +1298,7 @@ export const submitPartnerApplication = async (data: PartnerApplicationInput, cl
     if (data.businessLicenseImage) {
         try {
             const fileExt = data.businessLicenseImage.name.split('.').pop();
-            const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+            const fileName = `${Date.now()}_${crypto.randomUUID().slice(0, 8)}.${fileExt}`;
             const filePath = `licenses/${fileName}`;
 
             const { error: uploadError, data: uploadData } = await client.storage
@@ -1361,7 +1361,7 @@ export const submitPartnerApplication = async (data: PartnerApplicationInput, cl
  */
 export const uploadFacilityImage = async (facilityId: string, file: File, client: SupabaseClient) => {
     const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const fileName = `${Date.now()}_${crypto.randomUUID().slice(0, 8)}.${fileExt}`;
     const filePath = `${facilityId}/${fileName}`;
 
     const { error: uploadError } = await client.storage
