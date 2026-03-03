@@ -300,12 +300,12 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                                 <div className="flex items-center gap-2 mb-2">
                                     <Building2 size={18} className="text-primary" />
                                     <h3 className="font-bold text-gray-900">{myFacility.name}</h3>
-                                    {(subscription?.plan_name === '프리미엄' || subscription?.plan_name?.toLowerCase() === 'premium') && (
+                                    {(subscription?.plan_name || '').toLowerCase() === 'premium' && (
                                         <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold border border-purple-200">
                                             PREMIUM
                                         </span>
                                     )}
-                                    {(subscription?.plan_name === '엔터프라이즈' || subscription?.plan_name?.toLowerCase() === 'enterprise') && (
+                                    {(subscription?.plan_name || '').toLowerCase() === 'enterprise' && (
                                         <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold border border-amber-200">
                                             ENTERPRISE
                                         </span>
