@@ -72,12 +72,13 @@ export const FacilitySheet: React.FC<Props> = ({
     loadPackages();
   }, [facility.id]);
 
-  // Check Favorite Status
+  // Check Favorite Status — auth client
   useEffect(() => {
     const checkFav = async () => {
-      if (isLoggedIn && currentUser && currentUser.id) {
+      if (isLoggedIn && currentUser && currentUser.id && session) {
         try {
-          const status = await favoriteService.checkFavorite(currentUser.id, facility.id);
+          const client = await getAuthClient(session, { strict: true });
+          const status = await favoriteService.checkFavorite(currentUser.id, facility.id, client);
           setIsFavorite(status);
         } catch (e) {
           console.error('Failed to check favorite status', e);
@@ -87,7 +88,7 @@ export const FacilitySheet: React.FC<Props> = ({
       }
     };
     checkFav();
-  }, [facility.id, isLoggedIn, currentUser]);
+  }, [facility.id, isLoggedIn, currentUser, session]);
 
   const handleToggleFavorite = async () => {
     if (!isLoggedIn || !currentUser) {

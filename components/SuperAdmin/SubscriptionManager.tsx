@@ -94,8 +94,8 @@ export const SubscriptionManager = ({ onManage }: { onManage: (facilityName: str
                             <div className="flex flex-col">
                                 <div className="flex items-center gap-3">
                                     <span className="font-bold text-sm text-slate-800 group-hover:text-blue-600 transition-colors">{fac.facility_name}</span>
-                                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${fac.plan_name === 'Premium' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                                        fac.plan_name === 'Enterprise' ? 'bg-purple-50 text-purple-600 border-purple-100' :
+                                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${(fac.plan_name || '').toLowerCase() === 'premium' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                        (fac.plan_name || '').toLowerCase() === 'enterprise' ? 'bg-purple-50 text-purple-600 border-purple-100' :
                                             'bg-slate-50 text-slate-500 border-slate-200'
                                         }`}>
                                         {fac.plan_name || 'Basic'}

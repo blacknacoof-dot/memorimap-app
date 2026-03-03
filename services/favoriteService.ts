@@ -1,4 +1,3 @@
-import { supabase } from '../lib/supabaseClient';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export interface Favorite {
@@ -14,14 +13,14 @@ export interface Favorite {
         description?: string | null;
         image_urls?: string[];
         verified: boolean;
-    } | null; // Join된 시설 정보
+    } | null;
 }
 
 export const favoriteService = {
-    // 즐겨찾기 목록 조회
-    async getFavorites(userId: string): Promise<Favorite[]> {
+    // 즐겨찾기 목록 조회 (auth client 필수)
+    async getFavorites(userId: string, client: SupabaseClient): Promise<Favorite[]> {
         try {
-            const { data, error } = await supabase
+            const { data, error } = await client
                 .from('favorites')
                 .select('*')
                 .eq('user_id', userId)
@@ -38,10 +37,10 @@ export const favoriteService = {
         }
     },
 
-    // 즐겨찾기 여부 확인
-    async checkFavorite(userId: string, facilityId: string): Promise<boolean> {
+    // 즐겨찾기 여부 확인 (auth client 필수)
+    async checkFavorite(userId: string, facilityId: string, client: SupabaseClient): Promise<boolean> {
         try {
-            const { data, error } = await supabase
+            const { data, error } = await client
                 .from('favorites')
                 .select('id')
                 .eq('user_id', userId)
@@ -60,11 +59,9 @@ export const favoriteService = {
 
     // 즐겨찾기 추가/삭제 (Toggle)
     async toggleFavorite(userId: string, facilityId: string, client: SupabaseClient): Promise<boolean> {
-        // 1. 체크
-        const isFav = await this.checkFavorite(userId, facilityId);
+        const isFav = await this.checkFavorite(userId, facilityId, client);
 
         if (isFav) {
-            // 삭제
             const { error } = await client
                 .from('favorites')
                 .delete()
@@ -77,7 +74,6 @@ export const favoriteService = {
             }
             return false;
         } else {
-            // 추가
             const { error } = await client
                 .from('favorites')
                 .insert({ user_id: userId, facility_id: facilityId });
