@@ -2000,8 +2000,8 @@ export const createNotice = async (title: string, content: string, client: Supab
     return data;
 };
 
-export const getNotices = async (client?: SupabaseClient) => {
-    const db = client || supabase;
+export const getNotices = async (client: SupabaseClient = supabase) => {
+    const db = client;
     const { data, error } = await db
         .from('platform_notices')
         .select('*')
