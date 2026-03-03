@@ -4,7 +4,7 @@ import {
     Calendar, MoreVertical, Plus,
     ChevronRight, CheckCircle, Clock, X
 } from 'lucide-react';
-import { supabase, getAuthClient } from '../../lib/supabaseClient';
+import { getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
 import { PartnerOperation } from '../../types';
 import { toast } from 'sonner';
@@ -49,30 +49,32 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ faci
         setLoading(false);
     };
 
-    const setupRealtime = () => {
-        const channel = supabase
-            .channel(`partner-ops-${facilityId}`)
-            .on('postgres_changes', {
-                event: '*',
-                schema: 'public',
-                table: 'partner_operations',
-                filter: `partner_id=eq.${facilityId}`
-            }, () => {
-                loadOperations();
-            })
-            .subscribe();
-        return () => {
-            channel.unsubscribe();
-            supabase.removeChannel(channel);
-        };
-    };
-
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         void loadOperations();
-        const sub = setupRealtime();
-        return () => { sub(); };
-    }, [facilityId]);
+
+        // [Realtime Sync] — auth client
+        let cleanup: (() => void) | undefined;
+
+        getAuthClient(session).then(client => {
+            const channel = client
+                .channel(`partner-ops-${facilityId}`)
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'partner_operations',
+                    filter: `partner_id=eq.${facilityId}`
+                }, () => { loadOperations(); })
+                .subscribe();
+
+            cleanup = () => {
+                channel.unsubscribe();
+                client.removeChannel(channel);
+            };
+        });
+
+        return () => { cleanup?.(); };
+    }, [facilityId, session]);
 
     const handleMove = async (id: string, nextStage: PartnerOperation['operation_stage']) => {
         const confirmed = await confirmAsync(`운영 단계를 '${nextStage}'(으)로 변경하시겠습니까?`, '단계 변경');

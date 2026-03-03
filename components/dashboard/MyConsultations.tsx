@@ -5,7 +5,7 @@ import { Clock, CheckCircle, XCircle, Check, MapPin, Building2, Calendar, Chevro
 import type { LucideIcon } from 'lucide-react';
 // aiConsultationService import 제거 — 인증 클라이언트 미전달 방지
 import { AiConsultationStatus, Facility } from '@/types';
-import { supabase, getAuthClient } from '@/lib/supabaseClient'; // [Realtime]
+import { getAuthClient } from '@/lib/supabaseClient';
 import { useApiRetry } from '@/hooks/useApiRetry';
 import { useSession } from '@/lib/auth';
 import { confirmAsync } from '@/src/components/common/ConfirmModal';
@@ -144,32 +144,35 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
     };
 
     useEffect(() => {
-        if (userId) {
-            fetchConsultations();
+        if (!userId || !session) return;
+        fetchConsultations();
 
-            // [Realtime Sync]
-            const channel = supabase
+        // [Realtime Sync] — auth client
+        let cleanup: (() => void) | undefined;
+
+        getAuthClient(session).then(client => {
+            const channel = client
                 .channel(`consultations-user-${userId}`)
                 .on(
                     'postgres_changes',
                     {
-                        event: '*', // Listen for updates (status change)
+                        event: '*',
                         schema: 'public',
                         table: 'ai_consultations',
                         filter: `user_id=eq.${userId}`
                     },
-                    (payload) => {
-                        // User Realtime update received
-                        fetchConsultations(); // Refresh to see new status and instructions
-                    }
+                    () => { fetchConsultations(); }
                 )
                 .subscribe();
 
-            return () => {
-                supabase.removeChannel(channel);
+            cleanup = () => {
+                channel.unsubscribe();
+                client.removeChannel(channel);
             };
-        }
-    }, [userId]);
+        });
+
+        return () => { cleanup?.(); };
+    }, [userId, session]);
 
     const handleCancel = async (consultation: ExtendedConsultation) => {
         const consultationId = consultation.id;

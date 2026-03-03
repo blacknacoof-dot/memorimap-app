@@ -5,7 +5,7 @@ import {
     Zap, ChevronRight, RefreshCw, AlertTriangle,
     Siren, ClipboardList, CreditCard, Calendar
 } from 'lucide-react';
-import { supabase, getAuthClient } from '../../lib/supabaseClient';
+import { getAuthClient } from '../../lib/supabaseClient';
 import { AiConsultationStatus } from '../../types';
 import { aiConsultationService } from '../../lib/api/aiConsultation';
 import { useUser, useClerk, useSession } from '../../lib/auth';
@@ -58,16 +58,37 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ facilityId, onClose })
         }
     }, [messages]);
 
-    // [Memory Leak Fix] Realtime Subscription Cleanup
+    // [Memory Leak Fix] Realtime Subscription Cleanup — auth client
     useEffect(() => {
-        if (!conversationId) return;
+        if (!conversationId || !session) return;
 
-        const cleanup = listenToEvents(conversationId);
+        let cleanup: (() => void) | undefined;
 
-        return () => {
-            cleanup?.();
-        };
-    }, [conversationId]);
+        getAuthClient(session).then(client => {
+            const channel = client
+                .channel(`ai-conv-${conversationId}`)
+                .on('postgres_changes', {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'ai_consultations',
+                    filter: `conversation_id=eq.${conversationId}`
+                }, (payload) => {
+                    const updated = payload.new;
+                    if (updated.status === AiConsultationStatus.AGENT_CONNECTED) {
+                        setIsHijacked(true);
+                    }
+                    setMessages(updated.messages);
+                })
+                .subscribe();
+
+            cleanup = () => {
+                channel.unsubscribe();
+                client.removeChannel(channel);
+            };
+        });
+
+        return () => { cleanup?.(); };
+    }, [conversationId, session]);
 
     const initBot = async (retryCount = 0) => {
         setLoading(true);
@@ -173,30 +194,6 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ facilityId, onClose })
         } finally {
             setLoading(false);
         }
-    };
-
-    const listenToEvents = (convId: string) => {
-        // [Decision Lock] 실시간 관제 이벤트 구독
-        const channel = supabase.channel(`ai-conv-${convId}`)
-            .on('postgres_changes', {
-                event: 'UPDATE',
-                schema: 'public',
-                table: 'ai_consultations',
-                filter: `conversation_id=eq.${convId}`
-            }, (payload) => {
-                const updated = payload.new;
-                if (updated.status === AiConsultationStatus.AGENT_CONNECTED) {
-                    setIsHijacked(true);
-                }
-                setMessages(updated.messages);
-            })
-            .subscribe();
-
-        // [Memory Leak Fix] Cleanup 함수 반환
-        return () => {
-            channel.unsubscribe();
-            supabase.removeChannel(channel);
-        };
     };
 
     const handleAction = async (action: string, label: string) => {

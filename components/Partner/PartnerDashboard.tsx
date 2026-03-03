@@ -166,51 +166,59 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
         };
         loadFacilityData();
 
-        // Realtime 구독
-        const consChannel = supabase
-            .channel(`partner-cons-${facilityId}`)
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'consultations', filter: `facility_id=eq.${facilityId}` }, (payload) => {
-                if (payload.eventType === 'INSERT') {
-                    setConsultations(prev => [payload.new as Consultation, ...prev]);
-                    toast.info('새 상담 문의가 접수되었습니다.');
-                } else if (payload.eventType === 'UPDATE') {
-                    setConsultations(prev => prev.map(c => c.id === payload.new.id ? { ...c, ...payload.new } : c));
-                }
-            })
-            .subscribe();
+        // [Realtime Sync] — auth client
+        let cleanup: (() => void) | undefined;
 
-        const resChannel = supabase
-            .channel(`partner-res-${facilityId}`)
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'reservations', filter: `facility_id=eq.${facilityId}` }, (payload) => {
-                if (payload.eventType === 'INSERT') {
-                    setReservations(prev => [payload.new as Reservation, ...prev]);
-                    toast.info('새 예약이 접수되었습니다.');
-                } else if (payload.eventType === 'UPDATE') {
-                    setReservations(prev => prev.map(r => r.id === payload.new.id ? { ...r, ...payload.new } : r));
-                }
-            })
-            .subscribe();
+        getAuthClient(session).then(client => {
+            const consChannel = client
+                .channel(`partner-cons-${facilityId}`)
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'consultations', filter: `facility_id=eq.${facilityId}` }, (payload) => {
+                    if (payload.eventType === 'INSERT') {
+                        setConsultations(prev => [payload.new as Consultation, ...prev]);
+                        toast.info('새 상담 문의가 접수되었습니다.');
+                    } else if (payload.eventType === 'UPDATE') {
+                        setConsultations(prev => prev.map(c => c.id === payload.new.id ? { ...c, ...payload.new } : c));
+                    }
+                })
+                .subscribe();
 
-        // sangjo_contracts Realtime 구독
-        const contractChannel = supabase
-            .channel(`partner-contracts-${facilityId}`)
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'sangjo_contracts', filter: `sangjo_id=eq.${facilityId}` }, (payload) => {
-                const mapped = mapSangjoContractToConsultation(payload.new as SangjoContract);
-                if (payload.eventType === 'INSERT') {
-                    setConsultations(prev => [mapped, ...prev]);
-                    toast.info('새 상조 상담 신청이 접수되었습니다.');
-                } else if (payload.eventType === 'UPDATE') {
-                    setConsultations(prev => prev.map(c => c.id === (payload.new as SangjoContract).id ? mapped : c));
-                }
-            })
-            .subscribe();
+            const resChannel = client
+                .channel(`partner-res-${facilityId}`)
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'reservations', filter: `facility_id=eq.${facilityId}` }, (payload) => {
+                    if (payload.eventType === 'INSERT') {
+                        setReservations(prev => [payload.new as Reservation, ...prev]);
+                        toast.info('새 예약이 접수되었습니다.');
+                    } else if (payload.eventType === 'UPDATE') {
+                        setReservations(prev => prev.map(r => r.id === payload.new.id ? { ...r, ...payload.new } : r));
+                    }
+                })
+                .subscribe();
 
-        return () => {
-            supabase.removeChannel(consChannel);
-            supabase.removeChannel(resChannel);
-            supabase.removeChannel(contractChannel);
-        };
-    }, [facilityId]);
+            const contractChannel = client
+                .channel(`partner-contracts-${facilityId}`)
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'sangjo_contracts', filter: `sangjo_id=eq.${facilityId}` }, (payload) => {
+                    const mapped = mapSangjoContractToConsultation(payload.new as SangjoContract);
+                    if (payload.eventType === 'INSERT') {
+                        setConsultations(prev => [mapped, ...prev]);
+                        toast.info('새 상조 상담 신청이 접수되었습니다.');
+                    } else if (payload.eventType === 'UPDATE') {
+                        setConsultations(prev => prev.map(c => c.id === (payload.new as SangjoContract).id ? mapped : c));
+                    }
+                })
+                .subscribe();
+
+            cleanup = () => {
+                consChannel.unsubscribe();
+                resChannel.unsubscribe();
+                contractChannel.unsubscribe();
+                client.removeChannel(consChannel);
+                client.removeChannel(resChannel);
+                client.removeChannel(contractChannel);
+            };
+        });
+
+        return () => { cleanup?.(); };
+    }, [facilityId, session]);
 
     const unreadConsultations = consultations.filter(c => !c.is_read).length;
     const pendingReservations = reservations.filter(r => r.status === 'pending' || r.status === 'urgent').length;

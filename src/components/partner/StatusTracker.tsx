@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useSession } from '@/lib/auth';
-import { supabase, getAuthClient } from '@/lib/supabaseClient';
+import { getAuthClient } from '@/lib/supabaseClient';
 import { CheckCircle2, Circle, Loader2 } from 'lucide-react';
 
 // 5단계 상태 정의
@@ -31,58 +31,65 @@ export const StatusTracker: React.FC<StatusTrackerProps> = ({
     const [isLoading, setIsLoading] = useState(true);
     const [isUpdating, setIsUpdating] = useState(false);
 
-    // 현재 진행 상태 조회
+    // 현재 진행 상태 조회 + Realtime — auth client
     useEffect(() => {
-        const fetchProgress = async () => {
-            if (!contractNumber) return;
+        if (!contractNumber || !session) return;
 
-            setIsLoading(true);
-            try {
-                const { data, error } = await supabase
-                    .from('funeral_progress')
-                    .select('current_status')
-                    .eq('contract_number', contractNumber)
-                    .single();
+        let cleanup: (() => void) | undefined;
 
-                if (error && error.code !== 'PGRST116') {
-                    console.error('Progress fetch error:', error);
-                }
+        getAuthClient(session).then(client => {
+            // 초기 데이터 조회
+            const fetchProgress = async () => {
+                setIsLoading(true);
+                try {
+                    const { data, error } = await client
+                        .from('funeral_progress')
+                        .select('current_status')
+                        .eq('contract_number', contractNumber)
+                        .single();
 
-                if (data) {
-                    setCurrentStatus(data.current_status as ProgressStatus);
-                }
-            } catch (e) {
-                console.error('Progress fetch exception:', e);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchProgress();
-
-        // Supabase Realtime 구독 (유족 뷰에서 실시간 업데이트)
-        const channel = supabase
-            .channel(`progress-${contractNumber}`)
-            .on(
-                'postgres_changes',
-                {
-                    event: 'UPDATE',
-                    schema: 'public',
-                    table: 'funeral_progress',
-                    filter: `contract_number=eq.${contractNumber}`
-                },
-                (payload: { new: { current_status: string } }) => {
-                    if (payload.new?.current_status) {
-                        setCurrentStatus(payload.new.current_status as ProgressStatus);
+                    if (error && error.code !== 'PGRST116') {
+                        console.error('Progress fetch error:', error);
                     }
+                    if (data) {
+                        setCurrentStatus(data.current_status as ProgressStatus);
+                    }
+                } catch (e) {
+                    console.error('Progress fetch exception:', e);
+                } finally {
+                    setIsLoading(false);
                 }
-            )
-            .subscribe();
+            };
 
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, [contractNumber]);
+            void fetchProgress();
+
+            // Realtime 구독 (유족 뷰에서 실시간 업데이트)
+            const channel = client
+                .channel(`progress-${contractNumber}`)
+                .on(
+                    'postgres_changes',
+                    {
+                        event: 'UPDATE',
+                        schema: 'public',
+                        table: 'funeral_progress',
+                        filter: `contract_number=eq.${contractNumber}`
+                    },
+                    (payload: { new: { current_status: string } }) => {
+                        if (payload.new?.current_status) {
+                            setCurrentStatus(payload.new.current_status as ProgressStatus);
+                        }
+                    }
+                )
+                .subscribe();
+
+            cleanup = () => {
+                channel.unsubscribe();
+                client.removeChannel(channel);
+            };
+        });
+
+        return () => { cleanup?.(); };
+    }, [contractNumber, session]);
 
     // 상태 업데이트 (상조 직원 전용)
     const handleStatusUpdate = async (newStatus: ProgressStatus) => {

@@ -5,7 +5,7 @@ import {
     MoreHorizontal, Smartphone, Hash, MonitorDot, XCircle, ArrowLeft
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase, getAuthClient } from '../../lib/supabaseClient';
+import { getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
 import { PartnerConversation } from '../../types';
 import { confirmAsync } from '../../src/components/common/ConfirmModal';
@@ -31,39 +31,43 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ facilityId }
         if (data) setConversations(data as PartnerConversation[]);
     };
 
-    const setupRealtime = () => {
-        const channel = supabase
-            .channel(`partner-live-${facilityId}`)
-            .on('postgres_changes', {
-                event: '*',
-                schema: 'public',
-                table: 'partner_conversations',
-                filter: `partner_id=eq.${facilityId}`
-            }, (payload) => {
-                const updated = payload.new as PartnerConversation;
-                setConversations(prev => {
-                    const idx = prev.findIndex(c => c.id === updated.id);
-                    if (idx > -1) {
-                        const newArr = [...prev];
-                        newArr[idx] = updated;
-                        return newArr.sort((a, b) => b.last_message_at.localeCompare(a.last_message_at));
-                    }
-                    return [updated, ...prev];
-                });
-            })
-            .subscribe();
-        return () => {
-            channel.unsubscribe();
-            supabase.removeChannel(channel);
-        };
-    };
-
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         void loadConversations();
-        const sub = setupRealtime();
-        return () => { sub(); };
-    }, [facilityId]);
+
+        // [Realtime Sync] — auth client
+        let cleanup: (() => void) | undefined;
+
+        getAuthClient(session).then(client => {
+            const channel = client
+                .channel(`partner-live-${facilityId}`)
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'partner_conversations',
+                    filter: `partner_id=eq.${facilityId}`
+                }, (payload) => {
+                    const updated = payload.new as PartnerConversation;
+                    setConversations(prev => {
+                        const idx = prev.findIndex(c => c.id === updated.id);
+                        if (idx > -1) {
+                            const newArr = [...prev];
+                            newArr[idx] = updated;
+                            return newArr.sort((a, b) => b.last_message_at.localeCompare(a.last_message_at));
+                        }
+                        return [updated, ...prev];
+                    });
+                })
+                .subscribe();
+
+            cleanup = () => {
+                channel.unsubscribe();
+                client.removeChannel(channel);
+            };
+        });
+
+        return () => { cleanup?.(); };
+    }, [facilityId, session]);
 
     useEffect(() => {
         if (scrollRef.current) {

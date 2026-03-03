@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSession } from '../../lib/auth';
 import { Reservation, ViewState, Facility } from '../../types';
-import { approveReservation, rejectReservation, getFacilitySubscription, answerConsultation, FuneralConsultation, markConsultationAsRead, supabase } from '../../lib/queries';
+import { approveReservation, rejectReservation, getFacilitySubscription, answerConsultation, FuneralConsultation, markConsultationAsRead } from '../../lib/queries';
 import { getAuthClient } from '../../lib/supabaseClient';
 import ReservationManager from './facility/ReservationManager';
 import { ConsultationList } from '../ConsultationList';
@@ -106,78 +106,50 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
 
     // Realtime Subscription
     useEffect(() => {
-        if (!myFacilityId) return;
+        if (!myFacilityId || !session) return;
 
-        // Setting up Realtime subscription
+        // [Realtime Sync] — auth client
+        let cleanup: (() => void) | undefined;
 
-        // 1. Consultations Subscription
-        const consultationChannel = supabase
-            .channel(`facility-cons-${myFacilityId}`)
-            .on(
-                'postgres_changes',
-                {
-                    event: '*',
-                    schema: 'public',
-                    table: 'consultations',
-                    filter: `facility_id=eq.${myFacilityId}`
-                },
-                (payload) => {
-                    if (payload.eventType === 'INSERT') {
-                        setConsultations(prev => [payload.new as Consultation, ...prev]);
-                    } else if (payload.eventType === 'UPDATE') {
-                        setConsultations(prev => prev.map(c =>
-                            c.id === payload.new.id ? { ...c, ...payload.new } : c
-                        ));
-                    }
-                }
-            )
-            .subscribe();
-
-        // 2. Reservations Subscription
-        const reservationChannel = supabase
-            .channel(`facility-res-${myFacilityId}`)
-            .on(
-                'postgres_changes',
-                {
-                    event: '*',
-                    schema: 'public',
-                    table: 'reservations',
-                    filter: `facility_id=eq.${myFacilityId}`
-                },
-                (payload) => {
-                    // Realtime Reservation Update
-                    if (payload.eventType === 'INSERT') {
-                        // Map database row to UI Reservation type if needed
-                        const newRes: Reservation = {
-                            id: payload.new.id,
-                            facility_id: payload.new.facility_id,
-                            facility_name: payload.new.facility_name,
-                            visit_date: payload.new.visit_date, // Keep as string or Date? Type says string.
-                            time_slot: payload.new.time_slot,
-                            visitor_name: payload.new.user_name || payload.new.visitor_name,
-                            visitor_count: payload.new.visitor_count || 1,
-                            contact_number: payload.new.contact_number || payload.new.user_phone, // Map phone
-                            purpose: payload.new.purpose || '상담 및 방문',
-                            status: payload.new.status as Reservation['status'],
-                            payment_amount: payload.new.payment_amount || 0,
-                            paid_at: payload.new.paid_at, // Keep as string (ISO)
-                            user_id: payload.new.user_id, // Ensure user_id is mapped
-                            ...payload.new
-                        };
-
-                        setReservations(prev => [newRes, ...prev]);
-
-                        // Notify user about new booking
-                        if (newRes.status === 'urgent') {
-                            toast.error('🚨 신규 긴급 예약이 접수되었습니다!', { duration: 6000 });
-                        } else {
-                            // Non-blocking notification or toast would be better, but alert is clear.
+        getAuthClient(session).then(client => {
+            // 1. Consultations Subscription
+            const consultationChannel = client
+                .channel(`facility-cons-${myFacilityId}`)
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: 'consultations',
+                        filter: `facility_id=eq.${myFacilityId}`
+                    },
+                    (payload) => {
+                        if (payload.eventType === 'INSERT') {
+                            setConsultations(prev => [payload.new as Consultation, ...prev]);
+                        } else if (payload.eventType === 'UPDATE') {
+                            setConsultations(prev => prev.map(c =>
+                                c.id === payload.new.id ? { ...c, ...payload.new } : c
+                            ));
                         }
-                    } else if (payload.eventType === 'UPDATE') {
-                        setReservations(prev => prev.map(r =>
-                            r.id === payload.new.id ? {
-                                ...r,
-                                ...payload.new,
+                    }
+                )
+                .subscribe();
+
+            // 2. Reservations Subscription
+            const reservationChannel = client
+                .channel(`facility-res-${myFacilityId}`)
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: 'reservations',
+                        filter: `facility_id=eq.${myFacilityId}`
+                    },
+                    (payload) => {
+                        if (payload.eventType === 'INSERT') {
+                            const newRes: Reservation = {
+                                id: payload.new.id,
                                 facility_id: payload.new.facility_id,
                                 facility_name: payload.new.facility_name,
                                 visit_date: payload.new.visit_date,
@@ -185,19 +157,47 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                                 visitor_name: payload.new.user_name || payload.new.visitor_name,
                                 visitor_count: payload.new.visitor_count || 1,
                                 contact_number: payload.new.contact_number || payload.new.user_phone,
-                                status: payload.new.status as Reservation['status']
-                            } : r
-                        ));
+                                purpose: payload.new.purpose || '상담 및 방문',
+                                status: payload.new.status as Reservation['status'],
+                                payment_amount: payload.new.payment_amount || 0,
+                                paid_at: payload.new.paid_at,
+                                user_id: payload.new.user_id,
+                                ...payload.new
+                            };
+                            setReservations(prev => [newRes, ...prev]);
+                            if (newRes.status === 'urgent') {
+                                toast.error('🚨 신규 긴급 예약이 접수되었습니다!', { duration: 6000 });
+                            }
+                        } else if (payload.eventType === 'UPDATE') {
+                            setReservations(prev => prev.map(r =>
+                                r.id === payload.new.id ? {
+                                    ...r,
+                                    ...payload.new,
+                                    facility_id: payload.new.facility_id,
+                                    facility_name: payload.new.facility_name,
+                                    visit_date: payload.new.visit_date,
+                                    time_slot: payload.new.time_slot,
+                                    visitor_name: payload.new.user_name || payload.new.visitor_name,
+                                    visitor_count: payload.new.visitor_count || 1,
+                                    contact_number: payload.new.contact_number || payload.new.user_phone,
+                                    status: payload.new.status as Reservation['status']
+                                } : r
+                            ));
+                        }
                     }
-                }
-            )
-            .subscribe();
+                )
+                .subscribe();
 
-        return () => {
-            supabase.removeChannel(consultationChannel);
-            supabase.removeChannel(reservationChannel);
-        };
-    }, [myFacilityId]);
+            cleanup = () => {
+                consultationChannel.unsubscribe();
+                reservationChannel.unsubscribe();
+                client.removeChannel(consultationChannel);
+                client.removeChannel(reservationChannel);
+            };
+        });
+
+        return () => { cleanup?.(); };
+    }, [myFacilityId, session]);
 
     const handleApprove = async (reservationId: string) => {
         if (!await confirmAsync('이 예약을 승인하시겠습니까?')) return;

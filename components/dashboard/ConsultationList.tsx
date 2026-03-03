@@ -4,7 +4,7 @@ import { getConsultationsByFacility, updateConsultationStatus, FuneralConsultati
 import { Clock, CheckCircle, XCircle, Check, Phone, MapPin, Users, Calendar, ChevronDown, RefreshCw } from 'lucide-react';
 import { aiConsultationService } from '@/lib/api/aiConsultation';
 import { AiConsultationStatus } from '@/types';
-import { supabase, getAuthClient } from '@/lib/supabaseClient';
+import { getAuthClient } from '@/lib/supabaseClient';
 import { useApiRetry } from '@/hooks/useApiRetry';
 import { useSession } from '@/lib/auth';
 import { ConsultationActionModal } from './facility/ConsultationActionModal';
@@ -78,28 +78,32 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
     useEffect(() => {
         fetchConsultations();
 
-        // [Realtime Sync] Subscribe to changes
-        const channel = supabase
-            .channel(`consultations-facility-${facilityId}`)
-            .on(
-                'postgres_changes',
-                {
-                    event: '*', // Listen to INSERT/UPDATE
-                    schema: 'public',
-                    table: 'consultations',
-                    filter: `facility_id=eq.${facilityId}`
-                },
-                (payload) => {
-                    // Realtime update received
-                    fetchConsultations(); // Refresh list on change
-                }
-            )
-            .subscribe();
+        // [Realtime Sync] — auth client
+        let cleanup: (() => void) | undefined;
 
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, [facilityId, filter]);
+        getAuthClient(session).then(client => {
+            const channel = client
+                .channel(`consultations-facility-${facilityId}`)
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: 'consultations',
+                        filter: `facility_id=eq.${facilityId}`
+                    },
+                    () => { fetchConsultations(); }
+                )
+                .subscribe();
+
+            cleanup = () => {
+                channel.unsubscribe();
+                client.removeChannel(channel);
+            };
+        });
+
+        return () => { cleanup?.(); };
+    }, [facilityId, filter, session]);
 
     const handleStatusChange = async (consultationId: string, newStatus: 'waiting' | 'accepted' | 'cancelled' | 'completed') => {
         try {

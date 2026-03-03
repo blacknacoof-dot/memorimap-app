@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { supabase, getAuthClient } from '@/lib/supabaseClient';
+import { getAuthClient } from '@/lib/supabaseClient';
 import { UserNotification } from '@/types/db';
 import { useAuth, useSession } from '../lib/auth';
 
@@ -9,12 +9,13 @@ export function useNotifications() {
     const { session } = useSession();
     const queryClient = useQueryClient();
 
-    // 알림 페칭
+    // 알림 페칭 (auth client — 개인 데이터)
     const { data: notifications = [], isLoading, refetch } = useQuery({
         queryKey: ['notifications', userId],
         queryFn: async () => {
-            if (!userId) return [];
-            const { data, error } = await supabase
+            if (!userId || !session) return [];
+            const client = await getAuthClient(session, { strict: true });
+            const { data, error } = await client
                 .from('user_notifications')
                 .select('*')
                 .eq('user_id', userId)
@@ -23,33 +24,38 @@ export function useNotifications() {
             if (error) throw error;
             return data as UserNotification[];
         },
-        enabled: !!userId,
+        enabled: !!userId && !!session,
     });
 
-    // 실시간 구독 추가 [Realtime Sync]
+    // 실시간 구독 [Realtime Sync] — auth client
     useEffect(() => {
-        if (!userId) return;
+        if (!userId || !session) return;
 
-        const channel = supabase
-            .channel(`notif-${userId}`)
-            .on(
-                'postgres_changes',
-                {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'user_notifications',
-                    filter: `user_id=eq.${userId}`
-                },
-                () => {
-                    refetch();
-                }
-            )
-            .subscribe();
+        let cleanup: (() => void) | undefined;
 
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, [userId, refetch]);
+        getAuthClient(session).then(client => {
+            const channel = client
+                .channel(`notif-${userId}`)
+                .on(
+                    'postgres_changes',
+                    {
+                        event: 'INSERT',
+                        schema: 'public',
+                        table: 'user_notifications',
+                        filter: `user_id=eq.${userId}`
+                    },
+                    () => { refetch(); }
+                )
+                .subscribe();
+
+            cleanup = () => {
+                channel.unsubscribe();
+                client.removeChannel(channel);
+            };
+        });
+
+        return () => { cleanup?.(); };
+    }, [userId, session, refetch]);
 
     // 읽음 처리 Mutation
     const markAsRead = useMutation({
