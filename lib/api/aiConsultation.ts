@@ -69,7 +69,7 @@ export const aiConsultationService = {
 
         if (fetchError) {
             logger.error('Failed to fetch current messages:', fetchError);
-            throw new Error(`Conversation not found: ${conversationId}`);
+            throw fetchError;
         }
 
         const updatedMessages = [...(current?.messages || []), message];
