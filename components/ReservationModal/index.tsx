@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X, ArrowLeft } from 'lucide-react';
+import { analytics } from '../../lib/analytics';
 import { Facility, Reservation as LegacyReservation } from '../../types';
 import { useReservation } from './useReservation';
 import { UrgentForm } from './UrgentForm';
@@ -33,6 +34,11 @@ export const ReservationModal: React.FC<Props> = ({
     cancelPayment, handleDateSelect, handleNext, handlePaymentProcess,
     availableDates, depositAmount,
   } = useReservation({ facility, onClose, onConfirm, reservationMode });
+
+  useEffect(() => {
+    if (step > 0 && step < 4) analytics.reservationStep(step, facility.id);
+    if (step === 4) analytics.reservationComplete(facility.id, facility.name, depositAmount || 0);
+  }, [step]);
 
   const renderContent = () => {
     if (reservationMode === 'URGENT') {

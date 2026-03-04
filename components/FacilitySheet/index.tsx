@@ -1,7 +1,8 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { X, Check, Scale, Bot, Award, Crown, ShieldCheck, Share2 } from 'lucide-react';
 import { Facility, Reservation } from '../../types';
 import { toast } from 'sonner';
+import { analytics } from '../../lib/analytics';
 import { useFacilitySheet } from './useFacilitySheet';
 import { Lightbox } from './Lightbox';
 import { InfoTab } from './InfoTab';
@@ -32,6 +33,11 @@ export const FacilitySheet: React.FC<Props> = ({
   reservations = [], onOpenAiChat, onViewSangjoList,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    analytics.facilityDetailOpen(facility.id, facility.name, facility.type || facility.category || '');
+  }, [facility.id]);
+
   const {
     activeTab, setActiveTab, lightboxIndex, setLightboxIndex,
     reviewRefreshTrigger, setReviewRefreshTrigger,
@@ -219,7 +225,7 @@ export const FacilitySheet: React.FC<Props> = ({
           </button>
 
           <button
-            onClick={() => onOpenAiChat?.()}
+            onClick={() => { analytics.aiChatOpen(facility.id, facility.name); onOpenAiChat?.(); }}
             className="flex-1 bg-primary/10 text-primary border border-primary/30 py-3 rounded-xl font-bold active:scale-95 transition-transform flex items-center justify-center gap-1.5 text-sm"
           >
             <Bot size={18} />
@@ -238,7 +244,7 @@ export const FacilitySheet: React.FC<Props> = ({
           )}
 
           <button
-            onClick={onBook}
+            onClick={() => { analytics.reservationStart(facility.id, facility.name); onBook(); }}
             className="flex-1 bg-primary text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/30 active:scale-95 transition-transform text-sm"
           >
             방문 예약하기

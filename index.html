@@ -41,6 +41,13 @@
   <title>추모맵 - 추모 공간 지도</title>
   <!-- Tailwind CSS via CDN for quick setup (can be replaced with local install) -->
 
+  <!-- GA4 dataLayer + gtag 함수 초기화 (스크립트 로드는 lib/analytics.ts에서) -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { window.dataLayer.push(arguments); }
+    window.gtag = gtag;
+  </script>
+
   <!-- Naver Maps preload -->
   <script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=%VITE_NAVER_MAP_CLIENT_ID%" async defer></script>
   <script src="https://cdn.portone.io/v2/browser-sdk.js" async></script>
