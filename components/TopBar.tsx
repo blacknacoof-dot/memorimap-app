@@ -45,7 +45,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       }`}>
         <button
           onClick={() => setIsMenuOpen(true)}
-          className="bg-white p-2.5 md:p-3 rounded-xl shadow-md text-gray-700 active:scale-95 transition-transform shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className="bg-white p-2.5 md:p-3 rounded-xl shadow-md text-gray-700 active:scale-95 transition-transform shrink-0"
         >
           <Menu size={18} className="md:hidden" />
           <Menu size={20} className="hidden md:block" />
@@ -68,7 +68,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         {viewState === ViewState.MY_PAGE && (
           <button
             onClick={() => setViewState(ViewState.SETTINGS)}
-            className="bg-white p-2.5 md:p-3 rounded-xl shadow-md text-gray-700 active:scale-95 transition-transform shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            className="bg-white p-2.5 md:p-3 rounded-xl shadow-md text-gray-700 active:scale-95 transition-transform shrink-0"
           >
             <Settings size={18} className="md:hidden" />
             <Settings size={20} className="hidden md:block" />
@@ -105,7 +105,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </div>
             <button
               onClick={() => setShowPromo(false)}
-              className="text-gray-500 hover:text-white transition-colors p-3 md:p-1"
+              className="text-gray-500 hover:text-white transition-colors p-1"
             >
               <X size={14} className="md:hidden" />
               <X size={16} className="hidden md:block" />
