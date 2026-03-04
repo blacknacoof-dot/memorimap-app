@@ -180,7 +180,7 @@ export const SideMenu: React.FC<Props> = ({
             </button>
           )}
           <div className="flex justify-between items-end relative">
-            <div className="text-[10px] text-gray-300 w-full flex flex-col items-start p-2 -ml-2">
+            <div className="text-[10px] text-gray-500 w-full flex flex-col items-start p-2 -ml-2">
               <span>버전 1.0.0</span>
               <span>(주)아톰케어</span>
             </div>

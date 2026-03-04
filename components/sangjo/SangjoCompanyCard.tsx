@@ -28,7 +28,7 @@ export const SangjoCompanyCard: React.FC<SangjoCompanyCardProps> = ({
             {/* Favorite Button - Heart Icon */}
             <button
                 onClick={onToggleFavorite}
-                className={`absolute right-2 top-2 p-2 rounded-full transition-all shadow-sm z-10 ${isFavorited
+                className={`absolute right-2 top-2 p-3 rounded-full transition-all shadow-sm z-10 ${isFavorited
                     ? 'bg-red-50 text-red-500'
                     : 'bg-white/80 text-gray-400 hover:text-red-500 hover:bg-red-50'
                     }`}
@@ -44,7 +44,7 @@ export const SangjoCompanyCard: React.FC<SangjoCompanyCardProps> = ({
             {/* Compare Button - Icon Only Style */}
             <button
                 onClick={onToggleCompare}
-                className={`absolute right-3.5 bottom-3.5 p-1.5 rounded-full transition-colors border shadow-sm z-10 ${isCompared
+                className={`absolute right-2 bottom-2 p-3 rounded-full transition-colors border shadow-sm z-10 ${isCompared
                     ? 'bg-primary text-white border-primary'
                     : 'bg-white text-gray-400 border-gray-200 hover:border-primary hover:text-primary'
                     }`}

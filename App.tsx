@@ -171,6 +171,8 @@ const App: React.FC = () => {
     setInitialChatIntent(null);
     setIsBooking(false);
     setIsMenuOpen(false);
+    setShowLoginModal(false);
+    setShowSignUpModal(false);
     setViewState(view);
   };
   const handleViewOnMap = () => {

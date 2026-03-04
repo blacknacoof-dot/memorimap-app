@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Facility, Reservation as LegacyReservation } from '../types';
 import { ReservationSchema, ReservationFormValues } from '../lib/schemas';
 import { format, addDays, startOfToday } from 'date-fns';
+import { toast } from 'sonner';
 
 import { Check, X, Clock, CreditCard, AlertCircle, Loader2, Landmark, Phone, PawPrint, ArrowLeft } from 'lucide-react';
 import { requestPayment, verifyPayment, PORTONE_CONFIG } from '../lib/portone';
@@ -29,7 +30,7 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
   const isPetFacility = facility.type === 'pet';
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
-  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [hasPaymentFailed, setHasPaymentFailed] = useState(false);
 
   const cancelPayment = useCallback(() => {
     const bodyChildren = document.body.children;
@@ -187,7 +188,7 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
 
   const handlePaymentProcess = async () => {
     setIsProcessingPayment(true);
-    setPaymentError(null);
+    setHasPaymentFailed(false);
     const data = formValues; // Already validated up to here
 
     if (paymentMethod === 'TRANSFER' || reservationType === 'CONSULTATION') {
@@ -240,7 +241,8 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
       console.error('Payment Error:', error);
       const msg = error instanceof Error ? error.message : '';
       if (!msg.includes('취소')) {
-        setPaymentError(msg || '결제 진행 중 오류가 발생했습니다.');
+        toast.error(msg || '결제 진행 중 오류가 발생했습니다.');
+        setHasPaymentFailed(true);
       }
     } finally {
       setIsProcessingPayment(false);
@@ -524,7 +526,16 @@ export const ReservationModal: React.FC<Props> = ({ facility, onClose, onConfirm
               <button onClick={() => setReservationType('BASIC')} className={`w-full p-3 border rounded-xl text-left ${reservationType === 'BASIC' ? 'border-primary bg-blue-50' : ''}`}>실속형 (1만원)</button>
               <button onClick={() => setReservationType('VIP')} className={`w-full p-3 border rounded-xl text-left ${reservationType === 'VIP' ? 'border-primary bg-blue-50' : ''}`}>VIP (10만원)</button>
             </div>
-            {paymentError && <div className="text-red-500 text-sm">{paymentError}</div>}
+            {hasPaymentFailed && (
+              <button
+                onClick={handlePaymentProcess}
+                disabled={isProcessingPayment}
+                className="w-full py-3 bg-red-50 text-red-600 border border-red-200 rounded-xl text-sm font-medium flex items-center justify-center gap-2 active:scale-95 transition-transform"
+              >
+                <AlertCircle size={16} />
+                다시 결제하기
+              </button>
+            )}
           </div>
         );
       case 4:
