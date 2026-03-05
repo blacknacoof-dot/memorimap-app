@@ -285,7 +285,22 @@ MyPageView/
 
 | Block | 항목 | 상태 |
 |-------|------|------|
-| Block 3 | consultation_submit 이벤트 연결 (ConsultationModal) | 미완료 |
-| Block 3 | GA4 Measurement ID 발급 및 적용 | 대기 |
-| Block 3 | 2주 데이터 수집 후 A/B 실험 목록 실행 | 대기 |
+| Block 3 | consultation_submit 이벤트 연결 (ConsultationModal) | ✅ 완료 (commit: 692ed97) |
+| Block 3 | GA4 Measurement ID 발급 및 적용 | ✅ 발급완료 (.env.local 저장) |
+| Block 3 | 2주 데이터 수집 후 A/B 실험 목록 실행 | 대기 (수집 시작됨) |
 | Block 4 | 접근성 체계 (role="dialog", focus trap 등) | 미착수 |
+
+### 🔴 무결성 검증 발견 이슈 (2026-03-05)
+
+> 상세 내용: `verification_report_20260305.md` 참조
+
+| 우선순위 | 이슈 | 파일 |
+|---------|------|------|
+| P0 즉시 | `window.location.reload()` 2곳 잔존 | `ErrorBoundary.tsx:115`, `index.tsx:54` |
+| P0 즉시 | `useFacilityAdmin` 중복 정의 | `components/dashboard/`, `hooks/` |
+| P0 즉시 | `@ts-ignore` 타입 우회 | `lib/queries.ts:1591` |
+| P1 이번주 | console.warn/error 프로덕션 잔존 4건 | `FacilityFAQManager`, `PartnerInquiryView`, `MapContainer` |
+| P1 이번주 | partnerId ↔ facilityId 네이밍 혼용 | `PartnerDashboard`, `OperationsManagement`, `LiveConsultation` |
+| P1 이번주 | ComparisonModal 삭제 confirm 없음 | `ComparisonModal.tsx:46` |
+| P2 출시후 | 파일크기 300줄 초과 24개 (lib/queries.ts 2046줄 최우선) | 다수 |
+| P2 출시후 | 상조 플랜 가격 하드코딩 | `SubscriptionPlans.tsx:118,133,150` |
