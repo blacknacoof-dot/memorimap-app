@@ -229,18 +229,22 @@ const App: React.FC = () => {
 
   const isShareRoute = window.location.hash.startsWith('#/share/');
 
+  // 공유 링크 접근 시 앱 전체 UI 없이 독립 렌더링
+  if (isShareRoute) {
+    return (
+      <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <Routes>
+          <Route path="/share/:token" element={<ShareJourneyView />} />
+        </Routes>
+      </HashRouter>
+    );
+  }
+
   return (
     <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ErrorBoundary>
         <div className="app-mobile-shell h-full w-full relative bg-gray-100 flex justify-center overflow-hidden">
           <div className="w-full h-full md:max-w-md bg-white relative shadow-2xl flex flex-col">
-
-            {/* Share Route */}
-            {isShareRoute && (
-              <Routes>
-                <Route path="/share/:token" element={<ShareJourneyView />} />
-              </Routes>
-            )}
 
             {/* Role Error (Dev Only) */}
             {roleError && import.meta.env.DEV && (
