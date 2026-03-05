@@ -3,11 +3,10 @@
 
 # Large Data & Backups
 backups/
-data/
 memorial_data_v1/
-
-# 소스코드로 사용되는 data/ 파일 예외
-!data/sangjoCompanyDefaults.ts
+data/*.csv
+data/*.json
+data/*.sql
 *.csv
 *.sql
 *.json
