@@ -25,12 +25,13 @@ interface Props {
   onOpenConsultation?: () => void;
   onOpenAiChat?: () => void;
   onViewSangjoList?: () => void;
+  onDirectConsult?: () => void;
 }
 
 export const FacilitySheet: React.FC<Props> = ({
   facility, onClose, onBook, onViewMap, isLoggedIn, currentUser,
   onLoginRequired, isInCompareList, onToggleCompare,
-  reservations = [], onOpenAiChat, onViewSangjoList,
+  reservations = [], onOpenAiChat, onViewSangjoList, onDirectConsult,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -244,7 +245,14 @@ export const FacilitySheet: React.FC<Props> = ({
           )}
 
           <button
-            onClick={() => { analytics.reservationStart(facility.id, facility.name); onBook(); }}
+            onClick={() => {
+              analytics.reservationStart(facility.id, facility.name);
+              if (facility.type === 'funeral' && onDirectConsult) {
+                onDirectConsult();
+              } else {
+                onBook();
+              }
+            }}
             className="flex-1 bg-primary text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/30 active:scale-95 transition-transform text-sm"
           >
             {facility.type === 'funeral' ? '바로예약하기' : '방문 예약하기'}

@@ -15,6 +15,8 @@ import { useChatStore } from '../stores/useChatStore';
 import { useSession } from '../lib/auth';
 import { getAuthClient } from '../lib/supabaseClient';
 import { saveSangjoContract, resolveSangjoDbId } from '../lib/sangjoQueries';
+import { ConsultationForm } from './sangjo/ConsultationForm';
+import { createLead } from '../lib/queries';
 
 const FuneralCompanySheet = React.lazy(() => import('./FuneralCompanySheet').then(m => ({ default: m.FuneralCompanySheet })));
 const SangjoConsultationModal = React.lazy(() => import('./Consultation/SangjoConsultationModal').then(m => ({ default: m.SangjoConsultationModal })));
@@ -117,6 +119,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
 
   const setSearchQuery = useFilterStore(state => state.setSearchQuery);
   const { session } = useSession();
+  const [directConsultFacility, setDirectConsultFacility] = React.useState<Facility | null>(null);
 
   // 글로벌 채팅 스토어 구독 (TopBar 긴급 버튼 등에서 채팅 열기)
   const { isOpen: globalChatOpen, intent: globalChatIntent, closeChat: globalCloseChat } = useChatStore();
@@ -240,6 +243,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
           onOpenConsultation={() => setAiChatFacility(selectedFacility)}
           onOpenAiChat={() => { setAiChatFacility(selectedFacility); setSelectedFacility(null); }}
           onViewSangjoList={() => { setViewState(ViewState.FUNERAL_COMPANIES); setSelectedFacility(null); }}
+          onDirectConsult={() => setDirectConsultFacility(selectedFacility)}
         />
       )}
 
@@ -260,6 +264,46 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
           onClose={() => { setIsBooking(false); setIsUrgentBooking(false); }}
           onConfirm={handleBookingConfirm}
           reservationMode={isUrgentBooking ? 'URGENT' : 'STANDARD'}
+        />
+      )}
+
+      {/* Direct Consult Form (장례식장 바로예약하기) */}
+      {directConsultFacility && (
+        <ConsultationForm
+          company={{
+            id: String(directConsultFacility.id),
+            name: directConsultFacility.name,
+            rating: directConsultFacility.rating || 0,
+            reviewCount: directConsultFacility.reviewCount || 0,
+            imageUrl: directConsultFacility.imageUrl || '',
+            description: directConsultFacility.description || '',
+            features: directConsultFacility.features || [],
+            phone: directConsultFacility.phone || '',
+            priceRange: directConsultFacility.priceRange || '',
+            benefits: [],
+          } as Parameters<typeof ConsultationForm>[0]['company']}
+          mode="phone"
+          onClose={() => setDirectConsultFacility(null)}
+          onSubmit={async (data) => {
+            try {
+              const client = await getAuthClient(session, { strict: true });
+              await createLead({
+                userId: userInfo?.id,
+                facilityId: String(directConsultFacility.id),
+                contactName: (data.name as string) || '',
+                contactPhone: (data.phone as string) || '',
+                category: 'funeral',
+                urgency: 'high',
+                priorities: data.requests ? [data.requests as string] : [],
+                contextData: { ...data, source: 'DirectConsult' },
+                notes: `[바로예약하기] ${(data.requests as string) || ''}`,
+              }, client);
+              setDirectConsultFacility(null);
+              showToast('상담 신청이 완료되었습니다! 10분 내로 연락드립니다.', 'success');
+            } catch {
+              showToast('상담 신청 중 오류가 발생했습니다.', 'error');
+            }
+          }}
         />
       )}
 
