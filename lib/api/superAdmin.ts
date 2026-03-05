@@ -215,48 +215,6 @@ export const deleteNotice = async (id: string, client: SupabaseClient) => {
     if (error) throw error;
 };
 
-// --- 상담 신청 관리 API ---
-export const fetchLeads = async (client: SupabaseClient) => {
-    const { data: leads, error } = await client
-        .from('consultations')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-    if (error) {
-        return [];
-    }
-
-    interface ConsultationRow {
-        id: string;
-        user_name?: string | null;
-        visitor_name?: string | null;
-        contact_name?: string | null;
-        phone_number?: string | null;
-        contact_number?: string | null;
-        contact_phone?: string | null;
-        consultation_type?: string | null;
-        type?: string | null;
-        category?: string | null;
-        status?: string | null;
-        created_at: string;
-        facility_name?: string | null;
-        [key: string]: unknown;
-    }
-
-    return leads.map((lead: ConsultationRow) => ({
-        id: lead.id,
-        user_name: lead.user_name || lead.visitor_name || lead.contact_name || '익명 고객',
-        phone_number: lead.phone_number || lead.contact_number || lead.contact_phone,
-        type: lead.consultation_type || lead.type || lead.category || 'consultation',
-        status: lead.status || 'new',
-        created_at: lead.created_at,
-        customer_name: lead.user_name || lead.visitor_name || lead.contact_name || '익명 고객',
-        customer_phone: lead.phone_number || lead.contact_number || lead.contact_phone,
-        facility_name: lead.facility_name || '(시설 미지정)',
-        category: lead.category || '기타'
-    }));
-};
-
 // --- 관리 활동 로그 API ---
 export interface AuditLog {
     id: string;
