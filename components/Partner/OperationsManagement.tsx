@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { confirmAsync } from '../../src/components/common/ConfirmModal';
 
 interface OperationsManagementProps {
-    facilityId: string; // facilities.id UUID
+    partnerId: string; // sangjo_hq_admins.sangjo_id
 }
 
 interface NewOperationForm {
@@ -28,7 +28,7 @@ const EMPTY_FORM: NewOperationForm = {
     notes: '',
 };
 
-export const OperationsManagement: React.FC<OperationsManagementProps> = ({ facilityId }) => {
+export const OperationsManagement: React.FC<OperationsManagementProps> = ({ partnerId }) => {
     const [operations, setOperations] = useState<PartnerOperation[]>([]);
     const [loading, setLoading] = useState(true);
     const [showNewModal, setShowNewModal] = useState(false);
@@ -43,7 +43,7 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ faci
         const { data } = await client
             .from('partner_operations')
             .select('*')
-            .eq('partner_id', facilityId)
+            .eq('partner_id', partnerId)
             .order('created_at', { ascending: false });
         if (data) setOperations(data as PartnerOperation[]);
         setLoading(false);
@@ -58,12 +58,12 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ faci
 
         getAuthClient(session).then(client => {
             const channel = client
-                .channel(`partner-ops-${facilityId}`)
+                .channel(`partner-ops-${partnerId}`)
                 .on('postgres_changes', {
                     event: '*',
                     schema: 'public',
                     table: 'partner_operations',
-                    filter: `partner_id=eq.${facilityId}`
+                    filter: `partner_id=eq.${partnerId}`
                 }, () => { loadOperations(); })
                 .subscribe();
 
@@ -74,7 +74,7 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ faci
         });
 
         return () => { cleanup?.(); };
-    }, [facilityId, session]);
+    }, [partnerId, session]);
 
     const handleMove = async (id: string, nextStage: PartnerOperation['operation_stage']) => {
         const confirmed = await confirmAsync(`운영 단계를 '${nextStage}'(으)로 변경하시겠습니까?`, '단계 변경');
@@ -101,7 +101,7 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ faci
         try {
             const client = await getAuthClient(session, { strict: true });
             const { error } = await client.from('partner_operations').insert({
-                partner_id: facilityId,
+                partner_id: partnerId,
                 operation_stage: 'pending',
                 deceased_name: form.deceased_name.trim(),
                 funeral_director: form.funeral_director.trim() || null,

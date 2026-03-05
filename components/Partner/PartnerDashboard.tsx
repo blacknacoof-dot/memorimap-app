@@ -182,8 +182,8 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                 setShowPlanSelector={setShowPlanSelector}
               />
             )}
-            {activeTab === 'chat' && facilityId && <LiveConsultation facilityId={facilityId} />}
-            {activeTab === 'ops' && facilityId && <OperationsManagement facilityId={facilityId} />}
+            {activeTab === 'chat' && facilityId && <LiveConsultation partnerId={facilityId} />}
+            {activeTab === 'ops' && facilityId && <OperationsManagement partnerId={facilityId} />}
             {activeTab === 'settings' && (
               facilityId ? (
                 <FacilityInfoEditor facilityId={facilityId} />

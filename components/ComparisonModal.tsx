@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { confirmAsync } from '../src/components/common/ConfirmModal';
 import { Facility, getCategoryLabel, normalizeCategoryValue, StandardFacilityCategoryType } from '../types';
 import { X, Star, MapPin, Trash2, AlertCircle } from 'lucide-react';
 
@@ -43,7 +44,10 @@ export const ComparisonModal: React.FC<Props> = ({ facilities, onClose, onRemove
                     <img src={facility.imageUrl} alt={facility.name} className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-start justify-end p-2">
                       <button
-                        onClick={() => onRemove(facility.id)}
+                        onClick={async () => {
+                          const ok = await confirmAsync(`"${facility.name}"을(를) 비교함에서 제거할까요?`, '비교 제거');
+                          if (ok) onRemove(facility.id);
+                        }}
                         className="bg-white/90 p-1.5 rounded-full text-red-500 hover:bg-white shadow-sm transition-transform hover:scale-110"
                         title="비교함에서 제거"
                       >

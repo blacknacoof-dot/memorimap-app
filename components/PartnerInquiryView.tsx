@@ -93,8 +93,8 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack, onLoginClick }) =>
                         setSearchResults(results);
                         setShowResults(true);
                     }
-                } catch (e) {
-                    console.error('Search error', e);
+                } catch (_e) {
+                    // search errors are non-critical; UI shows empty results
                 } finally {
                     setIsSearching(false);
                 }

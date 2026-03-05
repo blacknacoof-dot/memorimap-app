@@ -44,9 +44,7 @@ export const FacilityFAQManager: React.FC<Props> = ({ facilityId }) => {
                 .eq('facility_id', facilityId)
                 .eq('is_active', true)
                 .order('order_index', { ascending: true });
-            if (error) {
-                console.warn('[FAQ] loadFaqs error:', error);
-            }
+            if (error) throw error;
             setFaqs((data || []).map((d: { id: string; question: string; answer: string; order_index?: number }) => ({ id: d.id, question: d.question, answer: d.answer, order_index: d.order_index })));
         } catch {
             toast.error('FAQ 로딩 실패');

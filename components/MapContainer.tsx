@@ -107,7 +107,6 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
       setTimeout(() => {
         if (checkInterval) {
           clearInterval(checkInterval);
-          console.error('[MapContainer] SDK load timeout after 15s');
         }
       }, 15000);
     };
@@ -117,7 +116,6 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
 
       // ✅ [Crash Prevention] SDK Safety Check
       if (!window.naver || !window.naver.maps || !window.naver.maps.Map) {
-        console.warn('[MapContainer] Naver Map SDK not ready yet');
         return;
       }
 

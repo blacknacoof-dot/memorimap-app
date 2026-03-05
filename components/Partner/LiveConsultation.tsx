@@ -11,10 +11,10 @@ import { PartnerConversation } from '../../types';
 import { confirmAsync } from '../../src/components/common/ConfirmModal';
 
 interface LiveConsultationProps {
-    facilityId: string; // facilities.id UUID
+    partnerId: string; // sangjo_hq_admins.sangjo_id
 }
 
-export const LiveConsultation: React.FC<LiveConsultationProps> = ({ facilityId }) => {
+export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId }) => {
     const [conversations, setConversations] = useState<PartnerConversation[]>([]);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [input, setInput] = useState('');
@@ -26,7 +26,7 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ facilityId }
         const { data } = await client
             .from('partner_conversations')
             .select('*')
-            .eq('partner_id', facilityId)
+            .eq('partner_id', partnerId)
             .order('last_message_at', { ascending: false });
         if (data) setConversations(data as PartnerConversation[]);
     };
@@ -40,12 +40,12 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ facilityId }
 
         getAuthClient(session).then(client => {
             const channel = client
-                .channel(`partner-live-${facilityId}`)
+                .channel(`partner-live-${partnerId}`)
                 .on('postgres_changes', {
                     event: '*',
                     schema: 'public',
                     table: 'partner_conversations',
-                    filter: `partner_id=eq.${facilityId}`
+                    filter: `partner_id=eq.${partnerId}`
                 }, (payload) => {
                     const updated = payload.new as PartnerConversation;
                     setConversations(prev => {
@@ -67,7 +67,7 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ facilityId }
         });
 
         return () => { cleanup?.(); };
-    }, [facilityId, session]);
+    }, [partnerId, session]);
 
     useEffect(() => {
         if (scrollRef.current) {
