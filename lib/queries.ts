@@ -1588,8 +1588,9 @@ export const getMyFavorites = async (userId: string) => {
         .eq('user_id', userId);
 
     if (error) throw error;
-    // @ts-ignore
-    return data.map(f => f.facilities); // 시설 정보만 배열로 추출
+    return (data as Array<{ facility_id: string; facilities: Record<string, unknown> | null }>)
+        .map(f => f.facilities)
+        .filter((f): f is Record<string, unknown> => f !== null);
 };
 
 /**

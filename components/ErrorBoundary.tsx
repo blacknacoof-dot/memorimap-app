@@ -112,7 +112,7 @@ export class ErrorBoundary extends Component<Props, State> {
     };
 
     handleRefresh = () => {
-        window.location.reload();
+        window.location.href = '/';
     };
 
     handleGoHome = () => {

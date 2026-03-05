@@ -51,7 +51,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
             <br />
             <pre style={{ fontSize: '10px', marginTop: '10px' }}>{this.state.error?.stack}</pre>
           </div>
-          <button onClick={() => window.location.reload()} style={{ marginTop: '20px', padding: '10px' }}>
+          <button onClick={() => { window.location.href = '/'; }} style={{ marginTop: '20px', padding: '10px' }}>
             새로고침
           </button>
         </div>
