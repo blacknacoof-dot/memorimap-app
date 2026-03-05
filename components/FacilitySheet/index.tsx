@@ -247,7 +247,7 @@ export const FacilitySheet: React.FC<Props> = ({
             onClick={() => { analytics.reservationStart(facility.id, facility.name); onBook(); }}
             className="flex-1 bg-primary text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/30 active:scale-95 transition-transform text-sm"
           >
-            방문 예약하기
+            {facility.type === 'funeral' ? '바로예약하기' : '방문 예약하기'}
           </button>
         </div>
       </div>

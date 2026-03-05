@@ -753,24 +753,10 @@ export const ChatInterface: React.FC<Props> = ({
                     </button>
                 </div>
 
-                {/* Quick Info Badges & Direct Action */}
-                <div className="flex justify-between items-center">
-                    <div className="flex gap-2 text-[11px] font-medium">
-                        <span className={`bg-slate-800 border-slate-700 px-2 py-1 rounded text-slate-200`}>24시간 상담</span>
-                        <span className={`bg-slate-800 border-slate-700 px-2 py-1 rounded text-slate-200 hidden sm:inline-block`}>실시간 답변</span>
-                    </div>
-                    {facility.id !== 'maum-i' && (
-                        <button
-                            onClick={() => {
-                                setFormMode('phone'); // [MODIFIED] Open detailed form ("General Reservation") by default
-                                setIsFormOpen(true);
-                            }}
-                            className={`bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 min-h-[44px] rounded-full text-xs font-bold transition flex items-center gap-1 shadow-lg active:scale-95`}
-                        >
-                            <CalendarCheck size={14} />
-                            바로 예약하기
-                        </button>
-                    )}
+                {/* Quick Info Badges */}
+                <div className="flex gap-2 text-[11px] font-medium">
+                    <span className={`bg-slate-800 border-slate-700 px-2 py-1 rounded text-slate-200`}>24시간 상담</span>
+                    <span className={`bg-slate-800 border-slate-700 px-2 py-1 rounded text-slate-200 hidden sm:inline-block`}>실시간 답변</span>
                 </div>
             </div>
 
