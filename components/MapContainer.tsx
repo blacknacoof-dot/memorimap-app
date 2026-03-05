@@ -185,14 +185,14 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
             if (isMounted) setIsClusterReady(true);
           };
           clusterScript.onerror = () => {
-            console.warn('[MapContainer] MarkerClustering load failed, using individual markers');
+            // fallback: use individual markers
           };
           document.head.appendChild(clusterScript);
         } else {
           setIsClusterReady(true);
         }
-      } catch (e) {
-        console.error("[MapContainer] Naver Map init failed:", e);
+      } catch {
+        // map init failure is non-critical; map will remain blank
       }
     }
 
