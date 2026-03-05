@@ -822,6 +822,7 @@ export const ChatInterface: React.FC<Props> = ({
                                                 onLoginRequired={() => { onClose(); openSignIn(); }}
                                                 facilityId={facility.id !== 'maum-i' ? facility.id.toString() : undefined}
                                                 facilityName={facility.id !== 'maum-i' ? facility.name : undefined}
+                                                facilityType={facility.id !== 'maum-i' ? facility.type : undefined}
                                                 currentUser={currentUser}
                                                 onSwitchToFacility={(f, ctx) => onSwitchToFacility?.(f, ctx)}
                                             />

@@ -112,9 +112,11 @@ export function usePartnerDashboard(partnerId: string) {
     };
     loadFacilityData();
 
+    let mounted = true;
     let cleanup: (() => void) | undefined;
 
     getAuthClient(session).then(client => {
+      if (!mounted) return;
       const consChannel = client.channel(`partner-cons-${facilityId}`)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'consultations', filter: `facility_id=eq.${facilityId}` }, (payload) => {
           if (payload.eventType === 'INSERT') { setConsultations(prev => [payload.new as Consultation, ...prev]); toast.info('새 상담 문의가 접수되었습니다.'); }
@@ -140,7 +142,7 @@ export function usePartnerDashboard(partnerId: string) {
       };
     });
 
-    return () => { cleanup?.(); };
+    return () => { mounted = false; cleanup?.(); };
   }, [facilityId, session]);
 
   const unreadConsultations = consultations.filter(c => !c.is_read).length;

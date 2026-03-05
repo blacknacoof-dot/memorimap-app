@@ -44,6 +44,7 @@ interface FormProps {
     initialCategory?: string;
     facilityId?: string;
     facilityName?: string;
+    facilityType?: string;
     currentUser?: { id: string; name?: string; firstName?: string; phone?: string } | null;
     onSwitchToFacility?: (facility: { id: string; name: string; address?: string; phone?: string }, context?: Record<string, unknown>) => void;
 }
@@ -58,9 +59,19 @@ const MemorialSearchForm: React.FC<FormProps> = ({
     initialCategory = 'memorial',
     facilityId,
     facilityName,
+    facilityType,
     currentUser,
     onSwitchToFacility,
 }) => {
+    const FACILITY_TYPE_LABEL: Record<string, string> = {
+        natural_burial: '수목장',
+        sea_burial: '해양장',
+        columbarium: '봉안당',
+        charnel: '봉안당',
+        cemetery: '공원묘지',
+        park: '공원묘지',
+    };
+    const resolvedMemorialType = facilityType ? (FACILITY_TYPE_LABEL[facilityType] || '') : '';
     const { session } = useSession();
     const [isSaving, setIsSaving] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
@@ -72,13 +83,13 @@ const MemorialSearchForm: React.FC<FormProps> = ({
     const [budget, setBudget] = useState('');
 
     // Recommendations
-    const [recommendedFacilities, setRecommendedFacilities] = useState<Array<{ id: string; name: string; address?: string; jibun_address?: string; phone?: string; image_url?: string; imageUrl?: string; images?: string[] }>>([]);
+    const [recommendedFacilities, setRecommendedFacilities] = useState<Array<{ id: string; name: string; address?: string; jibun_address?: string; phone?: string; image_url?: string; imageUrl?: string; images?: string[]; type?: string }>>([]);
     const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
 
     // Booking state
     const [bookedIds, setBookedIds] = useState<Set<string>>(new Set());
     const [bookingId, setBookingId] = useState<string | null>(null);
-    const [consultFacility, setConsultFacility] = useState<{ id: string; name: string; phone?: string } | null>(null);
+    const [consultFacility, setConsultFacility] = useState<{ id: string; name: string; phone?: string; type?: string } | null>(null);
     // preStepData 제거 — 바로 ConsultationForm 진입
     const [bookingComplete, setBookingComplete] = useState<{ facilityName: string; scale: string; religion: string } | null>(null);
 
@@ -131,7 +142,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
             setIsSaving(false);
             setIsSubmitted(true);
             onSubmit({ text: finalText, data: { category: initialCategory, timing, religion, budget, facilityId, facilityName } });
-            setConsultFacility({ id: facilityId!, name: facilityName || '' });
+            setConsultFacility({ id: facilityId!, name: facilityName || '', type: facilityType });
             return;
         }
 
@@ -292,7 +303,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                                     benefits: [],
                                 }}
                                 mode="memorial"
-                                preStepData={{ scale: '', religion: religion || '' }}
+                                preStepData={{ scale: '', religion: religion || '', memorialType: consultFacility?.type ? (FACILITY_TYPE_LABEL[consultFacility.type] || '') : resolvedMemorialType }}
                                 onClose={() => { setConsultFacility(null); }}
                                 onSubmit={handleConsultSubmit}
                             />
@@ -342,7 +353,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                                                 <Check size={14} /> 접수 완료
                                             </div>
                                         ) : (
-                                            <button onClick={() => setConsultFacility({ id: fId, name: f.name, phone: f.phone })} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-1">
+                                            <button onClick={() => setConsultFacility({ id: fId, name: f.name, phone: f.phone, type: f.type })} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-1">
                                                 <Calendar size={14} /> 상담 신청
                                             </button>
                                         )}

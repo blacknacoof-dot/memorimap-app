@@ -148,9 +148,11 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
         fetchConsultations();
 
         // [Realtime Sync] — auth client
+        let mounted = true;
         let cleanup: (() => void) | undefined;
 
         getAuthClient(session).then(client => {
+            if (!mounted) return;
             const channel = client
                 .channel(`consultations-user-${userId}`)
                 .on(
@@ -171,7 +173,7 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
             };
         });
 
-        return () => { cleanup?.(); };
+        return () => { mounted = false; cleanup?.(); };
     }, [userId, session]);
 
     const handleCancel = async (consultation: ExtendedConsultation) => {

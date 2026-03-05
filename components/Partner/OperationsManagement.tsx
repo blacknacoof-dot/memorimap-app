@@ -54,9 +54,11 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
         void loadOperations();
 
         // [Realtime Sync] — auth client
+        let mounted = true;
         let cleanup: (() => void) | undefined;
 
         getAuthClient(session).then(client => {
+            if (!mounted) return;
             const channel = client
                 .channel(`partner-ops-${partnerId}`)
                 .on('postgres_changes', {
@@ -73,7 +75,7 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
             };
         });
 
-        return () => { cleanup?.(); };
+        return () => { mounted = false; cleanup?.(); };
     }, [partnerId, session]);
 
     const handleMove = async (id: string, nextStage: PartnerOperation['operation_stage']) => {

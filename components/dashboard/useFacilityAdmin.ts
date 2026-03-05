@@ -91,9 +91,11 @@ export function useFacilityAdmin({ user, facilities }: UseFacilityAdminProps) {
   // Realtime Subscription
   useEffect(() => {
     if (!myFacilityId || !session) return;
+    let mounted = true;
     let cleanup: (() => void) | undefined;
 
     getAuthClient(session).then(client => {
+      if (!mounted) return;
       const consultationChannel = client.channel(`facility-cons-${myFacilityId}`)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'consultations', filter: `facility_id=eq.${myFacilityId}` },
           (payload) => {
@@ -146,7 +148,7 @@ export function useFacilityAdmin({ user, facilities }: UseFacilityAdminProps) {
       };
     });
 
-    return () => { cleanup?.(); };
+    return () => { mounted = false; cleanup?.(); };
   }, [myFacilityId, session]);
 
   async function handleApprove(reservationId: string) {

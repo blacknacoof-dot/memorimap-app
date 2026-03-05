@@ -62,9 +62,11 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ facilityId, onClose })
     useEffect(() => {
         if (!conversationId || !session) return;
 
+        let mounted = true;
         let cleanup: (() => void) | undefined;
 
         getAuthClient(session).then(client => {
+            if (!mounted) return;
             const channel = client
                 .channel(`ai-conv-${conversationId}`)
                 .on('postgres_changes', {
@@ -87,7 +89,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ facilityId, onClose })
             };
         });
 
-        return () => { cleanup?.(); };
+        return () => { mounted = false; cleanup?.(); };
     }, [conversationId, session]);
 
     const initBot = async (retryCount = 0) => {

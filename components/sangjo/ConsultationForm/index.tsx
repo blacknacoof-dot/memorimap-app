@@ -13,7 +13,7 @@ interface FormProps {
     onClose: () => void;
     onSubmit: (data: Record<string, unknown>) => void;
     mode: 'phone' | 'chat' | 'urgent' | 'memorial';
-    preStepData?: { scale: string; religion: string };
+    preStepData?: { scale: string; religion: string; memorialType?: string };
 }
 
 export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubmit, mode = 'phone', preStepData }) => {
@@ -85,7 +85,7 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
         requests: '',
 
         // Memorial Specific
-        memorialType: '',
+        memorialType: preStepData?.memorialType || '',
         urnCount: '1기',
         deathDate: '',
         visitDate: '',

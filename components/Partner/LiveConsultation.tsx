@@ -36,9 +36,11 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
         void loadConversations();
 
         // [Realtime Sync] — auth client
+        let mounted = true;
         let cleanup: (() => void) | undefined;
 
         getAuthClient(session).then(client => {
+            if (!mounted) return;
             const channel = client
                 .channel(`partner-live-${partnerId}`)
                 .on('postgres_changes', {
@@ -66,7 +68,7 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
             };
         });
 
-        return () => { cleanup?.(); };
+        return () => { mounted = false; cleanup?.(); };
     }, [partnerId, session]);
 
     useEffect(() => {

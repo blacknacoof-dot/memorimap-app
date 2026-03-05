@@ -31,9 +31,11 @@ export function useNotifications() {
     useEffect(() => {
         if (!userId || !session) return;
 
+        let mounted = true;
         let cleanup: (() => void) | undefined;
 
         getAuthClient(session).then(client => {
+            if (!mounted) return;
             const channel = client
                 .channel(`notif-${userId}`)
                 .on(
@@ -54,7 +56,7 @@ export function useNotifications() {
             };
         });
 
-        return () => { cleanup?.(); };
+        return () => { mounted = false; cleanup?.(); };
     }, [userId, session, refetch]);
 
     // 읽음 처리 Mutation

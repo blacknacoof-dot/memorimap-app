@@ -6,7 +6,7 @@ interface MemorialFormBodyProps {
     setFormData: (data: ConsultationFormData) => void;
     borderColor: string;
     ringColor: string;
-    preStepData?: { scale: string; religion: string };
+    preStepData?: { scale: string; religion: string; memorialType?: string };
 }
 
 export const MemorialFormBody: React.FC<MemorialFormBodyProps> = ({
@@ -54,12 +54,18 @@ export const MemorialFormBody: React.FC<MemorialFormBodyProps> = ({
                 </div>
             </div>
 
-            {/* Section 2: Memorial Type */}
+            {/* Section 2: Memorial Type — 시설 유형이 이미 확정된 경우 숨김 */}
             <div className="space-y-3 pt-2">
                 <h3 className="text-sm font-bold text-emerald-700 flex items-center gap-1.5 border-b border-emerald-100 pb-2">
                     <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs border border-emerald-200">2</span>
-                    안치 유형 선택
+                    안치 유형
                 </h3>
+                {preStepData?.memorialType ? (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-800 font-bold">
+                        <span>✓</span>
+                        <span>{preStepData.memorialType}</span>
+                    </div>
+                ) : (
                 <div className="grid grid-cols-4 gap-2">
                     {[
                         { id: '봉안당', icon: '⛩️' },
@@ -80,6 +86,7 @@ export const MemorialFormBody: React.FC<MemorialFormBodyProps> = ({
                         </button>
                     ))}
                 </div>
+                )}
                 <div className={`grid ${preStepData?.religion ? 'grid-cols-1' : 'grid-cols-2'} gap-3`}>
                     <div>
                         <label className="block text-[10px] font-bold text-gray-500 mb-1">유골함 수량</label>

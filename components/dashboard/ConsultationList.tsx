@@ -79,9 +79,11 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
         fetchConsultations();
 
         // [Realtime Sync] — auth client
+        let mounted = true;
         let cleanup: (() => void) | undefined;
 
         getAuthClient(session).then(client => {
+            if (!mounted) return;
             const channel = client
                 .channel(`consultations-facility-${facilityId}`)
                 .on(
@@ -102,7 +104,7 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
             };
         });
 
-        return () => { cleanup?.(); };
+        return () => { mounted = false; cleanup?.(); };
     }, [facilityId, filter, session]);
 
     const handleStatusChange = async (consultationId: string, newStatus: 'waiting' | 'accepted' | 'cancelled' | 'completed') => {
