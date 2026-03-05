@@ -542,14 +542,13 @@ export const ChatInterface: React.FC<Props> = ({
 
                     // Call DB
                     const urgentClient = await getAuthClient(session, { strict: true });
-                    // @ts-ignore
                     await createUrgentReservation(
                         facility.id.toString(),
                         currentUser?.id || '',
                         currentUser?.name || '',
                         currentUser?.phone || '',
                         visitDate,
-                        urgentBookingContext.type?.replace('type_', '') as 'single' | 'couple' || 'single',
+                        (urgentBookingContext.type?.replace('type_', '') || 'single') as 'single' | 'couple',
                         'AI 긴급 예약',
                         urgentClient
                     );

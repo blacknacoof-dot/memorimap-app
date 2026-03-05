@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '../../lib/auth';
-import { supabase } from '../../lib/supabaseClient';
 import { toast } from 'sonner';
 import { UserCog, Lock, BellRing } from 'lucide-react';
 import { useSuperAdminClient } from './SuperAdminGuard';
@@ -46,7 +45,7 @@ export const AdminSettings = () => {
             toast.error('이메일 정보를 찾을 수 없습니다.');
             return;
         }
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        const { error } = await client.auth.resetPasswordForEmail(email, {
             redirectTo: `${window.location.origin}/#/reset-password`,
         });
         if (error) {
