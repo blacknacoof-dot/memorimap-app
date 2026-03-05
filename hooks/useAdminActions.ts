@@ -15,8 +15,11 @@ interface ApprovePartnerResult {
 
 /**
  * 파트너 승인/거절 훅
- * 모든 DB 작업은 SECURITY DEFINER RPC 내부에서 원자적으로 처리
- * (시설 생성, 파트너 생성, 역할 변경, 자동 거절, 감사 로그, 알림 전부 포함)
+ * Edge Function `approve-partner` 경유:
+ * - JWT 검증 + super_admin 역할 확인
+ * - 원자적 DB 트랜잭션 (시설 생성, 파트너 생성, 역할 변경, 자동 거절, 감사 로그)
+ * - 이메일 알림 발송 (Resend)
+ * - 인앱 알림 저장
  */
 export function useApprovePartner(client: SupabaseClient) {
     const [loading, setLoading] = useState(false);
@@ -27,49 +30,22 @@ export function useApprovePartner(client: SupabaseClient) {
         setError(null);
 
         try {
-            const { data: { user } } = await client.auth.getUser();
-            const adminId = user?.id;
+            const { data, error: fnError } = await client.functions.invoke('approve-partner', {
+                body: {
+                    inquiryId: params.inquiryId,
+                    action: params.action,
+                    ...(params.rejectionReason ? { rejectionReason: params.rejectionReason } : {}),
+                },
+            });
 
-            if (!adminId) {
-                throw new Error('인증 정보를 가져올 수 없습니다. 다시 로그인해주세요.');
+            if (fnError) throw fnError;
+
+            const result = data as { success?: boolean; error?: string; action?: string } | null;
+            if (result?.success === false) {
+                throw new Error(result.error || '처리 실패');
             }
 
-            if (params.action === 'approve') {
-                // approve_partner_transaction RPC:
-                // 시설 생성 + 파트너 생성 + 역할 변경 + 동일 업체 자동 거절 + 감사 로그 + 알림
-                const { data, error: rpcError } = await client
-                    .rpc('approve_partner_transaction', {
-                        p_inquiry_id: params.inquiryId,
-                        p_admin_id: adminId
-                    });
-
-                if (rpcError) throw rpcError;
-
-                const result = data as { success: boolean; error?: string } | null;
-                if (result && !result.success) {
-                    throw new Error(result.error || '승인 트랜잭션 실패');
-                }
-
-                return { success: true, action: 'approved' };
-            }
-
-            // reject_partner_transaction RPC:
-            // 일괄 거절 + 감사 로그 + 알림
-            const { data, error: rpcError } = await client
-                .rpc('reject_partner_transaction', {
-                    p_inquiry_id: params.inquiryId,
-                    p_admin_id: adminId,
-                    p_reason: params.rejectionReason || '운영팀 문의 요망'
-                });
-
-            if (rpcError) throw rpcError;
-
-            const result = data as { success: boolean; error?: string } | null;
-            if (result && !result.success) {
-                throw new Error(result.error || '거절 트랜잭션 실패');
-            }
-
-            return { success: true, action: 'rejected' };
+            return { success: true, action: result?.action ?? params.action };
 
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류';

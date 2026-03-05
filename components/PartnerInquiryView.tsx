@@ -150,8 +150,6 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack, onLoginClick }) =>
             // Submission success
             setIsSuccess(true);
         } catch (error: unknown) {
-            console.error('Submission failed', error);
-
             const err = error as { code?: string; message?: string };
             // 🔍 중복 이메일 에러 감지
             if (err?.code === '23505' && err?.message?.includes('partner_inquiries_company_email_idx')) {
