@@ -7,6 +7,7 @@ import { FuneralCompany } from '../../types';
 import { FUNERAL_COMPANIES } from '../../constants';
 import { useSession } from '../../lib/auth';
 import { getAuthClient } from '../../lib/supabaseClient';
+import { analytics } from '../../lib/analytics';
 import type { QuotaCheckResult } from '../../types/subscription';
 import UpgradePrompt from '../UpgradePrompt';
 
@@ -49,6 +50,7 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
     const [quotaExceeded, setQuotaExceeded] = useState<QuotaCheckResult | null>(null);
 
     const handleCompanyConnect = (selectedCompany: FuneralCompany) => {
+        analytics.consultationSubmit(selectedCompany.id, selectedCompany.id.startsWith('pet_') ? 'pet' : 'sangjo');
         setActiveCompany(selectedCompany);
         if (onCompanySelect) {
             onCompanySelect(selectedCompany);
