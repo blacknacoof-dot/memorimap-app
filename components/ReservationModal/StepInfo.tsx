@@ -2,7 +2,8 @@ import React from 'react';
 import type { UseFormRegister, FieldErrors } from 'react-hook-form';
 import { ReservationFormValues } from '../../lib/schemas';
 
-const PURPOSES = ['현장 답사', '기일 추모', '분양 상담', '기타'];
+const PURPOSES = ['현장 답사', '장례 상담', '시설 견학', '기타'];
+const PURPOSES_MEMORIAL = ['현장 답사', '봉안 상담', '자연장 상담', '기일 추모'];
 const PURPOSES_PET = ['기본 장례', '화장 진행', '봉안/스톤 상담', '기타 문의'];
 
 interface Props {
@@ -12,10 +13,11 @@ interface Props {
   onCountChange: (count: number) => void;
   onPurposeChange: (purpose: string) => void;
   isPetFacility: boolean;
+  isMemorialFacility?: boolean;
 }
 
 export const StepInfo: React.FC<Props> = ({
-  register, errors, formValues, onCountChange, onPurposeChange, isPetFacility,
+  register, errors, formValues, onCountChange, onPurposeChange, isPetFacility, isMemorialFacility,
 }) => (
   <div className="space-y-4">
     <div>
@@ -49,7 +51,7 @@ export const StepInfo: React.FC<Props> = ({
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">방문 목적</label>
       <div className="flex flex-wrap gap-2">
-        {(isPetFacility ? PURPOSES_PET : PURPOSES).map(p => (
+        {(isPetFacility ? PURPOSES_PET : isMemorialFacility ? PURPOSES_MEMORIAL : PURPOSES).map(p => (
           <button
             key={p}
             onClick={() => onPurposeChange(p)}

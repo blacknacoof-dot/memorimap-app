@@ -23,7 +23,8 @@ interface Props {
 export const ReservationModal: React.FC<Props> = ({
   facility, onClose, onConfirm, reservationMode = 'STANDARD',
 }) => {
-  const isPetFacility = facility.type === 'pet';
+  const isPetFacility = facility.type === 'pet' || facility.type === 'pet_funeral';
+  const isMemorialFacility = ['cemetery', 'columbarium', 'natural_burial', 'sea_burial'].includes(facility.type || '');
   const steps = reservationMode === 'URGENT' ? STEPS_URGENT : STEPS_STANDARD;
 
   const {
@@ -72,6 +73,7 @@ export const ReservationModal: React.FC<Props> = ({
           onCountChange={(n) => setValue('visitor_count', n)}
           onPurposeChange={(p) => setValue('purpose', p)}
           isPetFacility={isPetFacility}
+          isMemorialFacility={isMemorialFacility}
         />
       );
       case 3: return (
@@ -107,7 +109,8 @@ export const ReservationModal: React.FC<Props> = ({
   const getTitle = () => {
     if (reservationMode === 'URGENT') return '🚨 긴급 장례 접수';
     if (isPetFacility) return '🐾 반려동물 장례 예약';
-    return '📅 방문 상담 예약';
+    if (isMemorialFacility) return '🏛️ 추모시설 방문 예약';
+    return '📅 장례식장 방문 예약';
   };
 
   // 긴급 접수 완료 — 풀스크린 단순 완료 모달

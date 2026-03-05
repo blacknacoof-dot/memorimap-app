@@ -238,7 +238,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
           onToggleCompare={() => toggleCompare(selectedFacility)}
           reservations={reservations}
           onOpenConsultation={() => setAiChatFacility(selectedFacility)}
-          onOpenAiChat={() => setAiChatFacility(selectedFacility)}
+          onOpenAiChat={() => { setAiChatFacility(selectedFacility); setSelectedFacility(null); }}
           onViewSangjoList={() => { setViewState(ViewState.FUNERAL_COMPANIES); setSelectedFacility(null); }}
         />
       )}
