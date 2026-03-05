@@ -33,3 +33,4 @@ playwright-report/
 !tsconfig.json
 !tsconfig.node.json
 !vercel.json
+!public/manifest.json
