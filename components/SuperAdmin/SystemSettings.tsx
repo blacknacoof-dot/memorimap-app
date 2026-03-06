@@ -7,19 +7,23 @@ import { useSuperAdminClient } from './SuperAdminGuard';
 
 export const SystemSettings = () => {
     const [commission, setCommission] = useState('3.5');
+    const [maintenanceMode, setMaintenanceMode] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const client = useSuperAdminClient();
 
-    // DB에서 수수료율 로드
+    // DB에서 설정값 로드
     useEffect(() => {
         const load = async () => {
             try {
                 const { data } = await client
                     .from('system_settings')
-                    .select('value')
-                    .eq('key', 'commission_rate')
-                    .maybeSingle();
-                if (data?.value != null) setCommission(String(data.value));
+                    .select('key, value')
+                    .in('key', ['commission_rate', 'maintenance_mode']);
+                if (!data) return;
+                for (const row of data) {
+                    if (row.key === 'commission_rate' && row.value != null) setCommission(String(row.value));
+                    if (row.key === 'maintenance_mode') setMaintenanceMode(row.value === true || row.value === 'true');
+                }
             } catch { /* 기본값 유지 */ }
         };
         load();
@@ -52,19 +56,18 @@ export const SystemSettings = () => {
                         <p className="text-[10px] text-red-600 mt-0.5">활성화 시 일반 사용자의 접속이 차단됩니다.</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" className="sr-only peer" onChange={async (e) => {
+                        <input type="checkbox" className="sr-only peer" checked={maintenanceMode} onChange={async (e) => {
                             const checked = e.target.checked;
                             const label = checked ? '활성화' : '비활성화';
                             if (!await confirmAsync(`점검 모드를 ${label}하시겠습니까?\n${checked ? '일반 사용자의 접속이 차단됩니다.' : ''}`)) {
-                                e.target.checked = !checked;
                                 return;
                             }
                             try {
                                 await updateSystemSetting('maintenance_mode', checked, client);
+                                setMaintenanceMode(checked);
                                 toast.success(`점검 모드가 ${label} 되었습니다.`);
                             } catch {
                                 toast.error('점검 모드 설정 실패');
-                                e.target.checked = !checked;
                             }
                         }} />
                         <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>

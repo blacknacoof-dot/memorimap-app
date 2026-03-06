@@ -15,8 +15,8 @@ export const AdminSettings = () => {
         if (!user?.id) return;
         const loadPhone = async () => {
             try {
-                const { data } = await client.from('profiles').select('phone').eq('clerk_id', user.id).single();
-                if (data?.phone) setPhone(data.phone);
+                const { data } = await client.from('profiles').select('phone_number').eq('clerk_id', user.id).single();
+                if (data?.phone_number) setPhone(data.phone_number);
             } catch { /* ignore */ }
         };
         loadPhone();
@@ -28,7 +28,7 @@ export const AdminSettings = () => {
         try {
             const { error } = await client
                 .from('profiles')
-                .update({ full_name: fullName, phone })
+                .update({ full_name: fullName, phone_number: phone })
                 .eq('clerk_id', user.id);
             if (error) throw error;
             toast.success('프로필 정보가 저장되었습니다.');

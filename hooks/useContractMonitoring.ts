@@ -41,6 +41,7 @@ export function useContractMonitoring(client: SupabaseClient) {
     }, [client]);
 
     useEffect(() => {
+        let mounted = true;
         loadContracts();
         loadAiConsultations();
 
@@ -50,6 +51,7 @@ export function useContractMonitoring(client: SupabaseClient) {
             .on('postgres_changes', {
                 event: '*', schema: 'public', table: 'sangjo_contracts'
             }, (payload) => {
+                if (!mounted) return;
                 if (payload.eventType === 'DELETE') {
                     const old = payload.old as SangjoContract;
                     if (old?.contract_number) {
@@ -71,6 +73,7 @@ export function useContractMonitoring(client: SupabaseClient) {
             .on('postgres_changes', {
                 event: '*', schema: 'public', table: 'ai_consultations'
             }, (payload) => {
+                if (!mounted) return;
                 if (payload.eventType === 'DELETE') {
                     const old = payload.old as AiConsultation;
                     if (old?.conversation_id) {
@@ -89,6 +92,7 @@ export function useContractMonitoring(client: SupabaseClient) {
             .subscribe();
 
         return () => {
+            mounted = false;
             contractChannel.unsubscribe();
             client.removeChannel(contractChannel);
             aiChannel.unsubscribe();
