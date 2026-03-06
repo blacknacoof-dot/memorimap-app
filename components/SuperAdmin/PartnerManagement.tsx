@@ -20,7 +20,7 @@ export const PartnerManagement: React.FC = () => {
 
     useEffect(() => {
         loadPartners();
-    }, []);
+    }, [client]);
 
     const loadPartners = async () => {
         setLoading(true);

@@ -15,17 +15,17 @@ export function useAllUsers() {
             const client = await getAuthClient(session, { strict: true });
             const data = await fetchAllUsers(client);
             setUsers(data);
-        } catch (error) {
-            console.error('Failed to fetch users:', error);
+        } catch {
+            toast.error('유저 목록 로딩 실패');
         } finally {
             setLoading(false);
         }
     };
 
-    const updateRole = async (userId: string, newRole: string) => {
+    const updateRole = async (userId: string, newRole: string, actorId?: string) => {
         try {
             const client = await getAuthClient(session, { strict: true });
-            await updateUserRole(userId, newRole, client);
+            await updateUserRole(userId, newRole, client, actorId);
             toast.success('권한이 변경되었습니다.');
             await fetchUsers();
         } catch (error) {

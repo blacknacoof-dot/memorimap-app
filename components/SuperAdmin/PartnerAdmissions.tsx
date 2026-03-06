@@ -3,7 +3,7 @@ import { usePartnerInquiries } from '../../hooks/usePartnerInquiries';
 import { useApprovePartner } from '../../hooks/useAdminActions';
 import { CheckCircle, XCircle, Search, FileText, Phone, MapPin, Building2, User, MessageSquare } from 'lucide-react';
 import { PartnerInquiry } from '../../types/db';
-import { useConfirmModal } from '../../src/components/common/ConfirmModal';
+import { confirmAsync } from '../../src/components/common/ConfirmModal';
 import { useSuperAdminClient } from './SuperAdminGuard';
 import { toast } from 'sonner';
 
@@ -13,26 +13,19 @@ export const PartnerAdmissions: React.FC = () => {
     const facilities = inquiryData?.data || [];
     const { approvePartner } = useApprovePartner(client);
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedTab, setSelectedTab] = useState('all');
-    const confirmModal = useConfirmModal();
     const [rejectTarget, setRejectTarget] = useState<{ id: string; name: string } | null>(null);
     const [rejectReason, setRejectReason] = useState('');
     const [isRejecting, setIsRejecting] = useState(false);
 
-    const handleApprove = (inquiry: PartnerInquiry) => {
-        confirmModal.open({
-            title: '입점 승인 확인',
-            message: `${inquiry.company_name} 업체의 입점을 승인하시겠습니까?`,
-            onConfirm: async () => {
-                try {
-                    await approvePartner({ inquiryId: inquiry.id, action: 'approve' });
-                    toast.success('승인되었습니다.');
-                    refetch();
-                } catch (error: unknown) {
-                    toast.error('승인 처리 중 오류: ' + (error instanceof Error ? error.message : '알 수 없는 오류'));
-                }
-            }
-        });
+    const handleApprove = async (inquiry: PartnerInquiry) => {
+        if (!await confirmAsync(`${inquiry.company_name} 업체의 입점을 승인하시겠습니까?`, '입점 승인 확인')) return;
+        try {
+            await approvePartner({ inquiryId: inquiry.id, action: 'approve' });
+            toast.success('승인되었습니다.');
+            refetch();
+        } catch (error: unknown) {
+            toast.error('승인 처리 중 오류: ' + (error instanceof Error ? error.message : '알 수 없는 오류'));
+        }
     };
 
     const handleRejectSubmit = async () => {
@@ -55,20 +48,10 @@ export const PartnerAdmissions: React.FC = () => {
         }
     };
 
-    const filtered = facilities.filter(f => {
-        const matchesSearch = f.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (f.contact_person || '').toLowerCase().includes(searchTerm.toLowerCase());
-
-        if (!matchesSearch) return false;
-
-        if (selectedTab === 'all') return true;
-        if (selectedTab === 'funeral' && f.business_type === 'funeral_home') return true;
-        if (selectedTab === 'memorial' && f.business_type === 'memorial_park') return true;
-        if (selectedTab === 'sangjo' && f.business_type === 'sangjo') return true;
-        if (selectedTab === 'pet' && f.business_type === 'pet_funeral') return true;
-
-        return false;
-    });
+    const filtered = facilities.filter(f =>
+        f.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (f.contact_person || '').toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className="space-y-4">

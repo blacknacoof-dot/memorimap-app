@@ -1,15 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { createNotice, getNotices, getInquiries, Inquiry } from '../../lib/queries';
+import { getInquiries, Inquiry } from '../../lib/queries';
+import { getPlatformNotices, createPlatformNotice } from '../../lib/sangjoQueries';
+import { PlatformNotice } from '../../types';
 import { Loader2, Send, MessageSquare, Megaphone, CheckCircle } from 'lucide-react';
 import { useSuperAdminClient } from '../SuperAdmin/SuperAdminGuard';
-
-interface NoticeItem {
-    id: string;
-    title: string;
-    content: string;
-    date: string;
-}
 
 interface SupportInquiryItem {
     id: string;
@@ -26,7 +21,7 @@ interface SupportInquiryItem {
 
 export const AdminCommunication: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'notices' | 'inquiries' | 'customer_support'>('notices');
-    const [notices, setNotices] = useState<NoticeItem[]>([]);
+    const [notices, setNotices] = useState<PlatformNotice[]>([]);
     const [inquiries, setInquiries] = useState<Inquiry[]>([]);
     const [supportInquiries, setSupportInquiries] = useState<SupportInquiryItem[]>([]);
     const [expandedSupport, setExpandedSupport] = useState<string | null>(null);
@@ -42,7 +37,7 @@ export const AdminCommunication: React.FC = () => {
         setIsLoading(true);
         try {
             if (activeTab === 'notices') {
-                const data = await getNotices(client);
+                const data = await getPlatformNotices(undefined, client);
                 setNotices(data);
             } else if (activeTab === 'customer_support') {
                 const data = await getInquiries(client);
@@ -70,7 +65,7 @@ export const AdminCommunication: React.FC = () => {
         if (isSubmitting) return;
         setIsSubmitting(true);
         try {
-            await createNotice(noticeTitle, noticeContent, client);
+            await createPlatformNotice({ title: noticeTitle, content: noticeContent, notice_type: 'info' }, client);
             toast.success('공지사항이 등록되었습니다.');
             setNoticeTitle('');
             setNoticeContent('');
@@ -160,7 +155,7 @@ export const AdminCommunication: React.FC = () => {
                                                 <h4 className="font-bold text-gray-900">{n.title}</h4>
                                                 <p className="text-sm text-gray-600 mt-1 line-clamp-2">{n.content}</p>
                                             </div>
-                                            <span className="text-xs text-gray-400">{n.date}</span>
+                                            <span className="text-xs text-gray-400">{new Date(n.created_at).toLocaleDateString()}</span>
                                         </div>
                                     </div>
                                 ))}

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useAllUsers } from '../../hooks/useUsers';
+import { useUser } from '../../lib/auth';
 import { Search, Shield, User, RefreshCw, UserCheck } from 'lucide-react';
 import { confirmAsync } from '../../src/components/common/ConfirmModal';
 
 export const UserManagement: React.FC = () => {
+    const { user: currentAdmin } = useUser();
     const { users, loading, refresh, updateRole } = useAllUsers();
     const [searchTerm, setSearchTerm] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
@@ -108,7 +110,7 @@ export const UserManagement: React.FC = () => {
                                                         const newRole = e.target.value;
                                                         const el = e.target;
                                                         if (await confirmAsync(`${user.email}님의 권한을 ${newRole}(으)로 변경하시겠습니까?`)) {
-                                                            await updateRole(user.id, newRole);
+                                                            await updateRole(user.id, newRole, currentAdmin?.id);
                                                         } else {
                                                             el.value = user.role;
                                                         }
