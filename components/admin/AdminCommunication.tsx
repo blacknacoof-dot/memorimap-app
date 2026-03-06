@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { getInquiries, Inquiry } from '../../lib/queries';
 import { getPlatformNotices, createPlatformNotice } from '../../lib/sangjoQueries';
 import { PlatformNotice } from '../../types';
-import { Loader2, Send, MessageSquare, Megaphone, CheckCircle } from 'lucide-react';
+import { Loader2, Send, MessageSquare, Megaphone, CheckCircle, Search } from 'lucide-react';
 import { useSuperAdminClient } from '../SuperAdmin/SuperAdminGuard';
 
 interface SupportInquiryItem {
@@ -19,8 +19,13 @@ interface SupportInquiryItem {
     status: 'pending' | 'resolved';
 }
 
-export const AdminCommunication: React.FC = () => {
+interface AdminCommunicationProps {
+    initialFilter?: string;
+}
+
+export const AdminCommunication: React.FC<AdminCommunicationProps> = ({ initialFilter }) => {
     const [activeTab, setActiveTab] = useState<'notices' | 'inquiries' | 'customer_support'>('notices');
+    const [filterText, setFilterText] = useState(initialFilter ?? '');
     const [notices, setNotices] = useState<PlatformNotice[]>([]);
     const [inquiries, setInquiries] = useState<Inquiry[]>([]);
     const [supportInquiries, setSupportInquiries] = useState<SupportInquiryItem[]>([]);
@@ -59,6 +64,13 @@ export const AdminCommunication: React.FC = () => {
     useEffect(() => {
         loadData();
     }, [activeTab, client]);
+
+    useEffect(() => {
+        if (initialFilter) {
+            setFilterText(initialFilter);
+            setActiveTab('inquiries');
+        }
+    }, [initialFilter]);
 
     const handleNoticeSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -165,35 +177,48 @@ export const AdminCommunication: React.FC = () => {
                     )}
 
                     {activeTab === 'inquiries' && (
-                        <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-                            <table className="w-full text-sm text-left">
-                                <thead className="bg-gray-50 text-gray-500 border-b">
-                                    <tr>
-                                        <th className="p-4">업체명</th>
-                                        <th className="p-4">유형</th>
-                                        <th className="p-4">접수일</th>
-                                        <th className="p-4 text-right">상태</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y">
-                                    {inquiries.map((i) => (
-                                        <tr key={i.id} className="hover:bg-gray-50 cursor-pointer">
-                                            <td className="p-4 font-medium">{i.companyName}</td>
-                                            <td className="p-4">{i.type}</td>
-                                            <td className="p-4 text-gray-500">{i.createdAt}</td>
-                                            <td className="p-4 text-right">
-                                                <span className={`px-2 py-0.5 rounded text-xs font-bold ${i.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
-                                                    }`}>
-                                                    {i.status === 'pending' ? '대기중' : '답변완료'}
-                                                </span>
-                                            </td>
+                        <div className="space-y-3">
+                            <div className="relative">
+                                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <input
+                                    type="text"
+                                    className="w-full border rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-green-500 outline-none"
+                                    placeholder="업체명으로 검색"
+                                    value={filterText}
+                                    onChange={(e) => setFilterText(e.target.value)}
+                                />
+                            </div>
+                            <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+                                <table className="w-full text-sm text-left">
+                                    <thead className="bg-gray-50 text-gray-500 border-b">
+                                        <tr>
+                                            <th className="p-4">업체명</th>
+                                            <th className="p-4">유형</th>
+                                            <th className="p-4">접수일</th>
+                                            <th className="p-4 text-right">상태</th>
                                         </tr>
-                                    ))}
-                                    {inquiries.length === 0 && (
-                                        <tr><td colSpan={4} className="p-8 text-center text-gray-400">접수된 문의가 없습니다.</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y">
+                                        {inquiries
+                                            .filter(i => !filterText || i.companyName?.toLowerCase().includes(filterText.toLowerCase()))
+                                            .map((i) => (
+                                                <tr key={i.id} className="hover:bg-gray-50 cursor-pointer">
+                                                    <td className="p-4 font-medium">{i.companyName}</td>
+                                                    <td className="p-4">{i.type}</td>
+                                                    <td className="p-4 text-gray-500">{i.createdAt}</td>
+                                                    <td className="p-4 text-right">
+                                                        <span className={`px-2 py-0.5 rounded text-xs font-bold ${i.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
+                                                            {i.status === 'pending' ? '대기중' : '답변완료'}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        {inquiries.length === 0 && (
+                                            <tr><td colSpan={4} className="p-8 text-center text-gray-400">접수된 문의가 없습니다.</td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     )}
 

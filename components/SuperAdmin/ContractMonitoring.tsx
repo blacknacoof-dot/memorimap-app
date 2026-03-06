@@ -4,15 +4,21 @@ import {
     MapPin, MessageSquare,
     ChevronRight, BellRing
 } from 'lucide-react';
-import { AiConsultationStatus } from '../../types';
+import { AiConsultationStatus, SangjoContract } from '../../types';
 import { toast } from 'sonner';
 import { useContractMonitoring } from '../../hooks/useContractMonitoring';
 import { useSuperAdminClient } from './SuperAdminGuard';
+import { ContractDetailDrawer } from './ContractDetailDrawer';
 
-export const ContractMonitoring: React.FC = () => {
+interface ContractMonitoringProps {
+    onNavigateCommunication?: (partnerName: string) => void;
+}
+
+export const ContractMonitoring: React.FC<ContractMonitoringProps> = ({ onNavigateCommunication }) => {
     const client = useSuperAdminClient();
-    const { contracts, aiConsultations, loading, handleJoinChat } = useContractMonitoring(client);
+    const { contracts, aiConsultations, loading, handleJoinChat, updateAdminMemo } = useContractMonitoring(client);
     const [activeFilter, setActiveFilter] = useState<'all' | 'critical' | 'urgent' | 'normal' | 'ai_alert'>('all');
+    const [drawerContract, setDrawerContract] = useState<SangjoContract | null>(null);
 
     const filteredShow = [
         ...contracts.map(c => ({ ...c, type: 'contract' as const })),
@@ -28,6 +34,12 @@ export const ContractMonitoring: React.FC = () => {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
+            <ContractDetailDrawer
+                contract={drawerContract}
+                isOpen={drawerContract !== null}
+                onClose={() => setDrawerContract(null)}
+                onSaveMemo={updateAdminMemo}
+            />
             {/* Realtime Alert Header */}
             <div className="flex flex-col md:flex-row md:items-center gap-3 p-4 bg-slate-900 rounded-2xl text-white shadow-xl overflow-hidden relative group">
                 <div className="absolute inset-0 bg-blue-600/10 group-hover:bg-blue-600/20 transition-all"></div>
@@ -134,12 +146,19 @@ export const ContractMonitoring: React.FC = () => {
                             </div>
                             <div className="flex gap-2 shrink-0">
                                 <button
-                                    onClick={() => toast.info('메시지 기능은 준비 중입니다.')}
+                                    onClick={() => {
+                                        const partnerName = item.type === 'contract' ? item.sangjo_id : item.facility_name;
+                                        if (onNavigateCommunication && partnerName) {
+                                            onNavigateCommunication(partnerName);
+                                        } else {
+                                            toast.info('배정된 파트너가 없습니다.');
+                                        }
+                                    }}
                                     className="p-2.5 md:p-3 bg-slate-50 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all border border-slate-100">
                                     <MessageSquare size={16} />
                                 </button>
                                 <button
-                                    onClick={() => item.type === 'ai' ? handleJoinChat(item) : toast.info(`계약 ${item.contract_number} 관제 상세 기능은 준비 중입니다.`)}
+                                    onClick={() => item.type === 'ai' ? handleJoinChat(item) : setDrawerContract(item)}
                                     className={`p-2.5 md:p-3 rounded-xl transition-all shadow-md flex items-center gap-1.5 md:gap-2 font-bold text-[11px] md:text-xs px-3 md:px-4 ${item.type === 'ai'
                                         ? 'bg-purple-600 text-white hover:bg-purple-700 active:scale-95'
                                         : 'bg-slate-800 text-white hover:bg-slate-900'

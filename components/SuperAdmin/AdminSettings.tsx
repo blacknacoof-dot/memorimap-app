@@ -3,6 +3,8 @@ import { useUser } from '../../lib/auth';
 import { toast } from 'sonner';
 import { UserCog, Lock, BellRing } from 'lucide-react';
 import { useSuperAdminClient } from './SuperAdminGuard';
+import { updateSystemSetting } from '../../lib/api/superAdmin';
+import { useSystemSettings } from '../../hooks/useSystemSettings';
 
 export const AdminSettings = () => {
     const { user } = useUser();
@@ -10,6 +12,32 @@ export const AdminSettings = () => {
     const [fullName, setFullName] = useState(user?.fullName || '');
     const [phone, setPhone] = useState('');
     const [saving, setSaving] = useState(false);
+    const [notifSaving, setNotifSaving] = useState<Record<string, boolean>>({});
+    const [notifOverrides, setNotifOverrides] = useState<Record<string, boolean>>({});
+
+    const NOTIF_KEYS = ['admin_notif_consultation', 'admin_notif_payment', 'admin_notif_admission'] as const;
+    const { getSetting } = useSystemSettings([...NOTIF_KEYS]);
+
+    const isNotifEnabled = (key: string): boolean => {
+        if (key in notifOverrides) return notifOverrides[key];
+        return getSetting(key, 'true') !== 'false';
+    };
+
+    const handleNotifToggle = async (key: string) => {
+        if (notifSaving[key]) return;
+        const newValue = !isNotifEnabled(key);
+        setNotifOverrides(prev => ({ ...prev, [key]: newValue }));
+        setNotifSaving(prev => ({ ...prev, [key]: true }));
+        try {
+            await updateSystemSetting(key, String(newValue), client);
+            toast.success('알림 설정이 저장되었습니다.');
+        } catch (e: unknown) {
+            setNotifOverrides(prev => { const copy = { ...prev }; delete copy[key]; return copy; });
+            toast.error('저장 실패: ' + (e instanceof Error ? e.message : '알 수 없는 오류'));
+        } finally {
+            setNotifSaving(prev => ({ ...prev, [key]: false }));
+        }
+    };
 
     useEffect(() => {
         if (!user?.id) return;
@@ -107,18 +135,24 @@ export const AdminSettings = () => {
                     알림 설정
                 </h3>
                 <div className="space-y-4">
-                    {[
-                        { label: '새 상담 접수 알림', desc: '새로운 고객 상담이 접수되면 알림을 받습니다.' },
-                        { label: '결제 발생 알림', desc: '구독 또는 수수료 결제가 발생하면 알림을 받습니다.' },
-                        { label: '입점 신청 알림', desc: '새로운 시설 입점 신청이 들어오면 알림을 받습니다.' },
-                    ].map((item, idx) => (
-                        <div key={idx} className="flex items-center justify-between">
+                    {([
+                        { key: 'admin_notif_consultation', label: '새 상담 접수 알림', desc: '새로운 고객 상담이 접수되면 알림을 받습니다.' },
+                        { key: 'admin_notif_payment', label: '결제 발생 알림', desc: '구독 또는 수수료 결제가 발생하면 알림을 받습니다.' },
+                        { key: 'admin_notif_admission', label: '입점 신청 알림', desc: '새로운 시설 입점 신청이 들어오면 알림을 받습니다.' },
+                    ] as const).map((item) => (
+                        <div key={item.key} className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-medium text-slate-800">{item.label}</p>
                                 <p className="text-[10px] text-slate-400">{item.desc}</p>
                             </div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" className="sr-only peer" defaultChecked onChange={() => toast.info('알림 설정 기능은 준비 중입니다.')} />
+                            <label className={`relative inline-flex items-center ${notifSaving[item.key] ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}>
+                                <input
+                                    type="checkbox"
+                                    className="sr-only peer"
+                                    checked={isNotifEnabled(item.key)}
+                                    disabled={notifSaving[item.key]}
+                                    onChange={() => handleNotifToggle(item.key)}
+                                />
                                 <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
                             </label>
                         </div>

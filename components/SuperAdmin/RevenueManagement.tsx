@@ -16,6 +16,56 @@ export const RevenueManagement: React.FC = () => {
 
     if (loading) return <div className="py-20 text-center text-slate-400">금융 데이터를 분석 중...</div>;
 
+    const handleDownload = () => {
+        const today = new Date();
+        const dateStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+
+        if (viewType === 'total') {
+            if (payments.length === 0) {
+                toast.warning('다운로드할 데이터가 없습니다.');
+                return;
+            }
+            const header = '결제일시,시설명,금액(원),설명,상태';
+            const rows = payments.map(p => [
+                new Date(p.paid_at).toLocaleString('ko-KR'),
+                p.facility_name ?? '',
+                p.amount,
+                p.description ?? '',
+                '결제완료',
+            ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
+            const csv = '\uFEFF' + [header, ...rows].join('\n');
+            triggerDownload(csv, `memorimap_revenue_${dateStr}.csv`);
+        } else {
+            if (settlements.length === 0) {
+                toast.warning('다운로드할 데이터가 없습니다.');
+                return;
+            }
+            const header = '시설명,누적결제(원),수수료수익(원),마지막결제일';
+            const rows = settlements.map(s => [
+                s.company,
+                s.amount,
+                s.fee,
+                new Date(s.lastPaidAt).toLocaleDateString('ko-KR'),
+            ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
+            const csv = '\uFEFF' + [header, ...rows].join('\n');
+            triggerDownload(csv, `memorimap_settlement_${dateStr}.csv`);
+        }
+    };
+
+    function triggerDownload(csv: string, filename: string) {
+        try {
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch {
+            toast.error('다운로드에 실패했습니다.');
+        }
+    }
+
     // 이번 달 결제 필터링
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -102,7 +152,7 @@ export const RevenueManagement: React.FC = () => {
                         </button>
                     </div>
                     <button
-                        onClick={() => toast.info('리포트 다운로드 기능은 준비 중입니다.')}
+                        onClick={handleDownload}
                         className="flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-100"
                     >
                         <Download className="w-4 h-4" /> 리포트 다운로드

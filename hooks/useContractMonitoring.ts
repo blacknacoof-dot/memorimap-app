@@ -98,6 +98,15 @@ export function useContractMonitoring(client: SupabaseClient) {
         };
     }, [client, loadContracts, loadAiConsultations]);
 
+    const updateAdminMemo = async (contractId: string, memo: string): Promise<void> => {
+        const { error } = await client
+            .from('sangjo_contracts')
+            .update({ admin_memo: memo })
+            .eq('id', contractId);
+        if (error) throw error;
+        // Realtime 구독이 contracts state를 자동 갱신
+    };
+
     const handleJoinChat = async (consultation: AiConsultation) => {
         if (consultation.status === AiConsultationStatus.AGENT_CONNECTED) {
             toast.warning('이미 상담사가 연결된 세션입니다.');
@@ -137,5 +146,6 @@ export function useContractMonitoring(client: SupabaseClient) {
         loading,
         joinedConversationId,
         handleJoinChat,
+        updateAdminMemo,
     };
 }

@@ -116,6 +116,12 @@ function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
     const [activeTab, setActiveTab] = useState<'subs' | 'revenue' | 'leads' | 'admissions' | 'facilities' | 'users' | 'notices' | 'logs' | 'communication' | 'admin_settings' | 'system_settings' | 'monitoring'>('monitoring');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [facilitySearchTerm, setFacilitySearchTerm] = useState('');
+    const [communicationFilter, setCommunicationFilter] = useState('');
+
+    const handleNavigateCommunication = (partnerName: string) => {
+        setCommunicationFilter(partnerName);
+        setActiveTab('communication');
+    };
 
     return (
         <div className="min-h-[100dvh] bg-slate-50 pb-20 font-sans relative">
@@ -123,7 +129,10 @@ function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
             <SideMenuDrawer
                 isOpen={isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
-                onNavigate={(tab) => setActiveTab(tab as typeof activeTab)}
+                onNavigate={(tab) => {
+                    if (tab === 'communication') setCommunicationFilter('');
+                    setActiveTab(tab as typeof activeTab);
+                }}
             />
 
             <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
@@ -190,7 +199,7 @@ function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
                         }}
                     />
                 )}
-                {activeTab === 'monitoring' && <ContractMonitoring />}
+                {activeTab === 'monitoring' && <ContractMonitoring onNavigateCommunication={handleNavigateCommunication} />}
                 {activeTab === 'revenue' && <RevenueManagement />}
                 {activeTab === 'leads' && <AdminLeadsView />}
 
@@ -222,7 +231,7 @@ function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
                 {activeTab === 'users' && <UserManagement />}
                 {activeTab === 'notices' && <NoticeManagement />}
                 {activeTab === 'logs' && <AdminLogsView />}
-                {activeTab === 'communication' && <AdminCommunication />}
+                {activeTab === 'communication' && <AdminCommunication initialFilter={communicationFilter} />}
                 {activeTab === 'admin_settings' && <AdminSettings />}
                 {activeTab === 'system_settings' && <SystemSettings />}
             </main>

@@ -136,6 +136,7 @@ export interface SangjoContract {
     notes?: string;
     photo_url?: string;
   }>;
+  admin_memo?: string;
 }
 
 // ==========================================
