@@ -3,20 +3,7 @@ import { toast } from 'sonner';
 import { getAllLeads } from '../../lib/queries';
 import { Phone, MapPin, Clock } from 'lucide-react';
 import { useSuperAdminClient } from './SuperAdminGuard';
-
-interface Lead {
-    id: string;
-    created_at: string;
-    contact_name: string;
-    contact_phone: string;
-    phone_number?: string;
-    category: string;
-    urgency?: string;
-    scale?: string;
-    status: string;
-    context_data?: { text?: string; [key: string]: unknown };
-    priorities?: string[];
-}
+import type { Lead } from '../../types/db';
 
 export const AdminLeadsView: React.FC = () => {
     const [leads, setLeads] = useState<Lead[]>([]);

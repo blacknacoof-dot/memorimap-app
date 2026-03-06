@@ -1,6 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { Notice, PartnerInquiry, Payment, Subscription } from '@/types/db';
-import type { Facility } from '@/types/facility';
+import { PartnerInquiry, Payment, Subscription } from '@/types/db';
 
 // --- 파트너 입점 신청 조회 API ---
 export const fetchPendingInquiries = async (client: SupabaseClient) => {
@@ -51,36 +50,6 @@ export const updateUserRole = async (userId: string, newRole: string, client: Su
 };
 
 // --- 시설 통합 관리 API ---
-export interface MemorialSpace {
-    id: string;
-    name: string;
-    address: string;
-    type: string;
-    manager_id: string | null;
-}
-
-export const fetchAllFacilities = async (client: SupabaseClient) => {
-    const { data, error } = await client
-        .from('facilities')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data as Facility[];
-};
-
-export const searchFacilities = async (query: string, client: SupabaseClient) => {
-    const sanitized = query.trim().replace(/[%_\\]/g, '\\$&');
-    const { data, error } = await client
-        .from('facilities')
-        .select('*')
-        .ilike('name', `%${sanitized}%`)
-        .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data as Facility[];
-};
-
 export const updateFacilityManager = async (facilityId: string, newManagerId: string | null, client: SupabaseClient) => {
     const { error } = await client
         .from('facilities')
@@ -185,34 +154,6 @@ export const fetchPayments = async (client: SupabaseClient) => {
     }
 
     return payments.map(p => ({ ...p, facility_name: '(알 수 없음)' })) as (Payment & { facility_name: string })[];
-};
-
-// --- 공지사항 API ---
-export const fetchNotices = async (client: SupabaseClient) => {
-    const { data, error } = await client
-        .from('notices')
-        .select('*')
-        .order('created_at', { ascending: false });
-    if (error) throw error;
-    return data as Notice[];
-};
-
-export const createNotice = async (notice: Partial<Notice>, client: SupabaseClient) => {
-    const { data, error } = await client
-        .from('notices')
-        .insert([notice])
-        .select()
-        .single();
-    if (error) throw error;
-    return data;
-};
-
-export const deleteNotice = async (id: string, client: SupabaseClient) => {
-    const { error } = await client
-        .from('notices')
-        .delete()
-        .eq('id', id);
-    if (error) throw error;
 };
 
 // --- 관리 활동 로그 API ---

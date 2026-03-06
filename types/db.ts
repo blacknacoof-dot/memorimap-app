@@ -244,6 +244,25 @@ export interface TimelineEvent {
 }
 
 // ==========================================
-// 4. Supabase Database 타입 (제네릭용)
+// 4. 슈퍼관리자 전용 타입
+// ==========================================
+
+/** leads 테이블 — AdminLeadsView */
+export interface Lead {
+    id: string;
+    created_at: string;
+    contact_name: string;
+    contact_phone: string;
+    phone_number?: string;
+    category: string;
+    urgency?: string;
+    scale?: string;
+    status: string;
+    context_data?: { text?: string; [key: string]: unknown };
+    priorities?: string[];
+}
+
+// ==========================================
+// 5. Supabase Database 타입 (제네릭용)
 // ==========================================
 export type Database = Record<string, unknown>;

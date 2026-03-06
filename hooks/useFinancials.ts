@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from '@/lib/auth';
 import { getAuthClient } from '@/lib/supabaseClient';
 import { fetchSubscriptions, fetchPayments } from '@/lib/api/superAdmin';
+import { toast } from 'sonner';
 
 // Types based on SuperAdminDashboard usage
 export interface Subscription {
@@ -36,8 +37,8 @@ export function useSubscriptions() {
                 const client = await getAuthClient(session, { strict: true });
                 const data = await fetchSubscriptions(client);
                 setFacilities(data as Subscription[]);
-            } catch (err) {
-                console.error('Failed to fetch subscriptions:', err);
+            } catch {
+                toast.error('구독 데이터 로딩에 실패했습니다.');
             } finally {
                 setLoading(false);
             }
@@ -62,8 +63,8 @@ export function useRevenue() {
                 const data = await fetchPayments(client);
                 setPayments(data as Payment[]);
                 setTotalRevenue(data.reduce((acc, curr) => acc + (curr.amount || 0), 0));
-            } catch (err) {
-                console.error('Failed to fetch revenue:', err);
+            } catch {
+                toast.error('매출 데이터 로딩에 실패했습니다.');
             } finally {
                 setLoading(false);
             }

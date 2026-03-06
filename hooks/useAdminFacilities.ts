@@ -9,10 +9,7 @@ export interface AdminFacility {
     address: string;
     category?: string;
     type?: string;
-    user_id?: string; // v4 schema
-    manager_id?: string; // Legacy comp
-    owner_user_id?: string; // Legacy comp
-    // 완성도 필드
+    user_id?: string;
     images?: string[] | null;
     phone?: string | null;
     description?: string | null;
@@ -49,8 +46,8 @@ export function useAllFacilities() {
             setFacilities(data as AdminFacility[]);
             if (count !== null) setTotalCount(count);
             setPage(targetPage);
-        } catch (error) {
-            console.error('Search facilities failed:', error);
+        } catch {
+            // 에러는 빈 목록으로 자연 처리
         } finally {
             setLoading(false);
         }
@@ -71,7 +68,6 @@ export function useAllFacilities() {
             ));
             toast.success('관리자가 변경되었습니다.');
         } catch (error: unknown) {
-            console.error('Update manager failed:', error);
             const message = error instanceof Error ? error.message : '알 수 없는 오류';
             toast.error('업데이트 실패: ' + message);
         }
