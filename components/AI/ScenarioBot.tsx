@@ -85,7 +85,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ facilityId, onClose })
 
             cleanup = () => {
                 channel.unsubscribe();
-                client.removeChannel(channel);
+
             };
         });
 

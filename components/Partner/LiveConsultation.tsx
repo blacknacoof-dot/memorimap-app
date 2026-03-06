@@ -64,7 +64,7 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
 
             cleanup = () => {
                 channel.unsubscribe();
-                client.removeChannel(channel);
+
             };
         });
 

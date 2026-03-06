@@ -100,7 +100,7 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
 
             cleanup = () => {
                 channel.unsubscribe();
-                client.removeChannel(channel);
+
             };
         });
 

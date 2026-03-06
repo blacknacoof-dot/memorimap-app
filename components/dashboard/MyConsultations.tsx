@@ -169,7 +169,7 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
 
             cleanup = () => {
                 channel.unsubscribe();
-                client.removeChannel(channel);
+
             };
         });
 

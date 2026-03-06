@@ -71,7 +71,7 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
 
             cleanup = () => {
                 channel.unsubscribe();
-                client.removeChannel(channel);
+
             };
         });
 

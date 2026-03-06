@@ -84,7 +84,7 @@ export const StatusTracker: React.FC<StatusTrackerProps> = ({
 
             cleanup = () => {
                 channel.unsubscribe();
-                client.removeChannel(channel);
+
             };
         });
 

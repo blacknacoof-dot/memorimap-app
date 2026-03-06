@@ -94,9 +94,7 @@ export function useContractMonitoring(client: SupabaseClient) {
         return () => {
             mounted = false;
             contractChannel.unsubscribe();
-            client.removeChannel(contractChannel);
             aiChannel.unsubscribe();
-            client.removeChannel(aiChannel);
         };
     }, [client, loadContracts, loadAiConsultations]);
 

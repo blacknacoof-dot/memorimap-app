@@ -143,8 +143,6 @@ export function useFacilityAdmin({ user, facilities }: UseFacilityAdminProps) {
       cleanup = () => {
         consultationChannel.unsubscribe();
         reservationChannel.unsubscribe();
-        client.removeChannel(consultationChannel);
-        client.removeChannel(reservationChannel);
       };
     });
 

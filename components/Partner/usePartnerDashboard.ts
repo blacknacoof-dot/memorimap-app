@@ -138,7 +138,7 @@ export function usePartnerDashboard(partnerId: string) {
 
       cleanup = () => {
         consChannel.unsubscribe(); resChannel.unsubscribe(); contractChannel.unsubscribe();
-        client.removeChannel(consChannel); client.removeChannel(resChannel); client.removeChannel(contractChannel);
+
       };
     });
 

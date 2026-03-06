@@ -52,7 +52,6 @@ export function useNotifications() {
 
             cleanup = () => {
                 channel.unsubscribe();
-                client.removeChannel(channel);
             };
         });
 
