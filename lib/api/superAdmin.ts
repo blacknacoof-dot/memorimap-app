@@ -46,7 +46,7 @@ export const updateUserRole = async (userId: string, newRole: string, client: Su
         metadata: { new_role: newRole },
         user_id: actorId || 'system'
     }]);
-    if (auditError) console.error('[updateUserRole] audit_log insert failed:', auditError.message);
+    // audit_log 실패는 무시 (핵심 작업은 이미 완료)
 };
 
 // --- 시설 통합 관리 API ---

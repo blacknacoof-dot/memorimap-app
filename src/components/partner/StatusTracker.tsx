@@ -35,9 +35,12 @@ export const StatusTracker: React.FC<StatusTrackerProps> = ({
     useEffect(() => {
         if (!contractNumber || !session) return;
 
+        let mounted = true;
         let cleanup: (() => void) | undefined;
 
         getAuthClient(session).then(client => {
+            if (!mounted) return;
+
             // 초기 데이터 조회
             const fetchProgress = async () => {
                 setIsLoading(true);
@@ -48,16 +51,17 @@ export const StatusTracker: React.FC<StatusTrackerProps> = ({
                         .eq('contract_number', contractNumber)
                         .single();
 
+                    if (!mounted) return;
                     if (error && error.code !== 'PGRST116') {
-                        console.error('Progress fetch error:', error);
+                        toast.error('진행 상태를 불러오지 못했습니다.');
                     }
                     if (data) {
                         setCurrentStatus(data.current_status as ProgressStatus);
                     }
-                } catch (e) {
-                    console.error('Progress fetch exception:', e);
+                } catch {
+                    if (mounted) toast.error('진행 상태 조회 중 오류가 발생했습니다.');
                 } finally {
-                    setIsLoading(false);
+                    if (mounted) setIsLoading(false);
                 }
             };
 
@@ -75,6 +79,7 @@ export const StatusTracker: React.FC<StatusTrackerProps> = ({
                         filter: `contract_number=eq.${contractNumber}`
                     },
                     (payload: { new: { current_status: string } }) => {
+                        if (!mounted) return;
                         if (payload.new?.current_status) {
                             setCurrentStatus(payload.new.current_status as ProgressStatus);
                         }
@@ -84,11 +89,10 @@ export const StatusTracker: React.FC<StatusTrackerProps> = ({
 
             cleanup = () => {
                 channel.unsubscribe();
-
             };
         });
 
-        return () => { cleanup?.(); };
+        return () => { mounted = false; cleanup?.(); };
     }, [contractNumber, session]);
 
     // 상태 업데이트 (상조 직원 전용)
@@ -110,15 +114,13 @@ export const StatusTracker: React.FC<StatusTrackerProps> = ({
                 });
 
             if (error) {
-                console.error('Status update error:', error);
                 toast.error('상태 업데이트에 실패했습니다.');
                 return;
             }
 
             setCurrentStatus(newStatus);
             onStatusChange?.(newStatus);
-        } catch (e) {
-            console.error('Status update exception:', e);
+        } catch {
             toast.error('상태 업데이트 중 오류가 발생했습니다.');
         } finally {
             setIsUpdating(false);
