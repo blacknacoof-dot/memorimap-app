@@ -1,94 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { getInquiries, Inquiry } from '../../lib/queries';
-import { getPlatformNotices, createPlatformNotice } from '../../lib/sangjoQueries';
-import { PlatformNotice } from '../../types';
-import { Loader2, Send, MessageSquare, Megaphone, CheckCircle, Search } from 'lucide-react';
+import React from 'react';
+import { Loader2, Send, MessageSquare, Megaphone, Search } from 'lucide-react';
 import { useSuperAdminClient } from '../SuperAdmin/SuperAdminGuard';
-
-interface SupportInquiryItem {
-    id: string;
-    companyName?: string;
-    managerName?: string;
-    phone?: string;
-    email?: string;
-    message?: string;
-    type?: string;
-    inquiryType?: string;
-    createdAt?: string;
-    status: 'pending' | 'resolved';
-}
+import { useAdminCommunication } from './useAdminCommunication';
 
 interface AdminCommunicationProps {
     initialFilter?: string;
 }
 
 export const AdminCommunication: React.FC<AdminCommunicationProps> = ({ initialFilter }) => {
-    const [activeTab, setActiveTab] = useState<'notices' | 'inquiries' | 'customer_support'>('notices');
-    const [filterText, setFilterText] = useState(initialFilter ?? '');
-    const [notices, setNotices] = useState<PlatformNotice[]>([]);
-    const [inquiries, setInquiries] = useState<Inquiry[]>([]);
-    const [supportInquiries, setSupportInquiries] = useState<SupportInquiryItem[]>([]);
-    const [expandedSupport, setExpandedSupport] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
     const client = useSuperAdminClient();
-
-    // Notice Form
-    const [noticeTitle, setNoticeTitle] = useState('');
-    const [noticeContent, setNoticeContent] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const loadData = async () => {
-        setIsLoading(true);
-        try {
-            if (activeTab === 'notices') {
-                const data = await getPlatformNotices(undefined, client);
-                setNotices(data);
-            } else if (activeTab === 'customer_support') {
-                const data = await getInquiries(client);
-                const all = data as unknown as SupportInquiryItem[];
-                setSupportInquiries(all.filter((i) => i.type === 'customer_support' || i.inquiryType === 'customer_support'));
-            } else {
-                const data = await getInquiries(client);
-                const all = data as unknown as (Inquiry & { inquiryType?: string })[];
-                setInquiries(all.filter((i) => i.type !== 'customer_support' && i.inquiryType !== 'customer_support') as Inquiry[]);
-            }
-        } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : '네트워크 오류';
-            toast.error('데이터 로딩 실패: ' + message);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        loadData();
-    }, [activeTab, client]);
-
-    useEffect(() => {
-        if (initialFilter) {
-            setFilterText(initialFilter);
-            setActiveTab('inquiries');
-        }
-    }, [initialFilter]);
-
-    const handleNoticeSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (isSubmitting) return;
-        setIsSubmitting(true);
-        try {
-            await createPlatformNotice({ title: noticeTitle, content: noticeContent, notice_type: 'info' }, client);
-            toast.success('공지사항이 등록되었습니다.');
-            setNoticeTitle('');
-            setNoticeContent('');
-            loadData();
-        } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : '권한 오류';
-            toast.error('공지사항 등록 실패: ' + message);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+    const {
+        activeTab, setActiveTab,
+        filterText, setFilterText,
+        notices, inquiries, supportInquiries,
+        expandedSupport, setExpandedSupport,
+        isLoading,
+        noticeTitle, setNoticeTitle,
+        noticeContent, setNoticeContent,
+        isSubmitting, handleNoticeSubmit,
+    } = useAdminCommunication(client, initialFilter);
 
     return (
         <div className="space-y-6">

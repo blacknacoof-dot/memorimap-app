@@ -254,7 +254,6 @@ ${faqs.map((f, i) => `${i + 1}. Q: ${f.question}\n   A: ${f.answer}`).join('\n')
             }
         }
     } catch (error: unknown) {
-        console.error("Gemini Proxy Error, falling back to Mock AI:", error);
         yield* getMockAIResponse(facility, newMessage, topic);
     }
 }

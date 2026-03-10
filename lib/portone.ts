@@ -87,8 +87,6 @@ export const requestPayment = async (params: PaymentRequest): Promise<PaymentRes
         return response;
 
     } catch (error: unknown) {
-        console.error('❌ Payment Error:', error);
-
         const errMsg = error instanceof Error ? error.message : '';
 
         // 사용자 친화적 에러 메시지
@@ -110,7 +108,7 @@ export const PORTONE_CONFIG = {
 } as const;
 
 if (!PORTONE_CONFIG.STORE_ID || !PORTONE_CONFIG.CHANNEL_KEY) {
-    console.warn('[PortOne] VITE_PORTONE_STORE_ID 또는 VITE_PORTONE_CHANNEL_KEY가 설정되지 않았습니다.');
+    // PortOne 설정 누락 — 결제 기능 사용 시 런타임 에러로 처리
 }
 
 /**

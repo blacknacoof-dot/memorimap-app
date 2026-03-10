@@ -41,7 +41,6 @@ export async function logAuditEvent(entry: AuditLogEntry, client: SupabaseClient
             created_at: new Date().toISOString()
         });
     } catch (error) {
-        console.error('[Audit Log Error]', error);
         // 감사 로그 실패는 사용자 경험을 방해하지 않도록 silent fail
     }
 }

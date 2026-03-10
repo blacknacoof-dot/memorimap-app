@@ -968,7 +968,7 @@ const notifyReservationStatusChange = async (
             type,
         }]);
     } catch (e) {
-        console.error('[notifyReservationStatusChange]:', e);
+        // silent fail — 알림 실패가 예약 처리를 방해하지 않도록
     }
 };
 
@@ -1978,6 +1978,11 @@ export const fetchFacilitiesInView = async (bounds: MapBounds, token?: string) =
 export interface Inquiry {
     id: string;
     companyName: string;
+    managerName?: string;
+    phone?: string;
+    email?: string;
+    message?: string;
+    inquiryType?: string;
     type: string;
     createdAt: string;
     status: 'pending' | 'resolved';

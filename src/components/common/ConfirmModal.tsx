@@ -40,7 +40,7 @@ export const ConfirmModal: React.FC = () => {
         try {
             await onConfirm();
         } catch (err) {
-            console.error('[ConfirmModal] onConfirm 실행 오류:', err);
+            // onConfirm 오류는 호출자 책임
         } finally {
             setProcessing(false);
             close();

@@ -24,7 +24,6 @@ const FAQPage: React.FC = () => {
             const client = await getAuthClient(session, { strict: true });
             const { data, error } = await client.from('bot_data').select('id, faq').maybeSingle();
             if (error) {
-                console.error('Failed to fetch FAQs', error);
                 toast.error('FAQ 목록을 불러오지 못했습니다.');
                 return;
             }
@@ -42,7 +41,6 @@ const FAQPage: React.FC = () => {
         const payload = { faq: updated.map(f => ({ question: f.question, answer: f.answer })) };
         const { error } = await client.from('bot_data').upsert(payload, { onConflict: 'id' });
         if (error) {
-            console.error('Save failed', error);
             toast.error('FAQ 저장에 실패했습니다.');
         } else {
             setFaqs(updated);
