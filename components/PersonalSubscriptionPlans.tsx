@@ -173,7 +173,7 @@ export default function PersonalSubscriptionPlans({ onBack }: PersonalSubscripti
                         .eq('status', 'active');
                 }
             } catch (e) {
-                console.error('구독 취소 DB 업데이트 실패:', e);
+                // 구독 취소 실패 (toast로 이미 알림)
             }
             setSelectedPlan(plan.id);
             setCurrentPlan(plan.id);

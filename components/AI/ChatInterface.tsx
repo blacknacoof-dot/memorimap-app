@@ -96,10 +96,8 @@ export const ChatInterface: React.FC<Props> = ({
 
     // [PDCA] System Logging Helper — system_logs는 서버(Edge Function)에서만 INSERT 가능
     // 클라이언트에서는 console로만 기록 (RLS가 클라이언트 INSERT 차단)
-    const logToSystem = async (level: 'INFO' | 'WARN' | 'ERROR', message: string, traceId?: string, meta: Record<string, unknown> = {}) => {
-        if (level === 'ERROR') {
-            console.error(`[${level}] ${message}`, { traceId, ...meta });
-        }
+    const logToSystem = async (_level: 'INFO' | 'WARN' | 'ERROR', _message: string, _traceId?: string, _meta: Record<string, unknown> = {}) => {
+        // RLS가 클라이언트 INSERT 차단 — 서버 로깅만 사용
     };
 
     // [NEW] Track Urgent Booking Context (Date, Type)
@@ -131,7 +129,7 @@ export const ChatInterface: React.FC<Props> = ({
                     logger.debug('[Dynamic Prompt Injection] Loaded latest facility data:', data.name);
                 }
             } catch (e) {
-                console.error('[Dynamic Prompt Injection] Failed to fetch latest data:', e);
+                // Dynamic prompt injection fetch failed
             }
         };
 
@@ -335,7 +333,7 @@ export const ChatInterface: React.FC<Props> = ({
                 sessionQuotaCheckedRef.current = true;
             } catch (err) {
                 // fail-open
-                console.error('[ChatInterface] quota check fail-open:', err);
+                // fail-open: quota check error
                 sessionQuotaCheckedRef.current = true;
             }
         }
@@ -358,7 +356,7 @@ export const ChatInterface: React.FC<Props> = ({
                 facilityQuotaCheckedRef.current = true;
             } catch (err) {
                 // fail-open
-                console.error('[ChatInterface] facility quota check fail-open:', err);
+                // fail-open: facility quota error
                 facilityQuotaCheckedRef.current = true;
             }
         }
@@ -455,8 +453,7 @@ export const ChatInterface: React.FC<Props> = ({
                         realResults = results as Facility[];
                     }
                 } catch (e) {
-                    logToSystem('ERROR', 'Real DB Search failed', traceId, { error: e }); // Replaced console.error
-                }
+                    logToSystem('ERROR', 'Real DB Search failed', traceId, { error: e });                }
 
                 if (realResults.length > 0) {
                     // 1. Use Real DB Data
@@ -505,7 +502,7 @@ export const ChatInterface: React.FC<Props> = ({
                         logToSystem('INFO', 'Lead created', traceId, { leadId: lead.id });
                     }
                 } catch (e) {
-                    console.error('Lead creation failed:', e);
+                    // Lead creation failed
                 }
             }
 
@@ -556,7 +553,7 @@ export const ChatInterface: React.FC<Props> = ({
                     logToSystem('INFO', 'Urgent Reservation Confirmed in DB', traceId, { visitDate: visitDate.toISOString() });
 
                 } catch (e) {
-                    console.error("Failed to save Urgent Reservation:", e);
+                    // Failed to save urgent reservation
                     // Fallback UI
                     setMessages(prev => [...prev, {
                         role: 'model',
@@ -569,8 +566,7 @@ export const ChatInterface: React.FC<Props> = ({
 
             /* REMOVED DUPLICATE RECOMMEND BLOCK */
         } catch (error) {
-            logToSystem('ERROR', 'Unhandled Exception', traceId || 'UNKNOWN', { error }); // Replaced console.error
-            // 🚑 Robust Fallback: Show error message to user instead of just console logging
+            logToSystem('ERROR', 'Unhandled Exception', traceId || 'UNKNOWN', { error });            // 🚑 Robust Fallback: Show error message to user instead of just console logging
             const errorMsg: ChatMessage = {
                 role: 'model',
                 text: "죄송합니다. 현재 상담 요청이 많아 일시적인 오류가 발생했습니다.\n\n잠시 후 다시 시도하시거나, 하단의 [전문가 상담 신청] 버튼을 통해 매니저와 직접 상담하실 수 있습니다.",
@@ -637,7 +633,7 @@ export const ChatInterface: React.FC<Props> = ({
             }
             onAction('RESERVE', candidate);
         } catch (e) {
-            console.error('Handover failed:', e);
+            // Handover failed
             // Fallback: Proceed to reserve anyway
             onAction('RESERVE', candidate);
         }
@@ -714,7 +710,7 @@ export const ChatInterface: React.FC<Props> = ({
                             }]);
 
                         } catch (error) {
-                            console.error('Urgent Form Submission Failed:', error);
+                            // Urgent form submission failed
                             logToSystem('ERROR', 'Urgent Form Submission Failed', traceId, { error });
 
                             // Error Feedback

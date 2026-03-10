@@ -159,7 +159,7 @@ export function useFacilities(options: UseFacilitiesOptions = {}): UseFacilities
 
             const errorMessage = err instanceof Error ? err.message : 'Failed to fetch facilities';
             setError(new Error(errorMessage));
-            console.error('❌ Error fetching facilities:', err);
+            // Error fetching facilities
         } finally {
             if (!controller.signal.aborted) {
                 setLoading(false);
@@ -284,7 +284,7 @@ export function useFacility(id: string | null) {
             } catch (err) {
                 if (controller.signal.aborted) return;
                 setError(err instanceof Error ? err : new Error('Failed to fetch facility'));
-                console.error('❌ Error fetching facility:', err);
+                // Error fetching facility
             } finally {
                 if (!controller.signal.aborted) {
                     setLoading(false);
@@ -353,7 +353,7 @@ export function useFacilityStats() {
                 }
             } catch (err) {
                 if (controller.signal.aborted) return;
-                console.error('Error fetching stats:', err);
+                // Error fetching stats
             } finally {
                 if (!controller.signal.aborted) {
                     setLoading(false);

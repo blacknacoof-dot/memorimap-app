@@ -227,7 +227,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                         setSelectedPlan(sub.plan_id);
                     }
                 } catch (e) {
-                    console.error('Fetch sub error:', e);
+                    // silent
                 }
             }
         };

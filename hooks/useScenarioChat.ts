@@ -74,7 +74,6 @@ export const useScenarioChat = (facilityId: string, onAction?: (action: string, 
                     }
                 }
             } catch (err: unknown) {
-                console.error("Scenario fetch error, falling back:", err);
                 // Fallback on error (e.g. table missing)
                 setScenario(DEFAULT_SCENARIO);
                 const startNodeId = DEFAULT_SCENARIO.start_node || 'welcome';
@@ -89,7 +88,6 @@ export const useScenarioChat = (facilityId: string, onAction?: (action: string, 
                         timestamp: new Date()
                     }]);
                 } else {
-                    console.error("Critical: Default Scenario Start Node not found");
                     setError("System Error: Default Scenario Missing");
                 }
                 // setError(err.message); // Don't expose internal error to UI if fallback works, but here fallback might have failed? 

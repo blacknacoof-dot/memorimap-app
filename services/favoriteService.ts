@@ -27,12 +27,12 @@ export const favoriteService = {
                 .order('created_at', { ascending: false });
 
             if (error) {
-                console.error('Error fetching favorites:', error);
+                // error('Error fetching favorites:', error);
                 throw error;
             }
             return data || [];
         } catch (e) {
-            console.error('[favoriteService] Exception fetching favorites:', e);
+            // error('[favoriteService] Exception fetching favorites:', e);
             throw e;
         }
     },
@@ -48,11 +48,11 @@ export const favoriteService = {
                 .maybeSingle();
 
             if (error && error.code !== 'PGRST116') {
-                console.error('Error checking favorite:', error);
+                // error('Error checking favorite:', error);
             }
             return !!data;
         } catch (e) {
-            console.error('Error in checkFavorite:', e);
+            // error('Error in checkFavorite:', e);
             return false;
         }
     },
@@ -69,7 +69,7 @@ export const favoriteService = {
                 .eq('facility_id', facilityId);
 
             if (error) {
-                console.error('Error toggling favorite:', error);
+                // error('Error toggling favorite:', error);
                 throw error;
             }
             return false;
@@ -79,7 +79,7 @@ export const favoriteService = {
                 .insert({ user_id: userId, facility_id: facilityId });
 
             if (error) {
-                console.error('Error adding favorite:', error);
+                // error('Error adding favorite:', error);
                 throw error;
             }
             return true;

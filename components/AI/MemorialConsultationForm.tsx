@@ -82,7 +82,7 @@ export const MemorialConsultationForm: React.FC<Props> = ({
             toast.success('상담 요청이 접수되었습니다. 담당자가 연락드리겠습니다.');
             if (onClose) onClose();
         } catch (e) {
-            console.error(e);
+            // silent
             setError('요청 전송에 실패했습니다.');
         } finally {
             setLoading(false);

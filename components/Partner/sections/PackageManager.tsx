@@ -107,7 +107,7 @@ export const PackageManager: React.FC<PackageManagerProps> = ({ facilityId, pack
             toast.success('패키지가 저장되었습니다.');
             onSaved();
         } catch (err) {
-            console.error('패키지 저장 오류:', err);
+            // 패키지 저장 오류 (toast로 알림)
             toast.error('패키지 저장에 실패했습니다.');
         } finally {
             setSaving(false);

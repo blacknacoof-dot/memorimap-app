@@ -97,11 +97,11 @@ export const useFacilityChat = () => {
                 }
 
                 default:
-                    console.warn(`Unknown function: ${name}`);
+                    // Unknown function
                     return { error: `지원하지 않는 기능입니다: ${name}`, shouldRetry: false };
             }
         } catch (error) {
-            console.error('Function call error:', error);
+            // Function call error
             return {
                 error: '처리 중 시스템 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
                 shouldRetry: false

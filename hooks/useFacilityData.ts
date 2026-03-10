@@ -109,7 +109,6 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
           // DB empty or RPC error
         }
       } catch (err: unknown) {
-        console.error("Failed to fetch facilities:", err);
         const message = err instanceof Error ? err.message : "연결 오류";
         showToast(`데이터 불러오기 실패: ${message}`, 'error');
       } finally {
@@ -258,7 +257,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
         setSelectedFacility(updatedFacility);
       }
     } catch (err) {
-      console.error("Detail fetch error:", err);
+      // silent: detail fetch error
     }
   }, [facilities, setSelectedFacility, setFacilities]);
 

@@ -126,7 +126,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ facilityId, onClose })
 
                 // [Hardening] 소유권 검증 - 본인의 세션이 아니면 복구 거부
                 if (prevSession && user && prevSession.user_id !== user.id) {
-                    console.warn('[Security] Session ownership mismatch. Discarding old session.');
+                    // Session ownership mismatch — discard
                     prevSession = null;
                     sessionStorage.removeItem(`conv_id_${facilityId}`);
                 }
@@ -187,7 +187,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ facilityId, onClose })
                 }
             }
         } catch (err: unknown) {
-            console.error('Bot init failed:', err);
+            // Bot init failed
             if (retryCount < 2) {
                 setTimeout(() => initBot(retryCount + 1), 1000);
             } else {

@@ -24,14 +24,12 @@ export function useFacilityQuota() {
       });
 
       if (error) {
-        console.error('[useFacilityQuota] RPC error (fail-open):', error);
-        return { allowed: true, current: 0, limit: -1 };
+        return { allowed: true, current: 0, limit: -1 }; // fail-open
       }
 
       return data as QuotaCheckResult;
     } catch (err) {
-      console.error('[useFacilityQuota] unexpected error (fail-open):', err);
-      return { allowed: true, current: 0, limit: -1 };
+      return { allowed: true, current: 0, limit: -1 }; // fail-open
     } finally {
       setIsChecking(false);
     }

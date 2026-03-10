@@ -26,8 +26,7 @@ export function useQuotaGate() {
       });
 
       if (error) {
-        console.error('[useQuotaGate] RPC error (fail-open):', error);
-        return { allowed: true, current: 0, limit: -1 };
+        return { allowed: true, current: 0, limit: -1 }; // fail-open
       }
 
       const result = data as QuotaCheckResult;
@@ -37,8 +36,7 @@ export function useQuotaGate() {
 
       return result;
     } catch (err) {
-      console.error('[useQuotaGate] unexpected error (fail-open):', err);
-      return { allowed: true, current: 0, limit: -1 };
+      return { allowed: true, current: 0, limit: -1 }; // fail-open
     } finally {
       setIsChecking(false);
     }
@@ -52,7 +50,7 @@ export function useQuotaGate() {
       });
       queryClient.invalidateQueries({ queryKey: ['user-plan'] });
     } catch (err) {
-      console.error('[useQuotaGate] decrement error:', err);
+      // silent: decrement 실패는 무시
     }
   };
 

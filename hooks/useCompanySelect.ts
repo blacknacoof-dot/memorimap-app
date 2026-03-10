@@ -120,7 +120,7 @@ export function useCompanySelect({ facilities }: UseCompanySelectParams) {
           if (reviews) reviewData = reviews;
         }
       } catch (e) {
-        console.error('Name fallback failed', e);
+        // Name fallback failed
       }
     }
 

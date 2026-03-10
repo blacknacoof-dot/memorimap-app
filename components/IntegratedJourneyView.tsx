@@ -69,13 +69,13 @@ export default function IntegratedJourneyView({
             // authClient를 사용하여 RPC 호출
             const { data, error } = await authClient.rpc('get_my_journey_full');
             if (error) {
-                console.error('여정 데이터 로드 실패:', error);
+                // 여정 데이터 로드 실패
             } else if (data) {
                 setLogs(data.timeline || []);
                 setNote(data.ending_note || null);
             }
         } catch (err) {
-            console.error('데이터 로드 중 오류:', err);
+            // silent
         }
 
         setLoading(false);

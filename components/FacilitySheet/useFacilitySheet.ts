@@ -58,7 +58,7 @@ export function useFacilitySheet({ facility, isLoggedIn, currentUser, onLoginReq
           const status = await favoriteService.checkFavorite(currentUser.id, facility.id, client);
           setIsFavorite(status);
         } catch (e) {
-          console.error('Failed to check favorite status', e);
+          // silent
         }
       } else {
         setIsFavorite(false);

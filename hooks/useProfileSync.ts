@@ -38,13 +38,13 @@ export const useProfileSync = () => {
         if (error) {
           const pgError = error as { code?: string; status?: number; message: string };
           if (pgError.code !== '42501' && pgError.status !== 401) {
-            console.warn('[ProfileSync] Profile sync failed:', pgError.code, pgError.message);
+            // Profile sync failed (non-critical)
           }
         } else {
           hasSyncedRef.current = true;
         }
       } catch (err) {
-        console.error('[ProfileSync] Error:', err);
+        // silent
       }
     };
 

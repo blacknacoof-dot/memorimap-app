@@ -51,7 +51,7 @@ export const useLocation = () => {
                     setError(null);
                 } else {
                     // Actual error - Log it
-                    console.warn('Geolocation failed, falling back to default:', err);
+                    // Geolocation failed, falling back to default
                     setLocation({
                         lat: 37.5665,
                         lng: 126.9780,

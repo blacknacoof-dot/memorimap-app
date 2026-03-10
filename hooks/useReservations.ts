@@ -79,7 +79,6 @@ export const useReservations = (
       setViewState(ViewState.MY_PAGE);
       showToast("예약이 확정되었습니다!");
     } catch (err) {
-      console.error('Reservation error:', err);
       showToast("예약 중 오류가 발생했습니다.", 'error');
     }
   }, [isSignedIn, user?.id, showToast, setShowLoginModal, setSelectedFacility, setViewState, session]);
@@ -98,7 +97,6 @@ export const useReservations = (
       if (error) throw error;
       setReservations(prev => prev.map(r => r.id === id ? { ...r, status } : r));
     } catch (err) {
-      console.error('Reservation update error:', err);
       showToast('예약 상태 업데이트 중 오류가 발생했습니다.', 'error');
     }
   }, [showToast, session]);

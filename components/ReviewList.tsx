@@ -33,7 +33,7 @@ export const ReviewList: React.FC<Props> = ({ spaceId, refreshTrigger }) => {
             const data = await getReviewsBySpace(spaceId);
             setReviews(data);
         } catch (err) {
-            console.error(err);
+            // silent
         } finally {
             setLoading(false);
         }

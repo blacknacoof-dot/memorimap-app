@@ -47,7 +47,6 @@ export function useUserRole({ isSignedIn, userInfo, viewState, setViewState, sho
 
           if (result.isError) {
             setRoleError(result.error || 'Unknown role error');
-            console.error('Role fetch error:', result.error);
             showToast(`권한 확인 중 문제가 발생했습니다: ${result.error}`, 'error');
           } else {
             setRoleError(null);
@@ -72,8 +71,7 @@ export function useUserRole({ isSignedIn, userInfo, viewState, setViewState, sho
               setSangjoOrgType(result.role === 'sangjo_hq_admin' ? 'headquarters' : 'branch');
             }
           }
-        } catch (err: unknown) {
-          console.error('Unexpected fetchUserRole error:', err);
+        } catch {
           setRoleError('Unexpected error');
           showToast('권한 정보를 불러오지 못했습니다.', 'error');
         } finally {

@@ -207,7 +207,7 @@ export function useReservation({ facility, onClose, onConfirm, reservationMode }
       onConfirm(legacy);
       setStep(4);
     } catch (error: unknown) {
-      console.error('Payment Error:', error);
+      // Payment error handled by toast below
       const msg = error instanceof Error ? error.message : '';
       if (!msg.includes('취소')) {
         toast.error(msg || '결제 진행 중 오류가 발생했습니다.');

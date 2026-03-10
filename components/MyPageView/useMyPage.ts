@@ -59,8 +59,8 @@ export function useMyPage({ isLoggedIn, user, facilities }: UseMyPageProps) {
       const client = await getAuthClient(session);
       const data = await getMyReservations(user.id, client);
       setMyReservations(data as unknown as Reservation[]);
-    } catch (err) {
-      console.error(err);
+    } catch {
+      // silent
     } finally {
       setIsLoadingReservations(false);
     }
@@ -76,7 +76,7 @@ export function useMyPage({ isLoggedIn, user, facilities }: UseMyPageProps) {
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
-      if (favError) { console.error('즐겨찾기 조회 실패:', favError); setIsLoadingFavorites(false); return; }
+      if (favError) { setIsLoadingFavorites(false); return; }
       const data = (favData || []) as Favorite[];
       setMyFavorites(data);
 
@@ -108,7 +108,7 @@ export function useMyPage({ isLoggedIn, user, facilities }: UseMyPageProps) {
         }
       }
     } catch (error) {
-      console.error('Failed to fetch favorites:', error);
+      // silent
     } finally {
       setIsLoadingFavorites(false);
     }
@@ -124,7 +124,7 @@ export function useMyPage({ isLoggedIn, user, facilities }: UseMyPageProps) {
         .eq('user_id', user.id);
       setConsultationCount(count || 0);
     } catch (err) {
-      console.error('Failed to fetch consultation count:', err);
+      // silent
     }
   }
 
@@ -141,7 +141,7 @@ export function useMyPage({ isLoggedIn, user, facilities }: UseMyPageProps) {
       if (error) throw error;
       setSangjoFavorites(data || []);
     } catch (err) {
-      console.error('Failed to fetch sangjo favorites:', err);
+      // silent
     } finally {
       setIsLoadingSangjoFavorites(false);
     }
