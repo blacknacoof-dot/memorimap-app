@@ -130,6 +130,11 @@ const App: React.FC = () => {
       else if (hash === '#/facility-admin') setViewState(ViewState.FACILITY_ADMIN);
       else if (hash === '#/funeral-company') setViewState(ViewState.FUNERAL_COMPANIES);
       else if (hash === '#/partner-inquiry') setViewState(ViewState.PARTNER_INQUIRY);
+      else if (hash.startsWith('#/auth')) {
+        setShowLoginModal(true);
+        setViewState(ViewState.MAP);
+        window.history.replaceState(null, '', '/');
+      }
     };
 
     checkRoute();

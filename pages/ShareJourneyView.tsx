@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
-import { Heart, Phone, FileText, Lock, Eye, Calendar } from 'lucide-react';
+import { Heart, Phone, FileText, Lock, Eye, Calendar, Sparkles, MapPin, Bot, Star } from 'lucide-react';
 
 interface SharedData {
     preferences: string[];
@@ -157,17 +157,45 @@ export default function ShareJourneyView() {
                     </div>
                 </div>
 
+                {/* 회원가입 CTA */}
+                <div className="mt-8 bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl p-6 border border-pink-100">
+                    <div className="text-center mb-4">
+                        <Sparkles className="w-8 h-8 text-pink-500 mx-auto mb-2" />
+                        <h3 className="text-base font-bold text-gray-900">
+                            메모리맵으로 나의 여정도 기록해보세요
+                        </h3>
+                    </div>
+                    <ul className="space-y-2 mb-5">
+                        <li className="flex items-center gap-2 text-sm text-gray-700">
+                            <FileText size={14} className="text-pink-500 flex-shrink-0" />
+                            나의 추모 여정 기록 및 공유
+                        </li>
+                        <li className="flex items-center gap-2 text-sm text-gray-700">
+                            <MapPin size={14} className="text-blue-500 flex-shrink-0" />
+                            전국 추모시설 비교 및 즐겨찾기
+                        </li>
+                        <li className="flex items-center gap-2 text-sm text-gray-700">
+                            <Bot size={14} className="text-purple-500 flex-shrink-0" />
+                            AI 맞춤 상조 상담
+                        </li>
+                        <li className="flex items-center gap-2 text-sm text-gray-700">
+                            <Star size={14} className="text-amber-500 flex-shrink-0" />
+                            상조 서비스 비교 분석
+                        </li>
+                    </ul>
+                    <a
+                        href="/#/auth?from=share"
+                        className="block w-full py-3 bg-gradient-to-r from-pink-400 to-purple-400 text-white rounded-xl font-bold text-center shadow-md hover:shadow-lg active:scale-95 transition-all"
+                    >
+                        무료로 시작하기
+                    </a>
+                </div>
+
                 {/* 푸터 */}
-                <div className="text-center pt-6 border-t border-gray-100">
-                    <p className="text-xs text-gray-400 mb-2">
+                <div className="text-center pt-6 mt-4 border-t border-gray-100">
+                    <p className="text-xs text-gray-400">
                         메모리맵에서 공유된 추모 여정 기록입니다.
                     </p>
-                    <a 
-                        href="/" 
-                        className="text-xs text-pink-500 hover:text-pink-600 font-medium"
-                    >
-                        메모리맵 홈으로 →
-                    </a>
                 </div>
             </div>
         );

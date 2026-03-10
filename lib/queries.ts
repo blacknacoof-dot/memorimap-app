@@ -1977,13 +1977,13 @@ export const fetchFacilitiesInView = async (bounds: MapBounds, token?: string) =
 
 export interface Inquiry {
     id: string;
-    companyName: string;
+    companyName?: string;
     managerName?: string;
     phone?: string;
     email?: string;
     message?: string;
     inquiryType?: string;
-    type: string;
+    type?: string;
     createdAt: string;
     status: 'pending' | 'resolved';
     content?: string;

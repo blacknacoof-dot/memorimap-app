@@ -8,6 +8,7 @@ import { FUNERAL_COMPANIES } from '../../constants';
 import { useSession } from '../../lib/auth';
 import { getAuthClient } from '../../lib/supabaseClient';
 import { analytics } from '../../lib/analytics';
+import { toast } from 'sonner';
 import type { QuotaCheckResult } from '../../types/subscription';
 import UpgradePrompt from '../UpgradePrompt';
 
@@ -109,6 +110,15 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
                     if (!result.allowed) {
                         setQuotaExceeded(result);
                         return;
+                    }
+                    // 잔여 횟수 알림 (limit > 0일 때만, 무제한(-1) 제외)
+                    if (result.limit > 0) {
+                        const remaining = result.limit - result.current;
+                        if (remaining <= 1) {
+                            toast.warning(`무료 상담이 마지막입니다.`);
+                        } else if (remaining <= 3) {
+                            toast.info(`상조 비교상담 ${remaining}회 남았습니다.`);
+                        }
                     }
                 }
             } catch {

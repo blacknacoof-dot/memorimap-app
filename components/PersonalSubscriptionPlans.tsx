@@ -40,7 +40,7 @@ const personalPlans: PersonalPlan[] = [
         features: [
             { name: '시설 지도 검색', included: true },
             { name: 'AI 상담', included: true, limit: '카테고리당 1건' },
-            { name: '상조 AI 비교상담', included: true, limit: '1회' },
+            { name: '상조 AI 비교상담', included: true, limit: '10회' },
             { name: '즐겨찾기', included: true, limit: '최대 5개' },
             { name: '엔딩노트', included: true, limit: '기본 항목만' },
             { name: '예약 / 리뷰', included: true },
@@ -61,7 +61,7 @@ const personalPlans: PersonalPlan[] = [
         features: [
             { name: '시설 지도 검색', included: true },
             { name: 'AI 상담', included: true, limit: '카테고리당 3건' },
-            { name: '상조 AI 비교상담', included: true, limit: '월 5회' },
+            { name: '상조 AI 비교상담', included: true, limit: '월 15회' },
             { name: '즐겨찾기', included: true, limit: '최대 20개' },
             { name: '엔딩노트', included: true, limit: '전체 항목' },
             { name: '예약 / 리뷰', included: true },
@@ -300,7 +300,7 @@ export default function PersonalSubscriptionPlans({ onBack }: PersonalSubscripti
                     </div>
                     {[
                         { label: 'AI 상담', values: ['1건', '3건', '무제한'] },
-                        { label: '상조 비교', values: ['1회', '5회/월', '무제한'] },
+                        { label: '상조 비교', values: ['10회', '15회/월', '무제한'] },
                         { label: '즐겨찾기', values: ['5개', '20개', '무제한'] },
                         { label: '엔딩노트', values: ['기본', '전체', 'PDF'] },
                         { label: '광고 제거', values: ['X', 'O', 'O'] },

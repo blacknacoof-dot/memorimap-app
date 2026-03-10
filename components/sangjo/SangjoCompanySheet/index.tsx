@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { FuneralCompany, Review } from '../../../types';
 import { getAuthClient } from '../../../lib/supabaseClient';
 import { useSession } from '../../../lib/auth';
@@ -42,7 +42,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
             seed |= 0;
         }
         const sr = (idx: number) => { const x = Math.sin(seed + idx * 9301) * 10000; return x - Math.floor(x); };
-        const now = Date.now();
+        const now = 1741564800000; // 2025-03-10 기준 (고정값, 순수 렌더링)
         return templates.map((tpl, i): Review => {
             const daysAgo = Math.floor(sr(i + 100) * 180) + 30;
             const date = new Date(now - daysAgo * 86400000);
@@ -55,16 +55,9 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
         });
     }, [company.id]);
 
-    // Local state for reviews to avoid page reload
-    const [localReviews, setLocalReviews] = useState<Review[]>(
-        (company.reviews && company.reviews.length > 0) ? company.reviews : defaultReviews
-    );
-
-    useEffect(() => {
-        setLocalReviews(
-            (company.reviews && company.reviews.length > 0) ? company.reviews : defaultReviews
-        );
-    }, [company.reviews, defaultReviews]);
+    // Reviews: company 데이터 우선, 없으면 기본 후기
+    const initialReviews = (company.reviews && company.reviews.length > 0) ? company.reviews : defaultReviews;
+    const [localReviews, setLocalReviews] = useState<Review[]>(initialReviews);
 
     // Using global store for favorite state
     const { favoritedIds, toggleFavorite: storeToggleFavorite } = useSangjoFavoriteStore();
@@ -115,7 +108,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
     };
 
     return (
-        <div className="fixed inset-x-0 bottom-0 z-[250] bg-white rounded-t-3xl shadow-2xl transform transition-transform duration-300 max-h-[90dvh] h-[75dvh] md:h-[80dvh] flex flex-col md:max-w-md md:mx-auto pb-safe">
+        <div className="fixed inset-x-0 bottom-0 z-[250] bg-white rounded-t-3xl shadow-2xl transform transition-transform duration-300 max-h-[95dvh] h-[85dvh] md:h-[80dvh] flex flex-col md:max-w-md md:mx-auto pb-safe">
             {/* Handle */}
             <div className="w-full flex justify-center pt-3 pb-1" onClick={onClose}>
                 <div className="w-12 h-1.5 bg-gray-300 rounded-full cursor-pointer"></div>
