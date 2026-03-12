@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
     LayoutGrid, User, Truck, MapPin,
-    Calendar, MoreVertical, Plus,
-    ChevronRight, CheckCircle, Clock, X
+    MoreVertical, Plus,
+    CheckCircle, Clock, X
 } from 'lucide-react';
 import { getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
@@ -30,7 +30,7 @@ const EMPTY_FORM: NewOperationForm = {
 
 export const OperationsManagement: React.FC<OperationsManagementProps> = ({ partnerId }) => {
     const [operations, setOperations] = useState<PartnerOperation[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [_loading, setLoading] = useState(true);
     const [showNewModal, setShowNewModal] = useState(false);
     const [form, setForm] = useState<NewOperationForm>(EMPTY_FORM);
     const [isSaving, setIsSaving] = useState(false);
@@ -50,7 +50,6 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
     };
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         void loadOperations();
 
         // [Realtime Sync] — auth client
@@ -114,7 +113,7 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
             toast.success('신규 작업이 접수되었습니다.');
             setForm(EMPTY_FORM);
             setShowNewModal(false);
-        } catch (err) {
+        } catch (_err) {
             toast.error('작업 접수에 실패했습니다.');
         } finally {
             setIsSaving(false);

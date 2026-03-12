@@ -26,7 +26,7 @@ export interface ChatMessage {
 
 export const useScenarioChat = (facilityId: string, onAction?: (action: string, data?: { facilityId: string; option: ScenarioOption }) => void) => {
     const [scenario, setScenario] = useState<ScenarioData | null>(null);
-    const [currentNodeId, setCurrentNodeId] = useState<string>('');
+    const [_currentNodeId, setCurrentNodeId] = useState<string>('');
     const [history, setHistory] = useState<ChatMessage[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -73,7 +73,7 @@ export const useScenarioChat = (facilityId: string, onAction?: (action: string, 
                         }]);
                     }
                 }
-            } catch (err: unknown) {
+            } catch (_err: unknown) {
                 // Fallback on error (e.g. table missing)
                 setScenario(DEFAULT_SCENARIO);
                 const startNodeId = DEFAULT_SCENARIO.start_node || 'welcome';

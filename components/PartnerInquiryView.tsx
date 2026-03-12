@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Building2, Phone, User, Send, CheckCircle, Upload, AlertCircle, FileText, MapPin, Search } from 'lucide-react';
+import { ArrowLeft, Building2, Phone, User, Send, CheckCircle, Upload, AlertCircle, FileText, MapPin } from 'lucide-react';
 import { useUser, useSession } from '../lib/auth';
 
-import { submitPartnerApplication, searchKnownFacilities, PARTNER_CATEGORIES, getFacilitiesByCategory } from '../lib/queries';
+import { submitPartnerApplication, searchKnownFacilities, PARTNER_CATEGORIES } from '../lib/queries';
 import { useApiRetry } from '../hooks/useApiRetry';
 import { getAuthClient } from '../lib/supabaseClient';
 import { FUNERAL_COMPANIES } from '../constants';

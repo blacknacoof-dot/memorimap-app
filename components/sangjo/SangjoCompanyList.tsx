@@ -21,7 +21,7 @@ interface Props {
 
 export const SangjoCompanyList: React.FC<Props> = ({
     onCompanySelect,
-    onBack,
+    onBack: _onBack,
     compareList,
     onToggleCompare,
     onShowComparison,
@@ -30,7 +30,7 @@ export const SangjoCompanyList: React.FC<Props> = ({
 }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [showConsultation, setShowConsultation] = useState(false);
-    const { companies, isLoading } = useSangjoCompanies();
+    const { companies, isLoading: _isLoading } = useSangjoCompanies();
     const { user } = useUser();
     const { session } = useSession();
 
@@ -67,7 +67,7 @@ export const SangjoCompanyList: React.FC<Props> = ({
         try {
             const client = await getAuthClient(session, { strict: true });
             await storeToggleFavorite(user.id, company, client);
-        } catch (error) {
+        } catch (_error) {
             toast.error('즐겨찾기 변경에 실패했습니다.');
         }
     };

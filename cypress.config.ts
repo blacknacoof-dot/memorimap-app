@@ -19,7 +19,7 @@ export default defineConfig({
             SUPER_ADMIN_PASSWORD: process.env.CYPRESS_SUPER_ADMIN_PASSWORD || 'superadmin123',
         },
 
-        setupNodeEvents(on, config) {
+        setupNodeEvents(_on, _config) {
             // implement node event listeners here
         },
     },

@@ -67,14 +67,14 @@ const PetSearchForm: React.FC<FormProps> = ({
 
     // Booking state
     const [bookedIds, setBookedIds] = useState<Set<string>>(new Set());
-    const [bookingId, setBookingId] = useState<string | null>(null);
+    const [_bookingId, setBookingId] = useState<string | null>(null);
     const [consultFacility, setConsultFacility] = useState<{ id: string; name: string; phone?: string } | null>(null);
     const [bookingComplete, setBookingComplete] = useState<{ facilityName: string; petType: string } | null>(null);
 
     // Autocomplete
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const [isComposing, setIsComposing] = useState(false);
+    const [_isComposing, setIsComposing] = useState(false);
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
@@ -145,7 +145,7 @@ const PetSearchForm: React.FC<FormProps> = ({
             const lng = userLocation?.lng || 0;
             const results = await getIntelligentRecommendations(lat, lng, 'pet', region);
             setRecommendedFacilities(results.slice(0, 5));
-        } catch (e) {
+        } catch (_e) {
             // pet recommendations fetch failed
         } finally {
             setIsLoadingRecommendations(false);
@@ -219,7 +219,7 @@ const PetSearchForm: React.FC<FormProps> = ({
             if (error) throw error;
             setBookedIds(prev => new Set(prev).add(consultFacility.id));
             setBookingComplete({ facilityName: consultFacility.name, petType: petLabel });
-        } catch (e) {
+        } catch (_e) {
             toast.error('접수 중 오류가 발생했습니다. 다시 시도해 주세요.');
         } finally {
             setBookingId(null);

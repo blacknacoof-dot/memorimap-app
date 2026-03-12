@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
     Check, X, Sparkles, Crown, Zap, ChevronDown, ChevronUp,
-    Heart, MessageCircle, FileText, Shield, Users, Gift,
-    Star, Ban, ShieldCheck, ArrowLeft
+    MessageCircle, Shield,
+    ShieldCheck, ArrowLeft
 } from 'lucide-react';
 import { requestPayment, verifyPayment, PORTONE_CONFIG } from '../lib/portone';
 import { toast } from 'sonner';
@@ -99,8 +99,8 @@ interface PersonalSubscriptionPlansProps {
     onBack?: () => void;
 }
 
-export default function PersonalSubscriptionPlans({ onBack }: PersonalSubscriptionPlansProps) {
-    const [selectedPlan, setSelectedPlan] = useState<string>('personal_free');
+export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalSubscriptionPlansProps) {
+    const [_selectedPlan, setSelectedPlan] = useState<string>('personal_free');
     const [expandedPlan, setExpandedPlan] = useState<string | null>('personal_basic');
     const [currentPlan, setCurrentPlan] = useState<string>('personal_free');
     const [isLoading, setIsLoading] = useState(true);
@@ -172,7 +172,7 @@ export default function PersonalSubscriptionPlans({ onBack }: PersonalSubscripti
                         .eq('user_id', userId)
                         .eq('status', 'active');
                 }
-            } catch (e) {
+            } catch (_e) {
                 // 구독 취소 실패 (toast로 이미 알림)
             }
             setSelectedPlan(plan.id);
@@ -232,7 +232,7 @@ export default function PersonalSubscriptionPlans({ onBack }: PersonalSubscripti
                     started_at: new Date().toISOString(),
                     expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
                 }, { onConflict: 'user_id' });
-            } catch (e) {
+            } catch (_e) {
                 toast.error('결제는 완료되었으나 구독 정보 업데이트에 실패했습니다. 고객센터에 문의해주세요.');
             }
 

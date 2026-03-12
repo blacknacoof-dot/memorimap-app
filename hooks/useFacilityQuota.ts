@@ -28,7 +28,7 @@ export function useFacilityQuota() {
       }
 
       return data as QuotaCheckResult;
-    } catch (err) {
+    } catch (_err) {
       return { allowed: true, current: 0, limit: -1 }; // fail-open
     } finally {
       setIsChecking(false);

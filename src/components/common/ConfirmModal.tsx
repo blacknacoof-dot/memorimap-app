@@ -39,7 +39,7 @@ export const ConfirmModal: React.FC = () => {
         setProcessing(true);
         try {
             await onConfirm();
-        } catch (err) {
+        } catch (_err) {
             // onConfirm 오류는 호출자 책임
         } finally {
             setProcessing(false);

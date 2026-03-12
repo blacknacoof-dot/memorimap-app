@@ -3,8 +3,8 @@ import { toast } from 'sonner';
 import { sendMessageToGemini, ChatMessage } from '../../services/geminiService';
 import { getAuthClient } from '../../lib/supabaseClient';
 import { getFacilityLatestInfo } from '../../lib/queries';
-import { X, Send, MapPin, Phone, CalendarCheck, Loader2, Bot, Sparkles, Check } from 'lucide-react';
-import { ActionType, Message, Facility } from '../../types';
+import { X, Send, MapPin, Phone, CalendarCheck, Loader2, Bot, Sparkles } from 'lucide-react';
+import { ActionType, Facility } from '../../types';
 import { createLead, getIntelligentRecommendations, createUrgentReservation, createConsultationFromLead } from '../../lib/queries';
 import { PetChatInterface } from '../Consultation/PetChatInterface';
 import { ConsultationForm } from '../Consultation/BrandChatHelpers';
@@ -36,7 +36,7 @@ interface Props {
 
 
 // Safe Highlighting Component
-const SafeHighlight = ({ text, highlight }: { text: string, highlight: string }) => {
+const _SafeHighlight = ({ text, highlight }: { text: string, highlight: string }) => {
     if (!highlight.trim()) return <span>{text}</span>;
     const escaped = highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const parts = text.split(new RegExp(`(${escaped})`, 'gi'));
@@ -55,13 +55,13 @@ const SafeHighlight = ({ text, highlight }: { text: string, highlight: string })
 
 export const ChatInterface: React.FC<Props> = ({
     facility,
-    allFacilities = [],
+    allFacilities: _allFacilities = [],
     onAction,
     onClose,
     currentUser,
     initialIntent,
     onSwitchToFacility,
-    onNavigateToFacility,
+    onNavigateToFacility: _onNavigateToFacility,
     userLocation,
     onGetCurrentPosition,
     handoverContext,
@@ -76,10 +76,10 @@ export const ChatInterface: React.FC<Props> = ({
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [recommendedCandidates, setRecommendedCandidates] = useState<Facility[]>([]);
+    const [_recommendedCandidates, setRecommendedCandidates] = useState<Facility[]>([]);
     const [searchContext, setSearchContext] = useState<string>('');
     const [liveFacility, setLiveFacility] = useState<Facility>(facility); // [Dynamic Prompt Injection] Live facility data
-    const [activeScenario, setActiveScenario] = useState<'funeral' | 'memorial' | 'pet' | null>(null);
+    const [_activeScenario, setActiveScenario] = useState<'funeral' | 'memorial' | 'pet' | null>(null);
     const [currentLeadId, setCurrentLeadId] = useState<string | null>(null); // [NEW] Track Lead ID for handover
     const scrollRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -128,7 +128,7 @@ export const ChatInterface: React.FC<Props> = ({
                     }));
                     logger.debug('[Dynamic Prompt Injection] Loaded latest facility data:', data.name);
                 }
-            } catch (e) {
+            } catch (_e) {
                 // Dynamic prompt injection fetch failed
             }
         };
@@ -331,7 +331,7 @@ export const ChatInterface: React.FC<Props> = ({
                     }
                 }
                 sessionQuotaCheckedRef.current = true;
-            } catch (err) {
+            } catch (_err) {
                 // fail-open
                 // fail-open: quota check error
                 sessionQuotaCheckedRef.current = true;
@@ -354,7 +354,7 @@ export const ChatInterface: React.FC<Props> = ({
                     }
                 }
                 facilityQuotaCheckedRef.current = true;
-            } catch (err) {
+            } catch (_err) {
                 // fail-open
                 // fail-open: facility quota error
                 facilityQuotaCheckedRef.current = true;
@@ -399,7 +399,7 @@ export const ChatInterface: React.FC<Props> = ({
                         actionTrigger = parsed.action_trigger as ActionType;
                     }
                 }
-            } catch (e) {
+            } catch (_e) {
                 // Fallback to plain text if parsing fails
                 // Not a JSON response, use plain text
             }
@@ -501,7 +501,7 @@ export const ChatInterface: React.FC<Props> = ({
                         setCurrentLeadId(lead.id);
                         logToSystem('INFO', 'Lead created', traceId, { leadId: lead.id });
                     }
-                } catch (e) {
+                } catch (_e) {
                     // Lead creation failed
                 }
             }
@@ -552,7 +552,7 @@ export const ChatInterface: React.FC<Props> = ({
 
                     logToSystem('INFO', 'Urgent Reservation Confirmed in DB', traceId, { visitDate: visitDate.toISOString() });
 
-                } catch (e) {
+                } catch (_e) {
                     // Failed to save urgent reservation
                     // Fallback UI
                     setMessages(prev => [...prev, {
@@ -632,7 +632,7 @@ export const ChatInterface: React.FC<Props> = ({
                 await createConsultationFromLead(currentLeadId, candidate.id, authClient);
             }
             onAction('RESERVE', candidate);
-        } catch (e) {
+        } catch (_e) {
             // Handover failed
             // Fallback: Proceed to reserve anyway
             onAction('RESERVE', candidate);

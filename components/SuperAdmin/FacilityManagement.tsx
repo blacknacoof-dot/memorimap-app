@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAllFacilities, AdminFacility } from '../../hooks/useAdminFacilities';
 import { useAllUsers } from '../../hooks/useUsers';
-import { Search, Building2, MapPin, User, Edit2, AlertCircle, Camera, Phone, FileText, DollarSign } from 'lucide-react';
+import { Search, Building2, MapPin, User, Edit2, AlertCircle, Camera, Phone, FileText } from 'lucide-react';
 
 export function FacilityManagement({ initialSearch, onClearSearch }: { initialSearch?: string; onClearSearch?: () => void }) {
     const { facilities, loading, totalCount, page, itemsPerPage, search, updateManager } = useAllFacilities();
@@ -19,9 +19,12 @@ export function FacilityManagement({ initialSearch, onClearSearch }: { initialSe
         await search(queryTerm, targetPage);
     }, [searchTerm, search]);
 
-    // Initial Search Logic
+    // Initial Search Logic — handleSearch 내부의 setHasSearched는 의도적 동기 호출
     useEffect(() => {
-        handleSearch(0, initialSearch || '');
+        const offset = 0;
+        const term = initialSearch || '';
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        handleSearch(offset, term);
     }, [initialSearch, handleSearch]);
 
     const totalPages = Math.ceil(totalCount / itemsPerPage);
@@ -229,4 +232,4 @@ export function FacilityManagement({ initialSearch, onClearSearch }: { initialSe
             )}
         </div>
     );
-};
+}

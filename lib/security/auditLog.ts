@@ -40,7 +40,7 @@ export async function logAuditEvent(entry: AuditLogEntry, client: SupabaseClient
             ip_address: entry.ipAddress,
             created_at: new Date().toISOString()
         });
-    } catch (error) {
+    } catch (_error) {
         // 감사 로그 실패는 사용자 경험을 방해하지 않도록 silent fail
     }
 }

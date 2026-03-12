@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     Bell, Plus, Search, Megaphone,
     AlertTriangle, Info, Trash2, Edit3,
-    Eye, Users, Calendar, X
+    Users, Calendar, X
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getPlatformNotices, createPlatformNotice, updatePlatformNotice, deletePlatformNotice } from '../../lib/sangjoQueries';

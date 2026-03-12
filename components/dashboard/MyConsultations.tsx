@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { getConsultationsByUser, updateConsultationStatus, getFacility, Consultation } from '@/lib/queries';
-import { Clock, CheckCircle, XCircle, Check, MapPin, Building2, Calendar, ChevronRight, RefreshCw, MessageSquare, Trash2 } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, Check, Building2, Calendar, ChevronRight, RefreshCw, MessageSquare, Trash2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 // aiConsultationService import 제거 — 인증 클라이언트 미전달 방지
 import { AiConsultationStatus, Facility } from '@/types';
@@ -42,20 +42,20 @@ const getFacilityName = (c: ExtendedConsultation): string => {
     return '장례식장';
 };
 
-const RELIGION_LABELS: Record<string, string> = {
+const _RELIGION_LABELS: Record<string, string> = {
     buddhist: '불교',
     christian: '기독교',
     catholic: '천주교',
     none: '무교/기타'
 };
 
-const SCALE_LABELS: Record<string, string> = {
+const _SCALE_LABELS: Record<string, string> = {
     small: '소규모',
     medium: '중규모',
     large: '대규모'
 };
 
-const SCHEDULE_LABELS: Record<string, string> = {
+const _SCHEDULE_LABELS: Record<string, string> = {
     '3day': '3일장',
     '2day': '2일장',
     other: '기타'
@@ -99,7 +99,7 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
             if (!aiError && aiResult) {
                 aiData = (aiResult as Array<Record<string, unknown>>).filter(ai => ai.status !== 'cancelled' && ai.status !== 'deleted');
             }
-        } catch (e) {
+        } catch (_e) {
             // ai_consultations 조회 실패 — 빈 배열로 fallback
             // fallback 제거 — 인증 실패 시 빈 배열
             aiData = [];
@@ -216,7 +216,7 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
                 prev.map(c => c.id === consultationId ? { ...c, status: 'cancelled' } : c)
             );
             toast.success('상담이 취소되었습니다.');
-        } catch (e) {
+        } catch (_e) {
             toast.error('취소 중 오류가 발생했습니다.');
         }
     };
@@ -250,7 +250,7 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
 
             setConsultations(prev => prev.filter(c => c.id !== consultation.id));
             toast.success('상담 내역이 삭제되었습니다.');
-        } catch (e) {
+        } catch (_e) {
             toast.error('삭제 중 오류가 발생했습니다. 다시 시도해주세요.');
         }
     };
@@ -260,7 +260,7 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
         try {
             const facility = await getFacility(facilityId);
             if (facility) onViewFacility(facility);
-        } catch (e) {
+        } catch (_e) {
             toast.error('시설 정보를 불러올 수 없습니다.');
         }
     };

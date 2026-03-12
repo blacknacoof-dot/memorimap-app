@@ -88,7 +88,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
 
     // Booking state
     const [bookedIds, setBookedIds] = useState<Set<string>>(new Set());
-    const [bookingId, setBookingId] = useState<string | null>(null);
+    const [_bookingId, setBookingId] = useState<string | null>(null);
     const [consultFacility, setConsultFacility] = useState<{ id: string; name: string; phone?: string; type?: string } | null>(null);
     // preStepData 제거 — 바로 ConsultationForm 진입
     const [bookingComplete, setBookingComplete] = useState<{ facilityName: string; scale: string; religion: string } | null>(null);
@@ -96,7 +96,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
     // Autocomplete
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const [isComposing, setIsComposing] = useState(false);
+    const [_isComposing, setIsComposing] = useState(false);
     const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
@@ -233,7 +233,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
             if (error) throw error;
             setBookedIds(prev => new Set(prev).add(consultFacility.id));
             setBookingComplete({ facilityName: consultFacility.name, scale: memorialType, religion: religionVal });
-        } catch (e) {
+        } catch (_e) {
             toast.error('접수 중 오류가 발생했습니다. 다시 시도해 주세요.');
         } finally {
             setBookingId(null);

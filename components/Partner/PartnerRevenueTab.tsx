@@ -1,9 +1,9 @@
 import React, { lazy, Suspense } from 'react';
 import {
-    TrendingUp, Calendar, Clock, Crown,
+    TrendingUp, Crown,
     Wallet, CreditCard, BarChart3, X
 } from 'lucide-react';
-import { FuneralConsultation } from '../../lib/queries';
+import { Consultation } from '../../lib/queries';
 import { Reservation } from '../../types';
 import type { Subscription, Payment } from '../../types/db';
 import { toast } from 'sonner';

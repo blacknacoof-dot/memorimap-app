@@ -1,9 +1,7 @@
-import { Facility, Review, Reservation } from '../types';
 import { FUNERAL_COMPANIES } from '../constants';
 import { supabase, setSupabaseAuth } from './supabaseClient';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-import { logger } from '../utils/logger';
 import { validateImageFile } from './security/fileValidation';
 import { sanitizeSearchInput } from './security/sqlSanitize';
 
@@ -129,19 +127,6 @@ interface SubscriptionUpsertData {
 }
 
 /** DB review row */
-interface ReviewRow {
-    id: string;
-    user_id?: string;
-    facility_id?: string;
-    rating?: number;
-    content?: string;
-    author_name?: string;
-    photos?: Array<{ url: string }>;
-    is_active?: boolean;
-    created_at: string;
-    [key: string]: unknown;
-}
-
 // Partner Inquiry Category Configuration
 export const PARTNER_CATEGORIES = {
     funeral_home: { label: '장례식장', icon: '🏢', color: 'blue', category: 'funeral_home' },
@@ -725,7 +710,7 @@ export const createUrgentReservation = async (
     client: SupabaseClient
 ) => {
     const db = client;
-    const leadResult = await createLead({
+    const _leadResult = await createLead({
         userId,
         facilityId,
         contactName: userName || '익명 (긴급)',
@@ -826,7 +811,7 @@ export const getReviews = async (facilityId: string) => {
         }
 
         return (data || []).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    } catch (e) {
+    } catch (_e) {
         // silent fallback
         return [];
     }
@@ -967,7 +952,7 @@ const notifyReservationStatusChange = async (
             message,
             type,
         }]);
-    } catch (e) {
+    } catch (_e) {
         // silent fail — 알림 실패가 예약 처리를 방해하지 않도록
     }
 };
@@ -1017,7 +1002,7 @@ export const rejectReservation = async (id: string, reason: string | undefined, 
                 reservationId: id,
                 client,
             });
-        } catch (e) {
+        } catch (_e) {
             // 환불 플래그 실패 — 메인 흐름에 영향 없음
         }
     }
@@ -1112,7 +1097,7 @@ export const getFacilityFaqs = async (facilityId: string) => {
             return [];
         }
         return data || [];
-    } catch (e) {
+    } catch (_e) {
         return [];
     }
 };
@@ -1198,7 +1183,7 @@ export const getFacilitySubscription = async (facilityId: string, client: Supaba
         }
 
         return null;
-    } catch (e) {
+    } catch (_e) {
         // silent fallback
         return null;
     }
@@ -1301,7 +1286,7 @@ export const submitPartnerApplication = async (data: PartnerApplicationInput, cl
             const fileName = `${Date.now()}_${crypto.randomUUID().slice(0, 8)}.${fileExt}`;
             const filePath = `licenses/${fileName}`;
 
-            const { error: uploadError, data: uploadData } = await client.storage
+            const { error: uploadError, data: _uploadData } = await client.storage
                 .from('partner_docs')
                 .upload(filePath, data.businessLicenseImage, {
                     cacheControl: '3600',
@@ -1404,7 +1389,7 @@ export const getFacilityImages = async (facilityId: string) => {
         }
         return [];
 
-    } catch (e) {
+    } catch (_e) {
         // silent fallback
         return [];
     }
@@ -1588,7 +1573,7 @@ export const getMyFavorites = async (userId: string) => {
         .eq('user_id', userId);
 
     if (error) throw error;
-    return (data as Array<{ facility_id: string; facilities: Record<string, unknown> | null }>)
+    return (data as unknown as Array<{ facility_id: string; facilities: Record<string, unknown> | null }>)
         .map(f => f.facilities)
         .filter((f): f is Record<string, unknown> => f !== null);
 };
@@ -1617,7 +1602,7 @@ export const getAllSubscriptions = async (client: SupabaseClient) => {
             price: item.plan?.price || 0,
             status: item.status || 'active'
         }));
-    } catch (e) {
+    } catch (_e) {
         // silent fallback
         return [];
     }
@@ -1645,7 +1630,7 @@ export const getPendingFacilities = async () => {
             createdAt: item.created_at,
             ownerUserId: item.user_id // [Fix] manager_id -> user_id
         }));
-    } catch (e) {
+    } catch (_e) {
         // silent fallback
         return [];
     }
@@ -1719,7 +1704,7 @@ export const getFacilityLatestInfo = async (facilityId: string) => {
         }
 
         return data;
-    } catch (e) {
+    } catch (_e) {
         // silent fallback
         return null;
     }
@@ -1758,6 +1743,9 @@ export interface FuneralConsultation extends ConsultationData {
     responder_id?: string | null;
     source: string;
 }
+
+/** FuneralConsultation alias — 대부분의 컴포넌트가 Consultation으로 참조 */
+export type Consultation = FuneralConsultation;
 
 /**
  * Create a new funeral consultation (for AI chat form)
@@ -1967,7 +1955,7 @@ export const fetchFacilitiesInView = async (bounds: MapBounds, token?: string) =
 
         if (error) throw error;
         return data;
-    } catch (e) {
+    } catch (_e) {
         // silent fallback
         return [];
     }

@@ -39,7 +39,7 @@ export const updateUserRole = async (userId: string, newRole: string, client: Su
 
     if (error) throw error;
 
-    const { error: auditError } = await client.from('audit_logs').insert([{
+    const { error: _auditError } = await client.from('audit_logs').insert([{
         action: 'UPDATE_ROLE',
         resource_type: 'profiles',
         resource_id: userId,

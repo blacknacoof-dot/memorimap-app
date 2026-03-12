@@ -16,7 +16,7 @@ const FAQPage: React.FC = () => {
     const [question, setQuestion] = useState('');
     const [answer, setAnswer] = useState('');
     const { session } = useSession();
-    const { open, close, isOpen, title, message, onConfirm } = useConfirmModal();
+    const { open, close, isOpen: _isOpen, title: _title, message: _message, onConfirm: _onConfirm } = useConfirmModal();
 
     // Load FAQs on mount
     useEffect(() => {

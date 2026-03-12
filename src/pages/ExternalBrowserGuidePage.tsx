@@ -58,7 +58,7 @@ export const ExternalBrowserGuidePage: React.FC = () => {
         try {
             await navigator.clipboard.writeText(redirectUrl);
             toast.success('✅ 링크가 복사되었습니다! Safari나 Chrome을 열고 주소창에 붙여넣기하세요.');
-        } catch (error) {
+        } catch (_error) {
             // Clipboard API 실패 시 폴백
             const textarea = document.createElement('textarea');
             textarea.value = redirectUrl;

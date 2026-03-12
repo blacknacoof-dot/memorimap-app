@@ -104,7 +104,7 @@ export interface ModalContainerProps {
 
 export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
   const {
-    viewState, setViewState, facilities, isSignedIn, userInfo, userRole, userId,
+    viewState, setViewState, facilities, isSignedIn, userInfo, userRole, userId: _userId,
     showToast, isMenuOpen, setIsMenuOpen, reservations, handleLogout, handleLoginClick,
     showLoginModal, setShowLoginModal, showSignUpModal, setShowSignUpModal,
     selectedFacility, setSelectedFacility, handleViewOnMap, handleAddReview,
@@ -366,7 +366,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
                   created_at: new Date().toISOString(),
                 }, client);
                 showToast('상담 신청이 완료되었습니다!');
-              } catch (err) {
+              } catch (_err) {
                 showToast('상담 신청 중 오류가 발생했습니다.', 'error');
               }
             }}

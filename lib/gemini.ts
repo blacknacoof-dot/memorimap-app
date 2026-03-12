@@ -25,7 +25,7 @@ const SAFETY_SETTINGS = [
     },
 ];
 
-const MODEL_CONFIG = {
+const _MODEL_CONFIG = {
     model: "gemini-2.0-flash-exp",
     generationConfig: {
         temperature: 0.7,
@@ -253,7 +253,7 @@ ${faqs.map((f, i) => `${i + 1}. Q: ${f.question}\n   A: ${f.answer}`).join('\n')
                 }
             }
         }
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
         yield* getMockAIResponse(facility, newMessage, topic);
     }
 }

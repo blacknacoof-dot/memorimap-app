@@ -204,7 +204,7 @@ export function useFacilities(options: UseFacilitiesOptions = {}): UseFacilities
     });
 
     // Keep loadFacilityDetails for backward compatibility (used in MapView)
-    const loadFacilityDetails = useCallback(async (facilityId: string) => {
+    const loadFacilityDetails = useCallback(async (_facilityId: string) => {
         // Basic implementation for now, or just re-fetch specific
         // The original code had complex logic for details. 
         // I should probably preserve the original 'loadFacilityDetails' logic if possible
@@ -252,7 +252,7 @@ export function useFacility(id: string | null) {
                 setLoading(true);
                 setError(null);
 
-                let query = supabase
+                const query = supabase
                     .from('facilities')
                     .select('*, latitude:lat, longitude:lng')
                     .eq('id', id)
@@ -322,7 +322,7 @@ export function useFacilityStats() {
 
         const fetchStats = async () => {
             try {
-                let query = supabase
+                const query = supabase
                     .from('facilities')
                     .select('type');
 
@@ -351,7 +351,7 @@ export function useFacilityStats() {
                         sangjo: counts.sangjo || 0
                     });
                 }
-            } catch (err) {
+            } catch (_err) {
                 if (controller.signal.aborted) return;
                 // Error fetching stats
             } finally {

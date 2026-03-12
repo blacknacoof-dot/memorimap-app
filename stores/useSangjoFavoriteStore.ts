@@ -88,7 +88,7 @@ export const useSangjoFavoriteStore = create<SangjoFavoriteState>((set) => ({
             });
 
             return isAdded;
-        } catch (err) {
+        } catch (_err) {
             // INSERT 실패 시 이미 증가된 쿼터 롤백
             if (quotaIncremented) {
                 try {

@@ -6,7 +6,7 @@ interface PetReservationFormProps {
     companyName: string;
 }
 
-const PetReservationForm: React.FC<PetReservationFormProps> = ({ onClose, companyName }) => {
+const PetReservationForm: React.FC<PetReservationFormProps> = ({ onClose, companyName: _companyName }) => {
     const [formData, setFormData] = useState({
         guardianName: '',
         phone: '',

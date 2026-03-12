@@ -63,7 +63,7 @@ export const ReviewTab: React.FC<ReviewTabProps> = ({
 
             const createdReview: Review = {
                 id: (newReview?.id as string) || `temp-${Date.now()}`,
-                userId: currentUser.id,
+                user_id: currentUser.id,
                 userName: currentUser.name || '익명',
                 rating: reviewRating,
                 content: reviewContent,
@@ -75,7 +75,7 @@ export const ReviewTab: React.FC<ReviewTabProps> = ({
 
             setIsWritingReview(false);
             setReviewContent('');
-        } catch (error) {
+        } catch (_error) {
             toast.error('후기 등록 중 오류가 발생했습니다.');
         } finally {
             setIsSubmittingReview(false);
@@ -90,7 +90,7 @@ export const ReviewTab: React.FC<ReviewTabProps> = ({
 
             toast.success('리뷰가 삭제되었습니다.');
             onReviewDeleted(reviewId);
-        } catch (error) {
+        } catch (_error) {
             toast.error('리뷰 삭제에 실패했습니다.');
         }
     };
@@ -166,7 +166,7 @@ export const ReviewTab: React.FC<ReviewTabProps> = ({
                             <ReviewCard
                                 key={review.id}
                                 review={review}
-                                isOwner={!!(currentUser && (review.userId === currentUser.id || review.user_id === currentUser.id))}
+                                isOwner={!!(currentUser && review.user_id === currentUser.id)}
                                 onDelete={handleDeleteReview}
                             />
                         ));

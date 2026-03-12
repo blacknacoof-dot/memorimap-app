@@ -209,7 +209,7 @@ export function useSangjoCompanies() {
         });
 
         setCompanies(mapped);
-      } catch (err) {
+      } catch (_err) {
         setError('상조 업체 목록을 불러오지 못했습니다.');
         toast.error('상조 업체 목록을 불러오지 못했습니다.');
         setCompanies(FUNERAL_COMPANIES);

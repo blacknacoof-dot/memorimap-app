@@ -3,7 +3,7 @@ import { ChevronDown, ChevronUp, Phone, Mail, FileText, Bell, Shield, Info, Chev
 import { toast } from 'sonner';
 import { useSession, useUser } from '../lib/auth';
 import { getAuthClient } from '../lib/supabaseClient';
-import { ViewState } from '../types';
+import { AdministrativeChecklist } from './AdministrativeChecklist';
 
 interface ViewProps {
   onBack: () => void;
@@ -74,6 +74,9 @@ export const GuideView: React.FC<ViewProps> = ({ onBack }) => {
             </div>
           </div>
         </div>
+
+        {/* 장례 후 행정 체크리스트 */}
+        <AdministrativeChecklist />
       </div>
     </div>
   );
@@ -348,7 +351,7 @@ export const SupportView: React.FC<ViewProps> = ({ onBack, user }) => {
 };
 
 // --- 앱 설정 ---
-export const SettingsView: React.FC<ViewProps> = ({ onBack, user }) => {
+export const SettingsView: React.FC<ViewProps> = ({ onBack, user: _user }) => {
   return (
     <div className="bg-gray-50 min-h-full pb-20">
       <Header title="설정" onBack={onBack} />

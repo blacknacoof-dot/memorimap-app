@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAllUsers } from '../../hooks/useUsers';
 import { useUser } from '../../lib/auth';
-import { Search, Shield, User, RefreshCw, UserCheck } from 'lucide-react';
+import { Search, User, RefreshCw, UserCheck } from 'lucide-react';
 import { confirmAsync } from '../../src/components/common/ConfirmModal';
 
 export const UserManagement: React.FC = () => {

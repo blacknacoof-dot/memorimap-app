@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Shield, FileText } from 'lucide-react';
+import { X } from 'lucide-react';
 
 interface Props {
     onClose: () => void;

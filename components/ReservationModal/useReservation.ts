@@ -14,7 +14,7 @@ interface UseReservationProps {
   reservationMode: 'STANDARD' | 'URGENT';
 }
 
-export function useReservation({ facility, onClose, onConfirm, reservationMode }: UseReservationProps) {
+export function useReservation({ facility, onClose: _onClose, onConfirm, reservationMode }: UseReservationProps) {
   const [step, setStep] = useState(0);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
@@ -209,7 +209,9 @@ export function useReservation({ facility, onClose, onConfirm, reservationMode }
     } catch (error: unknown) {
       // Payment error handled by toast below
       const msg = error instanceof Error ? error.message : '';
-      if (!msg.includes('취소')) {
+      if (msg.includes('취소')) {
+        toast('결제가 취소되었습니다.');
+      } else {
         toast.error(msg || '결제 진행 중 오류가 발생했습니다.');
         setHasPaymentFailed(true);
       }

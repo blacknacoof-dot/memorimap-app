@@ -14,10 +14,10 @@ interface Props {
 
 export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack }) => {
     const [messages, setMessages] = useState<BotMessage[]>([]);
-    const [step, setStep] = useState<ScenarioStep>('MAIN_MENU');
+    const [_step, setStep] = useState<ScenarioStep>('MAIN_MENU');
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [formMode, setFormMode] = useState<'phone' | 'chat' | 'urgent'>('chat');
-    const [selectedBudget, setSelectedBudget] = useState<string>('');
+    const [_selectedBudget, setSelectedBudget] = useState<string>('');
     const scrollRef = useRef<HTMLDivElement>(null);
     const themeColor = 'bg-[#005B50]';
     const logo = company.imageUrl || '💎';
@@ -128,7 +128,7 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
                 preferred_call_time: (formData.time as string) || '', total_price: 0,
                 emergency_level: isUrgent ? 'critical' : 'normal', created_at: new Date().toISOString(),
             }, client);
-        } catch (e) {
+        } catch (_e) {
             toast.error('상담 접수 저장에 실패했습니다.');
             return;
         }

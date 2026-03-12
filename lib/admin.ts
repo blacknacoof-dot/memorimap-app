@@ -64,7 +64,7 @@ const enrichUsersWithPlans = async (users: AdminUser[]): Promise<AdminUser[]> =>
 
     try {
         // 1. Fetch Facility Plans (read-only, anon OK)
-        const { data: facilitySubs, error: facilityError } = await supabase
+        const { data: facilitySubs, error: _facilityError } = await supabase
             .from('facilities')
             .select(`
                 user_id,
@@ -77,7 +77,7 @@ const enrichUsersWithPlans = async (users: AdminUser[]): Promise<AdminUser[]> =>
         // facilityError is non-fatal
 
         // 2. Fetch Sangjo Plans (read-only, anon OK)
-        const { data: sangjoSubs, error: sangjoError } = await supabase
+        const { data: sangjoSubs, error: _sangjoError } = await supabase
             .from('sangjo_dashboard_users')
             .select('id, plan_id')
             .in('id', clerkIds);
@@ -110,7 +110,7 @@ const enrichUsersWithPlans = async (users: AdminUser[]): Promise<AdminUser[]> =>
 
             return { ...user, subscription_plan: planName };
         });
-    } catch (err: unknown) {
+    } catch (_err: unknown) {
         // enrichUsersWithPlans failed (non-fatal)
         return users;
     }

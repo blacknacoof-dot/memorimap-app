@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     MessageSquare, User, Bot, Zap,
-    CheckCircle, Send,
-    MoreHorizontal, Smartphone, Hash, MonitorDot, XCircle, ArrowLeft
+    Send,
+    MoreHorizontal, Smartphone, ArrowLeft
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getAuthClient } from '../../lib/supabaseClient';

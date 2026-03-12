@@ -30,7 +30,7 @@ export const useFacilityChat = () => {
             switch (name) {
                 case 'book_facility_visit': {
                     // 입력 검증
-                    if (!args.visitor_phone.match(/^010-\d{4}-\d{4}$/)) {
+                    if (!args.visitor_phone?.match(/^010-\d{4}-\d{4}$/)) {
                         return {
                             error: '전화번호 형식이 올바르지 않습니다 (010-xxxx-xxxx)',
                             shouldRetry: true
@@ -100,7 +100,7 @@ export const useFacilityChat = () => {
                     // Unknown function
                     return { error: `지원하지 않는 기능입니다: ${name}`, shouldRetry: false };
             }
-        } catch (error) {
+        } catch (_error) {
             // Function call error
             return {
                 error: '처리 중 시스템 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',

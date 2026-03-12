@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { createMemorialConsultation } from '@/lib/queries';
 import { getAuthClient } from '@/lib/supabaseClient';
 import { useSession } from '@/lib/auth';
-import { Loader2, Check, X } from 'lucide-react';
+import { Loader2, Check } from 'lucide-react';
 
 /**
  * AI 상담 폼 – 추모시설(봉안당/공원묘지) 전용
@@ -81,7 +81,7 @@ export const MemorialConsultationForm: React.FC<Props> = ({
             // 성공 시 간단한 완료 메시지
             toast.success('상담 요청이 접수되었습니다. 담당자가 연락드리겠습니다.');
             if (onClose) onClose();
-        } catch (e) {
+        } catch (_e) {
             // silent
             setError('요청 전송에 실패했습니다.');
         } finally {

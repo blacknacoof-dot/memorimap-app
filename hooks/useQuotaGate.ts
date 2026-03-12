@@ -35,7 +35,7 @@ export function useQuotaGate() {
       queryClient.invalidateQueries({ queryKey: ['user-plan'] });
 
       return result;
-    } catch (err) {
+    } catch (_err) {
       return { allowed: true, current: 0, limit: -1 }; // fail-open
     } finally {
       setIsChecking(false);
@@ -49,7 +49,7 @@ export function useQuotaGate() {
         p_is_sangjo: isSangjo,
       });
       queryClient.invalidateQueries({ queryKey: ['user-plan'] });
-    } catch (err) {
+    } catch (_err) {
       // silent: decrement 실패는 무시
     }
   };

@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import { getAuthClient } from '../lib/supabaseClient';
 import { useUser, useSession } from '../lib/auth';
-import { formatDistanceToNow } from 'date-fns';
-import { ko } from 'date-fns/locale';
 import { toast } from 'sonner';
-import { ChevronRight, Edit2, Share2, Lock, Copy, X } from 'lucide-react';
+import { Edit2, Share2, Lock, Copy, X, Download } from 'lucide-react';
+import { QRCodeCanvas } from 'qrcode.react';
 import EndingNoteEditModal from './EndingNoteEditModal';
 import JourneyProgressGraph, { computeJourneySteps } from './JourneyProgressGraph';
 import { useUserPlan } from '../hooks/useUserPlan';
@@ -74,7 +73,7 @@ export default function IntegratedJourneyView({
                 setLogs(data.timeline || []);
                 setNote(data.ending_note || null);
             }
-        } catch (err) {
+        } catch (_err) {
             // silent
         }
 
@@ -113,7 +112,7 @@ export default function IntegratedJourneyView({
 
             toast.success('엔딩 노트가 안전하게 저장되었습니다.');
             loadData(); // UI 즉시 갱신
-        } catch (err: unknown) {
+        } catch (_err: unknown) {
             toast.error('저장 중 문제가 발생했습니다. 다시 시도해주세요.');
         }
     };
@@ -165,7 +164,7 @@ export default function IntegratedJourneyView({
                 setShareUrl(url);
                 toast.success('공유 링크가 생성되었습니다!');
             }
-        } catch (err) {
+        } catch (_err) {
             toast.error('공유 생성 중 오류가 발생했습니다.');
         } finally {
             setIsCreatingShare(false);
@@ -177,9 +176,20 @@ export default function IntegratedJourneyView({
         try {
             await navigator.clipboard.writeText(shareUrl);
             toast.success('링크가 복사되었습니다!');
-        } catch (err) {
+        } catch (_err) {
             toast.error('복사 실패. 수동으로 복사해주세요.');
         }
+    };
+
+    // QR 이미지 다운로드
+    const downloadQR = () => {
+        const canvas = document.querySelector('#share-qr-canvas') as HTMLCanvasElement | null;
+        if (!canvas) return;
+        const url = canvas.toDataURL('image/png');
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'memorimap-share-qr.png';
+        a.click();
     };
 
     // 기존 공유하기 핸들러 (fallback)
@@ -397,27 +407,50 @@ export default function IntegratedJourneyView({
                                     </button>
                                 </>
                             ) : (
-                                /* 링크 복사 화면 */
+                                /* 링크 생성 완료 화면 — QR + 링크 복사 */
                                 <>
-                                    <div className="text-center mb-5">
-                                        <div className="text-4xl mb-3">🔗</div>
+                                    <div className="text-center mb-4">
                                         <p className="text-sm font-bold text-gray-900 mb-1">공유 링크가 생성되었습니다!</p>
                                         <p className="text-xs text-gray-500">
                                             비밀번호: <span className="font-bold text-pink-600">{sharePassword}</span>
                                         </p>
                                     </div>
 
+                                    {/* QR코드 */}
+                                    <div className="flex justify-center mb-4">
+                                        <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                                            <QRCodeCanvas
+                                                id="share-qr-canvas"
+                                                value={shareUrl}
+                                                size={160}
+                                                level="M"
+                                                includeMargin={false}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* 링크 표시 */}
                                     <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 mb-4">
                                         <p className="text-xs text-gray-600 break-all">{shareUrl}</p>
                                     </div>
 
-                                    <button
-                                        onClick={copyToClipboard}
-                                        className="w-full py-3 bg-gradient-to-r from-pink-400 to-purple-400 text-white rounded-xl text-xs font-bold shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-                                    >
-                                        <Copy size={14} />
-                                        링크 복사하기
-                                    </button>
+                                    {/* 액션 버튼 */}
+                                    <div className="space-y-2">
+                                        <button
+                                            onClick={copyToClipboard}
+                                            className="w-full py-3 bg-gradient-to-r from-pink-400 to-purple-400 text-white rounded-xl text-xs font-bold shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <Copy size={14} />
+                                            링크 복사하기
+                                        </button>
+                                        <button
+                                            onClick={downloadQR}
+                                            className="w-full py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl text-xs font-bold active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <Download size={14} />
+                                            QR 이미지 저장
+                                        </button>
+                                    </div>
 
                                     <p className="text-[10px] text-gray-400 text-center mt-4">
                                         비밀번호를 꼭 기억하거나 함께 전달해주세요.

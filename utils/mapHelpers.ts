@@ -1,5 +1,4 @@
 import L from 'leaflet';
-import { FacilityCategoryType } from '../types';
 
 // Keys must match FacilityCategoryType values + 'sangjo'
 export const FACILITY_CATEGORIES: Record<string, { label: string; color: string; icon: string }> = {

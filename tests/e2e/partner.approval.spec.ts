@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { supabase, TEST_USER_ID } from './db.utils';
+import { supabase } from './db.utils';
 
 // ─────────────────────────────────────────────────────────
 // Flow C: 파트너 승인 → 권한 부여 → 시설 접근
@@ -177,7 +177,7 @@ test.describe('Flow C: Partner Approval → Permission → Facility Access', () 
 
     // ── C-7: 비인가 유저는 다른 시설 수정 불가 ──────────────
     test('C-7: RLS defense — cannot update facility owned by another user', async () => {
-        const ATTACKER_ID = '00000000-0000-0000-0000-000000000099';
+        const _ATTACKER_ID = '00000000-0000-0000-0000-000000000099';
 
         // 다른 유저 ID로 시설 업데이트 시도
         const { data, error } = await supabase

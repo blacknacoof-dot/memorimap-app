@@ -65,7 +65,7 @@ test.describe('User: Resume Chat & Ownership', () => {
         // Try to fetch Active Chat using WRONG User ID context
         // (Simulating RLS filter where auth.uid() != record.user_id)
 
-        const { data, error } = await supabase
+        const { data, error: _error } = await supabase
             .from('ai_consultations')
             .select('*')
             .eq('conversation_id', ACTIVE_CONV_ID)

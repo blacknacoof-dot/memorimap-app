@@ -45,7 +45,7 @@ interface MapPlace {
 }
 
 // 1. Mock Map API Data Source (Simulating pure map search results)
-const MOCK_MAP_DB: Record<string, MapPlace[]> = {
+const _MOCK_MAP_DB: Record<string, MapPlace[]> = {
   '강남': [
     { id: 'gn-1', place_name: "강남성모병원 장례식장", address_name: "서울 강남구 반포동", lat: 37.500, lng: 127.004, rating: 4.3, reviewCount: 380 },
     { id: 'gn-2', place_name: "삼성서울병원 장례식장", address_name: "서울 강남구 일원동", lat: 37.488, lng: 127.085, rating: 4.6, reviewCount: 1200 },
@@ -61,7 +61,7 @@ const MOCK_MAP_DB: Record<string, MapPlace[]> = {
 };
 
 // [NEW] Dynamic Mock Generator for Nationwide Support (With Radius Expansion Simulation)
-const generateMockFacilities = (region: string, isGranular: boolean = false): MapPlace[] => {
+const _generateMockFacilities = (region: string, isGranular: boolean = false): MapPlace[] => {
   const facilities = [];
 
   // 1. Exact Match (The requested region)
@@ -156,7 +156,7 @@ const buildReasonSentence = (p: MapPlace) => {
 };
 
 // 4. Main Recommendation Function
-const recommendTop3 = (places: MapPlace[]) => {
+const _recommendTop3 = (places: MapPlace[]) => {
   return places
     .map(p => ({
       ...p,
@@ -174,9 +174,9 @@ const recommendTop3 = (places: MapPlace[]) => {
  */
 export const sendMessageToGemini = async (
   message: string,
-  history: ChatMessage[] = [],
+  _history: ChatMessage[] = [],
   facility?: Facility | FuneralCompany,
-  context?: string
+  _context?: string
 ): Promise<AIResponse> => {
 
   // 1. Mock Delay
@@ -222,7 +222,7 @@ export const sendMessageToGemini = async (
   if (userMsg.includes("[🚨 장례식장 찾기]") || userMsg.includes("장례식장 추천") || userMsg.includes("찾아")) {
     // 1. Detect Region from Message (Advanced Parsing for Dong/Gu)
     let regionKey = '서울'; // Default Fallback
-    let isGranular = false; // Flag for expansion simulation
+    let _isGranular = false; // Flag for expansion simulation
 
     // Regex to capture City/District/Neighborhood (e.g., 강남구, 역삼동, 일산서구, 고양시)
     // Now supports no-space patterns like '분당장례식장' via aggressive matching
@@ -235,7 +235,7 @@ export const sendMessageToGemini = async (
 
       // Check if it's 'Dong' or 'Myeon' or 'Eup' -> trigger expansion if needed
       if (regionKey.endsWith('동') || regionKey.endsWith('읍') || regionKey.endsWith('면')) {
-        isGranular = true;
+        _isGranular = true;
       }
     } else {
       // [NLP Fix] Check for known regions explicitly even if attached to other words (e.g. 분당장례식장)
@@ -324,7 +324,7 @@ export const sendMessageToGemini = async (
 
   // === [CONTEXT CHECK] Determine Type ===
   const isMemorial = facility && ['columbarium', 'natural_burial', 'cemetery', 'sea_burial', 'memorial'].includes((facility as Facility).facility_type || (facility as Facility).type || '');
-  const isPet = facility && (facility as Facility).facility_type === 'pet_funeral';
+  const _isPet = facility && (facility as Facility).facility_type === 'pet_funeral';
 
   // Helper to format prices
   const getPriceInfo = () => {

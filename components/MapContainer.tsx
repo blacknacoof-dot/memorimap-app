@@ -71,7 +71,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
   const clusterRef = useRef<MarkerClusteringInstance | null>(null);
   const [isMapReady, setIsMapReady] = useState(false);
   const [isClusterReady, setIsClusterReady] = useState(false);
-  const [myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [_myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null);
   const locationMarkerRef = useRef<NaverMarker | null>(null);
 
   // facilities prop은 useFacilityData에서 이미 카테고리/검색 필터링 완료
@@ -309,7 +309,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
             }
           });
         }
-      }, (err) => {
+      }, (_err) => {
         toast.error("위치를 가져올 수 없습니다.");
       });
     },

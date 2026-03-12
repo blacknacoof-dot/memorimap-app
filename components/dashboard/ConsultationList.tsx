@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { getConsultationsByFacility, updateConsultationStatus, FuneralConsultation } from '@/lib/queries';
+import { getConsultationsByFacility, updateConsultationStatus, Consultation } from '@/lib/queries';
 import { Clock, CheckCircle, XCircle, Check, Phone, MapPin, Users, Calendar, ChevronDown, RefreshCw } from 'lucide-react';
 import { aiConsultationService } from '@/lib/api/aiConsultation';
 import { AiConsultationStatus } from '@/types';
@@ -40,7 +40,7 @@ const SCHEDULE_LABELS: Record<string, string> = {
     other: '기타'
 };
 
-const URGENCY_LABELS: Record<string, string> = {
+const _URGENCY_LABELS: Record<string, string> = {
     deceased: '임종',
     imminent: '임박',
     inquiry: '문의'
@@ -138,7 +138,7 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
             );
 
 
-        } catch (error) {
+        } catch (_error) {
             toast.error('상태 변경에 실패했습니다. (권한이 없거나 이미 처리됨)');
         }
     };
@@ -167,7 +167,7 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
             );
 
             toast.success('예약이 확정되었습니다.');
-        } catch (error) {
+        } catch (_error) {
             toast.error('확인 처리에 실패했습니다.');
         }
     };

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getAllSubscriptions } from '../../lib/queries';
-import { Loader2, Crown, TrendingUp } from 'lucide-react';
+import { Loader2, Crown } from 'lucide-react';
 import { useSuperAdminClient } from '../SuperAdmin/SuperAdminGuard';
 
 interface SubscriptionItem {

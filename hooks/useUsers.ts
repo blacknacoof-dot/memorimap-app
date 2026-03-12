@@ -28,7 +28,7 @@ export function useAllUsers() {
             await updateUserRole(userId, newRole, client, actorId);
             toast.success('권한이 변경되었습니다.');
             await fetchUsers();
-        } catch (error) {
+        } catch (_error) {
             toast.error('권한 변경 중 오류가 발생했습니다.');
         }
     };

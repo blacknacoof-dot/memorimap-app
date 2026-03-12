@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Message } from '../../types/consultation';
 import { ChatMessage } from './ChatMessage';
-import { Loader2, ShieldCheck, X } from 'lucide-react';
+import { Loader2, ShieldCheck } from 'lucide-react';
 
 import { FuneralCompany } from '../../types';
 import { FUNERAL_COMPANIES } from '../../constants';

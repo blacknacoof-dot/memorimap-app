@@ -138,7 +138,7 @@ export const ConsultationView: React.FC<Props> = ({
             // Save final state with model response
             await saveMessage(finalMessages);
 
-        } catch (error) {
+        } catch (_error) {
             // Consultation error occurred
             // Add error message locally
             setMessages(prev => [...prev, {

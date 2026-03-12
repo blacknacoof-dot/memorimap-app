@@ -163,7 +163,7 @@ export const StatusTracker: React.FC<StatusTrackerProps> = ({
                 {PROGRESS_STEPS.map((step, index) => {
                     const isCompleted = index < currentStepIndex;
                     const isCurrent = index === currentStepIndex;
-                    const isPending = index > currentStepIndex;
+                    const _isPending = index > currentStepIndex;
 
                     if (isPartner) {
                         // 상조 직원 뷰: 클릭 가능한 버튼

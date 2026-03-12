@@ -47,7 +47,7 @@ export const ChatBot: React.FC<Props> = ({
         setInput('');
     };
 
-    const handleTopicClick = (t: ConsultationTopic) => {
+    const _handleTopicClick = (t: ConsultationTopic) => {
         // Topic clicked
         if (onTopicSelect) onTopicSelect(t);
     };

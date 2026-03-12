@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bot, MapPin, Building2, Trees, Dog, X, ChevronUp } from 'lucide-react';
+import { Bot, Building2, Trees, Dog, X } from 'lucide-react';
 
 interface Props {
     onSelectIntent: (intent: 'funeral_home' | 'memorial_facility' | 'pet_funeral') => void;

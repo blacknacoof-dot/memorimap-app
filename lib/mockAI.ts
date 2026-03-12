@@ -3,11 +3,6 @@
 
 import { Facility } from "../types";
 
-interface MockResponse {
-    keywords: string[];
-    response: string;
-}
-
 const getMockResponses = (facility: Facility) => {
     const isFuneralHome = facility.type === 'funeral';
     const isPetFuneral = facility.type === 'pet'; // Add Pet Logic
@@ -185,7 +180,7 @@ const getMockResponses = (facility: Facility) => {
 export async function* getMockAIResponse(
     facility: Facility,
     userMessage: string,
-    topic: string
+    _topic: string
 ): AsyncGenerator<string, void, unknown> {
     // Simulate typing delay
     await new Promise(resolve => setTimeout(resolve, 500));

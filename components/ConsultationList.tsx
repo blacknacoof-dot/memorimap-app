@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { FuneralConsultation } from '../lib/queries';
+import { Consultation } from '../lib/queries';
 import { Clock, CheckCircle, XCircle, ChevronDown, ChevronUp, MessageSquare, Send } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -43,7 +43,7 @@ export const ConsultationList: React.FC<Props> = ({ consultations, onAnswer, onR
             setAnswerText('');
             // Optional: Close expansion or keep open to show result?
             // Keep open to show "Answered just now" logic if parent updates state
-        } catch (e) {
+        } catch (_e) {
             toast.error('답변 전송 실패');
         } finally {
             setIsSubmitting(false);

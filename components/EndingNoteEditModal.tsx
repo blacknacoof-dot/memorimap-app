@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Heart, Phone, FileText, Check, Lock } from 'lucide-react';
+import { X, Heart, Phone, FileText, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import type { EndingNoteLevel } from '../types/subscription';
 
@@ -78,7 +78,7 @@ export default function EndingNoteEditModal({ isOpen, onClose, currentNote, onSa
                 percent
             });
             onClose();
-        } catch (error) {
+        } catch (_error) {
             toast.error('저장 중 오류가 발생했습니다.');
         } finally {
             setSaving(false);

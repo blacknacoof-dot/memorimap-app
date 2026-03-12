@@ -2,7 +2,7 @@ import React from 'react';
 import { ClipboardList } from 'lucide-react';
 import { ConsultationList } from '../ConsultationList';
 import { getAuthClient } from '../../lib/supabaseClient';
-import { FuneralConsultation } from '../../lib/queries';
+import { Consultation } from '../../lib/queries';
 import { toast } from 'sonner';
 import type { Session } from '@supabase/supabase-js';
 

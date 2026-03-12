@@ -12,7 +12,7 @@ interface LatLngBounds {
 }
 import { FACILITIES } from '../constants';
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
-import { normalizeType, getCategoryDb, getCategoryLabel, selectFacilityImage, formatPriceRange } from '../utils/facilityNormalizer';
+import { normalizeType, getCategoryDb, selectFacilityImage, formatPriceRange } from '../utils/facilityNormalizer';
 import { getFacilitySubscription } from '../lib/queries';
 import { useFilterStore } from '../stores/useFilterStore';
 import { logger } from '../utils/logger';
@@ -32,6 +32,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
 
   // Fetch Facilities from Supabase
   useEffect(() => {
+    let mounted = true;
     const fetchFacilities = async () => {
       if (!isSupabaseConfigured()) return;
 
@@ -42,6 +43,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
           .select('*')
           .eq('verified', true);
 
+        if (!mounted) return;
         if (error) throw error;
 
         if (data && data.length > 0) {
@@ -109,14 +111,16 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
           // DB empty or RPC error
         }
       } catch (err: unknown) {
+        if (!mounted) return;
         const message = err instanceof Error ? err.message : "연결 오류";
         showToast(`데이터 불러오기 실패: ${message}`, 'error');
       } finally {
-        setIsDataLoading(false);
+        if (mounted) setIsDataLoading(false);
       }
     };
 
     fetchFacilities();
+    return () => { mounted = false; };
   }, []);
 
   // Filtered Facilities Logic
@@ -180,7 +184,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
       if (data) {
         const realUuid = data.id;
 
-        const [subscription, rawReviews, images] = await Promise.all([
+        const [subscription, rawReviews, _images] = await Promise.all([
           getFacilitySubscription(realUuid, supabase),
           import('../lib/queries').then(m => m.getReviewsBySpace(realUuid)),
           import('../lib/queries').then(m => m.getFacilityImages(realUuid))
@@ -241,7 +245,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
           subscription: subscription || undefined
         };
 
-        if (!updatedFacility.lat && data.location && data.location.type === 'Point') {
+        if (!updatedFacility.lat && data.location && data.location.type === 'Point' && Array.isArray(data.location.coordinates) && data.location.coordinates.length >= 2) {
           updatedFacility.lng = data.location.coordinates[0];
           updatedFacility.lat = data.location.coordinates[1];
         }
@@ -256,7 +260,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
         setFacilities(prev => prev.map(f => f.id === realUuid || f.id === facilityId ? updatedFacility : f));
         setSelectedFacility(updatedFacility);
       }
-    } catch (err) {
+    } catch (_err) {
       // silent: detail fetch error
     }
   }, [facilities, setSelectedFacility, setFacilities]);

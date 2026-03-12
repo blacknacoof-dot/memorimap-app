@@ -13,7 +13,7 @@ test.describe('Facility Admin: Confirm Reservation & Event Log', () => {
         await deleteTestConsultation(TEST_CONV_ID);
     });
 
-    test('TC-FA-03: Confirm Reservation triggers Status Change & Event', async ({ page }) => {
+    test('TC-FA-03: Confirm Reservation triggers Status Change & Event', async ({ page: _page }) => {
         console.log('Simulating Facility Admin Confirmation...');
 
         // 1. Simulate "Confirm" Action via DB Update
@@ -50,7 +50,7 @@ test.describe('Facility Admin: Confirm Reservation & Event Log', () => {
 
         const OTHER_FACILITY_ID = '00000000-0000-0000-0000-000000000000'; // Fake ID
 
-        const { data, error } = await supabase
+        const { data, error: _error } = await supabase
             .from('ai_consultations')
             .update({ status: 'CONSULTATION_CONFIRMED' })
             .eq('conversation_id', TEST_CONV_ID)

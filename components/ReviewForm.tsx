@@ -118,7 +118,7 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
             setRating(5);
             setImages([]);
             onSuccess();
-        } catch (err) {
+        } catch (_err) {
             toast.error('리뷰 작성 중 오류가 발생했습니다.');
         } finally {
             setIsSubmitting(false);

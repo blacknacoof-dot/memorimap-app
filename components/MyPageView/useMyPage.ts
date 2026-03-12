@@ -17,7 +17,7 @@ interface UseMyPageProps {
   facilities: Facility[];
 }
 
-export function useMyPage({ isLoggedIn, user, facilities }: UseMyPageProps) {
+export function useMyPage({ isLoggedIn, user, facilities: _facilities }: UseMyPageProps) {
   const [myReservations, setMyReservations] = useState<Reservation[]>([]);
   const [isLoadingReservations, setIsLoadingReservations] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
@@ -107,7 +107,7 @@ export function useMyPage({ isLoggedIn, user, facilities }: UseMyPageProps) {
           });
         }
       }
-    } catch (error) {
+    } catch (_error) {
       // silent
     } finally {
       setIsLoadingFavorites(false);
@@ -123,7 +123,7 @@ export function useMyPage({ isLoggedIn, user, facilities }: UseMyPageProps) {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id);
       setConsultationCount(count || 0);
-    } catch (err) {
+    } catch (_err) {
       // silent
     }
   }
@@ -140,7 +140,7 @@ export function useMyPage({ isLoggedIn, user, facilities }: UseMyPageProps) {
         .order('created_at', { ascending: false });
       if (error) throw error;
       setSangjoFavorites(data || []);
-    } catch (err) {
+    } catch (_err) {
       // silent
     } finally {
       setIsLoadingSangjoFavorites(false);

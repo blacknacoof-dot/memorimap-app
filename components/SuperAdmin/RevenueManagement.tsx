@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
-    Wallet, TrendingUp, CreditCard, ArrowUpRight,
-    ArrowDownRight, BarChart3, Download, Settings,
+    Wallet, TrendingUp, CreditCard,
+    BarChart3, Download, Settings,
     Building2, DollarSign
 } from 'lucide-react';
 import { toast } from 'sonner';

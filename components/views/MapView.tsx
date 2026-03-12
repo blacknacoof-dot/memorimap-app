@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { ViewState, Facility } from '../../types';
 import { useFacilities } from '../../hooks/useFacilities';
 import { useUser, useClerk } from '../../lib/auth'; // For side menu props
@@ -20,7 +20,7 @@ interface MapViewProps {
     setViewState: (state: ViewState) => void;
 }
 
-const MapView: React.FC<MapViewProps> = ({ viewState, setViewState }) => {
+const MapView: React.FC<MapViewProps> = ({ viewState: _viewState, setViewState }) => {
     // 1. Data & State
     const { facilities, loadFacilityDetails } = useFacilities();
     const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
@@ -182,7 +182,7 @@ const MapView: React.FC<MapViewProps> = ({ viewState, setViewState }) => {
                     }}
                     isLoggedIn={!!isSignedIn}
                     currentUser={user ? { id: user.id, name: user.firstName || 'User' } : null}
-                    onAddReview={(id, content, rating) => { }}
+                    onAddReview={(_id, _content, _rating) => { }}
                     onLoginRequired={() => { }}
                     isInCompareList={false}
                     onOpenAiChat={() => {
@@ -202,7 +202,7 @@ const MapView: React.FC<MapViewProps> = ({ viewState, setViewState }) => {
                             <ChatInterface
                                 facility={selectedFacility || { id: 'maum-i', name: 'AI 마음이', type: 'assistant', lat: 37.5, lng: 127, address: '서울', rating: 5, reviewCount: 999 } as Facility}
                                 allFacilities={facilities}
-                                onAction={(action, data) => { }}
+                                onAction={(_action, _data) => { }}
                                 onClose={() => setIsChatOpen(false)}
                                 currentUser={user ? { id: user.id, name: user.firstName || 'User' } : null}
                                 initialIntent={chatIntent}

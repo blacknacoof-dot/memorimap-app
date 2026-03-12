@@ -14,7 +14,7 @@ interface InquiryModalProps {
 }
 
 export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, initialPlan, facilityId, type }) => {
-    const { user, isSignedIn } = useUser();
+    const { user, isSignedIn: _isSignedIn } = useUser();
     const { session } = useSession();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
@@ -38,7 +38,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, ini
                 const company = FUNERAL_COMPANIES.find(c => c.id === facilityId);
                 if (company) setFetchedCompanyName(company.name);
             } else {
-                const { data, error } = await supabase
+                const { data, error: _error } = await supabase
                     .from('facilities')
                     .select('name')
                     .eq('id', facilityId)
@@ -87,7 +87,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, ini
 
             if (error) throw error;
             setIsSuccess(true);
-        } catch (err) {
+        } catch (_err) {
             toast.error('상담 신청 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
         } finally {
             setIsSubmitting(false);

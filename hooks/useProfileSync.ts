@@ -43,7 +43,7 @@ export const useProfileSync = () => {
         } else {
           hasSyncedRef.current = true;
         }
-      } catch (err) {
+      } catch (_err) {
         // silent
       }
     };

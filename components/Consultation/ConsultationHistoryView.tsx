@@ -14,7 +14,7 @@ interface Props {
     onSelectConsultation: (consultation: Consultation) => void;
 }
 
-export const ConsultationHistoryView: React.FC<Props> = ({ facilities, onBack, onSelectConsultation }) => {
+export const ConsultationHistoryView: React.FC<Props> = ({ facilities: _facilities, onBack, onSelectConsultation }) => {
     const { user } = useUser();
     const { session } = useSession();
     const [history, setHistory] = useState<Consultation[]>([]);
@@ -45,7 +45,7 @@ export const ConsultationHistoryView: React.FC<Props> = ({ facilities, onBack, o
             const client = await getAuthClient(session);
             await deleteConsultation(id, undefined, client);
             setHistory(prev => prev.filter(c => c.id !== id));
-        } catch (err) {
+        } catch (_err) {
             toast.error('삭제 중 오류가 발생했습니다.');
         }
     };
@@ -87,13 +87,13 @@ export const ConsultationHistoryView: React.FC<Props> = ({ facilities, onBack, o
                                     <Trash2 size={18} />
                                 </button>
                             </div>
-                            <h3 className="font-bold text-gray-900 mb-1">{item.facilityName}</h3>
+                            <h3 className="font-bold text-gray-900 mb-1">{item.facilities?.name || '시설'}</h3>
                             <p className="text-sm text-gray-500 line-clamp-2">
                                 {item.messages[item.messages.length - 1]?.text || "(대화 내용 없음)"}
                             </p>
                             <div className="flex items-center gap-1 text-xs text-gray-400 mt-3">
                                 <Clock size={12} />
-                                <span>{item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : ''} {item.updatedAt ? new Date(item.updatedAt).toLocaleTimeString() : ''}</span>
+                                <span>{item.updated_at ? new Date(item.updated_at).toLocaleDateString() : ''} {item.updated_at ? new Date(item.updated_at).toLocaleTimeString() : ''}</span>
                             </div>
                         </div>
                     ))

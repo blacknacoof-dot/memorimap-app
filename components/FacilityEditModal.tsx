@@ -224,7 +224,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
             onSave();
             onClose();
             toast.success('시설 정보가 성공적으로 수정되었습니다.');
-        } catch (error) {
+        } catch (_error) {
             toast.error('시설 정보 수정 중 오류가 발생했습니다.');
         } finally {
             setIsSubmitting(false);

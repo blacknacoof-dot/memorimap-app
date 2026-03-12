@@ -28,9 +28,12 @@ import { ContentRouter, LoadingFallback } from './components/ContentRouter';
 import { TopBar } from './components/TopBar';
 import { BottomNav } from './components/BottomNav';
 import { ModalContainer } from './components/ModalContainer';
+import { SOSEmergencyMode } from './components/SOSEmergencyMode';
+import { useChatStore } from './stores/useChatStore';
 
 const App: React.FC = () => {
   useProfileSync();
+  const openChat = useChatStore(s => s.openChat);
 
   const mapRef = React.useRef<MapRef>(null);
   const { location: userLocation, getCurrentPosition } = useLocation();
@@ -42,15 +45,16 @@ const App: React.FC = () => {
     facilities, setFacilities,
     selectedFacility, setSelectedFacility,
     isDataLoading, filteredFacilities,
-    fetchFacilityDetails, handleFacilitySelect,
+    fetchFacilityDetails: _fetchFacilityDetails, handleFacilitySelect,
     setCurrentBounds,
   } = useFacilityData({ viewState, showToast });
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showPromo, setShowPromo] = useState(true);
+  const [showSOS, setShowSOS] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
-  const setSearchQuery = useFilterStore(state => state.setSearchQuery);
+  const _setSearchQuery = useFilterStore(state => state.setSearchQuery);
 
   // Consultation State
   const [consultingFacility, setConsultingFacility] = useState<Facility | null>(null);
@@ -91,7 +95,7 @@ const App: React.FC = () => {
 
   // Reservations
   const {
-    reservations, setReservations,
+    reservations, setReservations: _setReservations,
     handleBookingConfirm, handleUpdateReservation,
     isBooking, setIsBooking,
   } = useReservations(isSignedIn || false, user, showToast, setShowLoginModal, setSelectedFacility, setViewState);
@@ -152,7 +156,7 @@ const App: React.FC = () => {
   // User Role Hook
   const {
     userRole, roleError, setRoleError, isLoadingRole,
-    adminFacilityId, setAdminFacilityId, adminSangjoId, sangjoOrgType,
+    adminFacilityId, setAdminFacilityId, adminSangjoId, sangjoOrgType: _sangjoOrgType,
   } = useUserRole({ isSignedIn, userInfo, viewState, setViewState, showToast });
 
   // Reviews Hook
@@ -237,11 +241,13 @@ const App: React.FC = () => {
   // 공유 링크 접근 시 앱 전체 UI 없이 독립 렌더링
   if (isShareRoute) {
     return (
-      <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <Routes>
-          <Route path="/share/:token" element={<ShareJourneyView />} />
-        </Routes>
-      </HashRouter>
+      <ErrorBoundary>
+        <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <Routes>
+            <Route path="/share/:token" element={<ShareJourneyView />} />
+          </Routes>
+        </HashRouter>
+      </ErrorBoundary>
     );
   }
 
@@ -268,7 +274,20 @@ const App: React.FC = () => {
               viewState={viewState} setViewState={setViewState}
               isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen}
               showPromo={showPromo} setShowPromo={setShowPromo}
+              onSOS={() => setShowSOS(true)}
             />
+
+            {/* SOS 긴급 모드 오버레이 */}
+            {showSOS && (
+              <SOSEmergencyMode
+                onClose={() => setShowSOS(false)}
+                onOpenChat={() => {
+                  setShowSOS(false);
+                  setViewState(ViewState.MAP);
+                  openChat('funeral_home');
+                }}
+              />
+            )}
 
             {/* Main Content */}
             <div className="flex-1 relative overflow-hidden">

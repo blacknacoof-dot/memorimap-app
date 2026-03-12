@@ -50,12 +50,21 @@ export default function ShareJourneyView() {
                 setData(result.data);
                 setVerified(true);
             }
-        } catch (err) {
+        } catch (_err) {
             setError('오류가 발생했습니다. 다시 시도해주세요.');
         } finally {
             setLoading(false);
         }
     };
+
+    // 페이지 메타 설정
+    useEffect(() => {
+        document.title = '추모 여정 기록 | 추모맵';
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) {
+            metaDesc.setAttribute('content', '소중한 분의 추모 여정 기록을 공유합니다.');
+        }
+    }, []);
 
     // 텍스트 기반 공유 내용 렌더링
     const renderTextView = () => {

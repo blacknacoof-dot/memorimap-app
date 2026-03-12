@@ -57,7 +57,7 @@ export function useFacilitySheet({ facility, isLoggedIn, currentUser, onLoginReq
           const client = await getAuthClient(session, { strict: true });
           const status = await favoriteService.checkFavorite(currentUser.id, facility.id, client);
           setIsFavorite(status);
-        } catch (e) {
+        } catch (_e) {
           // silent
         }
       } else {

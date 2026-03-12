@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-    MessageSquare, X, Send, Bot,
+    X, Send, Bot,
     User, Phone, DollarSign, MapPin,
     Zap, ChevronRight, RefreshCw, AlertTriangle,
     Siren, ClipboardList, CreditCard, Calendar
@@ -37,7 +37,7 @@ interface Message {
 export const ScenarioBot: React.FC<ScenarioBotProps> = ({ facilityId, onClose }) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [facility, setFacility] = useState<FacilityInfo | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [_loading, setLoading] = useState(true);
     const [conversationId, setConversationId] = useState<string | null>(null);
     const [isHijacked, setIsHijacked] = useState(false);
     const [input, setInput] = useState('');
@@ -186,7 +186,7 @@ export const ScenarioBot: React.FC<ScenarioBotProps> = ({ facilityId, onClose })
                     sessionStorage.setItem(`conv_id_${facilityId}`, newSession.conversation_id);
                 }
             }
-        } catch (err: unknown) {
+        } catch (_err: unknown) {
             // Bot init failed
             if (retryCount < 2) {
                 setTimeout(() => initBot(retryCount + 1), 1000);

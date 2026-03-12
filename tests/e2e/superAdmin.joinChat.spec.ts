@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { createTestConsultation, deleteTestConsultation, getConsultationStatus, TEST_USER_ID } from './db.utils';
+import { createTestConsultation, deleteTestConsultation } from './db.utils';
 
 test.describe('Super Admin: Join Chat & Locking', () => {
     const TEST_CONV_ID = `e2e_lock_test_${Date.now()}`;
@@ -14,7 +14,7 @@ test.describe('Super Admin: Join Chat & Locking', () => {
         await deleteTestConsultation(TEST_CONV_ID);
     });
 
-    test('TC-SA-01: Admin can join chat and status changes to AGENT_CONNECTED', async ({ page }) => {
+    test('TC-SA-01: Admin can join chat and status changes to AGENT_CONNECTED', async ({ page: _page }) => {
         // Note: In a real scenario, we would perform actual login. 
         // For this prototype, we assume the dev server handles auth state or we mock it.
         // However, since we are testing "Button Logic", passing the UI check is key.
@@ -26,11 +26,11 @@ test.describe('Super Admin: Join Chat & Locking', () => {
         console.log('Test framework ready. Waiting for auth implementation.');
     });
 
-    test('TC-SA-05: Concurrency Lock - Only one admin succeeds', async ({ page }) => {
+    test('TC-SA-05: Concurrency Lock - Only one admin succeeds', async ({ page: _page }) => {
         // Simulation of Race Condition via API (since UI auth is not fully automated yet)
         console.log('Simulating concurrent requests...');
 
-        const updateToAgentConnected = async (agentId: string) => {
+        const updateToAgentConnected = async (_agentId: string) => {
             // Mimic the service call: update status WHERE current_status = AI_HANDLING
             // This replicates aiConsultationService.updateStatus logic
             // In a real E2E, we would click the button, but for concurrency precision, we use DB calls.

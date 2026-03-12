@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useSession } from '../lib/auth';
 import { useConfirmModal } from '../src/components/common/ConfirmModal';
 import { Plus, Edit, Trash, Save, Loader2 } from 'lucide-react';
-import { getFacilityFaqs } from '../lib/queries';
 import { getAuthClient } from '../lib/supabaseClient';
 import { toast } from 'sonner';
 

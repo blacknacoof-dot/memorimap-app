@@ -19,22 +19,16 @@ export interface Favorite {
 export const favoriteService = {
     // 즐겨찾기 목록 조회 (auth client 필수)
     async getFavorites(userId: string, client: SupabaseClient): Promise<Favorite[]> {
-        try {
-            const { data, error } = await client
-                .from('favorites')
-                .select('*')
-                .eq('user_id', userId)
-                .order('created_at', { ascending: false });
+        const { data, error } = await client
+            .from('favorites')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false });
 
-            if (error) {
-                // error('Error fetching favorites:', error);
-                throw error;
-            }
-            return data || [];
-        } catch (e) {
-            // error('[favoriteService] Exception fetching favorites:', e);
-            throw e;
+        if (error) {
+            throw error;
         }
+        return data || [];
     },
 
     // 즐겨찾기 여부 확인 (auth client 필수)
@@ -51,7 +45,7 @@ export const favoriteService = {
                 // error('Error checking favorite:', error);
             }
             return !!data;
-        } catch (e) {
+        } catch (_e) {
             // error('Error in checkFavorite:', e);
             return false;
         }

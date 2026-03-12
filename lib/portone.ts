@@ -55,9 +55,9 @@ export const requestPayment = async (params: PaymentRequest): Promise<PaymentRes
     const forceMobile = urlParams.get('forceMobile') === 'true';
     const forcePC = urlParams.get('forcePC') === 'true';
 
-    let finalIsMobile = isMobile;
-    if (forceMobile) finalIsMobile = true;
-    if (forcePC) finalIsMobile = false;
+    let _finalIsMobile = isMobile;
+    if (forceMobile) _finalIsMobile = true;
+    if (forcePC) _finalIsMobile = false;
 
     // ✅ PortOne이 요구하는 형식: 객체로 pc/mobile 각각 지정
     const windowType = {

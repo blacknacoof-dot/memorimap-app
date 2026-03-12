@@ -31,11 +31,10 @@ export function mapReviews(uniqueReviews: ReviewRow[], companyId: string): Revie
                     displayDate = d.toISOString().split('T')[0];
                 }
             }
-        } catch (e) { /* ignore */ }
+        } catch (_e) { /* ignore */ }
 
         return {
             id: r.id,
-            userId: r.user_id || '',
             user_id: r.user_id || '',
             userName: r.user_name || r.userName || '익명',
             facility_id: r.facility_id,

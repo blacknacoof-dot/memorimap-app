@@ -2,7 +2,7 @@
  * useCompanySelect - App.tsx에서 추출한 상조 회사 선택 Hook
  * Phase 4-3: selectedFuneralCompany, showSangjoAIConsult, showSangjoContract, handleCompanySelect
  */
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Facility, FuneralCompany } from '../types';
 import { supabase } from '../lib/supabaseClient';
 
@@ -44,7 +44,7 @@ export function useCompanySelect({ facilities }: UseCompanySelectParams) {
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(searchIdStr);
 
       let uuid: string | null = null;
-      let legacyId: number | null = null;
+      let _legacyId: number | null = null;
 
       if (isUuid) {
         uuid = searchIdStr;
@@ -56,12 +56,12 @@ export function useCompanySelect({ facilities }: UseCompanySelectParams) {
 
         if (facData && facData.legacy_id) {
           const parsed = parseInt(facData.legacy_id, 10);
-          if (!isNaN(parsed)) legacyId = parsed;
+          if (!isNaN(parsed)) _legacyId = parsed;
         }
       } else {
         const parsed = parseInt(searchIdStr, 10);
         if (!isNaN(parsed)) {
-          legacyId = parsed;
+          _legacyId = parsed;
           const { data: facData } = await supabase
             .from('facilities')
             .select('id')
@@ -119,7 +119,7 @@ export function useCompanySelect({ facilities }: UseCompanySelectParams) {
 
           if (reviews) reviewData = reviews;
         }
-      } catch (e) {
+      } catch (_e) {
         // Name fallback failed
       }
     }

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Check, X, Sparkles, Crown, Zap, ChevronDown, ChevronUp, MessageCircle, Mail, BarChart3, Star, ShieldCheck, ArrowLeft } from 'lucide-react';
+import { Check, X, Sparkles, Crown, Zap, ChevronDown, ChevronUp, MessageCircle, ShieldCheck, ArrowLeft } from 'lucide-react';
 import { requestPayment, verifyPayment, PORTONE_CONFIG } from '../lib/portone';
 import { toast } from 'sonner';
 import { useUser, useSession } from '../lib/auth';
@@ -226,7 +226,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                     if (sub && sub.plan_id) {
                         setSelectedPlan(sub.plan_id);
                     }
-                } catch (e) {
+                } catch (_e) {
                     // silent
                 }
             }
@@ -288,7 +288,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                     const subClient = await getAuthClient(session, { strict: true });
                     const { updateFacilitySubscription } = await import('../lib/queries');
                     await updateFacilitySubscription(facilityId, plan.nameEn, subClient);
-                } catch (e) {
+                } catch (_e) {
                     toast.error('결제는 완료되었으나 구독 정보 업데이트에 실패했습니다. 고객센터에 문의해주세요.');
                 }
             }

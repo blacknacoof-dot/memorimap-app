@@ -70,7 +70,7 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
                     setMessages(prev => [...prev, { id: Date.now() + 1, sender: 'ai', text: "담당자와 바로 연결해 드릴까요?", type: 'action_request' }]);
                 }, 500);
             }
-        } catch (error) {
+        } catch (_error) {
             toast.error('AI 응답 중 오류가 발생했습니다.');
             setIsTyping(false);
             setMessages(prev => [...prev, { id: Date.now(), sender: 'ai', text: "죄송합니다. 잠시 후 다시 시도해 주세요.", type: 'text' }]);
@@ -116,7 +116,7 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
                 preferred_call_time: (formData.time as string) || '', total_price: 0,
                 emergency_level: isUrgent ? 'critical' : 'normal', created_at: new Date().toISOString()
             }, client);
-        } catch (e) {
+        } catch (_e) {
             toast.error('상담 접수 저장에 실패했습니다.');
             return;
         }

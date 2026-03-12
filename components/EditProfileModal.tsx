@@ -56,7 +56,7 @@ export const EditProfileModal: React.FC<Props> = ({ user, onClose, onUpdate }) =
             onUpdate();
             onClose();
             toast.success('프로필이 성공적으로 수정되었습니다.');
-        } catch (error) {
+        } catch (_error) {
             toast.error('프로필 수정 중 오류가 발생했습니다.');
         } finally {
             setIsSubmitting(false);

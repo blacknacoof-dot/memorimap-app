@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { usePartnerInquiries } from '../../hooks/usePartnerInquiries';
 import { useApprovePartner } from '../../hooks/useAdminActions';
-import { CheckCircle, XCircle, Search, FileText, Phone, MapPin, Building2, User, MessageSquare } from 'lucide-react';
+import { CheckCircle, XCircle, Search, FileText, Phone, Building2, User, MessageSquare } from 'lucide-react';
 import { PartnerInquiry } from '../../types/db';
 import { confirmAsync } from '../../src/components/common/ConfirmModal';
 import { useSuperAdminClient } from './SuperAdminGuard';

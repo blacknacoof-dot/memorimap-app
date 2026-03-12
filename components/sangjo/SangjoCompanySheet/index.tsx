@@ -48,7 +48,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
             const date = new Date(now - daysAgo * 86400000);
             return {
                 id: `default_${company.id}_${i}`,
-                userId: '', user_id: '', userName: names[i],
+                user_id: '', userName: names[i],
                 facility_id: company.id, rating: tpl.rating, content: tpl.content,
                 images: [], created_at: date.toISOString(), date: date.toISOString().split('T')[0],
             };
@@ -78,7 +78,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                 await navigator.clipboard.writeText(window.location.href);
                 toast.success('주소가 복사되었습니다!');
             }
-        } catch (err) {
+        } catch (_err) {
             // Share cancelled or unsupported — no action needed
         }
     };
@@ -94,7 +94,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
         try {
             const client = await getAuthClient(session, { strict: true });
             await storeToggleFavorite(currentUser.id, company, client);
-        } catch (error) {
+        } catch (_error) {
             toast.error('좋아요 처리에 실패했습니다.');
         }
     };
