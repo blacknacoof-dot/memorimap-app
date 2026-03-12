@@ -1,5 +1,6 @@
 import React from 'react';
 import { Facility } from '../../types';
+import { BadgeCheck } from 'lucide-react';
 import type { DbPackage } from './useFacilitySheet';
 
 interface Props {
@@ -27,9 +28,17 @@ export const PriceTab: React.FC<Props> = ({ facility, dbPackages }) => {
 
   return (
     <div className="space-y-4">
-      <h3 className="font-bold text-lg mb-4">
-        {facility.type === 'funeral' ? '가격표' : '분양 가격표'}
-      </h3>
+      <div className="flex items-center gap-2 mb-4">
+        <h3 className="font-bold text-lg">
+          {facility.type === 'funeral' ? '가격표' : '분양 가격표'}
+        </h3>
+        {facility.price_transparency && (
+          <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-xs font-bold rounded-full border border-emerald-100">
+            <BadgeCheck size={14} />
+            가격 공개 인증
+          </span>
+        )}
+      </div>
 
       {dbPackages.length > 0 ? (
         <div className="space-y-3">

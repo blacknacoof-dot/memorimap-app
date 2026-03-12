@@ -1,19 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useSession } from '../../lib/auth';
 import { Reservation, Facility } from '../../types';
-import { approveReservation, rejectReservation, getFacilitySubscription } from '../../lib/queries';
+import { approveReservation, rejectReservation, getFacilitySubscription, Consultation } from '../../lib/queries';
 import { getAuthClient } from '../../lib/supabaseClient';
 import { confirmAsync, promptAsync } from '../../src/components/common/ConfirmModal';
 import { toast } from 'sonner';
-
-interface Consultation {
-  id: string;
-  is_read?: boolean;
-  answer?: string;
-  answered_at?: string;
-  status?: string;
-  [key: string]: unknown;
-}
 
 interface SubscriptionInfo {
   plan_name?: string;

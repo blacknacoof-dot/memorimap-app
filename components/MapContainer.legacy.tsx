@@ -34,6 +34,7 @@ export interface MapRef {
   flyToLocation: () => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 const LocationMarker = forwardRef<MapRef, {}>((props, ref) => {
   const [position, setPosition] = useState<L.LatLng | null>(null);
   const map = useMap();

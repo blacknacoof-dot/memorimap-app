@@ -152,8 +152,8 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack, onLoginClick }) =>
         } catch (error: unknown) {
             const err = error as { code?: string; message?: string };
             // 🔍 중복 이메일 에러 감지
-            if (err?.code === '23505' && err?.message?.includes('partner_inquiries_company_email_idx')) {
-                toast.error('⚠️ 이미 등록된 회사 이메일입니다.\n\n다른 이메일로 신청하시거나, 기존 신청 상태를 확인해주세요.\n문의: 고객센터', { duration: 6000 });
+            if (err?.code === '23505' && err?.message?.includes('partner_inquiries_company_email')) {
+                toast.error('⚠️ 이 이메일로 이미 진행 중인 신청이 있습니다.\n\n기존 신청이 거절/취소된 경우에만 재신청 가능합니다.\n문의: 고객센터', { duration: 6000 });
             }
             // 🔍 기타 DB 제약 에러
             else if (err?.code?.startsWith('23')) {

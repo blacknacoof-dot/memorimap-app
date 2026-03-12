@@ -5,6 +5,7 @@ import { ReservationDetailModal } from '../ReservationDetailModal';
 import { EditProfileModal } from '../EditProfileModal';
 import { LegalModal } from '../LegalModal';
 import IntegratedJourneyView from '../IntegratedJourneyView';
+
 import { toast } from 'sonner';
 import { useMyPage } from './useMyPage';
 import { ProfileSection } from './ProfileSection';

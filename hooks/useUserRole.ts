@@ -32,16 +32,19 @@ export function useUserRole({ isSignedIn, userInfo, viewState, setViewState, sho
 
   // Fetch User Role
   useEffect(() => {
+    let mounted = true;
     const fetchUserRole = async () => {
       if (isSignedIn && userInfo) {
         setIsLoadingRole(true);
         try {
           const { supabase, getAuthClient } = await import('../lib/supabaseClient');
           const { data: { session } } = await supabase.auth.getSession();
+          if (!mounted) return;
           const authClient = await getAuthClient(session);
 
           const { getUserRole } = await import('../lib/queries');
           const result = await getUserRole(userInfo.id, authClient);
+          if (!mounted) return;
 
           setUserRole(result.role);
 
@@ -66,16 +69,18 @@ export function useUserRole({ isSignedIn, userInfo, viewState, setViewState, sho
           if (result.role.includes('sangjo') || result.role === 'super_admin') {
             const { getSangjoUser } = await import('../lib/sangjoQueries');
             const sangjoInfo = await getSangjoUser(userInfo.id, authClient);
+            if (!mounted) return;
             if (sangjoInfo) {
               setAdminSangjoId(sangjoInfo.sangjo_id);
               setSangjoOrgType(result.role === 'sangjo_hq_admin' ? 'headquarters' : 'branch');
             }
           }
         } catch {
+          if (!mounted) return;
           setRoleError('Unexpected error');
           showToast('권한 정보를 불러오지 못했습니다.', 'error');
         } finally {
-          setIsLoadingRole(false);
+          if (mounted) setIsLoadingRole(false);
         }
       } else {
         setUserRole('user');
@@ -84,6 +89,7 @@ export function useUserRole({ isSignedIn, userInfo, viewState, setViewState, sho
       }
     };
     fetchUserRole();
+    return () => { mounted = false; };
   }, [isSignedIn, userInfo?.id]);
 
   return {

@@ -10,26 +10,26 @@ interface Props {
     onSelect: (company: FuneralCompany) => void;
 }
 
-export const SangjoComparisonModal: React.FC<Props> = ({ companies, onClose, onRemove, onSelect }) => {
-    if (companies.length === 0) return null;
-
-    const ComparisonRow = ({ title, icon: Icon, children }: { title: string, icon: LucideIcon, children: React.ReactNode }) => (
-        <div className="border-b border-gray-100 flex min-w-max md:min-w-0">
-            <div className="w-[100px] md:w-[120px] bg-gray-50/50 p-4 flex flex-col items-center justify-center gap-1 shrink-0">
-                <Icon size={16} className="text-gray-400" />
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">{title}</span>
-            </div>
-            <div className="flex flex-1">
-                {children}
-            </div>
+const ComparisonRow = ({ title, icon: Icon, children }: { title: string, icon: LucideIcon, children: React.ReactNode }) => (
+    <div className="border-b border-gray-100 flex min-w-max md:min-w-0">
+        <div className="w-[100px] md:w-[120px] bg-gray-50/50 p-4 flex flex-col items-center justify-center gap-1 shrink-0">
+            <Icon size={16} className="text-gray-400" />
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">{title}</span>
         </div>
-    );
-
-    const CompanyCell = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
-        <div className={`w-[140px] md:w-[200px] p-4 flex flex-col items-center justify-center text-center shrink-0 border-l border-gray-100 ${className}`}>
+        <div className="flex flex-1">
             {children}
         </div>
-    );
+    </div>
+);
+
+const CompanyCell = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
+    <div className={`w-[140px] md:w-[200px] p-4 flex flex-col items-center justify-center text-center shrink-0 border-l border-gray-100 ${className}`}>
+        {children}
+    </div>
+);
+
+export const SangjoComparisonModal: React.FC<Props> = ({ companies, onClose, onRemove, onSelect }) => {
+    if (companies.length === 0) return null;
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-0 md:p-4">

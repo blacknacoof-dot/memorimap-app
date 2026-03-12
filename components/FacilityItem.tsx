@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, Scale, Award, Bot } from 'lucide-react';
+import { Check, Scale, Award, Bot, BadgeCheck } from 'lucide-react';
 import { Facility } from '../types';
 import { OptimizedImage } from './ui/OptimizedImage';
 
@@ -52,6 +52,13 @@ export const FacilityItem = React.memo(({ facility, onClick, isCompared, onToggl
                         {facility.subscription?.plan && facility.subscription.plan.name_en !== 'free' && (
                             <div className="flex items-center gap-1 px-1.5 py-0.5 bg-primary/5 text-primary text-[9px] rounded font-bold border border-primary/10 shrink-0">
                                 <Bot size={10} /> AI상담
+                            </div>
+                        )}
+                        {facility.price_transparency && (
+                            <div className="flex items-center gap-0.5 px-1.5 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] rounded font-bold border border-emerald-100 shrink-0"
+                                 title="가격 공개 인증 시설">
+                                <BadgeCheck size={10} />
+                                <span className="hidden md:inline">가격 공개</span>
                             </div>
                         )}
                     </div>

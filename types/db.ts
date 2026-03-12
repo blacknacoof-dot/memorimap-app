@@ -266,3 +266,31 @@ export interface Lead {
 // 5. Supabase Database 타입 (제네릭용)
 // ==========================================
 export type Database = Record<string, unknown>;
+
+// ==========================================
+// 6. 행정 체크리스트
+// ==========================================
+export type AdminChecklistCategory =
+    | 'death_report'
+    | 'health_insurance'
+    | 'pension'
+    | 'banking'
+    | 'tax'
+    | 'insurance_claim'
+    | 'real_estate'
+    | 'vehicle'
+    | 'subscription'
+    | 'digital_account'
+    | 'inheritance'
+    | 'memorial';
+
+export interface UserAdminChecklist {
+    id: string;
+    user_id: string;
+    category: AdminChecklistCategory;
+    is_completed: boolean;
+    completed_at: string | null;
+    notes: string | null;
+    created_at: string;
+    updated_at: string;
+}

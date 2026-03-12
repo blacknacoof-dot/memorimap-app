@@ -14,10 +14,11 @@ interface TopBarProps {
   setIsMenuOpen: (v: boolean) => void;
   showPromo: boolean;
   setShowPromo: (v: boolean) => void;
+  onSOS?: () => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
-  viewState, setViewState, isMenuOpen, setIsMenuOpen, showPromo, setShowPromo,
+  viewState, setViewState, isMenuOpen, setIsMenuOpen, showPromo, setShowPromo, onSOS,
 }) => {
   const setSearchQuery = useFilterStore(s => s.setSearchQuery);
   const openChat = useChatStore(s => s.openChat);
@@ -59,6 +60,17 @@ export const TopBar: React.FC<TopBarProps> = ({
           <div className="flex-1 min-w-0">
             <SmartSearchInput compact onAction={handleSearchAction} />
           </div>
+        )}
+
+        {/* SOS 버튼 */}
+        {onSOS && viewState !== ViewState.MY_PAGE && (
+          <button
+            onClick={onSOS}
+            className="bg-red-600 text-white p-2.5 rounded-xl shadow-md active:scale-95 transition-transform shrink-0 min-w-[40px] min-h-[40px] md:min-w-[44px] md:min-h-[44px] flex items-center justify-center"
+            title="긴급 장례 안내"
+          >
+            <span className="text-[10px] font-black leading-none">SOS</span>
+          </button>
         )}
 
         <div className="bg-white rounded-xl shadow-md flex items-center justify-center shrink-0">

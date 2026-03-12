@@ -149,6 +149,10 @@ export interface Facility {
     subscription?: { plan_name?: string; plan?: { name_en: string; [key: string]: unknown }; status?: string; start_date?: string; end_date?: string | null };
     products?: SangjoProduct[];
 
+    // Price Transparency
+    price_transparency?: boolean;
+    price_verified_at?: string;
+
     // Packages & Managers (JSONB)
     packages?: FacilityPackage[];
     managers?: FacilityManager[];

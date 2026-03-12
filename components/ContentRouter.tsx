@@ -292,7 +292,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
             facilities={facilities}
             onBack={() => setViewState(ViewState.MY_PAGE)}
             onSelectConsultation={(consultation) => {
-              const facility = facilities.find(f => f.id === consultation.spaceId);
+              const facility = facilities.find(f => f.id === consultation.facility_id);
               if (facility) {
                 setConsultingFacility(facility);
                 setSelectedConsultation(consultation);
@@ -495,6 +495,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
       );
 
     default:
+      setViewState(ViewState.MAP);
       return null;
   }
 };

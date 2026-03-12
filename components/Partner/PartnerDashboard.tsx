@@ -31,14 +31,14 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
     unreadConsultations, pendingReservations,
   } = usePartnerDashboard(partnerId);
 
-  const menuItems = [
+  const menuItems: Array<{ id: string; label: string; icon: typeof ClipboardList; badge?: string }> = [
     { id: 'consultations', label: '상담 관리', icon: ClipboardList, badge: unreadConsultations > 0 ? `${unreadConsultations}` : undefined },
     { id: 'reservations', label: '예약 관리', icon: Calendar, badge: pendingReservations > 0 ? `${pendingReservations}` : undefined },
     { id: 'revenue', label: '구독/매출', icon: Wallet },
     { id: 'chat', label: '실시간 채팅', icon: MessageSquare, badge: 'LIVE' },
     { id: 'ops', label: '운영 현황', icon: Truck },
     { id: 'settings', label: '회사 정보', icon: Settings },
-  ] as const;
+  ];
 
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans">

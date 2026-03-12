@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { confirmAsync } from '../src/components/common/ConfirmModal';
 import { Facility, getCategoryLabel, normalizeCategoryValue, StandardFacilityCategoryType } from '../types';
-import { X, Star, MapPin, Trash2, AlertCircle } from 'lucide-react';
+import { X, Star, MapPin, Trash2, AlertCircle, BadgeCheck } from 'lucide-react';
 
 interface Props {
   facilities: Facility[];
@@ -72,9 +72,27 @@ export const ComparisonModal: React.FC<Props> = ({ facilities, onClose, onRemove
                     </div>
 
                     {/* Price */}
-                    <div className="bg-blue-50 p-3 rounded-lg">
-                      <div className="text-xs text-blue-600 mb-1 font-bold">분양 가격대</div>
-                      <div className="text-sm font-bold text-gray-800">{facility.priceRange}</div>
+                    <div className={`p-3 rounded-lg ${
+                      facility.price_transparency
+                        ? 'bg-emerald-50 border border-emerald-100'
+                        : 'bg-blue-50'
+                    }`}>
+                      <div className="flex items-center gap-1 mb-1">
+                        <span className={`text-xs font-bold ${
+                          facility.price_transparency ? 'text-emerald-600' : 'text-blue-600'
+                        }`}>
+                          분양 가격대
+                        </span>
+                        {facility.price_transparency && (
+                          <BadgeCheck size={12} className="text-emerald-500" />
+                        )}
+                      </div>
+                      <div className="text-sm font-bold text-gray-800">
+                        {facility.priceRange || '가격 문의'}
+                      </div>
+                      {!facility.price_transparency && (
+                        <p className="text-[10px] text-gray-400 mt-1">* 실제 비용은 상담 문의</p>
+                      )}
                     </div>
 
                     {/* Location */}

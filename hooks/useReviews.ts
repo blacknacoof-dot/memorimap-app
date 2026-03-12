@@ -26,7 +26,6 @@ export function useReviews({
   const handleAddReview = useCallback((facilityId: string, content: string, rating: number) => {
     const newReview: Review = {
       id: `r-new-${Date.now()}`,
-      userId: userId || 'anon',
       user_id: userId || 'anon',
       facility_id: facilityId,
       userName: userName || '익명',
