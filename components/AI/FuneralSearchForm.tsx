@@ -363,7 +363,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                     )
                 )}
 
-                <button onClick={() => onGoToMyPage ? onGoToMyPage() : onClose?.()} className="w-full bg-slate-900 text-white text-sm font-bold py-3 rounded-xl flex items-center justify-center gap-2">
+                <button onClick={() => onGoToMyPage ? onGoToMyPage() : onClose?.()} className="w-full max-w-sm mx-auto bg-slate-900 text-white text-sm font-bold py-3 rounded-xl flex items-center justify-center gap-2">
                     <Check size={16} /> 상담 내역 보기
                 </button>
             </div>
@@ -462,7 +462,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
             <button
                 onClick={handleSubmit}
                 disabled={!canSubmit || isSaving}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white text-sm font-bold py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+                className="w-full max-w-sm mx-auto bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white text-sm font-bold py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
             >
                 {isSaving ? <Loader2 size={16} className="animate-spin" /> : <><Check size={16} /> {isDirectFacility ? '상담 신청' : '맞춤 장례식장 찾기'}</>}
             </button>
