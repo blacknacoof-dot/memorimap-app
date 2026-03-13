@@ -33,7 +33,7 @@ export const SOSEmergencyMode: React.FC<SOSEmergencyModeProps> = ({
                     <section>
                         <button
                             onClick={() => onOpenChat('funeral_home')}
-                            className="w-full py-4 bg-gradient-to-r from-purple-500 to-fuchsia-600 text-white rounded-xl font-bold text-sm shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                            className="w-full max-w-sm mx-auto py-4 bg-gradient-to-r from-purple-500 to-fuchsia-600 text-white rounded-xl font-bold text-sm shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                         >
                             <MessageCircle size={18} />
                             마음이 AI 긴급 상담 시작
