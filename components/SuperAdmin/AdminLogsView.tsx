@@ -43,7 +43,7 @@ export const AdminLogsView: React.FC = () => {
                 </h3>
                 <button
                     onClick={loadLogs}
-                    className="text-xs text-blue-600 hover:underline"
+                    className="text-xs text-blue-600 hover:underline min-w-[44px] min-h-[44px] flex items-center justify-center"
                 >
                     새로고침
                 </button>
@@ -55,7 +55,7 @@ export const AdminLogsView: React.FC = () => {
                 ) : logs.length === 0 ? (
                     <div className="p-10 text-center text-gray-500">기록된 활동 내용이 없습니다.</div>
                 ) : (
-                    <div className="divide-y divide-gray-100 max-h-[600px] overflow-y-auto">
+                    <div className="divide-y divide-gray-100 max-h-[60vh] md:max-h-[600px] overflow-y-auto">
                         {logs.map((log) => (
                             <div key={log.id} className="p-4 hover:bg-gray-50 transition-colors">
                                 <div className="flex justify-between items-start mb-1">

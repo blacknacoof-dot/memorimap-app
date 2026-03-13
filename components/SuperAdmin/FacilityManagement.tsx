@@ -112,11 +112,11 @@ export function FacilityManagement({ initialSearch, onClearSearch }: { initialSe
                         <div key={f.id} className="bg-white p-4 md:p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all group">
                             <div className="flex justify-between items-start mb-3">
                                 <div className="flex-1 min-w-0">
-                                    <h3 className="font-bold text-gray-900 flex items-center gap-2 truncate">
+                                    <h3 className="font-bold text-gray-900 flex items-center gap-2 truncate" title={f.name}>
                                         <Building2 size={16} className="text-primary shrink-0" />
                                         <span className="truncate">{f.name}</span>
                                     </h3>
-                                    <div className="flex items-center gap-1 text-xs text-gray-500 mt-1 truncate">
+                                    <div className="flex items-center gap-1 text-xs text-gray-500 mt-1 truncate" title={f.address}>
                                         <MapPin size={12} className="shrink-0" />
                                         <span className="truncate">{f.address}</span>
                                     </div>
@@ -195,7 +195,7 @@ export function FacilityManagement({ initialSearch, onClearSearch }: { initialSe
                                         </div>
                                         <button
                                             onClick={() => handleStartEdit(f)}
-                                            className="text-gray-300 hover:text-primary transition-colors"
+                                            className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-300 hover:text-primary transition-colors"
                                             title="관리자 변경"
                                         >
                                             <Edit2 size={16} />

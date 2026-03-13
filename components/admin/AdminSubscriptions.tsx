@@ -37,7 +37,7 @@ export const AdminSubscriptions: React.FC = () => {
             </h2>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-white p-5 rounded-xl border shadow-sm">
                     <div className="text-sm text-gray-500 mb-1">총 구독 업체</div>
                     <div className="text-3xl font-bold text-gray-900">{subs.length}</div>
@@ -49,8 +49,8 @@ export const AdminSubscriptions: React.FC = () => {
             </div>
 
             {/* List */}
-            <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-                <table className="w-full text-sm text-left">
+            <div className="bg-white rounded-xl border shadow-sm overflow-x-auto">
+                <table className="w-full text-sm text-left min-w-[480px]">
                     <thead className="bg-gray-50 text-gray-500 border-b">
                         <tr>
                             <th className="p-4">업체명</th>
@@ -64,7 +64,11 @@ export const AdminSubscriptions: React.FC = () => {
                             <tr key={s.id} className="hover:bg-gray-50">
                                 <td className="p-4 font-medium">{s.facilityName}</td>
                                 <td className="p-4">
-                                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${s.planName === 'Premium' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
+                                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${
+                                        s.planName === 'Premium' ? 'bg-purple-100 text-purple-700' :
+                                        s.planName === 'Enterprise' ? 'bg-amber-100 text-amber-700' :
+                                        s.planName === 'Basic' ? 'bg-green-100 text-green-700' :
+                                        'bg-blue-100 text-blue-700'
                                         }`}>
                                         {s.planName}
                                     </span>

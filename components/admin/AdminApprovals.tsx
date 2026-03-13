@@ -98,23 +98,23 @@ export const AdminApprovals: React.FC = () => {
                                 {f.businessLicenseImage && (
                                     <button
                                         onClick={() => setSelectedImage(f.businessLicenseImage || null)}
-                                        className="mt-3 text-xs bg-gray-100 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-gray-200 text-blue-600 font-medium"
+                                        className="mt-3 text-xs md:text-sm bg-gray-100 px-3 py-2 md:py-1.5 min-h-[44px] md:min-h-0 rounded-lg flex items-center gap-1 hover:bg-gray-200 text-blue-600 font-medium"
                                     >
                                         <FileText size={14} /> 사업자 등록증 확인
                                     </button>
                                 )}
                             </div>
 
-                            <div className="flex gap-2 w-full md:w-auto">
+                            <div className="flex gap-2 w-full md:w-auto md:max-w-[280px]">
                                 <button
                                     onClick={() => handleApprove(f.id, f.name)}
-                                    className="flex-1 md:flex-none px-4 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 flex items-center justify-center gap-2"
+                                    className="flex-1 md:flex-none px-4 py-2 min-h-[44px] bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 flex items-center justify-center gap-2"
                                 >
                                     <Check size={18} /> 승인
                                 </button>
                                 <button
                                     onClick={() => handleReject(f.id, f.name)}
-                                    className="flex-1 md:flex-none px-4 py-2 bg-white text-red-600 border border-red-200 rounded-lg font-bold hover:bg-red-50 flex items-center justify-center gap-2"
+                                    className="flex-1 md:flex-none px-4 py-2 min-h-[44px] bg-white text-red-600 border border-red-200 rounded-lg font-bold hover:bg-red-50 flex items-center justify-center gap-2"
                                 >
                                     <X size={18} /> 반려
                                 </button>
@@ -129,7 +129,7 @@ export const AdminApprovals: React.FC = () => {
                 <div className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4" onClick={() => setSelectedImage(null)}>
                     <div className="relative max-w-2xl w-full bg-white rounded-lg p-2">
                         <img src={selectedImage} alt="License" className="w-full h-auto rounded" />
-                        <button className="absolute -top-10 right-0 text-white hover:text-gray-300" onClick={() => setSelectedImage(null)}>
+                        <button className="absolute -top-12 right-0 text-white hover:text-gray-300 min-w-[44px] min-h-[44px] flex items-center justify-center gap-1" onClick={() => setSelectedImage(null)}>
                             <X size={24} /> 닫기
                         </button>
                     </div>

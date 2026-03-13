@@ -73,14 +73,14 @@ export const AdminLeadsView: React.FC = () => {
             </div>
 
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
-                <table className="w-full text-left text-sm text-slate-600">
+                <table className="w-full text-left text-sm text-slate-600 min-w-[700px]">
                     <thead className="bg-slate-50 border-b border-slate-200 text-xs uppercase font-semibold text-slate-500">
                         <tr>
-                            <th className="px-6 py-4">접수 일시</th>
-                            <th className="px-6 py-4">고객 정보</th>
-                            <th className="px-6 py-4">상담 유형 / 긴급도</th>
-                            <th className="px-6 py-4">요청 세부사항</th>
-                            <th className="px-6 py-4">상태</th>
+                            <th className="px-4 md:px-6 py-4 min-w-[120px]">접수 일시</th>
+                            <th className="px-4 md:px-6 py-4 min-w-[120px]">고객 정보</th>
+                            <th className="px-4 md:px-6 py-4 min-w-[100px]">상담 유형 / 긴급도</th>
+                            <th className="px-4 md:px-6 py-4 min-w-[140px]">요청 세부사항</th>
+                            <th className="px-4 md:px-6 py-4 min-w-[80px]">상태</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -93,20 +93,20 @@ export const AdminLeadsView: React.FC = () => {
                         ) : (
                             processedLeads.map((lead) => (
                                 <tr key={lead.id} className="hover:bg-slate-50 transition">
-                                    <td className="px-6 py-4 whitespace-nowrap">
+                                    <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center gap-2">
                                             <Clock size={14} className="text-slate-400" />
                                             {new Date(lead.created_at).toLocaleString()}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4">
+                                    <td className="px-4 md:px-6 py-4">
                                         <div className="font-bold text-slate-800">{lead.contact_name}</div>
                                         <div className="flex items-center gap-1.5 text-slate-500 mt-1">
                                             <Phone size={12} />
                                             {maskPhone(lead.contact_phone || lead.phone_number || '')}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4">
+                                    <td className="px-4 md:px-6 py-4">
                                         <div className="flex flex-col gap-1 items-start">
                                             <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-[11px] font-bold border border-indigo-100">
                                                 {getCategoryLabel(lead.category)}
@@ -118,7 +118,7 @@ export const AdminLeadsView: React.FC = () => {
                                             )}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4">
+                                    <td className="px-4 md:px-6 py-4">
                                         <div className="max-w-xs space-y-1">
                                             {lead.context_data?.text && (
                                                 <div className="flex items-center gap-1.5 text-slate-700">
@@ -140,7 +140,7 @@ export const AdminLeadsView: React.FC = () => {
                                             )}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4">
+                                    <td className="px-4 md:px-6 py-4">
                                         {getStatusBadge(lead.status)}
                                     </td>
                                 </tr>

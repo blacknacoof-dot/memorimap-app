@@ -104,7 +104,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col h-[100dvh] md:h-screen overflow-hidden">
+      <main className="flex-1 flex flex-col h-[100dvh] md:h-screen overflow-y-auto overflow-x-hidden">
         {/* Mobile Tab Nav */}
         <div className="md:hidden flex overflow-x-auto scrollbar-hide bg-slate-900 px-2 py-2 gap-1">
           <button
@@ -117,7 +117,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id as typeof activeTab)}
-              className={`flex-shrink-0 px-3 py-2 rounded-lg text-xs font-bold transition-colors whitespace-nowrap ${
+              className={`flex-shrink-0 px-3 py-2 min-h-[44px] flex items-center rounded-lg text-xs font-bold transition-colors whitespace-nowrap ${
                 activeTab === item.id ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
               }`}
             >

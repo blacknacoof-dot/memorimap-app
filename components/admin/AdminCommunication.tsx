@@ -27,22 +27,22 @@ export const AdminCommunication: React.FC<AdminCommunicationProps> = ({ initialF
             </h2>
 
             {/* Tabs */}
-            <div className="flex space-x-2 border-b">
+            <div className="flex space-x-2 border-b overflow-x-auto">
                 <button
                     onClick={() => setActiveTab('notices')}
-                    className={`px-4 py-2 font-medium text-sm ${activeTab === 'notices' ? 'border-b-2 border-green-600 text-green-600' : 'text-gray-500'}`}
+                    className={`px-4 py-2 min-h-[44px] font-medium text-sm whitespace-nowrap ${activeTab === 'notices' ? 'border-b-2 border-green-600 text-green-600' : 'text-gray-500'}`}
                 >
                     공지사항 관리
                 </button>
                 <button
                     onClick={() => setActiveTab('inquiries')}
-                    className={`px-4 py-2 font-medium text-sm ${activeTab === 'inquiries' ? 'border-b-2 border-green-600 text-green-600' : 'text-gray-500'}`}
+                    className={`px-4 py-2 min-h-[44px] font-medium text-sm whitespace-nowrap ${activeTab === 'inquiries' ? 'border-b-2 border-green-600 text-green-600' : 'text-gray-500'}`}
                 >
                     파트너 문의
                 </button>
                 <button
                     onClick={() => setActiveTab('customer_support')}
-                    className={`px-4 py-2 font-medium text-sm ${activeTab === 'customer_support' ? 'border-b-2 border-green-600 text-green-600' : 'text-gray-500'}`}
+                    className={`px-4 py-2 min-h-[44px] font-medium text-sm whitespace-nowrap ${activeTab === 'customer_support' ? 'border-b-2 border-green-600 text-green-600' : 'text-gray-500'}`}
                 >
                     고객센터 문의
                 </button>
@@ -118,8 +118,8 @@ export const AdminCommunication: React.FC<AdminCommunicationProps> = ({ initialF
                                     onChange={(e) => setFilterText(e.target.value)}
                                 />
                             </div>
-                            <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-                                <table className="w-full text-sm text-left">
+                            <div className="bg-white rounded-xl border shadow-sm overflow-x-auto">
+                                <table className="w-full text-sm text-left min-w-[480px]">
                                     <thead className="bg-gray-50 text-gray-500 border-b">
                                         <tr>
                                             <th className="p-4">업체명</th>

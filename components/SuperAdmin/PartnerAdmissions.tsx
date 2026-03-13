@@ -146,8 +146,8 @@ export const PartnerAdmissions: React.FC = () => {
 
             {/* 거절 사유 입력 모달 */}
             {rejectTarget && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 max-h-[80vh] overflow-y-auto">
                         <h3 className="text-lg font-bold text-slate-800">거절 사유 입력</h3>
                         <p className="text-sm text-slate-500">
                             <strong>{rejectTarget.name}</strong> 업체의 입점을 거절합니다.
@@ -162,14 +162,14 @@ export const PartnerAdmissions: React.FC = () => {
                         <div className="flex gap-3 justify-end">
                             <button
                                 onClick={() => setRejectTarget(null)}
-                                className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+                                className="px-4 py-2 min-h-[44px] text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
                             >
                                 취소
                             </button>
                             <button
                                 onClick={handleRejectSubmit}
                                 disabled={isRejecting}
-                                className={`px-4 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors ${isRejecting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                className={`px-4 py-2 min-h-[44px] text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors ${isRejecting ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
                                 {isRejecting ? '처리 중...' : '거절 확인'}
                             </button>

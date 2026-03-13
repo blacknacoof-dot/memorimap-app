@@ -65,10 +65,10 @@ export default function ReservationManager({ reservations, onUpdateStatus }: Res
     return (
         <div className="space-y-6">
             {/* 필터 탭 */}
-            <div className="flex gap-2 border-b pb-4">
-                <button onClick={() => setFilter('all')} className={`px-4 py-2 rounded-lg text-sm font-medium ${filter === 'all' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600'}`}>전체</button>
-                <button onClick={() => setFilter('pending')} className={`px-4 py-2 rounded-lg text-sm font-medium ${filter === 'pending' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-600'}`}>대기중 ({reservations.filter(r => r.status === 'pending').length})</button>
-                <button onClick={() => setFilter('confirmed')} className={`px-4 py-2 rounded-lg text-sm font-medium ${filter === 'confirmed' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600'}`}>확정됨</button>
+            <div className="flex gap-2 border-b pb-4 overflow-x-auto">
+                <button onClick={() => setFilter('all')} className={`px-4 py-3 md:py-2 min-h-[44px] md:min-h-0 rounded-lg text-sm font-medium whitespace-nowrap ${filter === 'all' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600'}`}>전체</button>
+                <button onClick={() => setFilter('pending')} className={`px-4 py-3 md:py-2 min-h-[44px] md:min-h-0 rounded-lg text-sm font-medium whitespace-nowrap ${filter === 'pending' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-600'}`}>대기중 ({reservations.filter(r => r.status === 'pending').length})</button>
+                <button onClick={() => setFilter('confirmed')} className={`px-4 py-3 md:py-2 min-h-[44px] md:min-h-0 rounded-lg text-sm font-medium whitespace-nowrap ${filter === 'confirmed' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600'}`}>확정됨</button>
             </div>
 
             {/* 예약 리스트 */}

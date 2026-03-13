@@ -198,7 +198,7 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
                 </div>
                 <button
                     onClick={fetchConsultations}
-                    className="p-2 hover:bg-slate-100 rounded-lg transition"
+                    className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-slate-100 rounded-lg transition"
                     title="새로고침"
                 >
                     <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
@@ -227,7 +227,7 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
             </div>
 
             {/* List */}
-            <div className="divide-y divide-slate-100 max-h-[500px] overflow-y-auto">
+            <div className="divide-y divide-slate-100 max-h-[60vh] md:max-h-[500px] overflow-y-auto">
                 {isLoading ? (
                     <div className="p-8 text-center text-slate-400">
                         <RefreshCw className="animate-spin mx-auto mb-2" size={24} />
@@ -266,7 +266,7 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
                                                 </span>
                                             )}
                                         </div>
-                                        <div className="text-xs text-slate-500 mt-0.5 flex items-center gap-2">
+                                        <div className="text-xs text-slate-500 mt-0.5 flex flex-wrap items-center gap-2">
                                             <span>{formatDate(consultation.created_at)}</span>
                                             {consultation.location && (
                                                 <>
@@ -287,9 +287,9 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
 
                                 {/* Expanded Details */}
                                 {isExpanded && (
-                                    <div className="px-4 pb-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="px-4 pb-4 space-y-3 max-h-[60vh] overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
                                         {/* Details Grid */}
-                                        <div className="bg-slate-50 rounded-xl p-3 grid grid-cols-2 gap-2 text-xs">
+                                        <div className="bg-slate-50 rounded-xl p-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                                             <div className="flex items-center gap-2">
                                                 <Phone size={12} className="text-slate-400" />
                                                 <span className="text-slate-600">{consultation.user_phone || '번호 없음'}</span>

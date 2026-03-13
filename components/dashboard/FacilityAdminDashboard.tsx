@@ -32,7 +32,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
   } = useFacilityAdmin({ user, facilities });
 
   return (
-    <div className="h-full overflow-y-auto pt-24 pb-6 px-4 bg-gray-50">
+    <div className="h-full overflow-y-auto pt-24 pb-6 px-4 sm:px-6 md:px-8 bg-gray-50">
       {/* Header */}
       <div className="mb-6 flex justify-between items-start">
         <div className="flex-1">
@@ -85,7 +85,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
       {myFacility ? (
         <div className="mb-6">
           <h2 className="text-lg font-bold text-gray-900 mb-3">시설 정보</h2>
-          <div className="bg-white rounded-xl p-4 border shadow-sm">
+          <div className="bg-white rounded-xl p-4 md:p-5 border shadow-sm">
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
@@ -166,7 +166,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key as typeof activeTab)}
-            className={`flex-shrink-0 md:flex-1 min-w-[60px] py-2 px-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap flex items-center justify-center gap-1 ${
+            className={`flex-shrink-0 md:flex-1 min-w-[48px] py-2 px-2 min-h-[44px] md:min-h-0 rounded-lg text-xs font-medium transition-colors whitespace-nowrap flex items-center justify-center gap-1 ${
               activeTab === tab.key ? 'bg-primary text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-50 border'
             }`}
             data-testid={tab.key === 'faq' ? 'faq-tab' : undefined}

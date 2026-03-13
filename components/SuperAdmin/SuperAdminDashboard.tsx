@@ -35,7 +35,7 @@ const SideMenuDrawer = ({ isOpen, onClose, onNavigate }: { isOpen: boolean; onCl
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex">
+        <div className="fixed inset-0 z-[150] flex">
             {/* Background Overlay */}
             <div
                 className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
