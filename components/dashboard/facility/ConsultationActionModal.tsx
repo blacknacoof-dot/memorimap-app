@@ -35,7 +35,7 @@ export const ConsultationActionModal: React.FC<Props> = ({ isOpen, consultationN
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[320] flex items-center justify-center bg-black/50 p-4 animate-in fade-in duration-200">
             <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden scale-100 animate-in zoom-in-95 duration-200">
                 <div className="p-5 border-b flex justify-between items-center bg-indigo-50/50">
                     <h3 className="font-bold text-lg text-indigo-900 flex items-center gap-2">

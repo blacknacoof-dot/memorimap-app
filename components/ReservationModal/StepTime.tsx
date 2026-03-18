@@ -17,6 +17,7 @@ export const StepTime: React.FC<Props> = ({ selectedTime, onSelect, error, isPet
       <button
         key={t}
         onClick={() => onSelect(t)}
+        data-testid={`reservation-time-${t.replace(':', '-')}`}
         className={`p-4 rounded-xl border flex items-center justify-center gap-2 ${
           selectedTime === t
             ? (isPetFacility ? 'bg-purple-600 text-white' : 'bg-primary text-white')

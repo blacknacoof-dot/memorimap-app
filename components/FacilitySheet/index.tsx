@@ -162,6 +162,7 @@ export const FacilitySheet: React.FC<Props> = ({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
+              data-testid={`facility-sheet-tab-${tab.id}`}
               className={`flex-1 py-3 text-sm font-medium whitespace-nowrap ${
                 activeTab === tab.id ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'
               }`}
@@ -197,7 +198,6 @@ export const FacilitySheet: React.FC<Props> = ({
               reviewRefreshTrigger={reviewRefreshTrigger}
               setReviewRefreshTrigger={setReviewRefreshTrigger}
               onLoginRequired={onLoginRequired}
-              reservations={reservations}
             />
           )}
           {activeTab === 'price' && (
@@ -253,6 +253,7 @@ export const FacilitySheet: React.FC<Props> = ({
                 onBook();
               }
             }}
+            data-testid="facility-sheet-book-button"
             className="flex-1 bg-primary text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/30 active:scale-95 transition-transform text-sm"
           >
             {facility.type === 'funeral' ? '바로예약하기' : '방문 예약하기'}

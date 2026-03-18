@@ -6,10 +6,9 @@ interface Props {
   onClose: () => void;
   onLogin: () => void;
   onSignUpClick: () => void;
-  onAdminLogin: () => void;
 }
 
-export const LoginModal: React.FC<Props> = ({ onClose, onLogin, onSignUpClick, onAdminLogin }) => {
+export const LoginModal: React.FC<Props> = ({ onClose, onLogin, onSignUpClick }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -25,7 +24,7 @@ export const LoginModal: React.FC<Props> = ({ onClose, onLogin, onSignUpClick, o
     setLoading(true);
 
     try {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
@@ -39,20 +38,6 @@ export const LoginModal: React.FC<Props> = ({ onClose, onLogin, onSignUpClick, o
           setError(signInError.message);
         }
         return;
-      }
-
-      // Check if user is admin/super_admin
-      if (data?.user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('clerk_id', data.user.id)
-          .single();
-
-        if (profile?.role === 'super_admin' || profile?.role === 'admin' || profile?.role === 'partner') {
-          onAdminLogin();
-          return;
-        }
       }
 
       onLogin();
@@ -109,7 +94,7 @@ export const LoginModal: React.FC<Props> = ({ onClose, onLogin, onSignUpClick, o
   };
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" data-testid="login-modal">
       <div className="bg-white w-full max-w-md max-h-[90vh] rounded-2xl shadow-2xl overflow-y-auto animate-in fade-in zoom-in-95 duration-200 relative">
         <button
           onClick={onClose}
@@ -223,6 +208,7 @@ export const LoginModal: React.FC<Props> = ({ onClose, onLogin, onSignUpClick, o
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    data-testid="login-email-input"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                     placeholder="example@email.com"
                     required
@@ -237,6 +223,7 @@ export const LoginModal: React.FC<Props> = ({ onClose, onLogin, onSignUpClick, o
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      data-testid="login-password-input"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none pr-12"
                       placeholder="비밀번호를 입력하세요"
                       required
@@ -259,6 +246,7 @@ export const LoginModal: React.FC<Props> = ({ onClose, onLogin, onSignUpClick, o
                 <button
                   type="submit"
                   disabled={loading}
+                  data-testid="login-submit-button"
                   className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2 min-h-[48px]"
                 >
                   {loading && <Loader2 size={18} className="animate-spin" />}

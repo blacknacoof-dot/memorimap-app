@@ -213,7 +213,6 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
           onClose={() => setShowLoginModal(false)}
           onLogin={() => { setShowLoginModal(false); showToast("로그인 되었습니다!"); }}
           onSignUpClick={() => { setShowLoginModal(false); setShowSignUpModal(true); }}
-          onAdminLogin={() => { setShowLoginModal(false); setViewState(ViewState.ADMIN); showToast("관리자 모드로 접속합니다.", 'success'); }}
         />
       )}
 

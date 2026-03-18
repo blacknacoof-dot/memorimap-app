@@ -126,7 +126,7 @@ export const AdminApprovals: React.FC = () => {
 
             {/* Image Modal */}
             {selectedImage && (
-                <div className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4" onClick={() => setSelectedImage(null)}>
+                <div className="fixed inset-0 bg-black/80 z-[320] flex items-center justify-center p-4" onClick={() => setSelectedImage(null)}>
                     <div className="relative max-w-2xl w-full bg-white rounded-lg p-2">
                         <img src={selectedImage} alt="License" className="w-full h-auto rounded" />
                         <button className="absolute -top-12 right-0 text-white hover:text-gray-300 min-w-[44px] min-h-[44px] flex items-center justify-center gap-1" onClick={() => setSelectedImage(null)}>

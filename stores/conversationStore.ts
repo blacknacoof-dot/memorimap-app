@@ -16,6 +16,7 @@ interface ConversationState {
     mainBotContext: MainBotContext;
     updateContext: (context: Partial<MainBotContext>) => void;
     clearContext: () => void;
+    resetConversationState: () => void;
 }
 
 export const useConversationStore = create<ConversationState>((set) => ({
@@ -24,7 +25,8 @@ export const useConversationStore = create<ConversationState>((set) => ({
         set((state) => ({
             mainBotContext: { ...state.mainBotContext, ...context }
         })),
-    clearContext: () => set({ mainBotContext: {} })
+    clearContext: () => set({ mainBotContext: {} }),
+    resetConversationState: () => set({ mainBotContext: {} })
 }));
 
 /**

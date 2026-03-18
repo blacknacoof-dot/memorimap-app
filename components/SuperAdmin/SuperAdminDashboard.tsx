@@ -22,6 +22,7 @@ import { AdminSettings } from './AdminSettings';
 import { SystemSettings } from './SystemSettings';
 import { SubscriptionManager } from './SubscriptionManager';
 import { SuperAdminGuard } from './SuperAdminGuard';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 // MOCK_DATA removed. Using real hooks.
 
@@ -113,14 +114,55 @@ export default function SuperAdminDashboard({ onBack }: { onBack?: () => void })
 
 function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
     const { user } = useUser();
-    const [activeTab, setActiveTab] = useState<'subs' | 'revenue' | 'leads' | 'admissions' | 'facilities' | 'users' | 'notices' | 'logs' | 'communication' | 'admin_settings' | 'system_settings' | 'monitoring'>('monitoring');
+    const location = useLocation();
+    const navigate = useNavigate();
+    type TabId =
+        | 'subs'
+        | 'revenue'
+        | 'leads'
+        | 'admissions'
+        | 'facilities'
+        | 'users'
+        | 'notices'
+        | 'logs'
+        | 'communication'
+        | 'admin_settings'
+        | 'system_settings'
+        | 'monitoring';
+    const parseTabFromSearch = (search: string): TabId | null => {
+        const tab = new URLSearchParams(search).get('tab');
+        if (tab === 'subs') return 'subs';
+        if (tab === 'revenue') return 'revenue';
+        if (tab === 'leads') return 'leads';
+        if (tab === 'admissions') return 'admissions';
+        if (tab === 'facilities') return 'facilities';
+        if (tab === 'users') return 'users';
+        if (tab === 'notices') return 'notices';
+        if (tab === 'logs') return 'logs';
+        if (tab === 'communication') return 'communication';
+        if (tab === 'admin_settings') return 'admin_settings';
+        if (tab === 'system_settings') return 'system_settings';
+        if (tab === 'monitoring') return 'monitoring';
+        return null;
+    };
+    // Derive activeTab purely from URL — URL is the single source of truth.
+    // This eliminates the need for useEffect+setState (react-hooks/set-state-in-effect)
+    // and avoids ref access during render (react-hooks/refs).
+    // Tab switching updates the URL via navigate(), which triggers a re-render automatically.
+    const activeTab: TabId = parseTabFromSearch(location.search) ?? 'monitoring';
+
+    /** Switch the active tab by updating the URL search param (replace in history). */
+    const switchTab = (tab: TabId) => {
+        navigate({ search: tab !== 'monitoring' ? `?tab=${tab}` : '' }, { replace: true });
+    };
+
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [facilitySearchTerm, setFacilitySearchTerm] = useState('');
     const [communicationFilter, setCommunicationFilter] = useState('');
 
     const handleNavigateCommunication = (partnerName: string) => {
         setCommunicationFilter(partnerName);
-        setActiveTab('communication');
+        switchTab('communication');
     };
 
     return (
@@ -131,7 +173,7 @@ function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
                 onClose={() => setIsMenuOpen(false)}
                 onNavigate={(tab) => {
                     if (tab === 'communication') setCommunicationFilter('');
-                    setActiveTab(tab as typeof activeTab);
+                    switchTab(tab as TabId);
                 }}
             />
 
@@ -175,7 +217,7 @@ function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
                         ].map((tab) => (
                             <button
                                 key={tab.id}
-                                onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                                onClick={() => switchTab(tab.id as TabId)}
                                 className={`flex items-center gap-1.5 md:gap-2 py-3 md:py-4 px-1 md:px-2 text-[13px] md:text-sm font-bold border-b-2 transition-all whitespace-nowrap ${activeTab === tab.id
                                     ? 'border-blue-600 text-blue-600'
                                     : 'border-transparent text-slate-400 hover:text-slate-600'
@@ -195,7 +237,7 @@ function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
                     <SubscriptionManager
                         onManage={(name) => {
                             setFacilitySearchTerm(name);
-                            setActiveTab('facilities');
+                            switchTab('facilities');
                         }}
                     />
                 )}

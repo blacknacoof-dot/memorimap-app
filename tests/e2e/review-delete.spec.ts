@@ -5,11 +5,26 @@ import { createTestReservation, deleteTestReservations, TEST_USER_ID } from './d
 // 수동 로그인 기반 E2E: 리뷰 삭제 검증
 // 전략: 테스트 전 confirmed 예약 생성 → 리뷰 작성 가능 → 삭제 테스트
 // ─────────────────────────────────────────────────────────
+//
+// ⚠️  [격리 이유 — 2026-03-18 기준]
+//
+// 이 테스트는 Clerk 쿠키(__client_uat)가 설정될 때까지 폴링하여 로그인을 감지합니다.
+// 그러나 프로젝트는 2026-02-17에 Clerk → Supabase Auth로 완전히 전환되었습니다.
+// Supabase Auth는 쿠키 대신 localStorage의 supabase.auth.token을 사용하므로
+// __client_uat 쿠키는 더 이상 생성되지 않습니다.
+//
+// 복구 조건:
+//   lines 43-50의 Clerk 쿠키 폴링을 Supabase Auth 세션 감지로 교체해야 합니다.
+//   예: page.evaluate(() => !!localStorage.getItem('sb-...-auth-token'))
+//   또는 coreFlows.fixture.ts의 loginViaUi()를 활용한 자동 로그인으로 전환.
+//
+// 복구 전까지 이 테스트는 skip 상태로 유지됩니다.
+// ─────────────────────────────────────────────────────────
 
 // 프리드라이프 실제 Facility ID (변경 필요시 이 값만 수정)
 const TARGET_FACILITY_ID = 'fc_freedlife_001';
 
-test.describe('Manual Review Deletion Verification', () => {
+test.describe.skip('@manual @quarantine Manual Review Deletion Verification', () => {
     // 넉넉하게 3분 타임아웃 (로그인 시간 포함)
     test.setTimeout(180000);
 
@@ -39,12 +54,15 @@ test.describe('Manual Review Deletion Verification', () => {
         // ── 2. 수동 로그인 대기 (90초 타임아웃) ──────────────
         console.log('⚠️ [User Action Required] 브라우저에서 90초 내에 로그인을 완료해주세요.');
 
-        // Clerk 쿠키(__client_uat)가 생길 때까지 폴링
+        // ⚠️ TODO(복구 필요): 아래 코드는 Clerk 쿠키(__client_uat)를 폴링하지만
+        // 프로젝트가 Supabase Auth로 전환된 이후 이 쿠키는 생성되지 않습니다.
+        // Supabase Auth 세션 감지로 교체해야 합니다. (예: localStorage 'sb-...-auth-token')
+        // 현재 이 코드는 항상 타임아웃됩니다.
         await expect.poll(async () => {
             const cookies = await page.context().cookies();
-            return cookies.some(c => c.name.includes('__client_uat'));
+            return cookies.some(c => c.name.includes('__client_uat')); // ← Clerk 전용, Supabase Auth에서는 동작 안 함
         }, {
-            message: 'Login timeout: User did not login within 90s',
+            message: 'Login timeout: User did not login within 90s (Clerk cookie no longer set — needs Supabase Auth migration)',
             timeout: 90000,
             intervals: [1000]
         }).toBe(true);

@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { NotificationModal } from './NotificationModal';
 
 export const NotificationCenter: React.FC = () => {
-    const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, isLoading } = useNotifications();
+    const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, isLoading, notificationLoadError, retryNotifications } = useNotifications();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const navigate = useNavigate();
 
@@ -19,6 +19,7 @@ export const NotificationCenter: React.FC = () => {
             {/* Bell Icon Trigger */}
             <button
                 onClick={() => setIsModalOpen(true)}
+                data-testid="notification-bell-button"
                 className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors active:scale-95"
             >
                 <Bell size={20} />
@@ -37,6 +38,8 @@ export const NotificationCenter: React.FC = () => {
                     notifications={notifications}
                     unreadCount={unreadCount}
                     isLoading={isLoading}
+                    loadError={notificationLoadError}
+                    onRetry={retryNotifications}
                     onMarkAsRead={markAsRead}
                     onMarkAllAsRead={markAllAsRead}
                     onDelete={deleteNotification}

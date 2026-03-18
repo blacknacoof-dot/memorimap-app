@@ -235,7 +235,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
     const inputNoPadCls = "w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-gray-900";
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[320] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
             <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 max-h-[90dvh] flex flex-col">
                 {/* Header */}
                 <div className="flex justify-between items-center p-4 border-b shrink-0">

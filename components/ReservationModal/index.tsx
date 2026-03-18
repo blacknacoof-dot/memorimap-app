@@ -32,14 +32,14 @@ export const ReservationModal: React.FC<Props> = ({
     isProcessingPayment, isPaymentOpen, hasPaymentFailed,
     reservationType, setReservationType,
     formValues, register, errors, setValue,
-    cancelPayment, handleDateSelect, handleNext, handlePaymentProcess,
+    cancelPayment, handleDateSelect, handleNext, handlePaymentProcess, handleCompleteConfirm,
     availableDates, depositAmount,
   } = useReservation({ facility, onClose, onConfirm, reservationMode });
 
   useEffect(() => {
     if (step > 0 && step < 4) analytics.reservationStep(step, facility.id);
     if (step === 4) analytics.reservationComplete(facility.id, facility.name, depositAmount || 0);
-  }, [step]);
+  }, [step, facility.id, facility.name, depositAmount]);
 
   const renderContent = () => {
     if (reservationMode === 'URGENT') {
@@ -88,7 +88,7 @@ export const ReservationModal: React.FC<Props> = ({
           handlePaymentProcess={handlePaymentProcess}
         />
       );
-      case 4: return <StepComplete onClose={onClose} />;
+      case 4: return <StepComplete onClose={handleCompleteConfirm} />;
       default: return null;
     }
   };
@@ -136,7 +136,7 @@ export const ReservationModal: React.FC<Props> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-end md:items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[300] flex items-end md:items-center justify-center bg-black/50 backdrop-blur-sm" data-testid="reservation-modal">
       {isPaymentOpen && (
         <button
           onClick={cancelPayment}
@@ -149,7 +149,7 @@ export const ReservationModal: React.FC<Props> = ({
       <div className="bg-white w-full max-w-lg md:rounded-2xl rounded-t-3xl max-h-[90dvh] h-auto flex flex-col shadow-2xl">
         <div className="p-4 border-b flex justify-between items-center sticky top-0 bg-white z-10">
           <h2 className="text-lg font-bold flex items-center gap-2">{getTitle()}</h2>
-          <button onClick={onClose} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-100 rounded-full">
+          <button onClick={onClose} data-testid="reservation-close-button" className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-100 rounded-full">
             <X className="text-gray-500" />
           </button>
         </div>
@@ -165,6 +165,7 @@ export const ReservationModal: React.FC<Props> = ({
           )}
           <button
             onClick={step === 3 ? handlePaymentProcess : handleNext}
+            data-testid="reservation-next-button"
             className={`flex-1 text-white py-3.5 rounded-xl font-bold shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2 ${
               reservationMode === 'URGENT' ? 'bg-red-600 hover:bg-red-700' : 'bg-slate-900 hover:bg-slate-800'
             }`}

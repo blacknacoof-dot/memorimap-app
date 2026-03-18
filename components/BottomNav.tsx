@@ -28,6 +28,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ viewState, setViewState })
         <button
           key={view}
           onClick={() => setViewState(view)}
+          data-testid={`bottom-nav-${String(view).toLowerCase()}`}
           className={`flex flex-col items-center justify-center min-w-[56px] min-h-[48px] ${viewState === view ? 'text-primary' : 'text-gray-400'}`}
         >
           <Icon size={22} strokeWidth={viewState === view ? 2.5 : 2} />

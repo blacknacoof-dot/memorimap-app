@@ -46,6 +46,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       }`}>
         <button
           onClick={() => setIsMenuOpen(true)}
+          data-testid="topbar-menu-button"
           className="bg-white p-2.5 md:p-3 rounded-xl shadow-md text-gray-700 active:scale-95 transition-transform shrink-0"
         >
           <Menu size={18} className="md:hidden" />

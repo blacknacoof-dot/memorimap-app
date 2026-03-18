@@ -7,6 +7,7 @@ import { Scale, Crosshair, Database, ArrowLeft, Building2, ShieldAlert, Shield, 
 import { updateFacilitySubscription } from '../lib/queries';
 import { useSession } from '../lib/auth';
 import { getAuthClient } from '../lib/supabaseClient';
+import { canAccessView } from '../lib/rolePolicy';
 
 // Lazy Load Components
 const AdminView = React.lazy(() => import('./AdminView').then(m => ({ default: m.AdminView })));
@@ -120,7 +121,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
         </div>
       );
     }
-    if (!isSignedIn || !userRole || !['admin', 'super_admin', 'facility_admin', 'facility_manager'].includes(userRole)) {
+    if (!isSignedIn || !userRole || !canAccessView(userRole, ViewState.ADMIN)) {
       return (
         <div className="h-full flex flex-col items-center justify-center p-6 bg-gray-50">
           <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
@@ -136,15 +137,14 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
     }
     return (
       <Suspense fallback={<LoadingFallback />}>
-        <AdminView
-          facilities={facilities}
-          reservations={reservations}
-          onUpdateReservationStatus={handleUpdateReservation}
-          onExitAdmin={() => {
-            window.location.hash = '';
-            setViewState(ViewState.MAP);
-          }}
-        />
+          <AdminView
+            facilities={facilities}
+            reservations={reservations}
+            onUpdateReservationStatus={handleUpdateReservation}
+            onExitAdmin={() => {
+              setViewState(ViewState.MAP);
+            }}
+          />
       </Suspense>
     );
   }
@@ -230,7 +230,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
         <Suspense fallback={<LoadingFallback />}>
           <div className="h-full bg-white pb-20 overflow-y-auto">
             <PartnerInquiryView
-              onBack={() => { window.location.hash = ''; setViewState(ViewState.MAP); }}
+              onBack={() => { setViewState(ViewState.MAP); }}
               onLoginClick={handleLoginClick}
             />
           </div>
@@ -306,7 +306,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
       );
 
     case ViewState.FACILITY_ADMIN:
-      if (userRole !== 'facility_admin' && userRole !== 'facility_manager' && userRole !== 'sangjo_hq_admin' && userRole !== 'sangjo_branch_admin' && userRole !== 'super_admin') {
+      if (!isSignedIn || !userRole || !canAccessView(userRole, ViewState.FACILITY_ADMIN)) {
         return (
           <div className="h-full flex flex-col items-center justify-center p-6 bg-gray-50">
             <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
@@ -353,6 +353,20 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
       );
 
     case ViewState.SUBSCRIPTION_PLANS:
+      if (!isSignedIn || !userRole || !canAccessView(userRole, ViewState.SUBSCRIPTION_PLANS)) {
+        return (
+          <div className="h-full flex flex-col items-center justify-center p-6 bg-gray-50">
+            <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <ShieldAlert className="text-red-500" size={32} />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">접근 권한이 없습니다</h2>
+              <p className="text-gray-500 mb-6">요금제 화면 접근 권한이 있는 계정으로 로그인해 주세요.</p>
+              <button onClick={() => setViewState(ViewState.MAP)} className="px-6 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 font-medium">메인으로 돌아가기</button>
+            </div>
+          </div>
+        );
+      }
       return (
         <Suspense fallback={<LoadingFallback />}>
           <div className="h-full relative flex flex-col">
@@ -422,7 +436,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
       );
 
     case ViewState.SANGJO_DASHBOARD:
-      if (!isSignedIn || !userRole || !['sangjo_hq_admin', 'sangjo_branch_admin', 'super_admin'].includes(userRole)) {
+      if (!isSignedIn || !userRole || !canAccessView(userRole, ViewState.SANGJO_DASHBOARD)) {
         return (
           <div className="h-full flex flex-col items-center justify-center p-6 bg-gray-50">
             <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
@@ -478,9 +492,9 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
           </div>
         );
       }
-      if (userRole !== 'super_admin') {
+      if (!userRole || !canAccessView(userRole, ViewState.SUPER_ADMIN)) {
         return (
-          <div className="h-full flex flex-col items-center justify-center p-4">
+          <div className="h-full flex flex-col items-center justify-center p-4" data-testid="access-denied-super-admin">
             <Shield className="text-red-500 mb-4" size={48} />
             <h2 className="text-xl font-bold mb-2 text-red-600">접근 권한이 없습니다</h2>
             <p className="text-gray-600 mb-6">오직 승인된 슈퍼관리자만 접근할 수 있습니다.</p>

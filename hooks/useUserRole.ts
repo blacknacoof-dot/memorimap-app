@@ -1,9 +1,6 @@
-/**
- * useUserRole - App.tsx에서 추출한 사용자 역할 관리 Hook
- * get_user_role RPC를 사용하여 역할 + facilityId를 한번에 조회
- */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ViewState } from '../types';
+import { APP_ROLE, getRoleEntryView, isSangjoRole, shouldRedirectAfterLogin, syncHashForView } from '../lib/rolePolicy';
 
 interface UserInfo {
   id: string;
@@ -21,18 +18,18 @@ interface UseUserRoleParams {
 }
 
 export function useUserRole({ isSignedIn, userInfo, viewState, setViewState, showToast }: UseUserRoleParams) {
-  const [userRole, setUserRole] = useState<string>('user');
+  const [userRole, setUserRole] = useState<string>(APP_ROLE.USER);
   const [roleError, setRoleError] = useState<string | null>(null);
   const [isLoadingRole, setIsLoadingRole] = useState(false);
+  const lastResolvedUserIdRef = useRef<string | null>(null);
 
-  // Facility Admin Context
   const [adminFacilityId, setAdminFacilityId] = useState<string | null>(null);
   const [adminSangjoId, setAdminSangjoId] = useState<string | null>(null);
   const [sangjoOrgType, setSangjoOrgType] = useState<'branch' | 'headquarters'>('branch');
 
-  // Fetch User Role
   useEffect(() => {
     let mounted = true;
+
     const fetchUserRole = async () => {
       if (isSignedIn && userInfo) {
         setIsLoadingRole(true);
@@ -47,6 +44,12 @@ export function useUserRole({ isSignedIn, userInfo, viewState, setViewState, sho
           if (!mounted) return;
 
           setUserRole(result.role);
+          setAdminFacilityId(result.facilityId ?? null);
+
+          if (!isSangjoRole(result.role) && result.role !== APP_ROLE.SUPER_ADMIN) {
+            setAdminSangjoId(null);
+            setSangjoOrgType('branch');
+          }
 
           if (result.isError) {
             setRoleError(result.error || 'Unknown role error');
@@ -54,25 +57,30 @@ export function useUserRole({ isSignedIn, userInfo, viewState, setViewState, sho
           } else {
             setRoleError(null);
 
-            // Auto-route based on role + set adminFacilityId (RPC에서 직접 반환)
-            if ((result.role === 'facility_admin' || result.role === 'facility_manager') && viewState === ViewState.MAP) {
-              setViewState(ViewState.FACILITY_ADMIN);
-              if (result.facilityId) {
-                setAdminFacilityId(result.facilityId);
+              if (lastResolvedUserIdRef.current !== userInfo.id) {
+                if (shouldRedirectAfterLogin(result.role, viewState)) {
+                  const entryView = getRoleEntryView(result.role);
+                  setViewState(entryView);
+                  syncHashForView(entryView);
+                }
+                lastResolvedUserIdRef.current = userInfo.id;
               }
-            } else if (result.role.startsWith('sangjo_') && viewState === ViewState.MAP) {
-              setViewState(ViewState.SANGJO_DASHBOARD);
+
+            if (result.facilityId) {
+              setAdminFacilityId(result.facilityId);
             }
           }
 
-          // Fetch Sangjo Info if role is sangjo-related or super_admin
-          if (result.role.includes('sangjo') || result.role === 'super_admin') {
+          if (isSangjoRole(result.role) || result.role === APP_ROLE.SUPER_ADMIN) {
             const { getSangjoUser } = await import('../lib/sangjoQueries');
             const sangjoInfo = await getSangjoUser(userInfo.id, authClient);
             if (!mounted) return;
+
             if (sangjoInfo) {
               setAdminSangjoId(sangjoInfo.sangjo_id);
-              setSangjoOrgType(result.role === 'sangjo_hq_admin' ? 'headquarters' : 'branch');
+              setSangjoOrgType(result.role === APP_ROLE.SANGJO_HQ_ADMIN ? 'headquarters' : 'branch');
+            } else {
+              setAdminSangjoId(null);
             }
           }
         } catch {
@@ -83,13 +91,20 @@ export function useUserRole({ isSignedIn, userInfo, viewState, setViewState, sho
           if (mounted) setIsLoadingRole(false);
         }
       } else {
-        setUserRole('user');
+        setUserRole(APP_ROLE.USER);
         setRoleError(null);
         setIsLoadingRole(false);
+        setAdminFacilityId(null);
+        setAdminSangjoId(null);
+        setSangjoOrgType('branch');
+        lastResolvedUserIdRef.current = null;
       }
     };
+
     fetchUserRole();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [isSignedIn, userInfo?.id]);
 
   return {

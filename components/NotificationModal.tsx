@@ -47,6 +47,8 @@ export interface NotificationModalProps {
     notifications: UserNotification[];
     unreadCount: number;
     isLoading: boolean;
+    loadError?: string | null;
+    onRetry: () => void;
     onMarkAsRead: (id: string) => void;
     onMarkAllAsRead: () => void;
     onDelete: (id: string) => void;
@@ -54,7 +56,7 @@ export interface NotificationModalProps {
 }
 
 export const NotificationModal: React.FC<NotificationModalProps> = ({
-    isOpen, onClose, notifications, unreadCount, isLoading, onMarkAsRead, onMarkAllAsRead, onDelete, onNavigate
+    isOpen, onClose, notifications, unreadCount, isLoading, loadError, onRetry, onMarkAsRead, onMarkAllAsRead, onDelete, onNavigate
 }) => {
     const [filter, setFilter] = useState<FilterTab>('전체');
     const [isClosing, setIsClosing] = useState(false);
@@ -110,12 +112,31 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
         ? notifications.filter(n => !n.is_read)
         : notifications;
 
+    const normalizeNotificationLink = (rawLink: string): string => {
+        let normalized = rawLink.trim();
+        if (!normalized) return '/';
+
+        if (normalized.startsWith('/#/')) normalized = normalized.slice(2);
+        if (normalized.startsWith('#/')) normalized = normalized.slice(1);
+        if (!normalized.startsWith('/')) normalized = `/${normalized}`;
+
+        const [rawPath = '/', rawQuery = ''] = normalized.split('?');
+        const path = rawPath.endsWith('/') && rawPath.length > 1 ? rawPath.slice(0, -1) : rawPath;
+        const params = new URLSearchParams(rawQuery);
+
+        // Legacy admin subscription deeplink fallback.
+        if (path === '/admin' && params.get('tab') === 'subs') {
+            return '/super-admin?tab=subs';
+        }
+        return rawQuery ? `${path}?${rawQuery}` : path;
+    };
+
     const handleNotificationClick = (notif: UserNotification) => {
         if (!notif.is_read) {
             onMarkAsRead(notif.id);
         }
         if (notif.link) {
-            onNavigate(notif.link.startsWith('/') ? notif.link : `/${notif.link}`);
+            onNavigate(normalizeNotificationLink(notif.link));
             handleClose();
         }
     };
@@ -131,6 +152,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
         <div
             className={`fixed inset-0 z-[9999] flex items-end sm:items-center justify-center transition-colors duration-200 ${isClosing ? 'bg-black/0' : 'bg-black/50'}`}
             onClick={handleBackdropClick}
+            data-testid="notification-modal"
         >
             {/* Modal Content */}
             <div
@@ -194,7 +216,18 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
 
                 {/* Notification List */}
                 <div className="flex-1 overflow-y-auto overscroll-contain">
-                    {isLoading ? (
+                    {loadError ? (
+                        <div className="p-8 text-center">
+                            <Bell size={36} className="mx-auto text-red-300 mb-3" />
+                            <p className="text-red-600 text-sm mb-3">{loadError}</p>
+                            <button
+                                onClick={onRetry}
+                                className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100"
+                            >
+                                다시 불러오기
+                            </button>
+                        </div>
+                    ) : isLoading ? (
                         <div className="p-12 text-center">
                             <div className="inline-block w-6 h-6 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
                             <p className="text-gray-400 text-sm mt-3">로딩 중...</p>
@@ -211,6 +244,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                             {filteredNotifications.map((notif) => (
                                 <div
                                     key={notif.id}
+                                    data-testid={`notification-item-${notif.id}`}
                                     className={`px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer relative group ${
                                         !notif.is_read ? 'bg-blue-50/40' : ''
                                     }`}

@@ -1,114 +1,174 @@
 import { test, expect } from '@playwright/test';
-import { supabase, TEST_USER_ID, TEST_PARTNER_ID } from './db.utils';
+import { supabase } from './db.utils';
 
-// ─────────────────────────────────────────────────────────
-// Flow A: 로그인 → 역할 판별 → 대시보드 접근
-// DB 레벨 통합 테스트 (service role client)
-// ─────────────────────────────────────────────────────────
+interface AuthFixtureUser {
+  id: string;
+  email: string;
+  password: string;
+  role: 'user' | 'super_admin';
+}
 
-test.describe('Flow A: Auth → Role → Dashboard Access', () => {
+interface AuthFixture {
+  regularUser: AuthFixtureUser;
+  facilityAdminUser: AuthFixtureUser;
+  superAdminUser: AuthFixtureUser;
+  facilityId: string;
+}
 
-    // ── A-1: super_admin 역할 판별 ──────────────────────────
-    test('A-1: super_admin role is correctly resolved from profiles + super_admins', async () => {
-        // 1. profiles에서 역할 조회
-        const { data: profile, error: profileErr } = await supabase
-            .from('profiles')
-            .select('clerk_id, role, full_name')
-            .eq('clerk_id', TEST_USER_ID)
-            .single();
+const randomToken = () => `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
 
-        expect(profileErr).toBeNull();
-        expect(profile).toBeDefined();
-        expect(profile!.role).toBe('super_admin');
+const createFixtureUser = async (role: AuthFixtureUser['role'], marker: string): Promise<AuthFixtureUser> => {
+  const token = randomToken();
+  const email = `${marker}.${role}.${token}@example.com`.toLowerCase();
+  const password = `Auth!${token}Aa`;
 
-        // 2. super_admins 테이블에서 활성 상태 확인
-        const { data: admin, error: adminErr } = await supabase
-            .from('super_admins')
-            .select('user_id, is_active')
-            .eq('user_id', TEST_USER_ID)
-            .maybeSingle();
+  const { data, error } = await supabase.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+  });
 
-        expect(adminErr).toBeNull();
-        expect(admin).toBeDefined();
-        expect(admin!.is_active).toBe(true);
-    });
+  if (error || !data.user?.id) {
+    throw new Error(`Failed to create fixture auth user (${role}): ${error?.message || 'unknown'}`);
+  }
 
-    // ── A-2: facility_admin 역할 판별 ───────────────────────
-    test('A-2: facility_admin is resolved when user owns a facility', async () => {
-        // facilities 테이블에서 user_id로 소유 시설 조회
-        const { data: facilities, error } = await supabase
-            .from('facilities')
-            .select('id, name, user_id, verified')
-            .eq('user_id', TEST_PARTNER_ID)
-            .limit(1);
+  const userId = data.user.id;
+  const { error: profileError } = await supabase.from('profiles').upsert({
+    clerk_id: userId,
+    email,
+    full_name: `${marker}-${role}`,
+    role,
+  }, { onConflict: 'clerk_id' });
 
-        expect(error).toBeNull();
-        // 파트너 ID에 시설이 있으면 facility_admin
-        // 없으면 아직 승인 전이므로 skip
-        if (!facilities || facilities.length === 0) {
-            console.log('ℹ️ No facility owned by TEST_PARTNER_ID. Skipping facility_admin check.');
-            test.skip();
-            return;
-        }
+  if (profileError) {
+    throw new Error(`Failed to upsert profile (${role}): ${profileError.message}`);
+  }
 
-        expect(facilities[0].user_id).toBe(TEST_PARTNER_ID);
-    });
+  return { id: userId, email, password, role };
+};
 
-    // ── A-3: 일반 유저는 super_admins에 없어야 함 ───────────
-    test('A-3: Regular user has no super_admin record', async () => {
-        const FAKE_USER_ID = '00000000-0000-0000-0000-000000000001';
+let fixture: AuthFixture | null = null;
 
-        const { data, error } = await supabase
-            .from('super_admins')
-            .select('user_id')
-            .eq('user_id', FAKE_USER_ID)
-            .maybeSingle();
+test.describe('Flow A: Auth -> Role -> Dashboard Access', () => {
+  test.beforeAll(async () => {
+    const marker = `flow-a-${Date.now()}`;
+    const regularUser = await createFixtureUser('user', marker);
+    const facilityAdminUser = await createFixtureUser('user', marker);
+    const superAdminUser = await createFixtureUser('super_admin', marker);
 
-        expect(error).toBeNull();
-        expect(data).toBeNull(); // 레코드 없음 = 일반 유저
-    });
+    const { error: superAdminError } = await supabase.from('super_admins').upsert({
+      user_id: superAdminUser.id,
+      is_active: true,
+    }, { onConflict: 'user_id' });
 
-    // ── A-4: getUserRole RPC 로직 시뮬레이션 ────────────────
-    test('A-4: Role resolution priority: super_admin > sangjo > facility_admin > user', async () => {
-        // super_admin이면 다른 역할보다 우선
-        const { data: saProfile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('clerk_id', TEST_USER_ID)
-            .single();
+    if (superAdminError) {
+      throw new Error(`Failed to upsert super_admins fixture: ${superAdminError.message}`);
+    }
 
-        expect(saProfile?.role).toBe('super_admin');
+    const { data: facility, error: facilityError } = await supabase
+      .from('facilities')
+      .insert({
+        name: `${marker}-facility`,
+        type: 'funeral_home',
+        user_id: facilityAdminUser.id,
+        verified: true,
+        address: 'E2E auth fixture address',
+      })
+      .select('id')
+      .single();
 
-        // super_admin인 유저는 sangjo_hq_admins에도 있을 수 있지만 super_admin이 우선
-        const { data: sangjoCheck } = await supabase
-            .from('sangjo_hq_admins')
-            .select('user_id')
-            .eq('user_id', TEST_USER_ID)
-            .maybeSingle();
+    if (facilityError || !facility?.id) {
+      throw new Error(`Failed to create fixture facility: ${facilityError?.message || 'unknown'}`);
+    }
 
-        // sangjo에도 있든 없든 profiles.role이 super_admin이면 super_admin 대시보드
-        expect(saProfile?.role).toBe('super_admin');
-        console.log(`sangjo_hq_admins record exists: ${!!sangjoCheck}`);
-    });
+    fixture = {
+      regularUser,
+      facilityAdminUser,
+      superAdminUser,
+      facilityId: facility.id as string,
+    };
+  });
 
-    // ── A-5: is_super_admin() DB 함수 검증 ──────────────────
-    test('A-5: is_super_admin() SQL function returns true for super_admin', async () => {
-        // is_super_admin(clerk_id) 함수 호출
-        const { data, error } = await supabase
-            .rpc('is_super_admin', { check_user_id: TEST_USER_ID });
+  test.afterAll(async () => {
+    if (!fixture) return;
 
-        expect(error).toBeNull();
-        expect(data).toBe(true);
-    });
+    const userIds = [fixture.regularUser.id, fixture.facilityAdminUser.id, fixture.superAdminUser.id];
+    await supabase.from('facilities').delete().eq('id', fixture.facilityId);
+    await supabase.from('super_admins').delete().eq('user_id', fixture.superAdminUser.id);
+    await supabase.from('profiles').delete().in('clerk_id', userIds);
 
-    // ── A-6: is_super_admin() 비인가 유저는 false ───────────
-    test('A-6: is_super_admin() returns false for non-admin user', async () => {
-        const FAKE_USER_ID = '00000000-0000-0000-0000-000000000001';
+    await Promise.all(userIds.map((id) => supabase.auth.admin.deleteUser(id)));
+  });
 
-        const { data, error } = await supabase
-            .rpc('is_super_admin', { check_user_id: FAKE_USER_ID });
+  test('A-1: super_admin role exists in profiles + super_admins', async () => {
+    const fx = fixture!;
+    const { data: profile, error: profileErr } = await supabase
+      .from('profiles')
+      .select('clerk_id, role, full_name')
+      .eq('clerk_id', fx.superAdminUser.id)
+      .single();
 
-        expect(error).toBeNull();
-        expect(data).toBe(false);
-    });
+    expect(profileErr).toBeNull();
+    expect(profile).toBeDefined();
+    expect(profile!.role).toBe('super_admin');
+
+    const { data: admin, error: adminErr } = await supabase
+      .from('super_admins')
+      .select('user_id, is_active')
+      .eq('user_id', fx.superAdminUser.id)
+      .maybeSingle();
+
+    expect(adminErr).toBeNull();
+    expect(admin).toBeDefined();
+    expect(admin!.is_active).toBe(true);
+  });
+
+  test('A-2: get_user_role resolves facility owner as facility_admin', async () => {
+    const fx = fixture!;
+    const { data, error } = await supabase.rpc('get_user_role', { p_clerk_id: fx.facilityAdminUser.id });
+
+    expect(error).toBeNull();
+    const roleRow = (Array.isArray(data) ? data[0] : null) as { role: string; facility_id: string | null } | null;
+    expect(roleRow).toBeTruthy();
+    expect(roleRow!.role).toBe('facility_admin');
+    expect(roleRow!.facility_id).toBe(fx.facilityId);
+  });
+
+  test('A-3: regular user has no super_admin record', async () => {
+    const fx = fixture!;
+    const { data, error } = await supabase
+      .from('super_admins')
+      .select('user_id')
+      .eq('user_id', fx.regularUser.id)
+      .maybeSingle();
+
+    expect(error).toBeNull();
+    expect(data).toBeNull();
+  });
+
+  test('A-4: get_user_role keeps super_admin priority', async () => {
+    const fx = fixture!;
+    const { data, error } = await supabase.rpc('get_user_role', { p_clerk_id: fx.superAdminUser.id });
+
+    expect(error).toBeNull();
+    const roleRow = (Array.isArray(data) ? data[0] : null) as { role: string; facility_id: string | null } | null;
+    expect(roleRow).toBeTruthy();
+    expect(roleRow!.role).toBe('super_admin');
+  });
+
+  test('A-5: is_super_admin(p_user_id) returns true for super_admin', async () => {
+    const fx = fixture!;
+    const { data, error } = await supabase.rpc('is_super_admin', { p_user_id: fx.superAdminUser.id });
+
+    expect(error).toBeNull();
+    expect(data).toBe(true);
+  });
+
+  test('A-6: is_super_admin(p_user_id) returns false for regular user', async () => {
+    const fx = fixture!;
+    const { data, error } = await supabase.rpc('is_super_admin', { p_user_id: fx.regularUser.id });
+
+    expect(error).toBeNull();
+    expect(data).toBe(false);
+  });
 });

@@ -48,17 +48,18 @@ export const SideMenu: React.FC<Props> = ({
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 bg-black/50 z-[60] transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 bg-black/50 z-[320] transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={onClose}
       />
 
       {/* Menu Panel */}
-      <div className={`fixed inset-y-0 left-0 w-[280px] bg-white z-[70] shadow-2xl transform transition-transform duration-300 flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className={`fixed inset-y-0 left-0 w-[280px] bg-white z-[330] shadow-2xl transform transition-transform duration-300 flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
 
         {/* User Profile / Login Header */}
         <div className="bg-primary px-6 pt-12 pb-12 text-white relative transition-all">
           <button
             onClick={onClose}
+            data-testid="sidemenu-close-button"
             className="absolute top-4 right-4 text-white/80 hover:text-white min-w-[44px] min-h-[44px] flex items-center justify-center"
           >
             <X size={24} />
@@ -77,6 +78,7 @@ export const SideMenu: React.FC<Props> = ({
               </div>
               <button
                 onClick={() => { onNavigate(ViewState.MY_PAGE); onClose(); }}
+                data-testid="sidemenu-profile-button"
                 className="text-sm bg-black/20 hover:bg-black/30 px-4 py-2 rounded-full flex items-center gap-1 transition-colors"
               >
                 내 정보 관리 <ChevronRight size={12} />
@@ -103,6 +105,7 @@ export const SideMenu: React.FC<Props> = ({
               {userRole === 'super_admin' && (
                 <button
                   onClick={() => { onNavigate(ViewState.SUPER_ADMIN); onClose(); }}
+                  data-testid="sidemenu-superadmin-button"
                   className="mt-2 text-sm bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-full flex items-center gap-1 transition-colors shadow-lg"
                 >
                   슈퍼 관리 컨트롤 센터 <ChevronRight size={12} />
@@ -117,6 +120,7 @@ export const SideMenu: React.FC<Props> = ({
               </p>
               <button
                 onClick={onLogin}
+                data-testid="sidemenu-login-button"
                 className="w-full bg-white text-primary font-bold py-2.5 rounded-lg flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-transform"
               >
                 <LogIn size={18} />
@@ -173,6 +177,7 @@ export const SideMenu: React.FC<Props> = ({
           {isLoggedIn && (
             <button
               onClick={() => { onLogout(); onClose(); }}
+              data-testid="sidemenu-logout-button"
               className="flex items-center gap-2 text-gray-500 text-sm hover:text-red-500 transition-colors w-full mb-4 min-h-[44px]"
             >
               <LogOut size={16} />

@@ -18,7 +18,7 @@ export const StepComplete: React.FC<Props> = ({ onClose, isUrgent }) => {
           해당 시설 업체 대시보드에 접수 되었습니다.{'\n'}
           담당자 확인 후 연락드리겠습니다.
         </p>
-        <button onClick={onClose} className="w-full bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition-colors">
+        <button onClick={onClose} data-testid="reservation-complete-confirm" className="w-full bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition-colors">
           확인
         </button>
       </div>
@@ -28,7 +28,7 @@ export const StepComplete: React.FC<Props> = ({ onClose, isUrgent }) => {
   return (
     <div className="text-center py-8">
       <h3 className="text-xl font-bold mb-4">예약 완료!</h3>
-      <button onClick={onClose} className="w-full bg-primary text-white py-3 rounded-xl">
+      <button onClick={onClose} data-testid="reservation-complete-confirm" className="w-full bg-primary text-white py-3 rounded-xl">
         확인
       </button>
     </div>

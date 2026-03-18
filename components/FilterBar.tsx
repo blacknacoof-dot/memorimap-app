@@ -30,6 +30,7 @@ export const FilterBar = () => {
                         return (
                             <button
                                 key={cat.id}
+                                data-testid={`filter-category-${cat.id}`}
                                 onClick={() => {
                                     if (cat.id === 'all') {
                                         resetCategories();

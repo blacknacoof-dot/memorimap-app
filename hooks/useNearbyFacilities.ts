@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Facility } from '../types';
 import { supabase } from '../lib/supabaseClient';
 
@@ -53,6 +53,13 @@ export function useNearbyFacilities(autoStart = true): UseNearbyFacilitiesResult
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [position, setPosition] = useState<GeoPosition | null>(null);
+    // ✅ [3-3] isMounted 플래그
+    const isMountedRef = useRef(true);
+
+    useEffect(() => {
+        isMountedRef.current = true;
+        return () => { isMountedRef.current = false; };
+    }, []);
 
     const fetchNearby = useCallback(async (lat: number, lng: number) => {
         setLoading(true);
@@ -63,6 +70,8 @@ export function useNearbyFacilities(autoStart = true): UseNearbyFacilitiesResult
                 lat, lng, radius_meters: 10000, category: 'funeral_home', limit: 10,
             });
 
+            if (!isMountedRef.current) return;  // ✅ [3-3] 언마운트 체크
+
             let data = first;
 
             // 2차: 결과 없으면 카테고리 무관 15km
@@ -70,6 +79,7 @@ export function useNearbyFacilities(autoStart = true): UseNearbyFacilitiesResult
                 const { data: second } = await supabase.rpc('search_facilities_v2', {
                     lat, lng, radius_meters: 15000, category: null, limit: 10,
                 });
+                if (!isMountedRef.current) return;  // ✅ [3-3] 언마운트 체크
                 data = second;
             }
 
@@ -85,11 +95,11 @@ export function useNearbyFacilities(autoStart = true): UseNearbyFacilitiesResult
                 .sort((a: NearbyFacility, b: NearbyFacility) => (a._distance ?? 0) - (b._distance ?? 0))
                 .slice(0, 3);
 
-            setFacilities(sorted);
+            if (isMountedRef.current) setFacilities(sorted);  // ✅ [3-3] 체크
         } catch {
-            setError('시설 검색 중 오류가 발생했습니다.');
+            if (isMountedRef.current) setError('시설 검색 중 오류가 발생했습니다.');  // ✅ [3-3]
         } finally {
-            setLoading(false);
+            if (isMountedRef.current) setLoading(false);  // ✅ [3-3]
         }
     }, []);
 

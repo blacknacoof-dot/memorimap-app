@@ -4,6 +4,7 @@ import { favoriteService } from '../../services/favoriteService';
 import { supabase, getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
 import { toast } from 'sonner';
+import { logger } from '../../utils/logger';
 
 export type ActiveSheetTab = 'info' | 'photos' | 'reviews' | 'price' | 'ai';
 
@@ -57,8 +58,14 @@ export function useFacilitySheet({ facility, isLoggedIn, currentUser, onLoginReq
           const client = await getAuthClient(session, { strict: true });
           const status = await favoriteService.checkFavorite(currentUser.id, facility.id, client);
           setIsFavorite(status);
-        } catch (_e) {
-          // silent
+        } catch (error: unknown) {
+          logger.error('Failed to check favorite status in facility detail', {
+            facilityId: facility.id,
+            userId: currentUser.id,
+            error,
+          });
+          toast.error('利먭꺼李얘린 ?곹깭瑜?遺덈윭?ㅼ? 紐삵뻽?듬땲?? ?좎떆 ???ㅼ떆 ?쒕룄?섍퀬, 諛섎났?섎㈃ 怨좉컼?쇳꽣濡?臾몄쓽??二쇱꽭??');
+          setIsFavorite(false);
         }
       } else {
         setIsFavorite(false);
@@ -90,8 +97,13 @@ export function useFacilitySheet({ facility, isLoggedIn, currentUser, onLoginReq
       const client = await getAuthClient(session, { strict: true });
       const result = await favoriteService.toggleFavorite(currentUser.id, facility.id, client);
       if (result !== newStatus) setIsFavorite(result);
-    } catch {
-      toast.error('즐겨찾기 변경에 실패했습니다.');
+    } catch (error: unknown) {
+      logger.error('Failed to toggle favorite in facility detail', {
+        facilityId: facility.id,
+        userId: currentUser.id,
+        error,
+      });
+      toast.error('利먭꺼李얘린 蹂寃쎌뿉 ?ㅽ뙣?덉뒿?덈떎.');
       setIsFavorite(!isFavorite);
     }
   };

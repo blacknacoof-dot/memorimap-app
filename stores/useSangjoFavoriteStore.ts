@@ -14,6 +14,7 @@ interface SangjoFavoriteState {
     fetchFavorites: (userId: string, client: SupabaseClient) => Promise<void>;
     toggleFavorite: (userId: string, company: FuneralCompany, client: SupabaseClient) => Promise<boolean>;
     clearQuotaExceeded: () => void;
+    resetFavoritesState: () => void;
 }
 
 export const useSangjoFavoriteStore = create<SangjoFavoriteState>((set) => ({
@@ -22,6 +23,11 @@ export const useSangjoFavoriteStore = create<SangjoFavoriteState>((set) => ({
     quotaExceeded: null,
 
     clearQuotaExceeded: () => set({ quotaExceeded: null }),
+    resetFavoritesState: () => set({
+        favoritedIds: new Set<string>(),
+        isLoading: false,
+        quotaExceeded: null,
+    }),
 
     fetchFavorites: async (userId: string, client: SupabaseClient) => {
         if (!userId) return;

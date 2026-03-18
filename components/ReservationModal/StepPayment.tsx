@@ -29,12 +29,14 @@ export const StepPayment: React.FC<Props> = ({
       <p className="font-medium">상품 선택</p>
       <button
         onClick={() => setReservationType('BASIC')}
+        data-testid="reservation-type-basic"
         className={`w-full p-3 border rounded-xl text-left ${reservationType === 'BASIC' ? 'border-primary bg-blue-50' : ''}`}
       >
         실속형 (1만원)
       </button>
       <button
         onClick={() => setReservationType('VIP')}
+        data-testid="reservation-type-vip"
         className={`w-full p-3 border rounded-xl text-left ${reservationType === 'VIP' ? 'border-primary bg-blue-50' : ''}`}
       >
         VIP (10만원)

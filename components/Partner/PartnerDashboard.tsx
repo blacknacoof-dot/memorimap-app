@@ -10,7 +10,7 @@ import { PartnerReservationsTab } from './PartnerReservationsTab';
 import { PartnerRevenueTab } from './PartnerRevenueTab';
 import { NotificationCenter } from '../NotificationCenter';
 import { PartnerConsultationsTab } from './PartnerConsultationsTab';
-import { supabase } from '../../lib/supabaseClient';
+import { useClerk } from '../../lib/auth';
 import { usePartnerDashboard } from './usePartnerDashboard';
 
 interface PartnerDashboardProps {
@@ -19,6 +19,7 @@ interface PartnerDashboardProps {
 }
 
 export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, onLogout }) => {
+  const { signOut } = useClerk();
   const {
     activeTab, setActiveTab,
     isSidebarOpen, setIsSidebarOpen,
@@ -30,6 +31,14 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
     session,
     unreadConsultations, pendingReservations,
   } = usePartnerDashboard(partnerId);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } finally {
+      onLogout();
+    }
+  };
 
   const menuItems: Array<{ id: string; label: string; icon: typeof ClipboardList; badge?: string }> = [
     { id: 'consultations', label: '상담 관리', icon: ClipboardList, badge: unreadConsultations > 0 ? `${unreadConsultations}` : undefined },
@@ -94,7 +103,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
             <button className="w-full flex justify-center py-2 text-slate-500 hover:text-white"><User size={20} /></button>
           )}
           <button
-            onClick={() => { supabase.auth.signOut().then(() => onLogout()); }}
+            onClick={() => { void handleSignOut(); }}
             className="w-full mt-4 flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-red-400 transition-colors text-sm font-bold"
           >
             <LogOut size={18} />
@@ -125,7 +134,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
             </button>
           ))}
           <button
-            onClick={() => { supabase.auth.signOut().then(() => onLogout()); }}
+            onClick={() => { void handleSignOut(); }}
             className="flex-shrink-0 px-3 py-2 rounded-lg text-xs font-bold transition-colors whitespace-nowrap text-red-400 hover:text-red-300"
           >
             로그아웃

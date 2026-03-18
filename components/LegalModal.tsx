@@ -15,7 +15,7 @@ export const LegalModal: React.FC<Props> = ({ onClose }) => {
     }, [onClose]);
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
+        <div className="fixed inset-0 z-[320] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
             <div className="bg-white w-full max-w-2xl max-h-[80dvh] rounded-2xl shadow-xl flex flex-col overflow-hidden">
                 {/* Header */}
                 <div className="p-4 border-b flex justify-between items-center bg-gray-50">

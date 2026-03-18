@@ -6,11 +6,20 @@ const ALLOWED_ORIGINS = [
     'https://memorimap-app.vercel.app',
     'https://memorimap.com',
     'https://www.memorimap.com',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://localhost:4173',
+    'http://127.0.0.1:4173',
 ];
 
 const getCorsHeaders = (req: Request) => {
     const origin = req.headers.get('origin');
-    const allowedOrigin = ALLOWED_ORIGINS.includes(origin || '') ? origin : ALLOWED_ORIGINS[0];
+    const isLocalDevOrigin = origin
+        ? /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin)
+        : false;
+    const allowedOrigin = (origin && (ALLOWED_ORIGINS.includes(origin) || isLocalDevOrigin))
+        ? origin
+        : ALLOWED_ORIGINS[0];
 
     return {
         'Access-Control-Allow-Origin': allowedOrigin,
@@ -21,7 +30,10 @@ const getCorsHeaders = (req: Request) => {
 };
 
 const ApproveRequestSchema = z.object({
-    inquiryId: z.union([z.string(), z.number()]).transform(val => Number(val)),
+    inquiryId: z
+        .union([z.string(), z.number()])
+        .transform((val) => Number(val))
+        .refine((val) => Number.isFinite(val), { message: 'inquiryId must be numeric' }),
     action: z.enum(['approve', 'reject']),
     rejectionReason: z.string().optional()
 });
@@ -186,12 +198,19 @@ serve(async (req) => {
             }])
 
             // 1. In-App Notification
-            await supabaseAdmin.from('user_notifications').insert([{
-                user_id: v_inquiry.user_id,
-                title: '입점 신청 반려 안내',
-                message: `신청하신 ${v_inquiry.company_name}의 입점 신청이 반려되었습니다. 사유: ${rejectionReason || '운영 정책 부적합'}`,
-                type: 'warning'
-            }])
+            if (v_inquiry.user_id) {
+                await supabaseAdmin.from('user_notifications').insert([{
+                    user_id: v_inquiry.user_id,
+                    title: '입점 신청 반려 안내',
+                    message: `신청하신 ${v_inquiry.company_name}의 입점 신청이 반려되었습니다. 사유: ${rejectionReason || '운영 정책 부적합'}`,
+                    type: 'warning'
+                }])
+            } else {
+                await logToDB(supabaseAdmin, 'WARN', 'Skipping user notification (missing inquiry.user_id)', {
+                    inquiryId,
+                    action: 'reject'
+                });
+            }
 
             // 2. Email Notification
             if (recipientEmail) {
@@ -242,13 +261,20 @@ serve(async (req) => {
             .neq('id', inquiryId);
 
         // 1. In-App Notification
-        await supabaseAdmin.from('user_notifications').insert([{
-            user_id: v_inquiry.user_id,
-            title: '입점 신청 승인 완료',
-            message: `축하합니다! ${v_inquiry.company_name}의 입점 신청이 승인되었습니다. 지금 바로 대시보드에서 시설 정보를 관리해보세요.`,
-            type: 'success',
-            link: '/dashboard'
-        }])
+        if (v_inquiry.user_id) {
+            await supabaseAdmin.from('user_notifications').insert([{
+                user_id: v_inquiry.user_id,
+                title: '입점 신청 승인 완료',
+                message: `축하합니다! ${v_inquiry.company_name}의 입점 신청이 승인되었습니다. 지금 바로 대시보드에서 시설 정보를 관리해보세요.`,
+                type: 'success',
+                link: '/dashboard'
+            }])
+        } else {
+            await logToDB(supabaseAdmin, 'WARN', 'Skipping user notification (missing inquiry.user_id)', {
+                inquiryId,
+                action: 'approve'
+            });
+        }
 
         // 2. Email Notification
         if (recipientEmail) {

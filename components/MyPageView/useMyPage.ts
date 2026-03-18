@@ -197,7 +197,7 @@ export function useMyPage({ isLoggedIn, user, facilities: _facilities }: UseMyPa
   const filteredReservations = myReservations.filter(r => {
     if (activeTab === 'pending') return r.status === 'pending' || r.status === 'urgent';
     if (activeTab === 'confirmed') return r.status === 'confirmed';
-    if (activeTab === 'cancelled') return r.status === 'cancelled';
+    if (activeTab === 'cancelled') return r.status === 'cancelled' || r.status === 'rejected';
     return false;
   });
 

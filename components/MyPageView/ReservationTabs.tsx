@@ -48,9 +48,9 @@ export const ReservationTabs: React.FC<Props> = ({
             확정 {myReservations.filter(r => r.status === 'confirmed').length}
           </span>
         </button>
-        <button onClick={() => setActiveTab('cancelled')} className={tabClass('cancelled')} title="취소됨">
+        <button onClick={() => setActiveTab('cancelled')} className={tabClass('cancelled')} title="취소/거절">
           <span className="whitespace-nowrap">
-            취소 {myReservations.filter(r => r.status === 'cancelled').length}
+            취소/거절 {myReservations.filter(r => r.status === 'cancelled' || r.status === 'rejected').length}
           </span>
         </button>
       </div>
@@ -80,7 +80,7 @@ export const ReservationTabs: React.FC<Props> = ({
             emptyMessage={
               activeTab === 'pending' ? '대기중인 예약이 없습니다.' :
               activeTab === 'confirmed' ? '확정된 예약이 없습니다.' :
-              '취소된 예약이 없습니다.'
+              '취소/거절 예약이 없습니다.'
             }
           />
         )}

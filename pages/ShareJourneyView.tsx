@@ -22,6 +22,7 @@ export default function ShareJourneyView() {
 
     const handleVerify = async (e: React.FormEvent) => {
         e.preventDefault();
+
         if (password.length !== 4 || !/^\d{4}$/.test(password)) {
             setError('4자리 숫자를 입력해주세요.');
             return;
@@ -37,7 +38,7 @@ export default function ShareJourneyView() {
             });
 
             if (rpcError) {
-                setError('조회 중 오류가 발생했습니다.');
+                setError('오류가 발생했습니다. 다시 시도해주세요.');
                 return;
             }
 
@@ -73,7 +74,7 @@ export default function ShareJourneyView() {
         const shareDate = new Date(data.created_at).toLocaleDateString('ko-KR');
 
         return (
-            <div className="bg-white min-h-screen p-6">
+            <div className="bg-white min-h-screen p-6 overflow-y-auto h-screen">
                 {/* 헤더 */}
                 <div className="text-center mb-8 pb-6 border-b-2 border-gray-100">
                     <div className="text-4xl mb-4">📝</div>
@@ -213,7 +214,7 @@ export default function ShareJourneyView() {
     // 비밀번호 입력 화면
     if (!verified) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center p-4">
+            <div className="min-h-screen h-screen overflow-y-auto bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center p-4">
                 <div className="bg-white w-full max-w-sm rounded-2xl shadow-lg p-6">
                     <div className="text-center mb-6">
                         <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">

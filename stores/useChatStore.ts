@@ -7,6 +7,7 @@ interface ChatState {
     intent: ChatIntent;
     openChat: (intent: ChatIntent) => void;
     closeChat: () => void;
+    resetChatState: () => void;
 }
 
 export const useChatStore = create<ChatState>((set) => ({
@@ -14,4 +15,5 @@ export const useChatStore = create<ChatState>((set) => ({
     intent: null,
     openChat: (intent) => set({ isOpen: true, intent }),
     closeChat: () => set({ isOpen: false, intent: null }),
+    resetChatState: () => set({ isOpen: false, intent: null }),
 }));

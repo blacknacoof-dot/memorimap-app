@@ -9,11 +9,25 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env.local') });
 
-// Service Role Key is required for cleanup and setup
-export const supabase = createClient(
-    process.env.VITE_SUPABASE_URL!,
-    process.env.VITE_SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const serviceRoleKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ??
+    process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl) {
+    throw new Error('[E2E env] Missing VITE_SUPABASE_URL in .env.local');
+}
+
+if (!serviceRoleKey) {
+    throw new Error('[E2E env] Missing SUPABASE_SERVICE_ROLE_KEY in .env.local');
+}
+
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.VITE_SUPABASE_SERVICE_ROLE_KEY) {
+    console.warn('[E2E env] Using legacy VITE_SUPABASE_SERVICE_ROLE_KEY fallback; migrate to SUPABASE_SERVICE_ROLE_KEY');
+}
+
+// Service Role Key is required for cleanup and setup.
+export const supabase = createClient(supabaseUrl, serviceRoleKey);
 
 export const TEST_USER_ID = 'd767424d-4abe-47f1-ab44-7c3160f572e5'; // Super Admin Profile ID (Existing)
 export const TEST_PARTNER_ID = '7fd43013-842d-4cbb-94ca-8ca0dc3ac785'; // Reference Facility

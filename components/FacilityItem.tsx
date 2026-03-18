@@ -16,6 +16,7 @@ export const FacilityItem = React.memo(({ facility, onClick, isCompared, onToggl
         <div style={style} className="px-1 py-2"> {/* Wrapper for style prop and padding */}
             <div
                 onClick={() => onClick(facility)}
+                data-testid={`facility-card-${facility.id}`}
                 className="bg-white p-4 rounded-xl shadow-sm border flex gap-4 cursor-pointer hover:bg-gray-50 transition-colors group h-full"
             >
                 {facility.imageUrl && !facility.imageUrl.includes('placeholder') && !facility.imageUrl.includes('via.placeholder') ? (

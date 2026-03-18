@@ -86,7 +86,7 @@ export default function EndingNoteEditModal({ isOpen, onClose, currentNote, onSa
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px] animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[320] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px] animate-in fade-in duration-200">
             <div className="bg-white w-full max-w-sm rounded-[24px] shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 border border-gray-100">
                 {/* Simple Header */}
                 <div className="p-5 border-b border-gray-50 flex justify-between items-center bg-white">

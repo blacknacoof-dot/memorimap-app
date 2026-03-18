@@ -357,7 +357,7 @@ export default function IntegratedJourneyView({
 
             {/* 공유 모달 */}
             {isShareModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px]">
+                <div className="fixed inset-0 z-[320] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px]">
                     <div className="bg-white w-full max-w-sm rounded-[24px] shadow-xl overflow-hidden">
                         {/* 헤더 */}
                         <div className="p-5 border-b border-gray-50 flex justify-between items-center">

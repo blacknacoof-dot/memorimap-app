@@ -32,7 +32,7 @@ export const SangjoComparisonModal: React.FC<Props> = ({ companies, onClose, onR
     if (companies.length === 0) return null;
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 md:p-4">
+        <div className="fixed inset-0 z-[320] flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 md:p-4">
             <div className="bg-white rounded-2xl md:rounded-3xl w-full max-w-4xl max-h-[95dvh] md:max-h-[85dvh] flex flex-col shadow-2xl overflow-hidden relative animate-in slide-in-from-bottom-4 duration-300">
                 {/* Header */}
                 <div className="p-4 border-b flex justify-between items-center bg-white z-10 shrink-0">

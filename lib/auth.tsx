@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabaseClient';
 import type { Session } from '@supabase/supabase-js';
+import { runLogoutCleanup } from './logoutCleanup';
 
 // --- Clerk-compatible user interface ---
 interface WrappedUser {
@@ -48,6 +50,7 @@ function wrapUser(session: Session | null): WrappedUser | null {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     // Initial session
@@ -66,8 +69,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
-  }, []);
+    let signOutError: unknown;
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      signOutError = error;
+    }
+
+    await runLogoutCleanup(queryClient);
+
+    if (signOutError) {
+      throw signOutError;
+    }
+  }, [queryClient]);
 
   const user = useMemo(() => wrapUser(session), [session]);
 

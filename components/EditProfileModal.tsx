@@ -64,7 +64,7 @@ export const EditProfileModal: React.FC<Props> = ({ user, onClose, onUpdate }) =
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[320] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
             <div className="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95">
                 <div className="flex justify-between items-center p-4 border-b">
                     <h2 className="text-lg font-bold text-gray-900">프로필 수정</h2>

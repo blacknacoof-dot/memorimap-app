@@ -1,6 +1,5 @@
 import React from 'react';
 import { MessageSquare } from 'lucide-react';
-import { Reservation } from '../../types';
 import { ReviewForm } from '../ReviewForm';
 import { ReviewList } from '../ReviewList';
 
@@ -11,13 +10,12 @@ interface Props {
   reviewRefreshTrigger: number;
   setReviewRefreshTrigger: (fn: (prev: number) => number) => void;
   onLoginRequired: () => void;
-  reservations: Reservation[];
 }
 
 export const ReviewTab: React.FC<Props> = ({
   facilityId, facilityRating, facilityReviewCount,
   reviewRefreshTrigger, setReviewRefreshTrigger,
-  onLoginRequired, reservations,
+  onLoginRequired,
 }) => (
   <div className="space-y-4">
     <div className="flex items-center justify-between mb-2">
@@ -30,9 +28,8 @@ export const ReviewTab: React.FC<Props> = ({
     <div className="mb-4">
       <ReviewForm
         spaceId={facilityId}
-        onSuccess={() => setReviewRefreshTrigger(prev => prev + 1)}
+        onSuccess={() => setReviewRefreshTrigger((prev) => prev + 1)}
         onLoginRequired={onLoginRequired}
-        reservations={reservations}
       />
     </div>
     <ReviewList spaceId={facilityId} refreshTrigger={reviewRefreshTrigger} />

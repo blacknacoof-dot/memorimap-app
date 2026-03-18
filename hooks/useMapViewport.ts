@@ -1,11 +1,11 @@
 /**
- * useMapViewport - App.tsxì—ì„œ ì¶”ì¶œí•œ ì§€ë„ ë·°í¬íŠ¸ ê´€ë¦¬ Hook
+ * useMapViewport - App.tsx¿¡¼­ ÃßÃâÇÑ Áöµµ ºäÆ÷Æ® °ü¸® Hook
  * Phase 4-2: mapBounds, targetMapCenter, targetMapZoom, handleMapBoundsChange
  */
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Facility } from '../types';
 
-/** Leaflet-compatible bounds interface (Leaflet ë¼ì´ë¸ŒëŸ¬ë¦¬ ì œê±° í›„ ëŒ€ì²´) */
+/** Leaflet-compatible bounds interface (Leaflet ¶óÀÌºê·¯¸® Á¦°Å ÈÄ ´ëÃ¼) */
 interface LatLngBounds {
   getSouthWest(): { lat: number; lng: number };
   getNorthEast(): { lat: number; lng: number };
@@ -19,11 +19,35 @@ interface UseMapViewportParams {
   session: { getToken: (opts?: Record<string, unknown>) => Promise<string | null> } | null;
 }
 
+const isAbortRequestError = (error: unknown): boolean => {
+  if (error instanceof DOMException && error.name === 'AbortError') return true;
+  if (error && typeof error === 'object') {
+    const maybeError = error as { name?: unknown; message?: unknown };
+    if (maybeError.name === 'AbortError') return true;
+    if (typeof maybeError.message === 'string' && maybeError.message.toLowerCase().includes('aborted')) return true;
+  }
+  return false;
+};
+
 export function useMapViewport({ setFacilities, setCurrentBounds, session }: UseMapViewportParams) {
   const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
   const [targetMapCenter, setTargetMapCenter] = useState<[number, number] | undefined>(undefined);
   const [targetMapZoom, setTargetMapZoom] = useState<number | undefined>(undefined);
   const mapDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  // ? [2-2a] ¾ğ¸¶¿îÆ® ¹æ¾î¿ë ref
+  const isMountedRef = useRef(true);
+  // ? [5-3] AbortController - stale viewport fetch ¹æÁö
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // ? [2-2a] cleanup useEffect
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (mapDebounceRef.current) clearTimeout(mapDebounceRef.current);
+      abortControllerRef.current?.abort(); // ? [5-3] cleanup ½Ã abort
+    };
+  }, []);
 
   const handleMapBoundsChange = (bounds: LatLngBounds) => {
     setMapBounds(bounds);
@@ -35,62 +59,77 @@ export function useMapViewport({ setFacilities, setCurrentBounds, session }: Use
     }
 
     mapDebounceRef.current = setTimeout(async () => {
-      // Get Fresh Token for Map Requests
-      let token: string | undefined;
+      // ? [5-3] ÀÌÀü ¿äÃ» Ãë¼Ò + »õ ÄÁÆ®·Ñ·¯ »ı¼º
+      abortControllerRef.current?.abort();
+      abortControllerRef.current = new AbortController();
+      const signal = abortControllerRef.current.signal;
+
       try {
-        if (session) {
-          token = await session.getToken({ template: 'supabase' }) || undefined;
+        // Get Fresh Token for Map Requests
+        let token: string | undefined;
+        try {
+          if (session) {
+            token = await session.getToken({ template: 'supabase' }) || undefined;
+          }
+        } catch {
+          // ÅäÅ« È¹µæ ½ÇÆĞ ½Ã ºñÀÎÁõ ¿äÃ»À¸·Î °è¼Ó
         }
-      } catch {
-        // í† í° íšë“ ì‹¤íŒ¨ â€” ë¹„ì¸ì¦ ìš”ì²­ìœ¼ë¡œ ê³„ì†
-      }
 
-      const fetchedData = await fetchFacilitiesInView(bounds, token);
-      if (fetchedData && fetchedData.length > 0) {
-        interface ViewFacilityRow {
-          id: string;
-          name: string;
-          type?: string;
-          category?: string;
-          address: string;
-          lat?: number;
-          latitude?: number;
-          lng?: number;
-          longitude?: number;
-          images?: string[];
-          image_url?: string;
-          rating?: number;
-          review_count?: number;
-          price_min?: number;
-          [key: string]: unknown;
+        if (!isMountedRef.current || signal.aborted) return; // ? [5-3] stale Ã¼Å©
+
+        const fetchedData = await fetchFacilitiesInView(bounds, token, signal);
+
+        if (!isMountedRef.current || signal.aborted) return; // ? [5-3] stale Ã¼Å©
+
+        if (fetchedData && fetchedData.length > 0) {
+          interface ViewFacilityRow {
+            id: string;
+            name: string;
+            type?: string;
+            category?: string;
+            address: string;
+            lat?: number;
+            latitude?: number;
+            lng?: number;
+            longitude?: number;
+            images?: string[];
+            image_url?: string;
+            rating?: number;
+            review_count?: number;
+            price_min?: number;
+            [key: string]: unknown;
+          }
+          const mappedFacilities: Facility[] = fetchedData.map((f: ViewFacilityRow) => {
+            const rawType = f.type || f.category || 'charnel';
+            const normalizedType = normalizeType(rawType, f.name || '');
+            const mappedCategory = getCategoryDb(normalizedType);
+
+            const selectedImage = selectFacilityImage(
+              f.images || [], f.image_url || '', normalizedType, String(f.id || '')
+            );
+            const displayPriceRange = formatPriceRange(f.price_min);
+
+            return {
+              id: f.id,
+              name: f.name,
+              category: mappedCategory,
+              type: normalizedType,
+              address: f.address,
+              lat: Number(f.lat || f.latitude),
+              lng: Number(f.lng || f.longitude),
+              imageUrl: selectedImage,
+              rating: Number(f.rating || 0),
+              reviewCount: f.review_count || 0,
+              priceRange: displayPriceRange,
+              features: {},
+              images: f.images || []
+            };
+          });
+          if (isMountedRef.current && !signal.aborted) setFacilities(mappedFacilities); // ? [5-3] stale Ã¼Å©
         }
-        const mappedFacilities: Facility[] = fetchedData.map((f: ViewFacilityRow) => {
-          const rawType = f.type || f.category || 'charnel';
-          const normalizedType = normalizeType(rawType, f.name || '');
-          const mappedCategory = getCategoryDb(normalizedType);
-
-          const selectedImage = selectFacilityImage(
-            f.images || [], f.image_url || '', normalizedType, String(f.id || '')
-          );
-          const displayPriceRange = formatPriceRange(f.price_min);
-
-          return {
-            id: f.id,
-            name: f.name,
-            category: mappedCategory,
-            type: normalizedType,
-            address: f.address,
-            lat: Number(f.lat || f.latitude),
-            lng: Number(f.lng || f.longitude),
-            imageUrl: selectedImage,
-            rating: Number(f.rating || 0),
-            reviewCount: f.review_count || 0,
-            priceRange: displayPriceRange,
-            features: {},
-            images: f.images || []
-          };
-        });
-        setFacilities(mappedFacilities);
+      } catch (error) {
+        if (signal.aborted || isAbortRequestError(error)) return;
+        // ? [2-2b] Silent fail: non-abort errors are ignored and retried on next viewport move
       }
     }, 300);
   };

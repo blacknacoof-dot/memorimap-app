@@ -19,6 +19,7 @@ export const StepDate: React.FC<Props> = ({ availableDates, selectedDate, onSele
         <button
           key={dateStr}
           onClick={() => onSelect(d)}
+          data-testid={`reservation-date-${dateStr}`}
           className={`p-3 rounded-xl border text-center transition-all ${
             isSelected
               ? (isPetFacility ? 'bg-purple-600 text-white' : 'bg-primary text-white')

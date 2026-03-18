@@ -3,81 +3,109 @@ import { Star, Send, Loader2, Image as ImageIcon, X } from 'lucide-react';
 import { createReview } from '../lib/queries';
 import { useUser, useSession } from '../lib/auth';
 import { getAuthClient } from '../lib/supabaseClient';
-import { toast } from 'sonner'; // [Phase 2] Error Handler
-
-import { Reservation } from '../types';
+import { toast } from 'sonner';
+import { logger } from '../utils/logger';
 
 interface Props {
     spaceId: string;
     onSuccess: () => void;
     onLoginRequired: () => void;
-    reservations?: Reservation[];
 }
 
-export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequired, reservations = [] }) => {
+export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequired }) => {
     const { isSignedIn, user } = useUser();
     const { session } = useSession();
+    const userId = user?.id;
     const [rating, setRating] = useState(5);
     const [content, setContent] = useState('');
     const [images, setImages] = useState<File[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Check for confirmed reservation
-    const hasConfirmedReservation = reservations.some(
-        r => r.facility_id === spaceId && r.status === 'confirmed'
-    );
-
+    const [hasConfirmedReservation, setHasConfirmedReservation] = useState(false);
     const [hasExistingReview, setHasExistingReview] = useState(false);
     const [isChecking, setIsChecking] = useState(true);
 
-    // Initial Requirement Check
     useEffect(() => {
+        let isMounted = true;
+
         const checkRequirements = async () => {
-            if (isSignedIn && user && hasConfirmedReservation) {
-                const client = await getAuthClient(session);
-                const checked = await import('../lib/queries').then(m => m.checkExistingReview(user.id, spaceId, client));
-                setHasExistingReview(checked);
+            if (!isSignedIn || !userId) {
+                if (!isMounted) return;
+                setHasConfirmedReservation(false);
+                setHasExistingReview(false);
+                setIsChecking(false);
+                return;
             }
-            setIsChecking(false);
+
+            setIsChecking(true);
+            try {
+                const client = await getAuthClient(session);
+                const { checkExistingReview, checkConfirmedReservationForReview } = await import('../lib/queries');
+                const [confirmedReservationExists, existingReview] = await Promise.all([
+                    checkConfirmedReservationForReview(userId, spaceId, client),
+                    checkExistingReview(userId, spaceId, client),
+                ]);
+
+                if (!isMounted) return;
+                setHasConfirmedReservation(confirmedReservationExists);
+                setHasExistingReview(existingReview);
+            } catch (error: unknown) {
+                if (!isMounted) return;
+                logger.error('Failed to check review requirements', {
+                    spaceId,
+                    userId,
+                    error,
+                });
+                toast.error('리뷰 작성 조건을 확인하지 못했습니다. 잠시 후 다시 시도해주세요.');
+                setHasConfirmedReservation(false);
+                setHasExistingReview(false);
+            } finally {
+                if (isMounted) {
+                    setIsChecking(false);
+                }
+            }
         };
+
         checkRequirements();
-    }, [isSignedIn, user, spaceId, hasConfirmedReservation]);
+
+        return () => {
+            isMounted = false;
+        };
+    }, [isSignedIn, userId, spaceId, session]);
 
     if (!isSignedIn) {
         return (
             <div className="bg-gray-50 p-6 rounded-xl border text-center mb-6">
                 <p className="text-sm text-gray-500 mb-2">리뷰를 작성하려면 로그인이 필요합니다.</p>
                 <button onClick={onLoginRequired} className="text-primary text-sm font-bold underline">
-                    로그인하기
+                    로그인하고 리뷰 쓰기
                 </button>
             </div>
         );
     }
 
-    // Reservation Check
-    if (!hasConfirmedReservation) {
-        return (
-            <div className="bg-orange-50 p-6 rounded-xl border border-orange-100 text-center mb-6">
-                <p className="text-sm text-orange-800 mb-1 font-bold">리뷰 작성 권한이 없습니다</p>
-                <p className="text-xs text-orange-600">
-                    해당 시설과 계약이 확정된 고객님만 후기를 작성하실 수 있습니다.
-                </p>
-            </div>
-        );
-    }
-
-    // Existing Review Check
     if (isChecking) {
-        return <div className="p-6 text-center text-gray-400 text-xs">확인 중...</div>;
+        return <div className="p-6 text-center text-gray-400 text-xs">리뷰 작성 조건 확인 중...</div>;
     }
 
     if (hasExistingReview) {
         return (
             <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 text-center mb-6">
-                <p className="text-sm text-blue-800 mb-1 font-bold">이미 리뷰를 작성하셨습니다</p>
+                <p className="text-sm text-blue-800 mb-1 font-bold">이미 작성한 리뷰가 있습니다</p>
                 <p className="text-xs text-blue-600">
-                    소중한 후기 감사합니다! 작성하신 리뷰는 하단 리스트에서 확인하실 수 있습니다.
+                    한 시설당 리뷰는 1회만 작성할 수 있습니다. 수정 또는 삭제가 필요하면 마이페이지에서 관리해주세요.
+                </p>
+            </div>
+        );
+    }
+
+    if (!hasConfirmedReservation) {
+        return (
+            <div className="bg-orange-50 p-6 rounded-xl border border-orange-100 text-center mb-6">
+                <p className="text-sm text-orange-800 mb-1 font-bold">예약 완료 사용자만 리뷰를 작성할 수 있습니다</p>
+                <p className="text-xs text-orange-600">
+                    실제 이용 경험 기반의 후기만 받기 위해 예약 이력이 있는 경우에만 작성 가능합니다.
                 </p>
             </div>
         );
@@ -85,14 +113,13 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
 
     const handleSubmit = async () => {
         if (!content.trim() || content.trim().length < 10) {
-            toast.warning('10자 이상 성의 있는 리뷰 부탁드립니다.');
+            toast.warning('리뷰 내용은 10자 이상 입력해주세요.');
             return;
         }
 
         setIsSubmitting(true);
         try {
             const authClient = await getAuthClient(session);
-            // 1. 이미지 업로드
             const imageUrls: string[] = [];
             if (images.length > 0) {
                 const { uploadReviewImage } = await import('../lib/queries');
@@ -102,24 +129,28 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
                 }
             }
 
-            // [BUG FIX] spaceId와 user!.id의 순서가 잘못되어 있었음
             await createReview(
                 spaceId,
                 user!.id,
                 rating,
                 content,
-                user!.firstName || user!.username || '사용자',
+                user!.firstName || user!.username || 'user',
                 imageUrls,
-                authClient
+                authClient,
             );
 
-            // Reset form
             setContent('');
             setRating(5);
             setImages([]);
             onSuccess();
-        } catch (_err) {
-            toast.error('리뷰 작성 중 오류가 발생했습니다.');
+        } catch (error: unknown) {
+            logger.error('Failed to submit review', {
+                spaceId,
+                userId,
+                imageCount: images.length,
+                error,
+            });
+            toast.error('리뷰 등록에 실패했습니다. 잠시 후 다시 시도해주세요.');
         } finally {
             setIsSubmitting(false);
         }
@@ -129,12 +160,11 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
         if (e.target.files) {
             const newFiles = Array.from(e.target.files);
 
-            // Total image limit check (Max 3)
             if (images.length + newFiles.length > 3) {
-                toast.warning('이미지는 최대 3장까지 업로드 가능합니다.');
+                toast.warning('이미지는 최대 3장까지 업로드할 수 있습니다.');
                 return;
             }
-            setImages(prev => [...prev, ...newFiles]);
+            setImages((prev) => [...prev, ...newFiles]);
         }
     };
 
@@ -155,20 +185,20 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
             </div>
 
             <textarea
+                data-testid="review-content-input"
                 className="w-full p-3 border rounded-lg text-sm outline-none focus:border-primary resize-none bg-gray-50 focus:bg-white transition-colors"
                 rows={3}
-                placeholder="이 시설에 대한 솔직한 후기를 10자 이상 남겨주세요."
+                placeholder="실제 이용 경험을 바탕으로 솔직한 후기를 남겨주세요. (최소 10자)"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 disabled={isSubmitting}
             />
             <div className="flex justify-between items-center mt-1 px-1">
                 <span className={`text-[10px] ${content.length < 10 ? 'text-red-500 font-bold' : 'text-gray-400'}`}>
-                    {content.length}/10자 {content.length < 10 && '(10자 이상 성의 있는 리뷰 부탁드립니다.)'}
+                    {content.length}/10자{content.length < 10 && ' (10자 이상 입력해주세요)'}
                 </span>
             </div>
 
-            {/* Image Preview */}
             {images.length > 0 && (
                 <div className="flex gap-2 mt-2 overflow-x-auto pb-2">
                     {images.map((file, idx) => (
@@ -179,7 +209,7 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
                                 className="w-full h-full object-cover rounded-lg border"
                             />
                             <button
-                                onClick={() => setImages(prev => prev.filter((_, i) => i !== idx))}
+                                onClick={() => setImages((prev) => prev.filter((_, i) => i !== idx))}
                                 className="absolute -top-1 -right-1 bg-black text-white rounded-full p-0.5"
                             >
                                 <X size={12} />
@@ -194,7 +224,7 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
                     <button
                         onClick={() => fileInputRef.current?.click()}
                         className="text-gray-500 hover:text-primary p-2 hover:bg-gray-100 rounded-full transition-colors"
-                        title="사진 첨부"
+                        title="이미지 첨부"
                     >
                         <ImageIcon size={20} />
                     </button>
@@ -212,10 +242,11 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
                 <button
                     onClick={handleSubmit}
                     disabled={!content.trim() || isSubmitting}
+                    data-testid="review-submit-button"
                     className="bg-primary text-white px-5 py-2 rounded-lg text-sm font-bold disabled:bg-gray-300 flex items-center gap-2"
                 >
                     {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-                    등록하기
+                    리뷰 등록
                 </button>
             </div>
         </div>

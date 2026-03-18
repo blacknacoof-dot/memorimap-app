@@ -14,16 +14,29 @@ interface ApprovePartnerResult {
 }
 
 /**
- * 파트너 승인/거절 훅
- * Edge Function `approve-partner` 경유:
- * - JWT 검증 + super_admin 역할 확인
- * - 원자적 DB 트랜잭션 (시설 생성, 파트너 생성, 역할 변경, 자동 거절, 감사 로그)
- * - 이메일 알림 발송 (Resend)
- * - 인앱 알림 저장
+ * Partner approve/reject hook.
+ * Calls Edge Function `approve-partner`.
  */
 export function useApprovePartner(client: SupabaseClient) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const extractErrorMessage = async (err: unknown): Promise<string> => {
+        if (err instanceof Error) {
+            const maybeContext = (err as Error & { context?: Response }).context;
+            if (maybeContext && typeof maybeContext.json === 'function') {
+                try {
+                    const payload = await maybeContext.json() as { error?: string; message?: string };
+                    if (payload?.error) return payload.error;
+                    if (payload?.message) return payload.message;
+                } catch {
+                    // Ignore parse error and fallback to err.message.
+                }
+            }
+            return err.message;
+        }
+        return 'Unknown error';
+    };
 
     const approvePartner = async (params: ApprovePartnerParams): Promise<ApprovePartnerResult> => {
         setLoading(true);
@@ -42,15 +55,14 @@ export function useApprovePartner(client: SupabaseClient) {
 
             const result = data as { success?: boolean; error?: string; action?: string } | null;
             if (result?.success === false) {
-                throw new Error(result.error || '처리 실패');
+                throw new Error(result.error || 'Request failed.');
             }
 
             return { success: true, action: result?.action ?? params.action };
-
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류';
+            const errorMessage = await extractErrorMessage(err);
             setError(errorMessage);
-            throw err;
+            throw new Error(errorMessage);
         } finally {
             setLoading(false);
         }

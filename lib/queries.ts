@@ -160,6 +160,23 @@ export const checkExistingReview = async (userId: string, facilityId: string, cl
     return !!data;
 };
 
+export const checkConfirmedReservationForReview = async (userId: string, facilityId: string, client: SupabaseClient) => {
+    const db = client;
+    const { data, error } = await db
+        .from('reservations')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('facility_id', facilityId)
+        .eq('status', 'confirmed')
+        .limit(1)
+        .maybeSingle();
+
+    if (error) {
+        return false;
+    }
+    return !!data;
+};
+
 /**
  * [추가] 리뷰 이미지 업로드
  */
@@ -1936,7 +1953,7 @@ export const getConsultationById = async (consultationId: string, client: Supaba
  * Fetch facilities within the current map viewport
  * Uses RPC 'search_facilities_in_view'
  */
-export const fetchFacilitiesInView = async (bounds: MapBounds, token?: string) => {
+export const fetchFacilitiesInView = async (bounds: MapBounds, token?: string, _signal?: AbortSignal) => {
     try {
         const sw = bounds.getSouthWest();
         const ne = bounds.getNorthEast();

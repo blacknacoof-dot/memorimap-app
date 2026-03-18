@@ -1,11 +1,11 @@
 /**
- * useFacilityData - App.tsx에서 추출한 시설 데이터 관리 Hook
+ * useFacilityData - App.tsx?먯꽌 異붿텧???쒖꽕 ?곗씠??愿由?Hook
  * Phase 4-2: facilities, selectedFacility, fetchFacilities, filteredFacilities, fetchFacilityDetails, handleFacilitySelect
  */
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Facility, ViewState } from '../types';
 
-/** Leaflet-compatible bounds interface (Leaflet 라이브러리 제거 후 대체) */
+/** Leaflet-compatible bounds interface (Leaflet ?쇱씠釉뚮윭由??쒓굅 ???泥? */
 interface LatLngBounds {
   getSouthWest(): { lat: number; lng: number };
   getNorthEast(): { lat: number; lng: number };
@@ -27,6 +27,8 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [currentBounds, setCurrentBounds] = useState<LatLngBounds | null>(null);
+  // ??[2-3a] stale ?묐떟 臾댁떆瑜??꾪븳 ?붿껌 ID
+  const latestRequestIdRef = useRef(0);
 
   const { searchQuery, selectedCategories } = useFilterStore();
 
@@ -82,7 +84,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
 
             return {
               id: String(item.id || ''),
-              name: item.name || '이름 없음',
+              name: item.name || '?대쫫 ?놁쓬',
               category: mappedCategory,
               type: type,
               religion: 'none',
@@ -112,8 +114,8 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
         }
       } catch (err: unknown) {
         if (!mounted) return;
-        const message = err instanceof Error ? err.message : "연결 오류";
-        showToast(`데이터 불러오기 실패: ${message}`, 'error');
+        const message = err instanceof Error ? err.message : "?곌껐 ?ㅻ쪟";
+        showToast(`?곗씠??遺덈윭?ㅺ린 ?ㅽ뙣: ${message}`, 'error');
       } finally {
         if (mounted) setIsDataLoading(false);
       }
@@ -142,7 +144,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
     // 2. Exclude sangjo from general list
     const sangjoSelected = (selectedCategories as string[]).includes('sangjo');
     if (!sangjoSelected) {
-      result = result.filter(f => f.type !== 'sangjo' && f.type !== '상조');
+      result = result.filter(f => f.type !== 'sangjo' && f.type !== '?곸“');
     }
 
     // 3. Filter by Category
@@ -164,6 +166,8 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
 
   // Fetch Facility Details
   const fetchFacilityDetails = useCallback(async (facilityId: string) => {
+    const requestId = ++latestRequestIdRef.current;  // ??[2-3a] 怨좎쑀 ?붿껌 ID
+
     try {
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
 
@@ -179,16 +183,50 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
 
       if (error) throw error;
 
+      // ??[2-3a] stale ?묐떟 臾댁떆
+      if (requestId !== latestRequestIdRef.current) return;
+
       logger.debug(`Fetched Data from facilities:`, data);
 
       if (data) {
         const realUuid = data.id;
 
-        const [subscription, rawReviews, _images] = await Promise.all([
+        const [subscriptionResult, rawReviewsResult, imagesResult] = await Promise.allSettled([
           getFacilitySubscription(realUuid, supabase),
           import('../lib/queries').then(m => m.getReviewsBySpace(realUuid)),
           import('../lib/queries').then(m => m.getFacilityImages(realUuid))
         ]);
+
+        const subscription = subscriptionResult.status === 'fulfilled'
+          ? subscriptionResult.value
+          : null;
+        if (subscriptionResult.status === 'rejected') {
+          logger.error('Failed to load facility subscription while fetching detail', {
+            facilityId: realUuid,
+            error: subscriptionResult.reason,
+          });
+        }
+
+        const rawReviews = rawReviewsResult.status === 'fulfilled'
+          ? rawReviewsResult.value
+          : [];
+        if (rawReviewsResult.status === 'rejected') {
+          logger.error('Failed to load facility reviews while fetching detail', {
+            facilityId: realUuid,
+            error: rawReviewsResult.reason,
+          });
+          showToast('시설 리뷰를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.', 'error');
+        }
+
+        if (imagesResult.status === 'rejected') {
+          logger.error('Failed to load facility images while fetching detail', {
+            facilityId: realUuid,
+            error: imagesResult.reason,
+          });
+        }
+
+        // ??[2-3a] 異붽? fetch ?꾩뿉??stale 泥댄겕
+        if (requestId !== latestRequestIdRef.current) return;
 
         interface RawReview {
           id: string;
@@ -204,7 +242,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
           id: r.id,
           rating: r.rating,
           content: r.content,
-          userName: r.userName || r.user_name || '익명',
+          userName: r.userName || r.user_name || '?듬챸',
           date: r.date || (r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : '')
         }));
 
@@ -250,20 +288,30 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
           updatedFacility.lat = data.location.coordinates[1];
         }
 
-        const existing = facilities.find(f => f.id === realUuid || f.id === facilityId);
-        if (existing) {
-          if (!updatedFacility.lat) { updatedFacility.lat = existing.lat; updatedFacility.lng = existing.lng; }
-          updatedFacility.rating = existing.rating;
-          updatedFacility.reviewCount = existing.reviewCount;
-        }
-
-        setFacilities(prev => prev.map(f => f.id === realUuid || f.id === facilityId ? updatedFacility : f));
+        // ??[2-3b] setFacilities(prev => ...) ?대??먯꽌 prev.find()濡?stale closure 諛⑹?
+        setFacilities(prev => {
+          const existing = prev.find(f => f.id === realUuid || f.id === facilityId);
+          if (existing) {
+            if (!updatedFacility.lat) { updatedFacility.lat = existing.lat; updatedFacility.lng = existing.lng; }
+            updatedFacility.rating = existing.rating;
+            updatedFacility.reviewCount = existing.reviewCount;
+          }
+          return prev.map(f => f.id === realUuid || f.id === facilityId ? updatedFacility : f);
+        });
         setSelectedFacility(updatedFacility);
       }
-    } catch (_err) {
-      // silent: detail fetch error
+    } catch (error: unknown) {
+      logger.error('Failed to fetch facility detail', {
+        facilityId,
+        requestId,
+        latestRequestId: latestRequestIdRef.current,
+        error,
+      });
+      if (requestId === latestRequestIdRef.current) {
+        showToast('?쒖꽕 ?곸꽭 ?뺣낫瑜?遺덈윭?ㅼ? 紐삵뻽?듬땲?? 紐⑸줉?먯꽌 ?ㅼ떆 ?좏깮??二쇱꽭?? 諛섎났?섎㈃ 怨좉컼?쇳꽣濡?臾몄쓽??二쇱꽭??', 'error');
+      }
     }
-  }, [facilities, setSelectedFacility, setFacilities]);
+  }, [setSelectedFacility, setFacilities, showToast]);  // ??[2-3b] facilities ?쒓굅?섏뿬 stale closure 諛⑹?
 
   // Handle Facility Select
   const handleFacilitySelect = useCallback(async (facility: Facility) => {
@@ -288,3 +336,4 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
     setCurrentBounds,
   };
 }
+

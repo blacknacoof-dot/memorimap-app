@@ -1,7 +1,26 @@
 import { test, expect } from '@playwright/test';
 import { createTestConsultation, deleteTestConsultation } from './db.utils';
 
-test.describe('Super Admin: Join Chat & Locking', () => {
+// ─────────────────────────────────────────────────────────
+// ⚠️  [격리 이유 — 2026-03-18 기준]
+//
+// TC-SA-01은 슈퍼관리자 UI 로그인 후 "채팅 참여" 버튼 클릭 플로우를 검증하는 테스트입니다.
+// 현재 이 테스트에는 실제 로그인 플로우가 구현되어 있지 않습니다.
+//   - 기존 코드 line 26: console.log('Test framework ready. Waiting for auth implementation.')
+//   - Playwright storageState 또는 loginViaUi()를 활용한 자동 로그인이 구현되지 않은 상태입니다.
+//
+// TC-SA-05(동시성 락)는 DB 직접 조작으로 검증하므로 인증이 필요하지 않고 실행 가능하지만,
+// TC-SA-01과 동일한 describe 블록에 있어 함께 격리된 상태입니다.
+//
+// 복구 조건:
+//   1. coreFlows.fixture.ts의 loginViaUi()를 사용하여 슈퍼관리자로 자동 로그인
+//   2. '/super-admin' 라우트 진입 후 채팅 참여 버튼 클릭 → 상태 변경 검증
+//   3. TC-SA-01과 TC-SA-05를 별도 describe로 분리하여 TC-SA-05는 skip 해제 가능
+//
+// 복구 전까지 이 테스트 스위트는 skip 상태로 유지됩니다.
+// ─────────────────────────────────────────────────────────
+
+test.describe.skip('@quarantine Super Admin: Join Chat & Locking', () => {
     const TEST_CONV_ID = `e2e_lock_test_${Date.now()}`;
 
     test.beforeAll(async () => {
@@ -15,15 +34,10 @@ test.describe('Super Admin: Join Chat & Locking', () => {
     });
 
     test('TC-SA-01: Admin can join chat and status changes to AGENT_CONNECTED', async ({ page: _page }) => {
-        // Note: In a real scenario, we would perform actual login. 
-        // For this prototype, we assume the dev server handles auth state or we mock it.
-        // However, since we are testing "Button Logic", passing the UI check is key.
-
-        // TODO: Implement actual login flow or use saved storage state
-        // For now, fail if not implemented to follow TDD
-        // test.fail(); 
-
-        console.log('Test framework ready. Waiting for auth implementation.');
+        // ⚠️ [미구현] 슈퍼관리자 UI 로그인 후 채팅 참여 버튼 클릭 플로우가 구현되지 않았습니다.
+        // 복구 시 coreFlows.fixture.ts의 loginViaUi(page, superAdminEmail, password)를 사용하여
+        // 자동 로그인 후 '/super-admin' 라우트에서 버튼 클릭 → ai_consultations.status 검증으로 구현하세요.
+        test.fail(); // 미구현 명시: 이 테스트는 실패 상태여야 합니다
     });
 
     test('TC-SA-05: Concurrency Lock - Only one admin succeeds', async ({ page: _page }) => {

@@ -70,6 +70,10 @@ export function useReservation({ facility, onClose: _onClose, onConfirm, reserva
     setIsProcessingPayment(false);
   }, []);
 
+  const handleCompleteConfirm = useCallback(() => {
+    _onClose();
+  }, [_onClose]);
+
   const handleDateSelect = (date: Date) => {
     setValue('visit_date', format(date, 'yyyy-MM-dd'));
   };
@@ -234,6 +238,7 @@ export function useReservation({ facility, onClose: _onClose, onConfirm, reserva
     handleDateSelect,
     handleNext,
     handlePaymentProcess,
+    handleCompleteConfirm,
     availableDates,
     depositAmount,
   };

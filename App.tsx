@@ -1,11 +1,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
-import { HashRouter, Routes, Route } from 'react-router-dom';
-import { ErrorBoundary } from './components/ErrorBoundary';
 import { MapRef } from './components/MapContainer';
 import { Facility, ViewState } from './types';
 import { Consultation } from './types/consultation';
-import { AlertCircle, X } from 'lucide-react';
-import { Toaster } from 'sonner';
 import { ConfirmModal, PromptModal } from './src/components/common/ConfirmModal';
 import { useUser, useClerk, useSession } from './lib/auth';
 import { useProfileSync } from './hooks/useProfileSync';
@@ -19,17 +15,15 @@ import { useMapViewport } from './hooks/useMapViewport';
 import { useUserRole } from './hooks/useUserRole';
 import { useReviews } from './hooks/useReviews';
 import { useCompanySelect } from './hooks/useCompanySelect';
-import { ExternalBrowserGuidePage } from './src/pages/ExternalBrowserGuidePage';
 import { isInAppBrowser } from './src/utils/browserDetection';
-import ShareJourneyView from './pages/ShareJourneyView';
 
 // Phase 4-4/4-5 Components
-import { ContentRouter, LoadingFallback } from './components/ContentRouter';
-import { TopBar } from './components/TopBar';
-import { BottomNav } from './components/BottomNav';
-import { ModalContainer } from './components/ModalContainer';
-import { SOSEmergencyMode } from './components/SOSEmergencyMode';
+import { ContentRouter, ContentRouterProps, LoadingFallback } from './components/ContentRouter';
+import { ModalContainerProps } from './components/ModalContainer';
+import { AppMainLayout } from './components/AppMainLayout';
+import { AppRouteLayout } from './components/AppRouteLayout';
 import { useChatStore } from './stores/useChatStore';
+import { AppRouteLayout as RouteLayoutType, getInitialLayoutFromHash, resolveLegacyPathToHashUrl } from './lib/appRouteConfig';
 
 const App: React.FC = () => {
   useProfileSync();
@@ -54,6 +48,7 @@ const App: React.FC = () => {
   const [showSOS, setShowSOS] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
+  const [routeLayout, setRouteLayout] = useState<RouteLayoutType>(() => getInitialLayoutFromHash(window.location.hash));
   const _setSearchQuery = useFilterStore(state => state.setSearchQuery);
 
   // Consultation State
@@ -104,7 +99,7 @@ const App: React.FC = () => {
     if (!user) return null;
     return {
       id: user.id,
-      name: user.firstName || user.username || '회원',
+      name: user.firstName || user.username || '?�원',
       email: user.primaryEmailAddress?.emailAddress || '',
       imageUrl: user.imageUrl,
     };
@@ -112,44 +107,22 @@ const App: React.FC = () => {
 
   useEffect(() => { getCurrentPosition(); }, [getCurrentPosition]);
 
-
-  // Route Handling
+  // Legacy path entry canonicalization: /foo -> /#/foo
   useEffect(() => {
-    const checkRoute = () => {
-      const path = window.location.pathname;
-      const hash = window.location.hash;
+    if (window.location.hash) return;
+    const canonicalHashUrl = resolveLegacyPathToHashUrl(window.location.pathname, window.location.search);
+    if (!canonicalHashUrl) return;
+    const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (currentUrl !== canonicalHashUrl) {
+      window.history.replaceState(null, '', canonicalHashUrl);
+    }
+  }, []);
 
-      if (path === '/admin' || path === '/admin/') {
-        setViewState(ViewState.FACILITY_ADMIN);
-        window.history.replaceState(null, '', '/#/facility-admin');
-        return;
-      }
-      if (path === '/facility-admin') { setViewState(ViewState.FACILITY_ADMIN); return; }
-      if (path === '/super-admin') { setViewState(ViewState.SUPER_ADMIN); return; }
-      if (path === '/funeral-company') { setViewState(ViewState.FUNERAL_COMPANIES); return; }
-      if (path.startsWith('/share/')) return;
-
-      if (hash === '#/admin') setViewState(ViewState.ADMIN);
-      else if (hash === '#/super-admin') setViewState(ViewState.SUPER_ADMIN);
-      else if (hash === '#/facility-admin') setViewState(ViewState.FACILITY_ADMIN);
-      else if (hash === '#/funeral-company') setViewState(ViewState.FUNERAL_COMPANIES);
-      else if (hash === '#/partner-inquiry') setViewState(ViewState.PARTNER_INQUIRY);
-      else if (hash.startsWith('#/auth')) {
-        setShowLoginModal(true);
-        setViewState(ViewState.MAP);
-        window.history.replaceState(null, '', '/');
-      }
-    };
-
-    checkRoute();
+  useEffect(() => {
     const handleOpenLogin = () => setShowLoginModal(true);
     window.addEventListener('open-login-modal', handleOpenLogin);
-    window.addEventListener('hashchange', checkRoute);
-    window.addEventListener('popstate', checkRoute);
     return () => {
       window.removeEventListener('open-login-modal', handleOpenLogin);
-      window.removeEventListener('hashchange', checkRoute);
-      window.removeEventListener('popstate', checkRoute);
     };
   }, []);
 
@@ -162,13 +135,22 @@ const App: React.FC = () => {
   // Reviews Hook
   const { handleAddReview, handleReviewDeleted } = useReviews({
     userId: user?.id,
-    userName: userInfo?.name || '익명',
+    userName: userInfo?.name || '?�명',
     setFacilities, selectedFacility, setSelectedFacility, showToast,
   });
 
   // Handlers
   const handleLoginClick = () => { setIsMenuOpen(false); setShowLoginModal(true); };
-  const handleLogout = async () => { await signOut(); setViewState(ViewState.MAP); showToast("로그아웃 되었습니다.", 'info'); };
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      showToast('로그?�웃 ?�었?�니??', 'info');
+    } catch {
+      showToast('로그?�웃 처리 �??�류가 발생?�습?�다.', 'error');
+    } finally {
+      setViewState(ViewState.MAP);
+    }
+  };
   const handleBottomNavChange = (view: ViewState) => {
     setSelectedFacility(null);
     setShowComparison(false);
@@ -193,183 +175,143 @@ const App: React.FC = () => {
     setViewState(ViewState.MAP);
   };
 
-  // ADMIN / SUPER_ADMIN - full page (no layout chrome)
-  if (viewState === ViewState.ADMIN || viewState === ViewState.SUPER_ADMIN) {
-    return (
-      <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <ErrorBoundary>
-          <Suspense fallback={<LoadingFallback />}>
-            <ContentRouter
-              viewState={viewState} setViewState={setViewState}
-              mapRef={mapRef} filteredFacilities={filteredFacilities}
-              handleFacilitySelect={handleFacilitySelect} handleMapBoundsChange={handleMapBoundsChange}
-              targetMapCenter={targetMapCenter} targetMapZoom={targetMapZoom} userLocation={userLocation}
-              compareList={compareList} setShowComparison={setShowComparison} toggleCompare={toggleCompare}
-              sangjoCompareList={sangjoCompareList} toggleSangjoCompare={toggleSangjoCompare} setShowSangjoComparison={setShowSangjoComparison}
-              facilities={facilities} isDataLoading={isDataLoading} showPromo={showPromo}
-              isSignedIn={isSignedIn} userInfo={userInfo} userRole={userRole} isLoadingRole={isLoadingRole}
-              reservations={reservations} handleUpdateReservation={handleUpdateReservation}
-              handleReviewDeleted={handleReviewDeleted} handleCompanySelect={handleCompanySelect}
-              handleLoginClick={handleLoginClick} showToast={showToast} setShowLoginModal={setShowLoginModal}
-              consultingFacility={consultingFacility} setConsultingFacility={setConsultingFacility}
-              selectedConsultation={selectedConsultation} setSelectedConsultation={setSelectedConsultation}
-              adminFacilityId={adminFacilityId} setAdminFacilityId={setAdminFacilityId} adminSangjoId={adminSangjoId}
-            />
-          </Suspense>
-        </ErrorBoundary>
-        <Toaster richColors position="bottom-center" closeButton />
-      </HashRouter>
-    );
-  }
-
-  // In-App Browser Guard
   const isInApp = isInAppBrowser();
-  const isGuidePage = window.location.hash.includes('external-browser-guide');
-  if (isInApp && !isGuidePage) return <ExternalBrowserGuidePage />;
 
-  // Auth Loading
-  if (!isLoaded) {
-    return (
-      <div className="h-full w-full flex items-center justify-center bg-gray-100">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  const contentRouterProps: ContentRouterProps = {
+    viewState,
+    setViewState,
+    mapRef,
+    filteredFacilities,
+    handleFacilitySelect,
+    handleMapBoundsChange,
+    targetMapCenter,
+    targetMapZoom,
+    userLocation,
+    compareList,
+    setShowComparison,
+    toggleCompare,
+    sangjoCompareList,
+    toggleSangjoCompare,
+    setShowSangjoComparison,
+    facilities,
+    isDataLoading,
+    showPromo,
+    isSignedIn,
+    userInfo,
+    userRole,
+    isLoadingRole,
+    reservations,
+    handleUpdateReservation,
+    handleReviewDeleted,
+    handleCompanySelect,
+    handleLoginClick,
+    showToast,
+    setShowLoginModal,
+    consultingFacility,
+    setConsultingFacility,
+    selectedConsultation,
+    setSelectedConsultation,
+    adminFacilityId,
+    setAdminFacilityId,
+    adminSangjoId,
+  };
 
-  const isShareRoute = window.location.hash.startsWith('#/share/');
+  const modalContainerProps: ModalContainerProps = {
+    viewState,
+    setViewState,
+    facilities,
+    isSignedIn,
+    userInfo,
+    userRole,
+    userId: user?.id,
+    showToast,
+    isMenuOpen,
+    setIsMenuOpen,
+    reservations,
+    handleLogout,
+    handleLoginClick,
+    showLoginModal,
+    setShowLoginModal,
+    showSignUpModal,
+    setShowSignUpModal,
+    selectedFacility,
+    setSelectedFacility,
+    handleViewOnMap,
+    handleAddReview,
+    compareList,
+    showComparison,
+    setShowComparison,
+    toggleCompare,
+    removeFromCompare,
+    isBooking,
+    setIsBooking,
+    isUrgentBooking,
+    setIsUrgentBooking,
+    handleBookingConfirm,
+    selectedFuneralCompany,
+    setSelectedFuneralCompany,
+    showSangjoAIConsult,
+    setShowSangjoAIConsult,
+    showSangjoContract,
+    setShowSangjoContract,
+    sangjoCompareList,
+    showSangjoComparison,
+    setShowSangjoComparison,
+    removeFromSangjoCompare,
+    aiChatFacility,
+    setAiChatFacility,
+    initialChatIntent,
+    setInitialChatIntent,
+    userLocation,
+    getCurrentPosition,
+    handoverContext,
+    setHandoverContext,
+  };
 
-  // 공유 링크 접근 시 앱 전체 UI 없이 독립 렌더링
-  if (isShareRoute) {
-    return (
-      <ErrorBoundary>
-        <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <Routes>
-            <Route path="/share/:token" element={<ShareJourneyView />} />
-          </Routes>
-        </HashRouter>
-      </ErrorBoundary>
-    );
-  }
+  const adminContent = (
+    <Suspense fallback={<LoadingFallback />}>
+      <ContentRouter {...contentRouterProps} />
+    </Suspense>
+  );
 
-  return (
-    <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <ErrorBoundary>
-        <div className="app-mobile-shell h-full w-full relative bg-gray-100 flex justify-center overflow-hidden">
-          <div className="w-full h-full md:max-w-md bg-white relative shadow-2xl flex flex-col">
-
-            {/* Role Error (Dev Only) */}
-            {roleError && import.meta.env.DEV && (
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[10000] w-[90%] max-w-md bg-red-50 border border-red-200 p-4 rounded-xl shadow-lg flex items-start gap-3">
-                <AlertCircle className="text-red-500 shrink-0" size={20} />
-                <div className="flex-1">
-                  <h3 className="font-bold text-red-800 text-sm">역할 조회 오류</h3>
-                  <p className="text-red-600 text-[10px] mt-1 break-all">{roleError}</p>
-                </div>
-                <button onClick={() => setRoleError(null)} className="text-red-400 hover:text-red-600"><X size={16} /></button>
-              </div>
-            )}
-
-            {/* Top Bar */}
-            <TopBar
-              viewState={viewState} setViewState={setViewState}
-              isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen}
-              showPromo={showPromo} setShowPromo={setShowPromo}
-              onSOS={() => setShowSOS(true)}
-            />
-
-            {/* SOS 긴급 모드 오버레이 */}
-            {showSOS && (
-              <SOSEmergencyMode
-                onClose={() => setShowSOS(false)}
-                onOpenChat={() => {
-                  setShowSOS(false);
-                  setViewState(ViewState.MAP);
-                  openChat('funeral_home');
-                }}
-              />
-            )}
-
-            {/* Main Content */}
-            <div className="flex-1 relative overflow-hidden">
-              <Suspense fallback={<LoadingFallback />}>
-                <ContentRouter
-                  viewState={viewState} setViewState={setViewState}
-                  mapRef={mapRef} filteredFacilities={filteredFacilities}
-                  handleFacilitySelect={handleFacilitySelect} handleMapBoundsChange={handleMapBoundsChange}
-                  targetMapCenter={targetMapCenter} targetMapZoom={targetMapZoom} userLocation={userLocation}
-                  compareList={compareList} setShowComparison={setShowComparison} toggleCompare={toggleCompare}
-                  sangjoCompareList={sangjoCompareList} toggleSangjoCompare={toggleSangjoCompare} setShowSangjoComparison={setShowSangjoComparison}
-                  facilities={facilities} isDataLoading={isDataLoading} showPromo={showPromo}
-                  isSignedIn={isSignedIn} userInfo={userInfo} userRole={userRole} isLoadingRole={isLoadingRole}
-                  reservations={reservations} handleUpdateReservation={handleUpdateReservation}
-                  handleReviewDeleted={handleReviewDeleted} handleCompanySelect={handleCompanySelect}
-                  handleLoginClick={handleLoginClick} showToast={showToast} setShowLoginModal={setShowLoginModal}
-                  consultingFacility={consultingFacility} setConsultingFacility={setConsultingFacility}
-                  selectedConsultation={selectedConsultation} setSelectedConsultation={setSelectedConsultation}
-                  adminFacilityId={adminFacilityId} setAdminFacilityId={setAdminFacilityId} adminSangjoId={adminSangjoId}
-                />
-              </Suspense>
-            </div>
-
-            {/* Bottom Navigation */}
-            <BottomNav viewState={viewState} setViewState={handleBottomNavChange} />
-
-            {/* Toast */}
-            {toast && (
-              <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-[100] w-full px-4 animate-in fade-in slide-in-from-bottom-2 pointer-events-none">
-                <div className={`bg-gray-900/90 text-white px-4 py-3 rounded-xl shadow-xl backdrop-blur-sm flex items-center justify-between gap-3 ${
-                  toast.type === 'error' ? 'bg-red-900/90' : toast.type === 'info' ? 'bg-blue-900/90' : 'bg-gray-900/90'
-                }`}>
-                  <span className="text-sm font-medium">{toast.message}</span>
-                  {compareList.length > 0 && toast.message.includes('비교함') && (
-                    <button
-                      onClick={() => setShowComparison(true)}
-                      className="text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded text-white font-bold pointer-events-auto"
-                    >
-                      비교하기
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Global Toaster */}
-            <Toaster richColors position="bottom-center" closeButton />
-
-            {/* All Modals & Overlays */}
-            <ModalContainer
-              viewState={viewState} setViewState={setViewState}
-              facilities={facilities} isSignedIn={isSignedIn} userInfo={userInfo}
-              userRole={userRole} userId={user?.id} showToast={showToast}
-              isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen}
-              reservations={reservations} handleLogout={handleLogout} handleLoginClick={handleLoginClick}
-              showLoginModal={showLoginModal} setShowLoginModal={setShowLoginModal}
-              showSignUpModal={showSignUpModal} setShowSignUpModal={setShowSignUpModal}
-              selectedFacility={selectedFacility} setSelectedFacility={setSelectedFacility}
-              handleViewOnMap={handleViewOnMap} handleAddReview={handleAddReview}
-              compareList={compareList} showComparison={showComparison} setShowComparison={setShowComparison}
-              toggleCompare={toggleCompare} removeFromCompare={removeFromCompare}
-              isBooking={isBooking} setIsBooking={setIsBooking}
-              isUrgentBooking={isUrgentBooking} setIsUrgentBooking={setIsUrgentBooking}
-              handleBookingConfirm={handleBookingConfirm}
-              selectedFuneralCompany={selectedFuneralCompany} setSelectedFuneralCompany={setSelectedFuneralCompany}
-              showSangjoAIConsult={showSangjoAIConsult} setShowSangjoAIConsult={setShowSangjoAIConsult}
-              showSangjoContract={showSangjoContract} setShowSangjoContract={setShowSangjoContract}
-              sangjoCompareList={sangjoCompareList} showSangjoComparison={showSangjoComparison}
-              setShowSangjoComparison={setShowSangjoComparison} removeFromSangjoCompare={removeFromSangjoCompare}
-              aiChatFacility={aiChatFacility} setAiChatFacility={setAiChatFacility}
-              initialChatIntent={initialChatIntent} setInitialChatIntent={setInitialChatIntent}
-              userLocation={userLocation} getCurrentPosition={getCurrentPosition}
-              handoverContext={handoverContext} setHandoverContext={setHandoverContext}
-            />
-          </div>
-
-          {/* [Removed] Duplicate toast rendering — single toast already rendered inside layout */}
-        </div>
+  const mainContent = (
+    <>
+      <AppMainLayout
+        viewState={viewState}
+        setViewState={setViewState}
+        isMenuOpen={isMenuOpen}
+        setIsMenuOpen={setIsMenuOpen}
+        showPromo={showPromo}
+        setShowPromo={setShowPromo}
+        showSOS={showSOS}
+        setShowSOS={setShowSOS}
+        onOpenSOSChat={() => openChat('funeral_home')}
+        onBottomNavChange={handleBottomNavChange}
+        roleError={roleError}
+        onClearRoleError={() => setRoleError(null)}
+        toast={toast}
+        compareListCount={compareList.length}
+        onOpenComparison={() => setShowComparison(true)}
+        contentRouterProps={contentRouterProps}
+        modalContainerProps={modalContainerProps}
+      />
       <ConfirmModal />
       <PromptModal />
-      </ErrorBoundary>
-    </HashRouter>
+    </>
+  );
+
+  return (
+    <AppRouteLayout
+      viewState={viewState}
+      setViewState={setViewState}
+      setShowLoginModal={setShowLoginModal}
+      routeLayout={routeLayout}
+      onLayoutChange={setRouteLayout}
+      isLoaded={isLoaded}
+      isInApp={isInApp}
+      adminContent={adminContent}
+      mainContent={mainContent}
+    />
   );
 };
 
