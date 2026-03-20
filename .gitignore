@@ -65,3 +65,6 @@ supabase/.temp/
 구글 로그인 값 저장.txt
 슈파베이스 Access Tokens.txt
 작업내용.txt
+
+# Image optimization backups
+public/images/defaults/*/originals/

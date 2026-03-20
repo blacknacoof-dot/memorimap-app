@@ -77,11 +77,11 @@ function getOptimizedUrl(
 
 // Default fallback images by category hint
 const DEFAULT_FALLBACKS: Record<string, string> = {
-    funeral: '/images/defaults/funeral/funeral_1.jpg',
-    charnel: '/images/defaults/columbarium/columbarium_1.jpg',
-    natural: '/images/defaults/natural/natural_1.png',
-    cemetery: '/images/defaults/cemetery/cemetery_1.png',
-    default: '/images/defaults/funeral/funeral_1.jpg',
+    funeral: '/images/defaults/funeral/funeral_1.webp',
+    charnel: '/images/defaults/funeral/funeral_1.webp',
+    natural: '/images/defaults/natural/natural_1.webp',
+    cemetery: '/images/defaults/cemetery/cemetery_1.webp',
+    default: '/images/defaults/funeral/funeral_1.webp',
 };
 
 export const OptimizedImage: React.FC<OptimizedImageProps> = ({

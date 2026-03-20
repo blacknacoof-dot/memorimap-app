@@ -28,7 +28,7 @@ export const FacilityItem = React.memo(({ facility, onClick, isCompared, onToggl
                         className="rounded-lg shrink-0"
                         objectFit="cover"
                         loading="lazy"
-                        fallbackSrc="/images/defaults/funeral/funeral_1.jpg"
+                        fallbackSrc="/images/defaults/funeral/funeral_1.webp"
                     />
                 ) : (
                     <div className="w-20 h-20 rounded-lg bg-gray-100 shrink-0 flex items-center justify-center text-gray-400 text-[10px] text-center px-1">
