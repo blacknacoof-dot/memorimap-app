@@ -249,34 +249,10 @@ serve(async (req) => {
         if (rpcError) throw rpcError
         if (rpcResult && rpcResult.success === false) throw new Error(rpcResult.error || 'Transaction failed')
 
-        // Automatically archive/reject OTHER pending inquiries for the same company
-        await supabaseAdmin
-            .from('partner_inquiries')
-            .update({
-                status: 'rejected',
-                message: '[System] Automatically rejected as another application for this company was approved.'
-            })
-            .eq('company_name', v_inquiry.company_name)
-            .eq('status', 'pending')
-            .neq('id', inquiryId);
+        // 동일업체 자동거절 + 인앱 알림은 RPC 내부(Step 5, Step 8)에서 처리됨
+        // Edge Function에서는 이메일 발송만 담당
 
-        // 1. In-App Notification
-        if (v_inquiry.user_id) {
-            await supabaseAdmin.from('user_notifications').insert([{
-                user_id: v_inquiry.user_id,
-                title: '입점 신청 승인 완료',
-                message: `축하합니다! ${v_inquiry.company_name}의 입점 신청이 승인되었습니다. 지금 바로 대시보드에서 시설 정보를 관리해보세요.`,
-                type: 'success',
-                link: '/dashboard'
-            }])
-        } else {
-            await logToDB(supabaseAdmin, 'WARN', 'Skipping user notification (missing inquiry.user_id)', {
-                inquiryId,
-                action: 'approve'
-            });
-        }
-
-        // 2. Email Notification
+        // Email Notification
         if (recipientEmail) {
             await sendEmail({
                 to: recipientEmail,

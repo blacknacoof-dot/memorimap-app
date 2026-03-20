@@ -2,6 +2,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import { useChatStore } from '../stores/useChatStore';
 import { useConversationStore } from '../stores/conversationStore';
 import { useSangjoFavoriteStore } from '../stores/useSangjoFavoriteStore';
+import { useConfirmModal, usePromptModal } from '../src/components/common/ConfirmModal';
 
 export const LOGOUT_STORAGE_PREFIXES = ['sb-', 'conv_id_'] as const;
 export const LOGOUT_STORAGE_EXACT_KEYS = ['supabase.auth.token'] as const;
@@ -41,6 +42,8 @@ export async function runLogoutCleanup(queryClient: QueryClient): Promise<Logout
   useChatStore.getState().resetChatState();
   useConversationStore.getState().resetConversationState();
   useSangjoFavoriteStore.getState().resetFavoritesState();
+  useConfirmModal.getState().close();
+  usePromptModal.getState().close();
 
   if (typeof window === 'undefined') {
     return { removedLocalStorageKeys: [], removedSessionStorageKeys: [] };
