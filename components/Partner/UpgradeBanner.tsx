@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Crown, X, ArrowRight } from 'lucide-react';
 import type { Subscription } from '../../types/db';
+import { normalizeSubscriptionPlanId } from '../../lib/subscriptionPlanIds';
 
 const DISMISS_KEY = 'upgrade_banner_dismissed_at';
 const DISMISS_DAYS = 7;
@@ -49,7 +50,10 @@ function isDismissed(): boolean {
 }
 
 export const UpgradeBanner: React.FC<Props> = ({ subscription, monthlyConsultationCount, onNavigate }) => {
-    const recommendation = getRecommendation(subscription?.plan_id, monthlyConsultationCount);
+    const recommendation = getRecommendation(
+        normalizeSubscriptionPlanId(subscription?.plan_id ?? subscription?.plan_name) ?? undefined,
+        monthlyConsultationCount
+    );
     const [dismissed, setDismissed] = useState(() => isDismissed());
 
     if (dismissed || !recommendation) return null;

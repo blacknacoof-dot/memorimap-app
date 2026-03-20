@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowRight, Check, X, Sparkles } from 'lucide-react';
 import type { Subscription } from '../../types/db';
+import { normalizeSubscriptionPlanId } from '../../lib/subscriptionPlanIds';
 
 interface BenefitRow {
     label: string;
@@ -32,8 +33,9 @@ const SANGJO_PLANS: PlanInfo[] = [
 ];
 
 function getCurrentPlanIndex(subscription: Subscription | null): number {
-    if (!subscription?.plan_id) return -1;
-    return SANGJO_PLANS.findIndex(p => p.id === subscription.plan_id);
+    const planId = normalizeSubscriptionPlanId(subscription?.plan_id ?? subscription?.plan_name);
+    if (!planId) return -1;
+    return SANGJO_PLANS.findIndex(p => p.id === planId);
 }
 
 function buildBenefitRows(current: PlanInfo, next: PlanInfo): BenefitRow[] {

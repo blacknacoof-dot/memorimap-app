@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+﻿import React, { useState, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Check, X, Sparkles, Crown, Zap, ChevronDown, ChevronUp, MessageCircle, ShieldCheck, ArrowLeft } from 'lucide-react';
 import { requestPayment, verifyPayment, PORTONE_CONFIG } from '../lib/portone';
@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useUser, useSession } from '../lib/auth';
 import { getAuthClient } from '../lib/supabaseClient';
 import { useSystemSettings } from '../hooks/useSystemSettings';
+import { normalizeSubscriptionPlanId } from '../lib/subscriptionPlanIds';
 
 interface Plan {
     id: string;
@@ -188,7 +189,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
     }, [getSettingNum]);
 
     const plans = type === 'sangjo' ? sangjoPlans : facilityPlans;
-    const [selectedPlan, setSelectedPlan] = useState<string | null>(currentPlan || null);
+    const [selectedPlan, setSelectedPlan] = useState<string | null>(normalizeSubscriptionPlanId(currentPlan) || null);
     const [expandedPlan, setExpandedPlan] = useState<string | null>(type === 'sangjo' ? 'sj_professional' : 'premium');
     const [showInquiryModal, setShowInquiryModal] = useState(false);
     const [inquiryForm, setInquiryForm] = useState({ name: '', phone: '', email: '', message: '' });
@@ -225,7 +226,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                     const { getFacilitySubscription } = await import('../lib/queries');
                     const sub = await getFacilitySubscription(facilityId, authClient);
                     if (sub && sub.plan_id) {
-                        setSelectedPlan(sub.plan_id);
+                        setSelectedPlan(normalizeSubscriptionPlanId(sub.plan_id) || sub.plan_id);
                     }
                 } catch (_e) {
                     // silent
@@ -238,6 +239,17 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
     const handleSelectPlan = async (plan: Plan) => {
         if (isProcessing) return;
         if (plan.id === 'free') {
+            if (facilityId) {
+                try {
+                    const subClient = await getAuthClient(session, { strict: true });
+                    const { updateFacilitySubscription } = await import('../lib/queries');
+                    await updateFacilitySubscription(facilityId, plan.nameEn, subClient);
+                } catch (_e) {
+                    toast.error('무료 플랜 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+                    return;
+                }
+            }
+
             setSelectedPlan(plan.id);
             onSelectPlan?.(plan.id);
             toast.success('무료 플랜으로 설정되었습니다.');

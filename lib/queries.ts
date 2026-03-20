@@ -1,6 +1,7 @@
 import { FUNERAL_COMPANIES } from '../constants';
 import { supabase, setSupabaseAuth } from './supabaseClient';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { normalizeSubscriptionPlanId } from './subscriptionPlanIds';
 
 import { validateImageFile } from './security/fileValidation';
 import { sanitizeSearchInput } from './security/sqlSanitize';
@@ -1432,6 +1433,7 @@ export const incrementAiUsage = async (facilityId: string, client: SupabaseClien
 export const updateFacilitySubscription = async (facilityId: string, planId: string, client: SupabaseClient) => {
     const db = client;
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
+    const normalizedPlanId = normalizeSubscriptionPlanId(planId) ?? planId;
 
     // 1. 플랜 정보 조회 (가격 등) - name_en 우선, name fallback
     let { data: planData } = await db
@@ -1462,7 +1464,7 @@ export const updateFacilitySubscription = async (facilityId: string, planId: str
     nextDate.setMonth(nextDate.getMonth() + 1);
 
     const upsertData: SubscriptionUpsertData = {
-        plan_id: planData?.id || planId,
+        plan_id: normalizedPlanId,
         status: 'active',
         next_billing_date: nextDate.toISOString(),
         updated_at: new Date().toISOString()
@@ -1483,7 +1485,7 @@ export const updateFacilitySubscription = async (facilityId: string, planId: str
         .from('facility_subscriptions')
         .upsert({
             ...upsertData,
-            plan_id: planData?.id || planId
+            plan_id: normalizedPlanId
         }, {
             onConflict: conflictTarget
         })
@@ -1529,7 +1531,7 @@ export const updateFacilitySubscription = async (facilityId: string, planId: str
             const notifications = superAdmins.map(admin => ({
                 user_id: admin.clerk_id,
                 title: '신규 구독 발생',
-                message: `${planData?.name || planId} 플랜 결제가 완료되었습니다.`,
+                message: `${planData?.name || normalizedPlanId} 플랜 결제가 완료되었습니다.`,
                 type: 'success',
                 link: '/admin?tab=subs'
             }));

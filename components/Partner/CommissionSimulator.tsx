@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Calculator, TrendingDown, Lightbulb } from 'lucide-react';
 import type { Subscription } from '../../types/db';
 import { useSystemSettings } from '../../hooks/useSystemSettings';
+import { normalizeSubscriptionPlanId } from '../../lib/subscriptionPlanIds';
 
 const COMMISSION_KEYS = [
     'sj_starter_commission',
@@ -41,7 +42,7 @@ interface Props {
 }
 
 export const CommissionSimulator: React.FC<Props> = ({ subscription }) => {
-    const currentPlanId = subscription?.plan_id ?? '';
+    const currentPlanId = normalizeSubscriptionPlanId(subscription?.plan_id ?? subscription?.plan_name) ?? '';
     const isVisible = !!currentPlanId && !!PLAN_FEES[currentPlanId] && currentPlanId !== 'sj_enterprise';
 
     const { getNumber } = useSystemSettings([...COMMISSION_KEYS]);

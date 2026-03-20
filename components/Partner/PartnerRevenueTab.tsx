@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { UpgradeBenefitComparison } from './UpgradeBenefitComparison';
 import { CommissionSimulator } from './CommissionSimulator';
 import { ActivityStats } from './ActivityStats';
+import { normalizeSubscriptionPlanId } from '../../lib/subscriptionPlanIds';
 
 const SubscriptionPlans = lazy(() => import('../SubscriptionPlans'));
 
@@ -55,7 +56,7 @@ export const PartnerRevenueTab: React.FC<Props> = ({
                     <Suspense fallback={<div className="text-center py-8 text-slate-400 text-sm">로딩중...</div>}>
                         <SubscriptionPlans
                             type="sangjo"
-                            currentPlan={subscription?.plan_id}
+                            currentPlan={normalizeSubscriptionPlanId(subscription?.plan_id ?? subscription?.plan_name) ?? undefined}
                             facilityId={facilityId}
                             onSelectPlan={(planId) => {
                                 toast.success(`${planId} 플랜 신청이 접수되었습니다.`);
