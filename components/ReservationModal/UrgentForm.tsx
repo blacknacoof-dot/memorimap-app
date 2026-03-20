@@ -14,8 +14,8 @@ export const UrgentForm: React.FC<Props> = ({ register, errors, isPetFacility })
     <div className={`border p-4 rounded-xl flex items-start gap-3 ${isPetFacility ? 'bg-purple-50 border-purple-100' : 'bg-red-50 border-red-100'}`}>
       <AlertCircle className={`${isPetFacility ? 'text-purple-600' : 'text-red-600'} shrink-0 mt-0.5`} />
       <div className={`text-sm ${isPetFacility ? 'text-purple-800' : 'text-red-800'}`}>
-        <p className="font-bold mb-1">긴급 장례 접수</p>
-        <p>24시간 즉시 운구 및 빈소 준비를 도와드립니다.</p>
+        <p className="font-bold mb-1">긴급 예약 접수</p>
+        <p>24시간 즉시 접수 및 빈소 준비를 도와드립니다.</p>
       </div>
     </div>
 

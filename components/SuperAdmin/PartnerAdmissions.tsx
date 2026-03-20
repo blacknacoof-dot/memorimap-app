@@ -18,9 +18,35 @@ export const PartnerAdmissions: React.FC = () => {
     const [isRejecting, setIsRejecting] = useState(false);
 
     const handleApprove = async (inquiry: PartnerInquiry) => {
+        // 상조 타입 신청 시 기존 상조 관리자 여부 경고
+        if (inquiry.business_type === 'sangjo' || inquiry.business_type === 'sangjo_hq' as string) {
+            const { data: existing } = await client
+                .from('sangjo_dashboard_users')
+                .select('sangjo_id')
+                .eq('id', inquiry.user_id)
+                .maybeSingle();
+
+            if (existing?.sangjo_id) {
+                const { data: existingFacility } = await client
+                    .from('facilities')
+                    .select('name')
+                    .eq('id', existing.sangjo_id)
+                    .maybeSingle();
+
+                const existingName = existingFacility?.name || existing.sangjo_id;
+                if (!await confirmAsync(
+                    `이 사용자는 이미 "${existingName}" 상조를 관리 중입니다.\n승인하면 새 시설이 생성되지만, 기존 상조 매핑은 유지됩니다.\n계속 진행하시겠습니까?`,
+                    '기존 상조 관리자 경고'
+                )) return;
+            }
+        }
+
         if (!await confirmAsync(`${inquiry.company_name} 업체의 입점을 승인하시겠습니까?`, '입점 승인 확인')) return;
         try {
-            await approvePartner({ inquiryId: inquiry.id, action: 'approve' });
+            const result = await approvePartner({ inquiryId: inquiry.id, action: 'approve' });
+            if (result && 'warning' in result && result.warning) {
+                toast.warning(result.warning as string);
+            }
             toast.success('승인되었습니다.');
             refetch();
         } catch (error: unknown) {

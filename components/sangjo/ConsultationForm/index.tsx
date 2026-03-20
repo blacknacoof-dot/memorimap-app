@@ -73,7 +73,7 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
 
         // Common / Legacy
         time: '즉시 출동',
-        type: isUrgent ? '긴급 출동 접수' : isMemorial ? '추모시설 상담' : '장례 예약 상담',
+        type: isUrgent ? '긴급 접수' : isMemorial ? '추모시설 상담' : '장례 예약 상담',
         location: '',
 
         // Pet Specific
@@ -119,13 +119,13 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
                             {isMemorial ? (
                                 <>🕊️ 추모시설 상담 접수</>
                             ) : isUrgent ? (
-                                <>🚨 긴급 출동 접수</>
+                                <>🚨 긴급 접수</>
                             ) : (
                                 isPetCompany ? '장례 예약 신청' : (isPhoneMode ? '전화 상담 예약' : '채팅 상담 예약')
                             )}
                         </h3>
                         {isMemorial && <p className="text-xs text-white/80 mt-1">{company.name} 상담 신청서</p>}
-                        {isUrgent && <p className="text-xs text-white/80 mt-1">가장 가까운 의전 팀이 즉시 출동합니다.</p>}
+                        {isUrgent && <p className="text-xs text-white/80 mt-1">24시간 긴급 접수가 가능합니다.</p>}
                     </div>
                     <button onClick={onClose} className="p-1 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-white/10 rounded-full transition-colors z-10">
                         <X size={24} className="text-white/80 hover:text-white" />
@@ -180,7 +180,7 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
                         <input type="checkbox" id="privacy" required className={`mt-1 w-4 h-4 text-white focus:ring-0 border-gray-300 rounded checked:${isUrgent ? 'bg-red-600' : themeColor}`} />
                         <label htmlFor="privacy" className="text-xs text-gray-500 leading-tight cursor-pointer">
                             [필수] 개인정보 수집 및 이용에 동의합니다. <br />
-                            <span className="text-gray-400 text-[10px]">(수집 목적: {isMemorial ? '추모시설 상담 및 방문 안내' : isUrgent ? '긴급 출동 연락' : '상담 예약 및 안내'})</span>
+                            <span className="text-gray-400 text-[10px]">(수집 목적: {isMemorial ? '추모시설 상담 및 방문 안내' : isUrgent ? '긴급 접수 및 연락' : '상담 예약 및 안내'})</span>
                         </label>
                     </div>
 
@@ -191,7 +191,7 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
                             className={`w-full ${isMemorial ? 'bg-emerald-600 hover:bg-emerald-700' : isUrgent ? 'bg-red-600 hover:bg-red-700' : (isPetCompany ? 'bg-amber-600 hover:bg-amber-700' : 'bg-gray-900 hover:bg-gray-800')} text-white py-3.5 rounded-xl font-bold text-sm shadow-md active:scale-95 transition-all flex items-center justify-center gap-2`}
                         >
                             {isMemorial ? <Calendar size={18} /> : isUrgent ? <Smartphone size={18} className="animate-pulse" /> : (isPhoneMode ? <Phone size={18} /> : <FileText size={18} />)}
-                            {isMemorial ? '상담 신청하기' : isUrgent ? '긴급 출동 요청하기' : (isPetCompany ? '예약 신청하기' : (isPhoneMode ? '전화 상담 예약' : '상담 신청하기'))}
+                            {isMemorial ? '상담 신청하기' : isUrgent ? '접수 예약하기' : (isPetCompany ? '예약 신청하기' : (isPhoneMode ? '전화 상담 예약' : '상담 신청하기'))}
                         </button>
                     </div>
                 </form>

@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Check, X, Sparkles, Crown, Zap, ChevronDown, ChevronUp, MessageCircle, ShieldCheck, ArrowLeft } from 'lucide-react';
 import { requestPayment, verifyPayment, PORTONE_CONFIG } from '../lib/portone';
 import { toast } from 'sonner';
@@ -309,15 +310,17 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
 
     return (
         <div className="min-h-full bg-slate-50 flex flex-col pt-4 relative">
-            {/* 결제 진행 중 취소 버튼 */}
-            {isPaymentOpen && (
+            {/* 결제 진행 중 취소 버튼 — Portal로 body 끝에 렌더하여 PortOne overlay 위에 표시 */}
+            {isPaymentOpen && createPortal(
                 <button
                     onClick={cancelPayment}
-                    className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[2147483646] bg-white text-slate-700 px-6 py-3.5 rounded-full shadow-2xl border border-slate-200 font-bold text-sm flex items-center gap-2 active:scale-95 transition-transform"
+                    className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[2147483647] bg-white text-slate-700 px-6 py-3.5 min-h-[44px] rounded-full shadow-2xl border border-slate-200 font-bold text-sm flex items-center gap-2 active:scale-95 transition-transform"
+                    style={{ pointerEvents: 'auto' }}
                 >
                     <ArrowLeft size={18} />
                     결제 취소하고 돌아가기
-                </button>
+                </button>,
+                document.body
             )}
             {/* Header Area */}
             <div className="px-6 py-8 text-center bg-white border-b">

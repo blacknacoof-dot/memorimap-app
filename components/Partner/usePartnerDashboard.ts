@@ -7,7 +7,7 @@ import type { SangjoContract } from '../../types/sangjo';
 import type { Subscription, Payment } from '../../types/db';
 import { toast } from 'sonner';
 
-export type ActivePartnerTab = 'overview' | 'chat' | 'ops' | 'consultations' | 'reservations' | 'revenue' | 'settings';
+export type ActivePartnerTab = 'overview' | 'ops' | 'consultations' | 'reservations' | 'revenue' | 'settings';
 
 function mapSangjoContractToConsultation(sc: SangjoContract): Consultation {
   const statusMap: Record<string, Consultation['status']> = {
@@ -148,6 +148,12 @@ export function usePartnerDashboard(partnerId: string) {
   const unreadConsultations = consultations.filter(c => !c.is_read).length;
   const pendingReservations = reservations.filter(r => r.status === 'pending' || r.status === 'urgent').length;
 
+  const now = new Date();
+  const monthlyConsultationCount = consultations.filter(c => {
+    const d = new Date(c.created_at);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  }).length;
+
   return {
     activeTab, setActiveTab,
     isSidebarOpen, setIsSidebarOpen,
@@ -159,5 +165,6 @@ export function usePartnerDashboard(partnerId: string) {
     isSangjo,
     session,
     unreadConsultations, pendingReservations,
+    monthlyConsultationCount,
   };
 }

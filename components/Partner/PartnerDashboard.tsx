@@ -1,9 +1,8 @@
 import React from 'react';
 import {
-  MessageSquare, Truck, Settings, LogOut, User,
+  Truck, Settings, LogOut, User,
   Menu, X, TrendingUp, Calendar, ClipboardList, Wallet,
 } from 'lucide-react';
-import { LiveConsultation } from './LiveConsultation';
 import { OperationsManagement } from './OperationsManagement';
 import { FacilityInfoEditor } from './FacilityInfoEditor';
 import { PartnerReservationsTab } from './PartnerReservationsTab';
@@ -12,6 +11,7 @@ import { NotificationCenter } from '../NotificationCenter';
 import { PartnerConsultationsTab } from './PartnerConsultationsTab';
 import { useClerk } from '../../lib/auth';
 import { usePartnerDashboard } from './usePartnerDashboard';
+import { UpgradeBanner } from './UpgradeBanner';
 
 interface PartnerDashboardProps {
   partnerId: string;
@@ -30,6 +30,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
     showPlanSelector, setShowPlanSelector,
     session,
     unreadConsultations, pendingReservations,
+    monthlyConsultationCount,
   } = usePartnerDashboard(partnerId);
 
   const handleSignOut = async () => {
@@ -42,10 +43,9 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
 
   const menuItems: Array<{ id: string; label: string; icon: typeof ClipboardList; badge?: string }> = [
     { id: 'consultations', label: '상담 관리', icon: ClipboardList, badge: unreadConsultations > 0 ? `${unreadConsultations}` : undefined },
-    { id: 'reservations', label: '예약 관리', icon: Calendar, badge: pendingReservations > 0 ? `${pendingReservations}` : undefined },
-    { id: 'revenue', label: '구독/매출', icon: Wallet },
-    { id: 'chat', label: '실시간 채팅', icon: MessageSquare, badge: 'LIVE' },
     { id: 'ops', label: '운영 현황', icon: Truck },
+    { id: 'reservations', label: '예약 관리', icon: Calendar, badge: pendingReservations > 0 ? `${pendingReservations}` : undefined },
+    { id: 'revenue', label: '요금제 관리', icon: Wallet },
     { id: 'settings', label: '회사 정보', icon: Settings },
   ];
 
@@ -163,6 +163,16 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
           </div>
         </header>
 
+        {/* 업그레이드 배너 */}
+        <UpgradeBanner
+          subscription={subscription}
+          monthlyConsultationCount={monthlyConsultationCount}
+          onNavigate={() => {
+            setActiveTab('revenue');
+            setShowPlanSelector(true);
+          }}
+        />
+
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto p-4 md:p-10 bg-slate-50">
           <div className="max-w-[1400px] mx-auto">
@@ -191,7 +201,6 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
                 setShowPlanSelector={setShowPlanSelector}
               />
             )}
-            {activeTab === 'chat' && facilityId && <LiveConsultation partnerId={facilityId} />}
             {activeTab === 'ops' && facilityId && <OperationsManagement partnerId={facilityId} />}
             {activeTab === 'settings' && (
               facilityId ? (

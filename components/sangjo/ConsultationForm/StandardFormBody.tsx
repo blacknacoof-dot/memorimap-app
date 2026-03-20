@@ -82,11 +82,11 @@ export const StandardFormBody: React.FC<StandardFormBodyProps> = ({
                             </>
                         ) : (
                             <>
-                                <option value="상품 가입 문의">상품 가입 문의</option>
-                                <option value="상품 계약 진행">상품 계약 진행</option>
+                                <option value="장례 예약 상담">장례 예약 상담</option>
+                                <option value="장례 절차 문의">장례 절차 문의</option>
+                                <option value="빈소 예약">빈소 예약</option>
                                 <option value="장례 접수 (긴급)">장례 접수 (긴급)</option>
-                                <option value="멤버십/제휴 혜택">멤버십/제휴 혜택</option>
-                                <option value="서비스 선택/변경">서비스 선택/변경</option>
+                                <option value="비용 안내">비용 안내</option>
                                 <option value="기타 상담">기타 상담</option>
                             </>
                         )}

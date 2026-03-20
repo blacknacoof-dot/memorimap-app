@@ -16,7 +16,7 @@ import { useSession } from '../lib/auth';
 import { getAuthClient } from '../lib/supabaseClient';
 import { saveSangjoContract, resolveSangjoDbId } from '../lib/sangjoQueries';
 import { ConsultationForm } from './sangjo/ConsultationForm';
-import { createLead } from '../lib/queries';
+import { createLead, createConsultationFromLead } from '../lib/queries';
 
 const FuneralCompanySheet = React.lazy(() => import('./FuneralCompanySheet').then(m => ({ default: m.FuneralCompanySheet })));
 const SangjoConsultationModal = React.lazy(() => import('./Consultation/SangjoConsultationModal').then(m => ({ default: m.SangjoConsultationModal })));
@@ -286,7 +286,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
           onSubmit={async (data) => {
             try {
               const client = await getAuthClient(session, { strict: true });
-              await createLead({
+              const lead = await createLead({
                 userId: userInfo?.id,
                 facilityId: String(directConsultFacility.id),
                 contactName: (data.name as string) || '',
@@ -295,8 +295,12 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
                 urgency: 'high',
                 priorities: data.requests ? [data.requests as string] : [],
                 contextData: { ...data, source: 'DirectConsult' },
-                notes: `[바로예약하기] ${(data.requests as string) || ''}`,
+                notes: `[바로예약하기] ${(data.type as string) || ''} — ${(data.requests as string) || ''}`,
               }, client);
+              // Lead → Consultation 변환: 시설 대시보드에 상담 접수 표시
+              if (lead?.id) {
+                await createConsultationFromLead(lead.id, String(directConsultFacility.id), client);
+              }
               setDirectConsultFacility(null);
               showToast('상담 신청이 완료되었습니다! 10분 내로 연락드립니다.', 'success');
             } catch {

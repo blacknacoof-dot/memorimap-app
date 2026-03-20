@@ -1,12 +1,14 @@
 import React, { lazy, Suspense } from 'react';
 import {
-    TrendingUp, Crown,
-    Wallet, CreditCard, BarChart3, X
+    Crown, Wallet, CreditCard, BarChart3, X
 } from 'lucide-react';
 import { Consultation } from '../../lib/queries';
 import { Reservation } from '../../types';
 import type { Subscription, Payment } from '../../types/db';
 import { toast } from 'sonner';
+import { UpgradeBenefitComparison } from './UpgradeBenefitComparison';
+import { CommissionSimulator } from './CommissionSimulator';
+import { ActivityStats } from './ActivityStats';
 
 const SubscriptionPlans = lazy(() => import('../SubscriptionPlans'));
 
@@ -24,6 +26,18 @@ export const PartnerRevenueTab: React.FC<Props> = ({
     consultations, reservations, subscription, payments,
     facilityId, showPlanSelector, setShowPlanSelector
 }) => {
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    const thisYear = now.getFullYear();
+    const monthlyConsultations = consultations.filter(c => {
+        const d = new Date(c.created_at);
+        return d.getFullYear() === thisYear && d.getMonth() === thisMonth;
+    });
+    const monthlyReservations = reservations.filter(r => {
+        const d = new Date(r.visit_date);
+        return d.getFullYear() === thisYear && d.getMonth() === thisMonth;
+    });
+
     return (
         <div className="space-y-6">
             {/* 요금제 선택 패널 */}
@@ -84,11 +98,11 @@ export const PartnerRevenueTab: React.FC<Props> = ({
                             <BarChart3 className="w-6 h-6" />
                         </div>
                     </div>
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">총 상담 건수</p>
-                    <h2 className="text-2xl font-black text-slate-800">{consultations.length}건</h2>
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">이번 달 상담</p>
+                    <h2 className="text-2xl font-black text-slate-800">{monthlyConsultations.length}건</h2>
                     <p className="text-[10px] text-slate-400 mt-2">
                         답변 완료 <span className="text-emerald-600 font-bold">
-                            {consultations.filter(c => c.status === 'accepted' || c.status === 'completed').length}건
+                            {monthlyConsultations.filter(c => c.status === 'accepted' || c.status === 'completed').length}건
                         </span>
                     </p>
                 </div>
@@ -99,78 +113,28 @@ export const PartnerRevenueTab: React.FC<Props> = ({
                             <CreditCard className="w-6 h-6" />
                         </div>
                     </div>
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">총 예약 건수</p>
-                    <h2 className="text-2xl font-black text-slate-800">{reservations.length}건</h2>
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">이번 달 예약</p>
+                    <h2 className="text-2xl font-black text-slate-800">{monthlyReservations.length}건</h2>
                     <p className="text-[10px] text-slate-400 mt-2">
                         확정 <span className="text-green-600 font-bold">
-                            {reservations.filter(r => r.status === 'confirmed').length}건
+                            {monthlyReservations.filter(r => r.status === 'confirmed').length}건
                         </span>
                     </p>
                 </div>
             </div>
 
-            {/* 월별 상담 추이 (최근 6개월) */}
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
-                <h3 className="font-black text-slate-800 mb-4 flex items-center gap-2">
-                    <TrendingUp size={18} className="text-blue-600" />
-                    월별 상담/예약 추이
-                </h3>
-                <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-                    {(() => {
-                        const months: { label: string; cons: number; res: number }[] = [];
-                        for (let i = 5; i >= 0; i--) {
-                            const d = new Date();
-                            d.setMonth(d.getMonth() - i);
-                            const y = d.getFullYear();
-                            const m = d.getMonth();
-                            const label = `${m + 1}월`;
-                            const cons = consultations.filter(c => {
-                                const cd = new Date(c.created_at);
-                                return cd.getFullYear() === y && cd.getMonth() === m;
-                            }).length;
-                            const res = reservations.filter(r => {
-                                const rd = new Date(r.visit_date);
-                                return rd.getFullYear() === y && rd.getMonth() === m;
-                            }).length;
-                            months.push({ label, cons, res });
-                        }
-                        const maxVal = Math.max(1, ...months.map(m => m.cons + m.res));
-                        return months.map((m, i) => (
-                            <div key={i} className="text-center">
-                                <div className="h-32 flex flex-col items-center justify-end gap-0.5 mb-2">
-                                    <div
-                                        className="w-8 bg-blue-500 rounded-t-lg transition-all"
-                                        style={{ height: `${(m.cons / maxVal) * 100}%`, minHeight: m.cons > 0 ? 4 : 0 }}
-                                        title={`상담 ${m.cons}건`}
-                                    />
-                                    <div
-                                        className="w-8 bg-amber-400 rounded-b-lg transition-all"
-                                        style={{ height: `${(m.res / maxVal) * 100}%`, minHeight: m.res > 0 ? 4 : 0 }}
-                                        title={`예약 ${m.res}건`}
-                                    />
-                                </div>
-                                <span className="text-[10px] font-bold text-slate-500">{m.label}</span>
-                                <div className="text-[9px] text-slate-400 mt-0.5">{m.cons + m.res}건</div>
-                            </div>
-                        ));
-                    })()}
-                </div>
-                <div className="flex gap-4 mt-4 justify-center">
-                    <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
-                        <div className="w-3 h-3 bg-blue-500 rounded" /> 상담
-                    </div>
-                    <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
-                        <div className="w-3 h-3 bg-amber-400 rounded" /> 예약
-                    </div>
-                </div>
-            </div>
+            {/* 활동 통계 (최근 6개월 + 전환율) */}
+            <ActivityStats consultations={consultations} reservations={reservations} />
+
+            {/* 수수료 절감 시뮬레이터 */}
+            <CommissionSimulator subscription={subscription} />
 
             {/* 결제 내역 */}
             <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-100">
                     <h3 className="font-black text-slate-800 flex items-center gap-2">
                         <Wallet size={18} className="text-blue-600" />
-                        결제 내역
+                        구독 결제 내역
                     </h3>
                 </div>
                 {payments.length > 0 ? (
@@ -212,17 +176,23 @@ export const PartnerRevenueTab: React.FC<Props> = ({
                     </div>
                 ) : (
                     <div className="p-12 text-center text-slate-400 text-sm">
-                        결제 내역이 없습니다.
+                        구독 결제 내역이 없습니다.
                     </div>
                 )}
             </div>
+
+            {/* 업그레이드 혜택 비교 */}
+            <UpgradeBenefitComparison
+                subscription={subscription}
+                onUpgrade={() => setShowPlanSelector(true)}
+            />
 
             {/* 구독 플랜 상세 */}
             {subscription && (
                 <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
                     <h3 className="font-black text-slate-800 mb-4 flex items-center gap-2">
                         <Crown size={18} className="text-purple-600" />
-                        구독 플랜 상세
+                        현재 요금제
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="bg-slate-50 rounded-2xl p-4">
