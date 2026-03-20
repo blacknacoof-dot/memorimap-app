@@ -191,8 +191,8 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
         <div className="h-full relative">
           <div className="h-full flex flex-col pt-24 pb-20 bg-gray-50">
             <div className="px-4 shrink-0">
-              {showPromo && <div className="h-20"></div>}
-              <div className="flex items-center justify-between mb-4">
+              {showPromo && <div className="h-12"></div>}
+              <div className="flex items-center justify-between mb-2">
                 <h2 className="font-bold text-lg">추천 시설 목록</h2>
                 {isDataLoading && (
                   <div className="text-xs text-primary flex items-center gap-1">

@@ -8,6 +8,7 @@ interface Props {
     onCancel?: (reservationId: string) => void;
     onWriteReview?: (facilityId: string) => void;
     emptyMessage?: string;
+    emptyIcon?: React.ReactNode;
 }
 
 export const ReservationList: React.FC<Props> = ({
@@ -15,12 +16,14 @@ export const ReservationList: React.FC<Props> = ({
     onViewDetails,
     onCancel,
     onWriteReview,
-    emptyMessage = '예약 내역이 없습니다.'
+    emptyMessage = '예약 내역이 없습니다.',
+    emptyIcon,
 }) => {
     if (reservations.length === 0) {
         return (
-            <div className="text-center py-12 text-gray-500">
-                <p>{emptyMessage}</p>
+            <div className="flex flex-col items-center justify-center py-12 text-gray-400 bg-white rounded-xl border border-dashed">
+                {emptyIcon}
+                <p className="text-sm">{emptyMessage}</p>
             </div>
         );
     }

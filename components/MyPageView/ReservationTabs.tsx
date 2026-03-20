@@ -1,5 +1,5 @@
 import React from 'react';
-import { Loader2, Calendar } from 'lucide-react';
+import { Loader2, Calendar, CalendarX2 } from 'lucide-react';
 import { Reservation, Facility } from '../../types';
 import { ReservationList } from '../ReservationList';
 import { MyConsultations } from '../dashboard/MyConsultations';
@@ -55,7 +55,7 @@ export const ReservationTabs: React.FC<Props> = ({
         </button>
       </div>
 
-      <div className="mb-8">
+      <div className="mb-4">
         {activeTab === 'consultations' ? (
           <MyConsultations
             userId={userId}
@@ -77,10 +77,11 @@ export const ReservationTabs: React.FC<Props> = ({
             reservations={filteredReservations}
             onViewDetails={onViewDetails}
             onCancel={onCancel}
+            emptyIcon={<CalendarX2 size={32} className="text-gray-300 mb-2" />}
             emptyMessage={
-              activeTab === 'pending' ? '대기중인 예약이 없습니다.' :
+              activeTab === 'pending' ? '대기 중인 예약이 없습니다. 시설을 둘러보고 예약해보세요.' :
               activeTab === 'confirmed' ? '확정된 예약이 없습니다.' :
-              '취소/거절 예약이 없습니다.'
+              '취소/거절된 예약이 없습니다.'
             }
           />
         )}

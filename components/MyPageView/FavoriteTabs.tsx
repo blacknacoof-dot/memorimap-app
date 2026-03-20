@@ -1,10 +1,12 @@
 import React from 'react';
-import { Heart, Star, Loader2 } from 'lucide-react';
+import { Heart, Search, Loader2 } from 'lucide-react';
 import { Facility, FuneralCompany } from '../../types';
 import type { Favorite } from '../../services/favoriteService';
 import type { SangjoFavorite } from '../../services/sangjoFavoriteService';
 import { FUNERAL_COMPANIES } from '../../constants';
 import type { ActiveTab } from './useMyPage';
+import { FavoriteCard } from './FavoriteCard';
+import { SangjoFavoriteCard } from './SangjoFavoriteCard';
 
 interface Props {
   activeTab: ActiveTab;
@@ -20,6 +22,13 @@ interface Props {
   onRemoveFavorite: (facilityId: string) => void;
   onRemoveSangjoFavorite: (favId: string, companyId: string) => void;
 }
+
+const EmptyState: React.FC<{ message: string }> = ({ message }) => (
+  <div className="flex flex-col items-center justify-center py-12 text-gray-400 bg-white rounded-xl border border-dashed">
+    <Search size={32} className="mb-3 text-gray-300" />
+    <p className="text-sm">{message}</p>
+  </div>
+);
 
 export const FavoriteTabs: React.FC<Props> = ({
   activeTab, setActiveTab, myFavorites, isLoadingFavorites, extraFacilities, facilities,
@@ -54,12 +63,12 @@ export const FavoriteTabs: React.FC<Props> = ({
         </button>
       </div>
 
-      <div className="mb-10">
+      <div className="mb-4">
         {activeTab === 'favorites' && (
           isLoadingFavorites ? (
             <div className="text-center py-10"><Loader2 size={32} className="animate-spin text-primary mx-auto" /></div>
           ) : myFavorites.length === 0 ? (
-            <div className="text-center py-10 text-gray-400 bg-white rounded-xl border border-dashed">즐겨찾기한 시설이 없습니다.</div>
+            <EmptyState message="마음에 드는 시설을 찜해보세요" />
           ) : (
             <div className="space-y-3">
               {myFavorites.map(fav => {
@@ -67,46 +76,12 @@ export const FavoriteTabs: React.FC<Props> = ({
                   extraFacilities.get(String(fav.facility_id));
                 if (!facility) return null;
                 return (
-                  <div
+                  <FavoriteCard
                     key={fav.id}
-                    onClick={() => onSelectFacility?.(facility)}
-                    className="bg-white border rounded-xl p-4 hover:shadow-md transition-shadow relative cursor-pointer active:scale-[0.98]"
-                  >
-                    <div className="flex gap-4">
-                      <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden shrink-0">
-                        {facility.imageUrl
-                          ? <img src={facility.imageUrl} alt={facility.name} className="w-full h-full object-cover" />
-                          : <div className="w-full h-full flex items-center justify-center text-gray-400">No Image</div>
-                        }
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-start">
-                          <h3 className="font-bold text-gray-900 truncate pr-6">{facility.name}</h3>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); onRemoveFavorite(facility.id); }}
-                            className="text-red-500 hover:bg-red-50 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full absolute top-1 right-1 z-10"
-                            title="즐겨찾기 해제"
-                          >
-                            <Heart size={18} fill="currentColor" />
-                          </button>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1 truncate">{facility.address}</p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px] font-medium">
-                            {facility.type === 'charnel' ? '봉안시설' :
-                             facility.type === 'natural' ? '자연장' :
-                             facility.type === 'funeral' ? '장례식장' :
-                             facility.type === 'sea' ? '해양장' :
-                             facility.type === 'pet' ? '동물장' : '공원묘지'}
-                          </span>
-                          <div className="flex items-center text-xs text-yellow-500 font-bold">
-                            <Star size={12} fill="currentColor" />
-                            <span className="ml-0.5">{Math.round(facility.rating || 0)}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                    facility={facility}
+                    onSelect={onSelectFacility}
+                    onRemove={onRemoveFavorite}
+                  />
                 );
               })}
             </div>
@@ -117,7 +92,7 @@ export const FavoriteTabs: React.FC<Props> = ({
           isLoadingSangjoFavorites ? (
             <div className="text-center py-10"><Loader2 size={32} className="animate-spin text-primary mx-auto" /></div>
           ) : sangjoFavorites.length === 0 ? (
-            <div className="text-center py-10 text-gray-400 bg-white rounded-xl border border-dashed">즐겨찾기한 상조 회사가 없습니다.</div>
+            <EmptyState message="상조 서비스를 비교하고 찜해보세요" />
           ) : (
             <div className="space-y-3">
               {(() => {
@@ -128,39 +103,14 @@ export const FavoriteTabs: React.FC<Props> = ({
                   if (!company || seenIds.has(company.id)) return null;
                   seenIds.add(company.id);
                   return (
-                    <div
+                    <SangjoFavoriteCard
                       key={fav.id}
-                      onClick={() => onSelectCompany?.(company)}
-                      className="bg-white border rounded-xl p-4 hover:shadow-md transition-shadow relative cursor-pointer active:scale-[0.98]"
-                    >
-                      <div className="flex gap-4">
-                        <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden shrink-0">
-                          <img src={company.imageUrl} alt={company.name} className="w-full h-full object-cover" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-between items-start">
-                            <h3 className="font-bold text-gray-900 truncate pr-6">{company.name}</h3>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); onRemoveSangjoFavorite(fav.id, company.id); }}
-                              className="text-red-500 hover:bg-red-50 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full absolute top-1 right-1 z-10"
-                              title="즐겨찾기 해제"
-                            >
-                              <Heart size={18} fill="currentColor" />
-                            </button>
-                          </div>
-                          <p className="text-xs text-gray-500 mt-1">{company.description}</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <div className="flex items-center text-xs text-yellow-500 font-bold">
-                              <Star size={12} fill="currentColor" />
-                              <span className="ml-0.5">{company.rating}</span>
-                            </div>
-                            <span className="text-xs text-gray-400">
-                              {new Date(fav.created_at).toLocaleDateString()} 추가
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                      company={company}
+                      addedDate={fav.created_at}
+                      favId={fav.id}
+                      onSelect={onSelectCompany}
+                      onRemove={onRemoveSangjoFavorite}
+                    />
                   );
                 });
               })()}

@@ -14,13 +14,13 @@ interface Props {
 export const ProfileSection: React.FC<Props> = ({
   user, userRole, userPhone, pendingCount, onEditProfile, onNavigate,
 }) => (
-  <div className="flex items-center gap-4 mb-4">
-    <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center relative">
+  <div className="flex items-center gap-3 mb-3">
+    <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center relative shrink-0">
       {user.imageUrl ? (
         <img src={user.imageUrl} alt="Profile" className="w-full h-full rounded-full object-cover" />
       ) : (
         <div className="w-full h-full bg-gray-300 rounded-full flex items-center justify-center">
-          <User size={32} className="text-gray-500" />
+          <User size={24} className="text-gray-500" />
         </div>
       )}
       {(userRole === 'facility_admin' || userRole === 'facility_manager') && (
@@ -36,21 +36,21 @@ export const ProfileSection: React.FC<Props> = ({
     </div>
 
     <div>
-      <div className="flex items-center gap-2">
-        <h2 className="font-bold text-xl">{user.name || '이름 없음'}님</h2>
+      <div className="flex items-center gap-1.5">
+        <h2 className="font-bold text-base">{user.name || '이름 없음'}님</h2>
         <button
           onClick={onEditProfile}
           className="text-gray-400 hover:text-primary transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
           title="프로필 수정"
         >
-          <Settings2 size={18} />
+          <Settings2 size={16} />
         </button>
       </div>
-      <p className="text-sm text-gray-500">{user.email}</p>
+      <p className="text-xs text-gray-500 leading-tight">{user.email}</p>
       {userPhone ? (
-        <p className="text-sm text-gray-500">{userPhone}</p>
+        <p className="text-xs text-gray-500 leading-tight">{userPhone}</p>
       ) : (
-        <p className="text-xs text-gray-400 mt-1">등록된 전화번호가 없습니다</p>
+        <p className="text-[11px] text-gray-400">등록된 전화번호가 없습니다</p>
       )}
       {pendingCount > 0 && (
         <span className="inline-block mt-1 px-2 py-0.5 bg-primary/10 text-primary text-xs font-bold rounded-full">

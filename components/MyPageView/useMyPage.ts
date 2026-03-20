@@ -9,7 +9,7 @@ import { getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
 import { normalizeType } from '../../utils/facilityNormalizer';
 
-export type ActiveTab = 'consultations' | 'pending' | 'confirmed' | 'cancelled' | 'favorites' | 'sangjo_favorites' | 'reviews';
+export type ActiveTab = 'consultations' | 'pending' | 'confirmed' | 'cancelled' | 'favorites' | 'sangjo_favorites';
 
 interface UseMyPageProps {
   isLoggedIn: boolean;
@@ -60,7 +60,7 @@ export function useMyPage({ isLoggedIn, user, facilities: _facilities }: UseMyPa
       const data = await getMyReservations(user.id, client);
       setMyReservations(data as unknown as Reservation[]);
     } catch {
-      // silent
+      toast.error('예약 내역을 불러오지 못했습니다.');
     } finally {
       setIsLoadingReservations(false);
     }
@@ -107,8 +107,8 @@ export function useMyPage({ isLoggedIn, user, facilities: _facilities }: UseMyPa
           });
         }
       }
-    } catch (_error) {
-      // silent
+    } catch {
+      toast.error('즐겨찾기를 불러오지 못했습니다.');
     } finally {
       setIsLoadingFavorites(false);
     }
@@ -123,8 +123,8 @@ export function useMyPage({ isLoggedIn, user, facilities: _facilities }: UseMyPa
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id);
       setConsultationCount(count || 0);
-    } catch (_err) {
-      // silent
+    } catch {
+      toast.error('상담 내역을 불러오지 못했습니다.');
     }
   }
 
@@ -140,8 +140,8 @@ export function useMyPage({ isLoggedIn, user, facilities: _facilities }: UseMyPa
         .order('created_at', { ascending: false });
       if (error) throw error;
       setSangjoFavorites(data || []);
-    } catch (_err) {
-      // silent
+    } catch {
+      toast.error('상조 즐겨찾기를 불러오지 못했습니다.');
     } finally {
       setIsLoadingSangjoFavorites(false);
     }
