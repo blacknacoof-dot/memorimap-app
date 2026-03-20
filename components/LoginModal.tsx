@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 interface Props {
   onClose: () => void;
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export const LoginModal: React.FC<Props> = ({ onClose, onLogin, onSignUpClick }) => {
+  useScrollLock(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -95,7 +97,7 @@ export const LoginModal: React.FC<Props> = ({ onClose, onLogin, onSignUpClick })
 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" data-testid="login-modal">
-      <div className="bg-white w-full max-w-md max-h-[90vh] rounded-2xl shadow-2xl overflow-y-auto animate-in fade-in zoom-in-95 duration-200 relative">
+      <div className="bg-white w-full max-w-md max-h-[90dvh] rounded-2xl shadow-2xl overflow-y-auto animate-in fade-in zoom-in-95 duration-200 relative">
         <button
           onClick={onClose}
           className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 z-10 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useScrollLock } from '../../hooks/useScrollLock';
 import { FuneralCompany } from '../../types';
 import { X, Check, Phone, User, Clock, ShieldCheck, HeartHandshake, Loader2 } from 'lucide-react';
 
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export const SangjoContractModal: React.FC<Props> = ({ company, onClose, onConfirm }) => {
+    useScrollLock(true);
     const [step, setStep] = useState(1);
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');

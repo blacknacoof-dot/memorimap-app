@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useScrollLock } from '../hooks/useScrollLock';
 import { X, Heart, Phone, FileText, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import type { EndingNoteLevel } from '../types/subscription';
@@ -25,6 +26,7 @@ const PREFERENCE_OPTIONS = [
 ];
 
 export default function EndingNoteEditModal({ isOpen, onClose, currentNote, onSave, endingNoteLevel = 'full', onUpgrade }: EndingNoteEditModalProps) {
+    useScrollLock(true);
     const [preferences, setPreferences] = useState<string[]>([]);
     const [contact, setContact] = useState('');
     const [memo, setMemo] = useState('');

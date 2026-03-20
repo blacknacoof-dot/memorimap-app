@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useScrollLock } from '../../hooks/useScrollLock';
 import { X, ArrowLeft } from 'lucide-react';
 import { analytics } from '../../lib/analytics';
 import { Facility, Reservation as LegacyReservation } from '../../types';
@@ -23,6 +24,7 @@ interface Props {
 export const ReservationModal: React.FC<Props> = ({
   facility, onClose, onConfirm, reservationMode = 'STANDARD',
 }) => {
+  useScrollLock(true);
   const isPetFacility = facility.type === 'pet' || facility.type === 'pet_funeral';
   const isMemorialFacility = ['cemetery', 'columbarium', 'natural_burial', 'sea_burial'].includes(facility.type || '');
   const steps = reservationMode === 'URGENT' ? STEPS_URGENT : STEPS_STANDARD;

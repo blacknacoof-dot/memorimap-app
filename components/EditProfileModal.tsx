@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useScrollLock } from '../hooks/useScrollLock';
 import { X, User, Phone, Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateUserProfile } from '../lib/queries';
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export const EditProfileModal: React.FC<Props> = ({ user, onClose, onUpdate }) => {
+    useScrollLock(true);
     // 초기값만 사용, 이후 user prop 변경에 리셋되지 않음
     const initialRef = useRef({ name: user.name || '', phone: user.phone || '' });
     const [name, setName] = useState(initialRef.current.name);

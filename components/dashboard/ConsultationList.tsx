@@ -227,7 +227,7 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
             </div>
 
             {/* List */}
-            <div className="divide-y divide-slate-100 max-h-[60vh] md:max-h-[500px] overflow-y-auto">
+            <div className="divide-y divide-slate-100 max-h-[60dvh] md:max-h-[500px] overflow-y-auto">
                 {isLoading ? (
                     <div className="p-8 text-center text-slate-400">
                         <RefreshCw className="animate-spin mx-auto mb-2" size={24} />
@@ -287,7 +287,7 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
 
                                 {/* Expanded Details */}
                                 {isExpanded && (
-                                    <div className="px-4 pb-4 space-y-3 max-h-[60vh] overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="px-4 pb-4 space-y-3 max-h-[60dvh] overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
                                         {/* Details Grid */}
                                         <div className="bg-slate-50 rounded-xl p-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                                             <div className="flex items-center gap-2">

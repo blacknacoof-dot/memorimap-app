@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useScrollLock } from '../../hooks/useScrollLock';
 import { Message } from '../../types/consultation';
 import { ChatMessage } from './ChatMessage';
 import { Loader2, ShieldCheck } from 'lucide-react';
@@ -32,6 +33,7 @@ import { SangjoBrandScenario } from './SangjoBrandScenario';
 import { PetChatInterface } from './PetChatInterface';
 
 export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onCompanySelect, currentUser }) => {
+    useScrollLock(true);
     const { session } = useSession();
     const [activeCompany, setActiveCompany] = useState<FuneralCompany | null | undefined>(company);
 

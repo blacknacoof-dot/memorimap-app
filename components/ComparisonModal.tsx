@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useScrollLock } from '../hooks/useScrollLock';
 import { confirmAsync } from '../src/components/common/ConfirmModal';
 import { Facility, getCategoryLabel, normalizeCategoryValue, StandardFacilityCategoryType } from '../types';
 import { X, Star, MapPin, Trash2, AlertCircle, BadgeCheck } from 'lucide-react';
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export const ComparisonModal: React.FC<Props> = ({ facilities, onClose, onRemove, onBook }) => {
+  useScrollLock(true);
   useEffect(() => {
     const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', h);

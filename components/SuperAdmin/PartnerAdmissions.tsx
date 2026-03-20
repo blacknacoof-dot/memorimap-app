@@ -147,7 +147,7 @@ export const PartnerAdmissions: React.FC = () => {
             {/* 거절 사유 입력 모달 */}
             {rejectTarget && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 max-h-[80dvh] overflow-y-auto">
                         <h3 className="text-lg font-bold text-slate-800">거절 사유 입력</h3>
                         <p className="text-sm text-slate-500">
                             <strong>{rejectTarget.name}</strong> 업체의 입점을 거절합니다.

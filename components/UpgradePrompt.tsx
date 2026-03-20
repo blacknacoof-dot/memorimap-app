@@ -1,4 +1,5 @@
 import React from 'react';
+import { useScrollLock } from '../hooks/useScrollLock';
 import { X, Crown, TrendingUp } from 'lucide-react';
 
 interface UpgradePromptProps {
@@ -18,6 +19,7 @@ export default function UpgradePrompt({
   limit,
   onNavigateToPlan,
 }: UpgradePromptProps) {
+  useScrollLock(true);
   if (!isOpen) return null;
 
   return (

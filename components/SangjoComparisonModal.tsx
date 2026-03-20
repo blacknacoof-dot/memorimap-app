@@ -1,4 +1,5 @@
 import React from 'react';
+import { useScrollLock } from '../hooks/useScrollLock';
 import { FuneralCompany } from '../types';
 import { X, Star, Trash2, ShieldCheck, HeartHandshake, Gift, Scale } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -29,6 +30,7 @@ const CompanyCell = ({ children, className = "" }: { children: React.ReactNode, 
 );
 
 export const SangjoComparisonModal: React.FC<Props> = ({ companies, onClose, onRemove, onSelect }) => {
+    useScrollLock(true);
     if (companies.length === 0) return null;
 
     return (

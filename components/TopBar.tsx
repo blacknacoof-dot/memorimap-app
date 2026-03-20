@@ -118,7 +118,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </div>
             <button
               onClick={() => setShowPromo(false)}
-              className="text-gray-500 hover:text-white transition-colors p-1"
+              className="text-gray-500 hover:text-white transition-colors p-3 -m-2 min-w-[44px] min-h-[44px] flex items-center justify-center shrink-0"
             >
               <X size={14} className="md:hidden" />
               <X size={16} className="hidden md:block" />

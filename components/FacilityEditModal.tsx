@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useScrollLock } from '../hooks/useScrollLock';
 import { X, Save, Loader2, Building2, MapPin, Phone, FileText, ImagePlus, Trash2, Plus, Mail, Globe, Clock, Package, Tag, Users } from 'lucide-react';
 import { updateFacility, uploadFacilityImage } from '../lib/queries';
 import { getAuthClient } from '../lib/supabaseClient';
@@ -33,6 +34,7 @@ const EMPTY_PACKAGE: FacilityPackage = { name: '', price: 0, items: [], descript
 const EMPTY_MANAGER: FacilityManager = { name: '', position: '', phone: '' };
 
 export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }) => {
+    useScrollLock(true);
     const { session } = useSession();
     const [activeTab, setActiveTab] = useState<TabKey>('basic');
     const [isSubmitting, setIsSubmitting] = useState(false);

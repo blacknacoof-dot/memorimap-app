@@ -52,11 +52,26 @@ body,
    ============================================ */
 
 :root {
-  /* Safe Area Insets (iOS ��ġ/Ȩ�� ����) */
+  /* Safe Area Insets */
   --safe-area-inset-top: env(safe-area-inset-top, 0px);
   --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
   --safe-area-inset-left: env(safe-area-inset-left, 0px);
   --safe-area-inset-right: env(safe-area-inset-right, 0px);
+
+  /* Layout Height Tokens */
+  --topbar-h: 3rem;
+  --bottomnav-h: 3.75rem;
+}
+
+/* dvh polyfill — dvh 미지원 브라우저(삼성인터넷 <18, 구형 인앱)에서 vh fallback */
+@supports not (height: 1dvh) {
+  .max-h-\[90dvh\] { max-height: 90vh; }
+  .max-h-\[85dvh\] { max-height: 85vh; }
+  .max-h-\[80dvh\] { max-height: 80vh; }
+  .max-h-\[75dvh\] { max-height: 75vh; }
+  .h-\[88dvh\] { height: 88vh; }
+  .h-\[85dvh\] { height: 85vh; }
+  .h-\[80dvh\] { height: 80vh; }
 }
 
 body {

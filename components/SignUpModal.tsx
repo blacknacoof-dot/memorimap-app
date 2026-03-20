@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Eye, EyeOff, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 interface Props {
   onClose: () => void;
@@ -65,6 +66,7 @@ const PRIVACY_POLICY = `1. 수집하는 개인정보 항목
 개인정보 관련 문의는 서비스 내 고객센터를 통해 접수하실 수 있습니다.`;
 
 export const SignUpModal: React.FC<Props> = ({ onClose, onLoginClick }) => {
+  useScrollLock(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -166,7 +168,7 @@ export const SignUpModal: React.FC<Props> = ({ onClose, onLoginClick }) => {
 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white w-full max-w-md max-h-[90vh] rounded-2xl shadow-2xl overflow-y-auto animate-in fade-in zoom-in-95 duration-200 relative">
+      <div className="bg-white w-full max-w-md max-h-[90dvh] rounded-2xl shadow-2xl overflow-y-auto animate-in fade-in zoom-in-95 duration-200 relative">
         <button
           onClick={onClose}
           className="sticky top-0 float-right text-gray-400 hover:text-gray-600 z-10 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center mr-1 mt-1"

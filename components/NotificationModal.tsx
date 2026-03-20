@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useScrollLock } from '../hooks/useScrollLock';
 import { Bell, X, CheckCircle, AlertTriangle, Info, Trash2, Check } from 'lucide-react';
 import { UserNotification } from '@/types/db';
 import { confirmAsync } from '../src/components/common/ConfirmModal';
@@ -71,15 +72,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
         }
     }
 
-    // Prevent body scroll when modal is open
-    useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
-        }
-        return () => { document.body.style.overflow = ''; };
-    }, [isOpen]);
+    useScrollLock(isOpen);
 
     const handleClose = useCallback(() => {
         setIsClosing(true);

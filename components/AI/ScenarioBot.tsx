@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useScrollLock } from '../../hooks/useScrollLock';
 import {
     X, Send, Bot,
     User, Phone, DollarSign, MapPin,
@@ -35,6 +36,7 @@ interface Message {
 }
 
 export const ScenarioBot: React.FC<ScenarioBotProps> = ({ facilityId, onClose }) => {
+    useScrollLock(true);
     const [messages, setMessages] = useState<Message[]>([]);
     const [facility, setFacility] = useState<FacilityInfo | null>(null);
     const [_loading, setLoading] = useState(true);

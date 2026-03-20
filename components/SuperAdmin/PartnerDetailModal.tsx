@@ -1,4 +1,5 @@
 import React from 'react';
+import { useScrollLock } from '../../hooks/useScrollLock';
 import {
     Users, CheckCircle2, AlertCircle,
     Building2, Mail, Phone, Calendar, X
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export const PartnerDetailModal: React.FC<Props> = ({ partner, onClose, onStatusChange }) => {
+    useScrollLock(true);
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4">
             <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80dvh] overflow-y-auto">

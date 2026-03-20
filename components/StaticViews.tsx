@@ -22,9 +22,9 @@ const Header = ({ title, onBack }: { title: string, onBack: () => void }) => (
 // --- 장례/추모 가이드 ---
 export const GuideView: React.FC<ViewProps> = ({ onBack }) => {
   return (
-    <div className="bg-gray-50 min-h-full pb-20">
+    <div className="h-full overflow-y-auto bg-gray-50">
       <Header title="장례/추모 가이드" onBack={onBack} />
-      <div className="p-4 space-y-4">
+      <div className="p-4 space-y-4 pb-20">
         <div className="bg-white p-5 rounded-xl shadow-sm border">
           <h3 className="font-bold text-lg mb-2 text-primary">장례 3일장 절차</h3>
           <ul className="space-y-3 text-sm text-gray-600">
@@ -93,7 +93,7 @@ export const NoticesView: React.FC<ViewProps> = ({ onBack }) => {
   ];
 
   return (
-    <div className="bg-gray-50 min-h-full pb-20">
+    <div className="h-full overflow-y-auto bg-gray-50">
       <Header title="공지사항 & 이벤트" onBack={onBack} />
       <div className="divide-y border-b bg-white">
         {notices.map((notice) => (
@@ -113,6 +113,7 @@ export const NoticesView: React.FC<ViewProps> = ({ onBack }) => {
           </div>
         ))}
       </div>
+      <div className="pb-20" />
     </div>
   );
 };
@@ -195,7 +196,7 @@ export const SupportView: React.FC<ViewProps> = ({ onBack, user }) => {
   const currentFaqs = FAQ_DATA[faqTab] || [];
 
   return (
-    <div className="bg-gray-50 min-h-full pb-20">
+    <div className="h-full overflow-y-auto bg-gray-50">
       <Header title="고객센터" onBack={onBack} />
 
       {/* Contact Buttons */}
@@ -346,6 +347,7 @@ export const SupportView: React.FC<ViewProps> = ({ onBack, user }) => {
           ))}
         </div>
       </div>
+      <div className="pb-20" />
     </div>
   );
 };
@@ -353,10 +355,10 @@ export const SupportView: React.FC<ViewProps> = ({ onBack, user }) => {
 // --- 앱 설정 ---
 export const SettingsView: React.FC<ViewProps> = ({ onBack, user: _user }) => {
   return (
-    <div className="bg-gray-50 min-h-full pb-20">
+    <div className="h-full overflow-y-auto bg-gray-50">
       <Header title="설정" onBack={onBack} />
 
-      <div className="space-y-2 p-4">
+      <div className="space-y-2 p-4 pb-20">
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="p-4 border-b text-xs font-bold text-gray-400">알림 설정</div>
           <div className="p-4 flex justify-between items-center border-b last:border-0">

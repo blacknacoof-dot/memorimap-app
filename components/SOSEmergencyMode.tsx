@@ -1,4 +1,5 @@
 import React from 'react';
+import { useScrollLock } from '../hooks/useScrollLock';
 import {
     AlertTriangle, MessageCircle, X,
 } from 'lucide-react';
@@ -11,6 +12,7 @@ interface SOSEmergencyModeProps {
 export const SOSEmergencyMode: React.FC<SOSEmergencyModeProps> = ({
     onClose, onOpenChat,
 }) => {
+    useScrollLock(true);
     return (
         <div className="fixed inset-0 z-[250] bg-black/50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
