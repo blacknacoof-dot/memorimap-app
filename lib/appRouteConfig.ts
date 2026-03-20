@@ -38,6 +38,7 @@ const VIEW_TO_PATH: Record<ViewState, string> = {
   [ViewState.CONSULTATION_HISTORY]: '/',
   [ViewState.SANGJO_DASHBOARD]: '/',
   [ViewState.PERSONAL_SUBSCRIPTION]: '/',
+  [ViewState.ADMIN_CHECKLIST]: '/',
 };
 
 const normalizePathname = (pathname: string): string => {

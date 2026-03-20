@@ -281,11 +281,12 @@ export const searchFacilitiesV2 = async (
     category?: string,
     limit: number = 10
 ) => {
+    const mappedCategory = mapCategoryToCode(category);
     const { data, error } = await supabase.rpc('search_facilities_v2', {
         p_lat: lat,
         p_lng: lng,
         radius_meters: radius,
-        category: category || null,
+        category: mappedCategory || null,
         result_limit: limit
     });
     return { data, error };
@@ -563,16 +564,21 @@ export const getDistinctRegionsFromFacilities = async (searchText: string) => {
         return [];
     }
 
+    const SHORT_TO_FULL: Record<string, string> = {
+        '서울': '서울특별시', '경기': '경기도', '부산': '부산광역시',
+        '대구': '대구광역시', '인천': '인천광역시', '광주': '광주광역시',
+        '대전': '대전광역시', '울산': '울산광역시', '세종': '세종특별자치시',
+        '제주': '제주특별자치도', '강원': '강원특별자치도', '충북': '충청북도',
+        '충남': '충청남도', '전북': '전북특별자치도', '전남': '전라남도',
+        '경북': '경상북도', '경남': '경상남도',
+    };
     const regions = new Set<string>();
     data.forEach((item: { address: string }) => {
         if (!item.address) return;
-        const addr = item.address
-            .replace(/^경기\s/, '경기도 ')
-            .replace(/^서울\s/, '서울특별시 ')
-            .replace(/^부산\s/, '부산광역시 ');
-        const parts = addr.split(' ').filter(Boolean);
+        const parts = item.address.split(' ').filter(Boolean);
         if (parts.length >= 2) {
-            regions.add(`${parts[0]} ${parts[1]}`);
+            const normalized = SHORT_TO_FULL[parts[0]] || parts[0];
+            regions.add(`${normalized} ${parts[1]}`);
         }
     });
 

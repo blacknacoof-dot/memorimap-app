@@ -64,6 +64,7 @@ interface MapProps {
 export interface MapRef {
   flyToLocation: () => void;
   flyTo: (center: [number, number], zoom: number) => void;
+  getBounds: () => LeafletCompatibleBounds | null;
 }
 
 // ✅ [1-1] 좌표 유효성 검증 (한반도 범위 제한)
@@ -443,6 +444,13 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
       const latLng = new window.naver.maps.LatLng(center[0], center[1]);
       mapInstance.current.setCenter(latLng);
       mapInstance.current.setZoom(zoom);
+    },
+    getBounds: () => {
+      if (!mapInstance.current) return null;
+      const bounds = mapInstance.current.getBounds();
+      const ne = bounds.getNE();
+      const sw = bounds.getSW();
+      return new LeafletCompatibleBounds(sw.lat(), sw.lng(), ne.lat(), ne.lng());
     },
   }));
 

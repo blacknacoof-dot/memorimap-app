@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, User, Calendar, Heart, Settings, HelpCircle, LogOut, ChevronRight, Bell, BookOpen, LogIn, Building2 } from 'lucide-react';
+import { X, User, Calendar, Heart, Settings, HelpCircle, LogOut, ChevronRight, Bell, BookOpen, LogIn, Building2, ClipboardCheck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { ViewState } from '../types';
 import { confirmAsync } from '../src/components/common/ConfirmModal';
@@ -162,6 +162,7 @@ export const SideMenu: React.FC<Props> = ({
         <div className="flex-1 overflow-y-auto py-2 px-4 space-y-1">
           <div className="text-xs font-bold text-gray-400 mb-2 px-3 mt-2">서비스 안내</div>
           <MenuItem icon={BookOpen} label="장례/추모 가이드" onClick={() => handleNav(ViewState.GUIDE)} />
+          <MenuItem icon={ClipboardCheck} label="장례 후 행정 체크리스트" onClick={() => handleNav(ViewState.ADMIN_CHECKLIST)} />
           <MenuItem icon={Bell} label="공지사항 & 이벤트" onClick={() => handleNav(ViewState.NOTICES)} />
 
           <div className="text-xs font-bold text-gray-400 mb-2 px-3 mt-6">고객 지원</div>
@@ -173,22 +174,20 @@ export const SideMenu: React.FC<Props> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t bg-gray-50 pb-safe">
+        <div className="px-6 py-3 border-t bg-gray-50 pb-safe">
           {isLoggedIn && (
             <button
               onClick={() => { onLogout(); onClose(); }}
               data-testid="sidemenu-logout-button"
-              className="flex items-center gap-2 text-gray-500 text-sm hover:text-red-500 transition-colors w-full mb-4 min-h-[44px]"
+              className="flex items-center gap-2 text-gray-500 text-sm hover:text-red-500 transition-colors w-full mb-2 min-h-[44px]"
             >
               <LogOut size={16} />
               로그아웃
             </button>
           )}
-          <div className="flex justify-between items-end relative">
-            <div className="text-[10px] text-gray-500 w-full flex flex-col items-start p-2 -ml-2">
-              <span>버전 1.0.0</span>
-              <span>(주)아톰케어</span>
-            </div>
+          <div className="text-[10px] text-gray-500 flex flex-col items-start">
+            <span>버전 1.0.0</span>
+            <span>(주)아톰케어</span>
           </div>
         </div>
       </div>

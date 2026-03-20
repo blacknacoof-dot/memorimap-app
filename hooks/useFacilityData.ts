@@ -29,6 +29,8 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
   const [currentBounds, setCurrentBounds] = useState<LatLngBounds | null>(null);
   // ??[2-3a] stale ?묐떟 臾댁떆瑜??꾪븳 ?붿껌 ID
   const latestRequestIdRef = useRef(0);
+  // 뷰포트 fetch가 완료되면 true → 초기 전체 fetch 결과 무시
+  const viewportFetchedRef = useRef(false);
 
   const { searchQuery, selectedCategories } = useFilterStore();
 
@@ -47,6 +49,8 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
 
         if (!mounted) return;
         if (error) throw error;
+        // 뷰포트 fetch가 이미 완료됐으면 전체 fetch 결과로 덮어쓰지 않음
+        if (viewportFetchedRef.current) return;
 
         if (data && data.length > 0) {
           interface FacilityRow {
@@ -129,12 +133,12 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
   const filteredFacilities = useMemo(() => {
     let result = facilities;
 
-    // 1. Filter by Map Bounds if on MAP view
-    if (viewState === ViewState.MAP && currentBounds) {
+    // 1. Filter by Map Bounds (MAP + LIST 공통 적용)
+    if (currentBounds) {
+      const sw = currentBounds.getSouthWest();
+      const ne = currentBounds.getNorthEast();
       result = result.filter(f => {
         if (f.lat && f.lng) {
-          const sw = currentBounds.getSouthWest();
-          const ne = currentBounds.getNorthEast();
           return f.lat >= sw.lat && f.lat <= ne.lat && f.lng >= sw.lng && f.lng <= ne.lng;
         }
         return false;
@@ -162,7 +166,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
     }
 
     return result;
-  }, [facilities, currentBounds, searchQuery, selectedCategories, viewState]);
+  }, [facilities, currentBounds, searchQuery, selectedCategories]);
 
   // Fetch Facility Details
   const fetchFacilityDetails = useCallback(async (facilityId: string) => {
@@ -334,6 +338,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
     handleFacilitySelect,
     currentBounds,
     setCurrentBounds,
+    viewportFetchedRef,
   };
 }
 

@@ -25,6 +25,7 @@ const SupportView = React.lazy(() => import('./StaticViews').then(m => ({ defaul
 const SettingsView = React.lazy(() => import('./StaticViews').then(m => ({ default: m.SettingsView })));
 const PartnerInquiryView = React.lazy(() => import('./PartnerInquiryView').then(m => ({ default: m.PartnerInquiryView })));
 const PersonalSubscriptionPlans = React.lazy(() => import('./PersonalSubscriptionPlans'));
+const AdministrativeChecklist = React.lazy(() => import('./AdministrativeChecklist').then(m => ({ default: m.AdministrativeChecklist })));
 
 export const LoadingFallback = () => (
   <div className="h-full w-full flex items-center justify-center bg-gray-50">
@@ -252,6 +253,20 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
             onSelectFacility={handleFacilitySelect}
             onSelectCompany={handleCompanySelect}
           />
+        </Suspense>
+      );
+
+    case ViewState.ADMIN_CHECKLIST:
+      return (
+        <Suspense fallback={<LoadingFallback />}>
+          <div className="h-full bg-white pt-16 pb-20 overflow-y-auto">
+            <div className="px-4 py-4">
+              <button onClick={() => setViewState(ViewState.MAP)} className="flex items-center gap-1 text-gray-600 mb-4 text-sm font-medium">
+                <ArrowLeft size={18} /> 돌아가기
+              </button>
+              <AdministrativeChecklist />
+            </div>
+          </div>
         </Suspense>
       );
 

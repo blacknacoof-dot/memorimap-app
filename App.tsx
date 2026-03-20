@@ -40,7 +40,7 @@ const App: React.FC = () => {
     selectedFacility, setSelectedFacility,
     isDataLoading, filteredFacilities,
     fetchFacilityDetails: _fetchFacilityDetails, handleFacilitySelect,
-    setCurrentBounds,
+    setCurrentBounds, viewportFetchedRef,
   } = useFacilityData({ viewState, showToast });
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -81,12 +81,16 @@ const App: React.FC = () => {
   const [initialChatIntent, setInitialChatIntent] = useState<'funeral_home' | 'memorial_facility' | 'pet_funeral' | null>(null);
   const [handoverContext, setHandoverContext] = useState<Record<string, unknown> | string | null>(null);
 
-  // Map Viewport Hook
+  // Map Viewport Hook — 뷰포트 fetch 시 viewportFetchedRef 플래그 설정
+  const setFacilitiesFromViewport = React.useCallback((data: Facility[] | ((prev: Facility[]) => Facility[])) => {
+    viewportFetchedRef.current = true;
+    setFacilities(data);
+  }, [setFacilities, viewportFetchedRef]);
   const {
     targetMapCenter, setTargetMapCenter,
     targetMapZoom, setTargetMapZoom,
     handleMapBoundsChange,
-  } = useMapViewport({ setFacilities, setCurrentBounds, session });
+  } = useMapViewport({ setFacilities: setFacilitiesFromViewport, setCurrentBounds, session });
 
   // Reservations
   const {
@@ -99,7 +103,7 @@ const App: React.FC = () => {
     if (!user) return null;
     return {
       id: user.id,
-      name: user.firstName || user.username || '?�원',
+      name: user.firstName || user.username || '?�원',
       email: user.primaryEmailAddress?.emailAddress || '',
       imageUrl: user.imageUrl,
     };
@@ -135,7 +139,7 @@ const App: React.FC = () => {
   // Reviews Hook
   const { handleAddReview, handleReviewDeleted } = useReviews({
     userId: user?.id,
-    userName: userInfo?.name || '?�명',
+    userName: userInfo?.name || '?�명',
     setFacilities, selectedFacility, setSelectedFacility, showToast,
   });
 
@@ -144,14 +148,20 @@ const App: React.FC = () => {
   const handleLogout = async () => {
     try {
       await signOut();
-      showToast('로그?�웃 ?�었?�니??', 'info');
+      showToast('로그?�웃 ?�었?�니??', 'info');
     } catch {
-      showToast('로그?�웃 처리 �??�류가 발생?�습?�다.', 'error');
+      showToast('로그?�웃 처리 �??�류가 발생?�습?�다.', 'error');
     } finally {
       setViewState(ViewState.MAP);
     }
   };
   const handleBottomNavChange = (view: ViewState) => {
+    if (view === ViewState.LIST) {
+      const latestBounds = mapRef.current?.getBounds();
+      if (latestBounds) {
+        setCurrentBounds(latestBounds);
+      }
+    }
     setSelectedFacility(null);
     setShowComparison(false);
     setSelectedFuneralCompany(null);

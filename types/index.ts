@@ -102,6 +102,7 @@ export enum ViewState {
   SANGJO_DASHBOARD = 'SANGJO_DASHBOARD',
   PARTNER_INQUIRY = 'PARTNER_INQUIRY',
   PERSONAL_SUBSCRIPTION = 'PERSONAL_SUBSCRIPTION',
+  ADMIN_CHECKLIST = 'ADMIN_CHECKLIST',
 }
 
 // Partner, PartnerConversation, PartnerOperation, PlatformNotice, SangjoContract
