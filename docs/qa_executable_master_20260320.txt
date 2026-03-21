@@ -1,0 +1,651 @@
+Memorimap QA Executable Master
+작성일: 2026-03-20
+
+실행 전제
+- 환경: 로컬 또는 배포 URL
+- 테스트 계정: guest / user / facility_admin / sangjo_hq_admin / super_admin
+- SQL의 `<USER_UUID>`, `<FACILITY_UUID>`, `<SUBSCRIPTION_ID>`, `<CONSULTATION_ID>`, `<RESERVATION_ID>`는 실제 값으로 교체
+- 판정 기준: UI 확인 + DB 확인 + 실패 케이스 + 권한 검증 + 상태 동기화
+
+--------------------------------------------------
+
+[P0] 직접 URL 접근 차단 및 권한 분기
+
+[Steps]
+1. 로그아웃 상태에서 `/facility-admin`으로 직접 진입한다.
+2. 로그아웃 상태에서 `/super-admin`으로 직접 진입한다.
+3. 일반 user 계정으로 로그인한 뒤 동일 URL을 다시 입력한다.
+4. facility_admin, super_admin 계정으로 각각 진입한다.
+
+[Expected - UI]
+- guest는 로그인 유도 또는 접근 차단 화면이 보여야 한다.
+- 일반 user는 관리자 화면이 노출되면 안 된다.
+- 권한이 있는 관리자만 해당 대시보드가 열린다.
+
+[DB Check - SQL]
+```sql
+select user_id, role
+from public.profiles
+where user_id in ('<USER_UUID>');
+```
+
+[FAIL Case]
+- guest가 관리자 화면에 진입하면 실패.
+- 일반 user가 관리자 API를 호출해도 데이터가 노출되면 실패.
+
+[Data Integrity Check]
+- profiles.role 값이 실제 접근 권한과 일치해야 한다.
+- 관리자 식별자가 비어 있으면 안 된다.
+
+[Permission Check]
+- guest: 차단
+- user: 차단
+- admin: 허용
+
+--------------------------------------------------
+
+[P0] viewState vs URL sync
+
+[Steps]
+1. 메인 화면에서 `MAP`과 `LIST`를 전환한다.
+2. 뒤로가기를 누른다.
+3. 새로고침한다.
+4. deep link로 관리자/공유 경로를 직접 연다.
+
+[Expected - UI]
+- 뒤로가기 후 이전 화면이 유지된다.
+- 새로고침 후 동일 진입 화면이 복원된다.
+- 화면이 빈 상태로 깨지면 안 된다.
+
+[DB Check - SQL]
+```sql
+-- route_logs는 실제 스키마에서 확인되지 않거나 환경별 편차가 있어 제외.
+-- URL/viewState 동기화는 UI 동작 기준으로 검증한다.
+```
+
+[FAIL Case]
+- 뒤로가기로 화면이 다른 viewState로 튀면 실패.
+- 새로고침 후 다른 화면으로 떨어지면 실패.
+
+[Data Integrity Check]
+- URL 경로와 viewState가 같은 의미로 복원되어야 한다.
+- route_logs가 없으면 이 체크는 스킵.
+
+[Permission Check]
+- guest/user/admin 모두 동일 동작이어야 한다.
+
+--------------------------------------------------
+
+[P0] 예약 생성 end-to-end
+
+[Steps]
+1. 일반 user로 로그인한다.
+2. 시설 상세를 연다.
+3. 예약 버튼을 누른다.
+4. 날짜, 시간, 인원, 연락처를 입력한다.
+5. 최종 확인 후 제출한다.
+
+[Expected - UI]
+- 예약 완료 메시지가 보여야 한다.
+- 예약 후 MyPage 예약 목록으로 이동하거나 목록에 반영되어야 한다.
+- 상태는 pending 또는 설정된 초기 상태로 표시되어야 한다.
+
+[DB Check - SQL]
+```sql
+select id, user_id, facility_id, facility_name, visit_date, time_slot, status, payment_amount, created_at
+from public.reservations
+where user_id = '<USER_UUID>'
+order by created_at desc;
+```
+
+[FAIL Case]
+- 비로그인 상태에서는 예약 제출이 되면 안 된다.
+- facility_id가 비어 있으면 insert가 실패해야 한다.
+- 결제/검증 실패 시 예약 row가 생성되면 안 된다.
+
+[Data Integrity Check]
+- reservations.facility_id와 시설 상세의 facility id가 일치해야 한다.
+- orphan reservation이 없어야 한다.
+- 중복 예약이 허용되지 않는 조건이면 동일 슬롯 중복 row가 없어야 한다.
+
+[Permission Check]
+- guest: 생성 불가
+- user: 생성 가능
+- admin: 일반 사용자 예약 생성은 불필요, 관리 기능만 허용
+
+--------------------------------------------------
+
+[P0] 예약 취소 및 상태 변경
+
+[Steps]
+1. MyPage에서 본인 예약 목록을 연다.
+2. 예약 항목을 선택한다.
+3. 취소 버튼을 누른다.
+4. 확인 모달에서 최종 확정한다.
+
+[Expected - UI]
+- 예약 상태가 cancelled로 바뀌어야 한다.
+- 목록과 상세 모두 취소 상태가 보여야 한다.
+
+[DB Check - SQL]
+```sql
+select id, user_id, facility_id, status, updated_at
+from public.reservations
+where user_id = '<USER_UUID>'
+order by updated_at desc;
+```
+
+[FAIL Case]
+- 취소 권한이 없는 상태에서 status가 바뀌면 실패.
+- 취소 후 UI와 DB 상태가 다르면 실패.
+
+[Data Integrity Check]
+- pending/confirmed 상태만 취소 전환 규칙이 맞아야 한다.
+- 취소 이력은 최신 상태와 일치해야 한다.
+
+[Permission Check]
+- guest: 불가
+- user: 본인 예약만 가능
+- admin: 관리 권한 범위 내에서만 가능
+
+--------------------------------------------------
+
+[P0] AI 상담 end-to-end
+
+[Steps]
+1. 시설 상세 또는 AI 상담 진입 버튼을 누른다.
+2. 상담 문장을 입력한다.
+3. 추천 또는 예약 연결 버튼을 누른다.
+4. 상담 결과를 저장한다.
+
+[Expected - UI]
+- AI 응답이 보여야 한다.
+- 상담 이력이 화면에 남아야 한다.
+- 예약 연결 시 해당 흐름으로 이어져야 한다.
+
+[DB Check - SQL]
+```sql
+select id, user_id, facility_id, status, created_at, updated_at
+from public.consultations
+where user_id = '<USER_UUID>'
+order by created_at desc;
+
+select id, user_id, facility_id, model_name, created_at
+from public.ai_consultations
+where user_id = '<USER_UUID>'
+order by created_at desc;
+```
+
+[FAIL Case]
+- 로그인 없이 저장되면 실패.
+- 응답은 보이지만 DB 저장이 없으면 실패.
+- quota 초과인데 계속 호출되면 실패.
+
+[Data Integrity Check]
+- consultations와 ai_consultations의 user_id가 일치해야 한다.
+- 동일 상담이 중복 저장되지 않아야 한다.
+
+[Permission Check]
+- guest: 상담 저장 불가
+- user: 가능
+- admin: 관리용 상담 조회만 허용
+
+--------------------------------------------------
+
+[P0] AI 상담에서 예약 연결
+
+[Steps]
+1. AI 상담 화면을 연다.
+2. 예약이 필요한 응답을 선택한다.
+3. 예약 폼으로 이동한다.
+4. 최종 저장한다.
+
+[Expected - UI]
+- 상담에서 예약으로 자연스럽게 이어져야 한다.
+- 예약 완료 후 상담 흐름이 끊기지 않아야 한다.
+
+[DB Check - SQL]
+```sql
+select r.id, r.user_id, r.facility_id, r.status, c.id as consultation_id
+from public.reservations r
+left join public.consultations c
+  on c.user_id = r.user_id
+ and c.facility_id = r.facility_id
+where r.user_id = '<USER_UUID>'
+order by r.created_at desc;
+```
+
+[FAIL Case]
+- 상담에서 예약 화면으로 넘어가지 않으면 실패.
+- 상담 컨텍스트가 끊기면 실패.
+
+[Data Integrity Check]
+- 상담 기록과 예약 row의 facility_id가 연결되어야 한다.
+- orphan consultation이 없어야 한다.
+
+[Permission Check]
+- guest: 불가
+- user: 가능
+- admin: 조회만 가능
+
+--------------------------------------------------
+
+[P0] 구독 / 결제 / plan_id 정합성
+
+[Steps]
+1. 상조 또는 시설 구독 화면을 연다.
+2. 무료 -> 유료로 전환한다.
+3. 다시 무료로 전환한다.
+4. 새로고침 후 현재 플랜을 확인한다.
+
+[Expected - UI]
+- 선택한 플랜이 즉시 반영되어야 한다.
+- 새로고침 후에도 같은 플랜이 보여야 한다.
+- 무료 전환 후에도 UI가 이전 플랜으로 돌아가면 안 된다.
+
+[DB Check - SQL]
+```sql
+select fs.id,
+       fs.facility_id,
+       fs.facility_id_uuid,
+       fs.facility_id_bigint,
+       fs.plan_id,
+       fs.status,
+       sp.id as subscription_plan_id,
+       sp.name_en,
+       sp.name_ko
+from public.facility_subscriptions fs
+left join public.subscription_plans sp
+  on sp.id::text = fs.plan_id
+where fs.facility_id_uuid = '<FACILITY_UUID>'
+   or fs.facility_id_bigint = '<FACILITY_BIGINT>';
+
+select id, facility_subscription_id, amount, payment_status, created_at
+from public.subscription_payments
+where facility_subscription_id = '<SUBSCRIPTION_ID>'
+order by created_at desc;
+```
+
+[FAIL Case]
+- UI만 바뀌고 DB가 바뀌지 않으면 실패.
+- 결제 실패인데 활성 구독이 바뀌면 실패.
+- 무료 전환이 저장되지 않으면 실패.
+
+[Data Integrity Check]
+- plan_id / subscription_plans.id / plan_name 의미가 충돌하면 안 된다.
+- legacy plan_id가 남아 있으면 canonical 값으로 통일되어야 한다.
+- facility_id / facility_id_uuid / facility_id_bigint 조인이 끊기면 안 된다.
+
+[Permission Check]
+- guest: 불가
+- user: 본인 시설만 가능
+- admin: 허용 범위 내에서만 가능
+
+--------------------------------------------------
+
+[P0] 월간 리포트 Edge Function
+
+[Steps]
+1. 관리자 권한 계정으로 리포트 실행 경로를 연다.
+2. send-monthly-report를 호출한다.
+3. 성공/실패 응답을 확인한다.
+
+[Expected - UI]
+- 활성 대상이 있으면 발송 결과가 보여야 한다.
+- 대상이 없으면 정상 종료 메시지가 보여야 한다.
+- 조회 실패는 성공으로 보이면 안 된다.
+
+[DB Check - SQL]
+```sql
+select id, facility_id_uuid, plan_id, status, updated_at
+from public.facility_subscriptions
+where plan_id in ('sj_starter', 'sj_professional', 'sj_enterprise')
+order by updated_at desc;
+```
+
+[FAIL Case]
+- 조회 실패가 200으로 처리되면 실패.
+- 수신자 조회 실패인데 성공 처리되면 실패.
+
+[Data Integrity Check]
+- canonical plan_id만 대상이어야 한다.
+- legacy plan_id가 남아 있으면 리포트 누락 가능성을 확인해야 한다.
+
+[Permission Check]
+- guest/user: 호출 불가
+- admin/super_admin: 허용 범위 내에서만 가능
+
+--------------------------------------------------
+
+[P0] 관리자 승인 API
+
+[Steps]
+1. super_admin 계정으로 로그인한다.
+2. 파트너 승인 대기 화면을 연다.
+3. 승인 버튼을 누른다.
+4. 실패 케이스로 일반 user가 직접 API를 호출한다.
+
+[Expected - UI]
+- 승인 성공 시 상태가 approved로 바뀌어야 한다.
+- 일반 user는 승인 화면에 진입하면 안 된다.
+
+[DB Check - SQL]
+```sql
+select id, partner_id, status, approved_at, approved_by
+from public.partner_inquiries
+order by created_at desc;
+```
+
+[FAIL Case]
+- 일반 user가 승인 API를 직접 호출해도 상태가 바뀌면 실패.
+- UI는 성공인데 DB 반영이 없으면 실패.
+
+[Data Integrity Check]
+- approved_by가 실제 super_admin 계정과 일치해야 한다.
+- 중복 승인 row가 생성되면 안 된다.
+
+[Permission Check]
+- guest: 불가
+- user: 불가
+- admin/super_admin: 허용
+
+--------------------------------------------------
+
+[P1] 시설 검색 / 필터 / 목록
+
+[Steps]
+1. 메인 화면 검색창에 시설명을 입력한다.
+2. 카테고리와 정렬을 바꾼다.
+3. 목록에서 결과를 확인한다.
+4. 지도를 이동해 bounds를 바꾼다.
+
+[Expected - UI]
+- 검색 결과가 즉시 반영되어야 한다.
+- 목록과 지도 결과가 일치해야 한다.
+
+[DB Check - SQL]
+```sql
+select id, name, address, category, verified
+from public.facilities
+where verified = true
+  and (
+    lower(name) like lower('%<SEARCH_TEXT>%')
+    or lower(address) like lower('%<SEARCH_TEXT>%')
+  )
+order by created_at desc;
+```
+
+[FAIL Case]
+- 오타 입력 시 결과가 0건으로 안정적으로 보여야 한다.
+- 목록과 지도 결과가 다르면 실패.
+
+[Data Integrity Check]
+- searchQuery와 목록 필터가 같은 결과 집합을 만들어야 한다.
+
+[Permission Check]
+- guest/user/admin 모두 조회 가능
+
+--------------------------------------------------
+
+[P1] 시설 상세 / 비교 / 마음이 비교
+
+[Steps]
+1. 시설 상세를 연다.
+2. 비교 추가 버튼을 누른다.
+3. 다른 시설을 추가한다.
+4. 비교 모달을 연다.
+5. 마음이 비교 또는 상조 비교 진입을 확인한다.
+
+[Expected - UI]
+- 비교 대상이 목록에 쌓여야 한다.
+- 비교 모달에서 항목이 보여야 한다.
+- 마음이 비교와 상조 비교가 각각 독립적으로 보여야 한다.
+
+[DB Check - SQL]
+```sql
+select id, name, category, verified
+from public.facilities
+where id in ('<FACILITY_UUID_1>', '<FACILITY_UUID_2>');
+```
+
+[FAIL Case]
+- 비교 대상이 3개를 넘어가면 실패.
+- 시설 비교와 상조 비교가 섞이면 실패.
+
+[Data Integrity Check]
+- compareList와 sangjoCompareList가 분리되어야 한다.
+- 동일 시설이 중복 추가되면 안 된다.
+
+[Permission Check]
+- guest/user/admin 모두 조회 가능
+- 저장형 동작이 있다면 guest는 제한
+
+--------------------------------------------------
+
+[P1] 즐겨찾기 add/remove
+
+[Steps]
+1. 시설 상세에서 즐겨찾기 버튼을 누른다.
+2. MyPage에서 즐겨찾기 목록을 연다.
+3. 다시 해제한다.
+
+[Expected - UI]
+- 하트 상태가 바뀌어야 한다.
+- MyPage 목록에 즉시 반영되어야 한다.
+
+[DB Check - SQL]
+```sql
+select id, user_id, facility_id, created_at
+from public.favorites
+where user_id = '<USER_UUID>'
+order by created_at desc;
+```
+
+[FAIL Case]
+- 비로그인 상태에서 즐겨찾기가 저장되면 실패.
+- UI는 즐겨찾기인데 DB row가 없으면 실패.
+
+[Data Integrity Check]
+- favorites.user_id와 facilities.id가 정확히 연결되어야 한다.
+- 중복 즐겨찾기 row가 없어야 한다.
+
+[Permission Check]
+- guest: 불가
+- user: 가능
+- admin: 조회는 가능, 일반 user 데이터와 분리
+
+--------------------------------------------------
+
+[P1] MyPage / 상담 / 예약 조회
+
+[Steps]
+1. MyPage를 연다.
+2. 예약 목록을 확인한다.
+3. 상담 이력을 연다.
+4. 플랜 상태를 확인한다.
+
+[Expected - UI]
+- 본인 데이터만 보여야 한다.
+- 예약과 상담이 각각 다른 탭 또는 구역에서 보여야 한다.
+
+[DB Check - SQL]
+```sql
+select id, user_id, facility_id, status, created_at
+from public.reservations
+where user_id = '<USER_UUID>'
+order by created_at desc;
+
+select id, user_id, facility_id, status, created_at
+from public.consultations
+where user_id = '<USER_UUID>'
+order by created_at desc;
+```
+
+[FAIL Case]
+- 다른 사람 데이터가 보이면 실패.
+- 예약 목록은 있는데 상담 목록이 비정상이면 실패.
+
+[Data Integrity Check]
+- MyPage의 각 목록이 동일 user_id 기준이어야 한다.
+- orphan reservation / consultation이 없어야 한다.
+
+[Permission Check]
+- guest: 불가
+- user: 본인만 가능
+- admin: 운영 조회만 가능
+
+--------------------------------------------------
+
+[P1] 시설 관리자 예약 승인 / 거절
+
+[Steps]
+1. facility_admin으로 로그인한다.
+2. 예약 관리 화면을 연다.
+3. pending 예약을 승인한다.
+4. 다른 예약을 거절한다.
+
+[Expected - UI]
+- 상태가 confirmed 또는 rejected로 바뀌어야 한다.
+- 목록이 즉시 갱신되어야 한다.
+
+[DB Check - SQL]
+```sql
+select id, user_id, facility_id, status, updated_at
+from public.reservations
+where facility_id = '<FACILITY_UUID>'
+order by updated_at desc;
+```
+
+[FAIL Case]
+- 권한 없는 사용자가 status를 바꾸면 실패.
+- UI 반영 없이 DB만 바뀌면 실패.
+
+[Data Integrity Check]
+- 시설 관리자와 해당 facility_id가 정확히 매칭되어야 한다.
+- 동일 예약이 중복 처리되면 안 된다.
+
+[Permission Check]
+- guest/user: 불가
+- facility_admin: 가능
+- super_admin: 조회 및 운영 가능
+
+--------------------------------------------------
+
+[P1] 상조 대시보드 / 수익 / 시뮬레이터
+
+[Steps]
+1. sangjo_hq_admin으로 로그인한다.
+2. 상조 대시보드를 연다.
+3. commission simulator 값을 바꾼다.
+4. revenue tab과 upgrade banner를 확인한다.
+
+[Expected - UI]
+- 대시보드 요약이 보여야 한다.
+- 시뮬레이터 값이 즉시 반영되어야 한다.
+- 업그레이드 배너와 비교 영역이 정상 표시되어야 한다.
+
+[DB Check - SQL]
+```sql
+select id, user_id, company_name, role
+from public.sangjo_hq_admins
+where user_id = '<USER_UUID>';
+
+select id, facility_id_uuid, plan_id, status, updated_at
+from public.facility_subscriptions
+where plan_id like 'sj_%'
+order by updated_at desc;
+```
+
+[FAIL Case]
+- 대시보드 숫자가 DB와 다르면 실패.
+- 시뮬레이터가 plan_id 정규화와 다르게 계산되면 실패.
+
+[Data Integrity Check]
+- plan_id는 canonical 값이어야 한다.
+- 수익/수수료 계산이 동일 기준이어야 한다.
+
+[Permission Check]
+- guest/user: 불가
+- facility_admin: 일부 조회만 허용
+- sangjo_hq_admin: 가능
+
+--------------------------------------------------
+
+[P1] 관리자 공지 / 로그 / 시스템 설정
+
+[Steps]
+1. super_admin으로 로그인한다.
+2. 공지 작성 화면을 연다.
+3. 공지를 저장한다.
+4. 로그와 시스템 설정 화면을 연다.
+
+[Expected - UI]
+- 공지가 목록에 즉시 반영되어야 한다.
+- 로그와 설정 화면이 정상 열려야 한다.
+
+[DB Check - SQL]
+```sql
+select id, title, content, created_by, created_at
+from public.notices
+order by created_at desc;
+
+select id, user_id, action, resource_type, resource_id, created_at
+from public.audit_logs
+order by created_at desc
+limit 20;
+```
+
+[FAIL Case]
+- guest/user가 공지 작성 가능하면 실패.
+- 로그가 비어 있는데 저장 성공 처리되면 실패.
+
+[Data Integrity Check]
+- created_by와 실제 작성자 권한이 일치해야 한다.
+- 로그 row가 누락되면 안 된다.
+
+[Permission Check]
+- guest/user: 불가
+- admin/super_admin: 허용 범위 내 가능
+
+--------------------------------------------------
+
+[P1] 리뷰 작성 / 조회
+
+[Steps]
+1. 시설 상세에서 리뷰 작성으로 이동한다.
+2. 평점과 내용을 입력한다.
+3. 저장 후 목록에 반영되는지 확인한다.
+
+[Expected - UI]
+- 리뷰가 목록에 추가되어야 한다.
+- 작성자 정보가 표시되어야 한다.
+
+[DB Check - SQL]
+```sql
+select id, user_id, facility_id, rating, created_at
+from public.reviews
+where user_id = '<USER_UUID>'
+order by created_at desc;
+```
+
+[FAIL Case]
+- 비로그인 상태에서 작성되면 실패.
+- rating 범위를 벗어나면 저장되면 안 된다.
+
+[Data Integrity Check]
+- review.user_id와 facility_id가 정확히 연결되어야 한다.
+- 중복 제출이 허용되지 않는 규칙이면 중복 row가 없어야 한다.
+
+[Permission Check]
+- guest: 불가
+- user: 가능
+- admin: 조회 가능, 일반 작성은 정책에 따름
+
+--------------------------------------------------
+
+[최종 확인]
+- reservations, facility_subscriptions, consultations, ai_consultations, favorites, subscription_payments는 최소 1개 이상의 시나리오에서 반드시 검증한다.
+- plan_id / plan_name / subscription_plans.id 정합성은 구독 시나리오에서 확인한다.
+- facility_id / facility_id_uuid / facility_id_bigint 정합성은 예약, 구독, 관리자 시나리오에서 확인한다.
+- 뒤로가기 / 새로고침 / deep link는 별도 P0로 확인한다.
+- guest / user / admin 권한 검증은 각 시나리오에서 직접 확인한다.

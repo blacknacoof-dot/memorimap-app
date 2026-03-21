@@ -344,11 +344,13 @@ BEGIN
 
     -- 5. 유저 프로필 역할 업데이트
     UPDATE profiles
-    SET role = CASE
-        WHEN v_inquiry.business_type = 'sangjo_hq' THEN 'sangjo_hq_admin'
-        WHEN v_inquiry.business_type = 'sangjo' THEN 'sangjo_user'
-        ELSE 'facility_admin'
-    END,
+    SET role = (
+        CASE
+            WHEN v_inquiry.business_type = 'sangjo_hq' THEN 'sangjo_hq_admin'
+            WHEN v_inquiry.business_type = 'sangjo' THEN 'sangjo_user'
+            ELSE 'facility_admin'
+        END
+    )::public.user_role,
     updated_at = now()
     WHERE clerk_id = v_inquiry.user_id;
 

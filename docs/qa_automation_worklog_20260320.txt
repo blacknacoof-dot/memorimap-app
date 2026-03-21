@@ -1,0 +1,40 @@
+Memorimap QA Automation Worklog
+Date: 2026-03-20
+
+Goal
+- Convert the QA execution document into an executable Playwright spec.
+- Keep the scope limited to stable, high-signal P0/P1 checks.
+
+Files created or updated
+- Created: tests/e2e/qa.execution.spec.ts
+- Updated: docs/qa_executable_master_20260320.txt
+
+Implemented automated coverage
+- P0-SEC-01: guest direct access to /super-admin
+- P0-SEC-02: regular user does not see super-admin entry in side menu
+- P0-BOOK-01: reservation end-to-end with UI submit and DB verification
+- P1-MYPAGE-01: MyPage reservation and favorite tabs visibility
+
+Test approach
+- Reused existing E2E fixture helpers in tests/e2e/coreFlows.fixture.ts
+- Reused Supabase service-role client in tests/e2e/db.utils.ts
+- Stubbed PortOne / verify-payment for reservation flow
+- Verified UI state and database row creation together
+
+Iteration log
+- First guest assertion used a text match that was too strict for the rendered page.
+- Changed the guest check to role-based heading/button assertions.
+- The initial reservation polling code used expect.poll incorrectly.
+- Reworked reservation polling to store the row in a local variable and wait on its id.
+- The super-admin approval path was too flaky for the new spec, so it was removed from this file and left to the existing partner approval spec.
+- MyPage selectors were adjusted to match the actual rendered controls.
+
+Final result
+- tests/e2e/qa.execution.spec.ts passes with 4 tests green.
+- Latest verified run:
+  - npx playwright test tests/e2e/qa.execution.spec.ts --reporter=line --workers=1 --max-failures=1
+  - Result: 4 passed
+
+Notes
+- Existing partner approval coverage remains in tests/e2e/partner.approval.spec.ts.
+- This new spec intentionally focuses on stable checks rather than reproducing every QA scenario from the document.

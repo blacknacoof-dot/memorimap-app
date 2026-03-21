@@ -1,0 +1,292 @@
+Memorimap 구조 요약 및 기능 검증 시나리오
+기준일: 2026-03-20
+
+1. 전체 구조 요약
+
+- 앱은 React + Vite 기반 SPA이며, 실제 오케스트레이션 중심은 App.tsx이다.
+- 화면 결정은 URL만으로 이뤄지지 않고, internal viewState + HashRouter + 일부 query param이 함께 작동하는 하이브리드 구조다.
+- 일반 사용자 화면은 대부분 viewState가 최종 source of truth이고, 관리자 계열 일부만 URL에 안정적으로 고정된다.
+- 데이터 접근은 lib/queries.ts, lib/api/*.ts, hooks/*.ts, services/*, supabase/functions/*에 분산되어 있다.
+- 동일 의미의 값이 여러 표현으로 존재한다. 대표적으로 plan_id / plan_name / subscription_plans.id, facility_id / facility_id_uuid / facility_id_bigint가 있다.
+- 핵심 도메인은 유저 탐색, 예약, AI 상담, 비교, 마이페이지, 시설 관리자, 상조 관리자, 슈퍼 관리자, 구독/결제, 승인/리포트다.
+
+2. 엔트리 / 라우팅 / 화면 결정
+
+- 진입점: index.tsx
+- 앱 조립 중심: App.tsx
+- URL 해석: lib/appRouteConfig.ts, components/RouteStateSync.tsx
+- 렌더링 분기: components/AppRouteLayout.tsx, components/ContentRouter.tsx
+- 슈퍼 관리자 탭 source of truth: components/SuperAdmin/SuperAdminDashboard.tsx의 ?tab= query param
+
+라우팅 특징
+- /admin, /facility-admin, /super-admin, /funeral-company, /partner-inquiry는 route-driven view다.
+- MAP, LIST, MY_PAGE, CONSULTATION, SANGJO_DASHBOARD, SUBSCRIPTION_PLANS, PERSONAL_SUBSCRIPTION 등은 대부분 internal state-driven view다.
+- /auth는 로그인 모달을 여는 진입점이다.
+- /share/:token은 share layout이다.
+- /external-browser-guide는 별도 안내 페이지다.
+
+3. 역할별 기능 구조
+
+일반 유저
+- 지도 / 목록 / 검색 / 필터 / 정렬
+- 시설 상세 / 비교 / 상조 비교
+- AI 상담 / 마음이 추천 / 예약 연결
+- 리뷰 / 즐겨찾기 / MyPage / 알림 / 공지 / 지원 / 설정
+
+시설 관리자
+- 시설 정보 수정
+- 예약 승인 / 거절 / 상태 변경
+- 상담 / 문의 / 리드 관리
+- FAQ / 구독 / 통계 / 대시보드
+
+상조 관리자
+- 상조 대시보드
+- 상담 / 계약 / 예약 / 수익 / 운영
+- 업그레이드 유도 / 플랜 선택
+- commission simulator / revenue tab / upgrade banner / benefit comparison
+
+슈퍼 관리자
+- 파트너 승인
+- 계약 모니터링
+- 유저 / 시설 / 공지 / 로그 / 설정 / 구독 관리
+- 운영 데이터 조회 및 제어
+
+게스트
+- 공개 탐색은 가능
+- MyPage / 저장 / 예약 확정 / 관리자 화면은 제한
+- /auth를 통해 로그인 유도
+
+4. 도메인별 기능 흐름
+
+4-1. 예약
+
+시작점
+- 시설 상세 시트
+- AI 상담에서 예약 분기
+- 상조/긴급 예약 진입점
+
+흐름
+- ReservationModal에서 입력 상태와 결제 단계 처리
+- useReservations에서 reservations 테이블 insert
+- 저장 성공 시 로컬 상태 갱신
+- 상세 닫기 후 MyPage로 이동
+- 관리자 측에서는 approval / rejection / status update로 반영
+
+검증 포인트
+- 신규 예약 생성
+- 긴급 예약 생성
+- 새로고침 후 예약 목록 반영
+- 취소 후 상태 반영
+
+4-2. 시설 조회 / 비교
+
+시작점
+- TopBar 검색
+- MapView / MapContainer
+- FacilityList
+
+흐름
+- useFilterStore의 searchQuery / selectedCategories로 필터링
+- useFacilityData가 facilities 조회 및 상세 fetch 수행
+- useComparison이 compareList를 로컬 state로 관리
+- ComparisonModal / SangjoComparisonModal로 결과 표시
+
+검증 포인트
+- 검색 -> 목록 필터 반영
+- 지도 bounds 변경 -> 목록 반영
+- 비교 추가 / 제거 / 3개 제한
+- 상조 비교와 시설 비교가 서로 간섭하지 않는지 확인
+
+4-3. AI 상담
+
+시작점
+- RecommendationStarter
+- Facility 상세의 상담 버튼
+- 상담 이력
+
+흐름
+- ChatInterface는 geminiService, getIntelligentRecommendations, createLead, createConsultationFromLead, createUrgentReservation을 연계
+- ConsultationView는 streamConsultationMessage, createConsultation, updateConsultation, getFacilityFaqs를 사용
+- ScenarioBot은 ai_consultations 테이블과 realtime 상태를 사용
+
+검증 포인트
+- 로그인 전/후 진입 차이
+- 상담 시작 시 저장 여부
+- 상담 완료 후 이력 반영
+- AI 상담에서 예약으로 자연스럽게 연결되는지 확인
+
+4-4. 마음이AI / 추천류
+
+시작점
+- RecommendationStarter
+- FuneralSearchForm / MemorialSearchForm / PetSearchForm
+
+흐름
+- intent 선택
+- 지역 / 조건 입력
+- getIntelligentRecommendations 호출
+- 후보 선택 후 상담 또는 예약 또는 lead 생성
+
+검증 포인트
+- intent별 결과 분기
+- 추천 목록과 후속 행동 연결
+- 지역 검색 실패 시 fallback 동작
+
+4-5. 상조 도메인
+
+시작점
+- FuneralCompanyView
+- SangjoDashboard
+- PartnerDashboard
+
+흐름
+- 상조 비교 목록 구성
+- 상조 상담 / 계약 / 예약 / 수익 / 운영 상태를 PartnerDashboard가 통합 조회
+- real-time channel로 consultations / reservations / sangjo_contracts 반영
+- UpgradeBanner / UpgradeBenefitComparison / CommissionSimulator / PartnerRevenueTab이 plan_id 정규화 값 기준으로 동작
+
+검증 포인트
+- 상조 비교 / 상담 / 계약 / 수익이 서로 일관되게 보이는지 확인
+- plan_id canonical 값이 UI와 관리자에 동일하게 반영되는지 확인
+
+4-6. 구독 / 결제
+
+시작점
+- SubscriptionPlans
+- PersonalSubscriptionPlans
+- SuperAdmin SubscriptionManager
+
+흐름
+- 플랜 선택
+- updateFacilitySubscription 저장
+- subscription_payments 기록
+- getFacilitySubscription / getAllSubscriptions 조회
+- verify-payment Edge Function과 연동
+
+검증 포인트
+- 무료 -> 유료 -> 무료 전환
+- 새로고침 후 플랜 유지
+- plan_id 표시와 저장값 일치
+
+4-7. 승인 / 리포트 / 운영
+
+시작점
+- PartnerAdmissions
+- useAdminActions
+- SuperAdminDashboard
+- send-monthly-report Edge Function
+
+흐름
+- 승인 요청 접수
+- approve-partner Edge Function 호출
+- 운영/계약 데이터 조회
+- 월간 리포트 대상 조회 후 발송
+
+검증 포인트
+- 승인 성공 / 거절
+- 리포트 조회 실패 시 오류 응답
+- 운영 데이터가 잘못 성공 처리되지 않는지 확인
+
+5. 데이터 접근 구조
+
+- 직접 Supabase 호출, queries 계층, api 계층, services 계층, Edge Function 호출이 병렬 존재한다.
+- lib/queries.ts는 단순 query layer가 아니라 업무 흐름 계층이다.
+- 일부 기능은 RPC 중심이고, 일부는 테이블 직접 접근이다.
+- 즐겨찾기, AI, 승인, 구독은 각기 다른 경로가 섞여 있다.
+- 계약 불일치 가능성이 큰 지점은 facility_subscriptions, favorites, ai_consultations, reservations이다.
+
+6. 상태 관리 구조
+
+- App.tsx local state가 가장 크다.
+- viewState가 일반 화면 렌더링의 핵심 상태다.
+- useFilterStore는 검색 / 카테고리 / 정렬 상태를 갖는다.
+- useChatStore는 글로벌 AI 오픈 상태만 갖는다.
+- useComparison은 시설 비교 / 상조 비교 로컬 state를 갖는다.
+- React Query는 운영성 데이터와 RPC 결과에서 주로 사용된다.
+
+7. 기능 검증 시나리오표
+
+| 우선순위 | 시나리오 | 시작점 | 확인할 저장/조회 | 기대 결과 |
+| --- | --- | --- | --- | --- |
+| P0 | 일반 유저 기본 진입 | /, TopBar, MapView | facilities 조회 | 지도/목록 기본 화면 정상 |
+| P0 | 검색 -> 목록 필터 | TopBar 검색 | useFilterStore, useFacilityData | 검색어에 맞게 목록 반영 |
+| P0 | 지도 bounds 변경 | MapContainer | useMapViewport, useFacilityData | 현재 지도 영역 기반 필터 반영 |
+| P0 | 시설 상세 열기 | FacilityList / Map marker | getFacilitySubscription, reviews, images | 상세 시트 정상 표시 |
+| P0 | 예약 생성 | FacilitySheet -> ReservationModal | reservations insert | 예약 저장 후 MyPage로 이동 |
+| P0 | 예약 취소 | MyPage 예약 탭 | cancelReservation / status update | 상태 cancelled 반영 |
+| P0 | 비교 추가/제거 | FacilitySheet / List | compareList local state | 비교함 3개 제한 정상 |
+| P0 | AI 상담 시작 | RecommendationStarter / Facility 상담 | consultations / ai 상담 저장 | 상담 시작 및 이력 생성 |
+| P0 | 마음이 추천 | RecommendationStarter | getIntelligentRecommendations | intent별 추천 결과 출력 |
+| P0 | 게스트 로그인 유도 | /auth 또는 상담/리뷰 시도 | login modal | 로그인 모달 정상 노출 |
+| P1 | MyPage 조회 | MyPageView | reservations / favorites / consultations count | 개인 데이터 정상 표시 |
+| P1 | 즐겨찾기 추가/삭제 | FacilitySheet / MyPage | favorites / RPC toggle_favorite | 저장/삭제 즉시 반영 |
+| P1 | 리뷰 작성 | FacilitySheet review tab | createReview / image upload | 예약 완료 조건 충족 시 작성 가능 |
+| P1 | 시설 관리자 진입 | /facility-admin | role check / facility admin data | 권한 있는 사용자만 접근 |
+| P1 | 시설 예약 승인/거절 | PartnerReservationsTab | reservations status update | 상태 변경 후 realtime 반영 |
+| P1 | 상조 관리자 대시보드 | SangjoDashboard | consultations / reservations / contracts / subscription | 합산 대시보드 정상 |
+| P1 | 상조 비교 | FuneralCompanyView / SangjoComparisonModal | sangjoCompareList local state | 비교 표시 정상 |
+| P1 | 플랜 선택 | SubscriptionPlans | updateFacilitySubscription | 저장 후 표시 일치 |
+| P1 | 무료 -> 유료 -> 무료 전환 | SubscriptionPlans | plan_id 저장 / 조회 | DB 반영 후 재조회 정상 |
+| P1 | 슈퍼 관리자 진입 | /super-admin | is_super_admin RPC | 권한 없으면 차단 |
+| P1 | 파트너 승인 | PartnerAdmissions | approve-partner Edge Function | 승인/거절 정상 |
+| P1 | 월간 리포트 | send-monthly-report | 대상 조회 / auth check | 실패는 실패로, 대상 없음은 성공 처리 |
+| P2 | 상담 이력 재진입 | ConsultationHistoryView / MyConsultations | consultations / ai_consultations | 재개 가능한 이력 표시 |
+| P2 | 공지 작성 | AdminCommunication / NoticeManagement | notices insert | 공지 작성/조회 정상 |
+| P2 | 로그 조회 | AdminLogsView | audit_logs | 최신 로그 표시 |
+| P2 | 시스템 설정 수정 | SystemSettings | system_settings upsert | 저장 후 조회 일치 |
+
+8. 구조적 리스크 Top 10
+
+1. viewState와 URL 이중 source of truth
+2. App.tsx 책임 집중
+3. AI 상담 흐름 다중화
+4. 구독 계약 불일치
+5. 시설 식별자 계약 불일치
+6. 데이터 접근 계층 분산
+7. 권한 경계 불균일
+8. fail-open 쿼터 구조
+9. realtime 구독 중복
+10. 레거시 fallback 의존
+
+9. 기능 검증 전에 반드시 알아야 할 핵심 10개
+
+1. 일반 화면은 viewState가 최종 기준이다.
+2. route-driven view는 일부 관리자 화면뿐이다.
+3. 슈퍼관리자 탭은 query param 기준이다.
+4. 예약 저장은 useReservations가 최종 insert를 한다.
+5. AI 상담은 최소 3개 계열이 있다.
+6. 시설 비교와 상조 비교는 DB 저장이 없다.
+7. 구독은 canonical plan_id 기준으로 봐야 한다.
+8. facility_id만으로 고아 레코드 여부를 판단하면 안 된다.
+9. 승인/리포트는 Edge Function과 RPC가 함께 얽혀 있다.
+10. 즐겨찾기/예약/상담/구독은 서로 다른 테이블과 invalidation 경로를 가진다.
+
+10. 다음 단계 기능 검증 우선순위
+
+1. 라우팅/권한
+2. 예약 end-to-end
+3. AI 상담 end-to-end
+4. 구독/결제/플랜 정합성
+5. 승인/리포트
+6. 비교/추천
+7. MyPage/즐겨찾기/리뷰
+8. 관리자 운영 화면
+
+11. 누락 가능 기능 재점검
+
+- ai
+- 상담
+- compare / comparison
+- 마음이
+- reservation / booking
+- subscription / plan
+- partner
+- admin
+- report
+- approval
+- rpc
+- supabase
+- store
+- route
+
+끝.

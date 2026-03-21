@@ -1,0 +1,107 @@
+Memorimap QA 보강 문서
+기준일: 2026-03-20
+
+이 문서는 `docs/structure_summary_and_verification_scenarios_20260320.txt`의 보강본이다.
+정상 흐름만 있던 시나리오를 실패 / 정합성 / 권한 우회 / 상태 충돌까지 확장한다.
+
+1. 실패 시나리오 레이어
+
+- [P0-FAIL] 예약 생성 실패
+  - 조건: 비로그인, facility_id null, quota 초과, 결제 실패
+  - 확인: insert 미발생, 에러 UI 표시, MyPage 이동 없음
+
+- [P0-FAIL] 구독 변경 실패
+  - 조건: 권한 없음, auth client 실패, plan_id 비정상 값
+  - 확인: DB 미변경, UI 실패 표시, 기존 플랜 유지
+
+- [P0-FAIL] AI 상담 실패
+  - 조건: quota 초과, gemini proxy 실패, consultation create 실패
+  - 확인: 상담 저장 안 됨, 에러 메시지 노출, 반쪽 데이터 없음
+
+- [P0-FAIL] 승인 실패
+  - 조건: 일반 유저 승인 시도, Edge Function 호출 실패, RPC 실패
+  - 확인: 승인 상태 미변경, 에러 응답 표시
+
+2. 데이터 정합성 검증 시나리오
+
+- [P0-DATA] 구독 plan_id 정합성
+  - 단계: 무료 -> 유료 -> 무료 전환
+  - 확인: facility_subscriptions.plan_id, subscription_plans.id, UI 표시값
+  - 기대: canonical id 동일, plan_name mismatch 없음
+
+- [P0-DATA] facility_id 계약 검증
+  - 확인: reservations.facility_id, facility_subscriptions.facility_id_uuid, join 정상 여부
+  - 기대: 고아 데이터 없음, 관리자 조회 정상
+
+- [P0-DATA] 상조 계약 정합성
+  - 확인: sangjo_contracts.sangjo_id, PartnerDashboard 상담/계약 병합 결과
+  - 기대: 계약이 상담 목록에 중복/누락 없이 반영
+
+- [P0-DATA] 즐겨찾기 정합성
+  - 확인: favorites / sangjo_favorites / user_favorites 경로별 반영
+  - 기대: 추가/삭제 후 조회값 일치
+
+3. 권한 우회 시나리오
+
+- [P0-SEC] 시설 관리자 권한 우회
+  - 시도: 비로그인 상태에서 /facility-admin 직접 진입, 일반 유저로 직접 진입
+  - 확인: redirect 또는 block, API 호출 차단
+  - 기대: 데이터 노출 없음
+
+- [P0-SEC] 상조 관리자 권한 우회
+  - 시도: 일반 유저로 /super-admin, /facility-admin, /sangjo-dashboard 진입
+  - 확인: 차단 문구 또는 강제 이동
+  - 기대: 관리자 데이터 미노출
+
+- [P0-SEC] 예약 승인 API 직접 호출
+  - 시도: 일반 유저가 approveReservation 또는 rejectReservation 경로 호출
+  - 확인: DB 변경 여부
+  - 기대: 실패
+
+- [P0-SEC] Edge Function 직접 호출
+  - 시도: approve-partner, send-monthly-report 직접 호출
+  - 확인: 서비스 롤 / 권한 검증 실패 여부
+  - 기대: 비인가 요청 차단
+
+4. 상태 / 라우팅 충돌 시나리오
+
+- [P0-STATE] viewState vs URL sync
+  - 단계: MAP -> LIST 이동, 뒤로가기, 새로고침
+  - 확인: 화면 유지 여부, viewState 재구성, canonicalization
+  - 기대: UI 깨짐 없음
+
+- [P0-STATE] 관리자 route-driven state 충돌
+  - 단계: /super-admin?tab=monitoring, 다른 탭으로 이동, 뒤로가기
+  - 확인: query param이 activeTab으로 유지되는지
+  - 기대: 탭 상태 일관성 유지
+
+- [P0-STATE] AI overlay 해제 충돌
+  - 단계: global chat open 후 시설 상세 / 예약 / 비교를 동시에 여닫기
+  - 확인: aiChatFacility, selectedFacility, showComparison 간 충돌 여부
+  - 기대: 오버레이가 꼬이지 않음
+
+5. 실제로 터질 가능성이 높은 버그 Top 5
+
+1. 예약 저장은 성공했는데 MyPage 반영이 누락되는 경우
+   - 원인: insert 성공 후 local state 갱신 실패 또는 이동 타이밍 불일치
+
+2. plan_id mismatch로 구독 UI가 깨지는 경우
+   - 원인: canonical id, plan_name, subscription_plans.id 불일치
+
+3. AI 상담 데이터가 3개 테이블에 분산되어 이력 / 현재 상태가 서로 달라지는 경우
+   - 원인: ChatInterface, ConsultationView, ScenarioBot가 서로 다른 저장 경로 사용
+
+4. 관리자에서 facility 연결이 안 맞는 경우
+   - 원인: uuid / bigint / legacy id 혼용
+
+5. quota 실패 시 fail-open으로 제한이 풀리는 경우
+   - 원인: RPC 실패를 allowed=true로 처리하는 경로
+
+6. 실전 QA 문서로 올리기 위한 최소 보강 원칙
+
+- 모든 P0 시나리오에 실패 케이스를 최소 1개 포함한다.
+- 모든 구독 / 예약 / 상담 시나리오에 데이터 정합성 검증을 포함한다.
+- 모든 관리자 기능에 직접 URL 진입과 권한 우회 시도를 포함한다.
+- 화면 이동 시나리오에는 뒤로가기, 새로고침, deep link를 포함한다.
+- 정상 흐름만 있으면 QA 문서가 아니라 기능 소개 문서에 가깝다.
+
