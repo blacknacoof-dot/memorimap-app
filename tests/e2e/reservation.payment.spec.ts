@@ -6,10 +6,10 @@ import { supabase, TEST_USER_ID, TEST_PARTNER_ID } from './db.utils';
 // DB 레벨 통합 테스트 (service role client)
 // ─────────────────────────────────────────────────────────
 
-const RESERVATION_ID = `e2e_payment_test_${Date.now()}`;
+const RESERVATION_ID = crypto.randomUUID();
 const TEST_PAYMENT_ID = `pay_e2e_${Date.now()}`;
 
-test.describe('Flow B: Reservation → Payment → Verification', () => {
+test.describe.serial('Flow B: Reservation → Payment → Verification', () => {
 
     // ── Cleanup ─────────────────────────────────────────────
     test.afterAll(async () => {
