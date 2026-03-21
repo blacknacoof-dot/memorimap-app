@@ -62,7 +62,7 @@ let fixture: PartnerFixture | null = null;
 let inquiryId: number | null = null;
 const createdInquiryIds: number[] = [];
 
-test.describe('Flow C: Partner Approval -> Permission -> Facility Access', () => {
+test.describe.serial('Flow C: Partner Approval -> Permission -> Facility Access', () => {
   test.beforeAll(async () => {
     const admin = await createFixtureUser('super_admin', marker);
     const applicant = await createFixtureUser('user', marker);
