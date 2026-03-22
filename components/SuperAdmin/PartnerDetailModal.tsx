@@ -91,8 +91,8 @@ export const PartnerDetailModal: React.FC<Props> = ({ partner, onClose, onStatus
                         {partner.status === 'approved' && (
                             <button
                                 onClick={async () => {
-                                    onClose();
                                     await onStatusChange(partner.id, 'suspended');
+                                    onClose();
                                 }}
                                 className="flex-1 bg-white text-slate-600 border border-slate-200 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-50 transition-all"
                             >
@@ -102,8 +102,8 @@ export const PartnerDetailModal: React.FC<Props> = ({ partner, onClose, onStatus
                         {partner.status === 'suspended' && (
                             <button
                                 onClick={async () => {
-                                    onClose();
                                     await onStatusChange(partner.id, 'approved');
+                                    onClose();
                                 }}
                                 className="flex-1 bg-blue-600 text-white py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-1.5"
                             >
