@@ -6,18 +6,11 @@ const ALLOWED_ORIGINS = [
     'https://memorimap-app.vercel.app',
     'https://memorimap.com',
     'https://www.memorimap.com',
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-    'http://localhost:4173',
-    'http://127.0.0.1:4173',
 ];
 
 const getCorsHeaders = (req: Request) => {
     const origin = req.headers.get('origin');
-    const isLocalDevOrigin = origin
-        ? /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin)
-        : false;
-    const allowedOrigin = (origin && (ALLOWED_ORIGINS.includes(origin) || isLocalDevOrigin))
+    const allowedOrigin = (origin && ALLOWED_ORIGINS.includes(origin))
         ? origin
         : ALLOWED_ORIGINS[0];
 

@@ -59,7 +59,7 @@ export function useFacilityAdmin({ user, facilities }: UseFacilityAdminProps) {
         const { data: resData } = await client
           .from('reservations').select('*').eq('facility_id', facilityId).order('created_at', { ascending: false });
         const res = (resData || []) as Reservation[];
-        res.sort((a, b) => new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime());
+        res.sort((a, b) => new Date(b.visit_date ?? 0).getTime() - new Date(a.visit_date ?? 0).getTime());
         setReservations(res);
 
         const sub = await getFacilitySubscription(facilityId, client);

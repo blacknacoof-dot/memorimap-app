@@ -97,7 +97,7 @@ export function usePartnerDashboard(partnerId: string) {
         const dbConsultations = (consResult.data || []) as Consultation[];
         const mappedContracts = (contractsResult.data || []).map((sc: SangjoContract) => mapSangjoContractToConsultation(sc));
         const merged = [...dbConsultations, ...mappedContracts].sort(
-          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          (a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime()
         );
         setConsultations(merged);
         if (resResult.data) setReservations(resResult.data as Reservation[]);

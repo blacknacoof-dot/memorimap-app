@@ -55,7 +55,7 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
                         if (idx > -1) {
                             const newArr = [...prev];
                             newArr[idx] = updated;
-                            return newArr.sort((a, b) => b.last_message_at.localeCompare(a.last_message_at));
+                            return newArr.sort((a, b) => (b.last_message_at ?? '').localeCompare(a.last_message_at ?? ''));
                         }
                         return [updated, ...prev];
                     });
@@ -102,7 +102,7 @@ export const LiveConsultation: React.FC<LiveConsultationProps> = ({ partnerId })
             timestamp: new Date().toISOString()
         };
 
-        const updatedMessages = [...selected.messages, newMessage];
+        const updatedMessages = [...(selected.messages ?? []), newMessage];
 
         const client = await getAuthClient(session, { strict: true });
         const { error } = await client
