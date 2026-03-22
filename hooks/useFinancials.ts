@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from '@/lib/auth';
 import { getAuthClient } from '@/lib/supabaseClient';
 import { fetchSubscriptions, fetchPayments } from '@/lib/api/superAdmin';
+import type { PaymentWithFacility } from '@/lib/api/superAdmin';
 import { toast } from 'sonner';
 
 // Types based on SuperAdminDashboard usage
@@ -16,14 +17,7 @@ export interface Subscription {
     next_billing_date?: string;
 }
 
-export interface Payment {
-    id: string;
-    amount: number;
-    description: string;
-    facility_name: string;
-    paid_at: string;
-    status: string;
-}
+export type { PaymentWithFacility as Payment };
 
 export function useSubscriptions() {
     const { session } = useSession();
@@ -51,7 +45,7 @@ export function useSubscriptions() {
 
 export function useRevenue() {
     const { session } = useSession();
-    const [payments, setPayments] = useState<Payment[]>([]);
+    const [payments, setPayments] = useState<PaymentWithFacility[]>([]);
     const [totalRevenue, setTotalRevenue] = useState(0);
     const [loading, setLoading] = useState(true);
 
@@ -60,9 +54,12 @@ export function useRevenue() {
         const load = async () => {
             try {
                 const client = await getAuthClient(session, { strict: true });
-                const data = await fetchPayments(client);
-                setPayments(data as Payment[]);
-                setTotalRevenue(data.reduce((acc, curr) => acc + (curr.amount || 0), 0));
+                const result = await fetchPayments(client);
+                setPayments(result.payments);
+                setTotalRevenue(result.payments.reduce((acc, curr) => acc + (curr.amount || 0), 0));
+                if (result.facilityNameFailed) {
+                    toast.warning('시설명 조회에 실패했습니다. 일부 항목이 (알 수 없음)으로 표시됩니다.');
+                }
             } catch {
                 toast.error('매출 데이터 로딩에 실패했습니다.');
             } finally {

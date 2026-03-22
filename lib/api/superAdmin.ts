@@ -129,7 +129,16 @@ export const updateSubscriptionBillingDate = async (facilityId: string, nextDate
 };
 
 // --- 매출/결제 API ---
-export const fetchPayments = async (client: SupabaseClient) => {
+export interface PaymentWithFacility extends Payment {
+    facility_name: string;
+}
+
+export interface FetchPaymentsResult {
+    payments: PaymentWithFacility[];
+    facilityNameFailed: boolean;
+}
+
+export const fetchPayments = async (client: SupabaseClient): Promise<FetchPaymentsResult> => {
     const { data: payments, error: pError } = await client
         .from('subscription_payments')
         .select('*')
@@ -144,16 +153,22 @@ export const fetchPayments = async (client: SupabaseClient) => {
 
         if (!sError && subs) {
             const subMap = new Map(subs.map(s => [s.id, s.facility_name]));
-            return payments.map((item: Payment) => ({
-                ...item,
-                facility_name: subMap.get(item.subscription_id ?? '') || '(시설 정보 유실)',
-            })) as (Payment & { facility_name: string })[];
+            return {
+                payments: payments.map((item: Payment) => ({
+                    ...item,
+                    facility_name: subMap.get(item.subscription_id ?? '') || '(시설 정보 유실)',
+                })) as PaymentWithFacility[],
+                facilityNameFailed: false,
+            };
         }
     } catch {
         // facility name resolution failed — non-blocking
     }
 
-    return payments.map(p => ({ ...p, facility_name: '(알 수 없음)' })) as (Payment & { facility_name: string })[];
+    return {
+        payments: payments.map(p => ({ ...p, facility_name: '(알 수 없음)' })) as PaymentWithFacility[],
+        facilityNameFailed: true,
+    };
 };
 
 // --- 관리 활동 로그 API ---
