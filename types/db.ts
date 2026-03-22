@@ -134,6 +134,28 @@ export interface Subscription {
 }
 
 /**
+ * [UserSubscriptions] 개인 유저 구독 정보
+ */
+export interface UserSubscription {
+    user_id: string;
+    plan_id: UserSubscriptionPlan;
+    plan_name: 'PERSONAL_FREE' | 'PERSONAL_BASIC' | 'PERSONAL_PREMIUM';
+    status: 'active' | 'expired' | 'cancelled';
+    ai_consult_used: number;
+    ai_consult_by_category: {
+        funeral_home: number;
+        memorial_facility: number;
+        pet_funeral: number;
+    };
+    sangjo_compare_used: number;
+    favorites_count: number;
+    sangjo_favorites_count: number;
+    last_reset_at: string;
+    started_at: string | null;
+    expires_at: string | null;
+}
+
+/**
  * [Payments] 매출/결제 이력
  */
 export interface Payment {
