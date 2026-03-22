@@ -3,6 +3,7 @@ import { HashRouter, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { ErrorBoundary } from './ErrorBoundary';
 import { RouteStateSync } from './RouteStateSync';
+import { ConfirmModal, PromptModal } from '../src/components/common/ConfirmModal';
 import { ViewState } from '../types';
 import { AppRouteLayout as RouteLayoutType } from '../lib/appRouteConfig';
 import { ExternalBrowserGuidePage } from '../src/pages/ExternalBrowserGuidePage';
@@ -41,6 +42,8 @@ export const AppRouteLayout: React.FC<AppRouteLayoutProps> = ({
           onLayoutChange={onLayoutChange}
         />
         <ErrorBoundary>{adminContent}</ErrorBoundary>
+        <ConfirmModal />
+        <PromptModal />
         <Toaster richColors position="bottom-center" closeButton />
       </HashRouter>
     );

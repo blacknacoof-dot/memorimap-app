@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { useUser } from '../../lib/auth';
 import {
     Building2, TrendingUp, Users,
-    LogOut, Menu, X, FileText,
+    ArrowLeft, Menu, X, FileText,
     Settings, ShieldCheck,
     MonitorStop, MessageSquare,
     CreditCard, History, UserCog
 } from 'lucide-react';
+import { useConfirmModal } from '../../src/components/common/ConfirmModal';
 import { PartnerManagement } from './PartnerManagement';
 import { PartnerAdmissions } from './PartnerAdmissions';
 import { ContractMonitoring } from './ContractMonitoring';
@@ -197,10 +198,13 @@ function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
                         <NotificationCenter />
                         <div className="h-5 w-[1px] bg-slate-200 mx-0.5 md:mx-1"></div>
                         <button
-                            onClick={() => onBack?.()}
-                            className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all text-xs font-bold"
+                            onClick={() => {
+                                useConfirmModal.getState().close();
+                                onBack?.();
+                            }}
+                            className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all text-xs font-bold"
                         >
-                            <LogOut className="w-4 h-4" />
+                            <ArrowLeft className="w-4 h-4" />
                             <span className="hidden sm:inline">나가기</span>
                         </button>
                     </div>
