@@ -22,6 +22,7 @@ import { AdminCommunication } from '../admin/AdminCommunication';
 import { AdminSettings } from './AdminSettings';
 import { SystemSettings } from './SystemSettings';
 import { SubscriptionManager } from './SubscriptionManager';
+import { PersonalSubscriptionManager } from './PersonalSubscriptionManager';
 import { SuperAdminGuard } from './SuperAdminGuard';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -60,7 +61,8 @@ const SideMenuDrawer = ({ isOpen, onClose, onNavigate }: { isOpen: boolean; onCl
                             { icon: ShieldCheck, label: '상조 파트너 관리', id: 'admissions' },
                             { icon: MonitorStop, label: '실시간 통합 관제', id: 'monitoring' },
                             { icon: Building2, label: '시설 통합 관리', id: 'facilities' },
-                            { icon: CreditCard, label: '구독 현황', id: 'subs' },
+                            { icon: CreditCard, label: '사업자 구독', id: 'subs' },
+                            { icon: UserCog, label: '개인 구독', id: 'personal_subs' },
                             { icon: Users, label: '회원/권한 관리', id: 'users' },
                             { icon: FileText, label: '공지사항 관리', id: 'notices' },
                             { icon: History, label: '시스템 활동 로그', id: 'logs' },
@@ -119,6 +121,7 @@ function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
     const navigate = useNavigate();
     type TabId =
         | 'subs'
+        | 'personal_subs'
         | 'revenue'
         | 'leads'
         | 'admissions'
@@ -133,6 +136,7 @@ function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
     const parseTabFromSearch = (search: string): TabId | null => {
         const tab = new URLSearchParams(search).get('tab');
         if (tab === 'subs') return 'subs';
+        if (tab === 'personal_subs') return 'personal_subs';
         if (tab === 'revenue') return 'revenue';
         if (tab === 'leads') return 'leads';
         if (tab === 'admissions') return 'admissions';
@@ -245,6 +249,7 @@ function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
                         }}
                     />
                 )}
+                {activeTab === 'personal_subs' && <PersonalSubscriptionManager />}
                 {activeTab === 'monitoring' && <ContractMonitoring onNavigateCommunication={handleNavigateCommunication} />}
                 {activeTab === 'revenue' && <RevenueManagement />}
                 {activeTab === 'leads' && <AdminLeadsView />}

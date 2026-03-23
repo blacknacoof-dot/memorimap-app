@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useSession } from '@/lib/auth';
 import { getAuthClient } from '@/lib/supabaseClient';
-import { fetchSubscriptions, fetchPayments } from '@/lib/api/superAdmin';
-import type { PaymentWithFacility } from '@/lib/api/superAdmin';
+import { fetchSubscriptions, fetchPayments, fetchPersonalSubscriptions } from '@/lib/api/superAdmin';
+import type { PaymentWithFacility, PersonalSubscriptionAdminRow } from '@/lib/api/superAdmin';
 import { toast } from 'sonner';
 
 // Types based on SuperAdminDashboard usage
@@ -71,4 +71,28 @@ export function useRevenue() {
     }, [session]);
 
     return { payments, totalRevenue, loading };
+}
+
+export function usePersonalSubscriptions() {
+    const { session } = useSession();
+    const [users, setUsers] = useState<PersonalSubscriptionAdminRow[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!session) return;
+        const load = async () => {
+            try {
+                const client = await getAuthClient(session, { strict: true });
+                const data = await fetchPersonalSubscriptions(client);
+                setUsers(data);
+            } catch {
+                toast.error('개인 구독 데이터를 불러오지 못했습니다.');
+            } finally {
+                setLoading(false);
+            }
+        };
+        load();
+    }, [session]);
+
+    return { data: users, loading };
 }
