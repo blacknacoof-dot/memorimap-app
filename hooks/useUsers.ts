@@ -20,6 +20,21 @@ const isTestUserProfile = (profile: Pick<UserProfile, 'email' | 'full_name'>) =>
     );
 };
 
+const dedupeUsersByIdentity = (users: UserProfile[]) => {
+    const deduped = new Map<string, UserProfile>();
+
+    for (const user of users) {
+        const key = (user.email || user.id).toLowerCase();
+        const existing = deduped.get(key);
+
+        if (!existing || user.created_at > existing.created_at) {
+            deduped.set(key, user);
+        }
+    }
+
+    return Array.from(deduped.values());
+};
+
 export function useAllUsers() {
     const { session } = useSession();
     const [users, setUsers] = useState<UserProfile[]>([]);
@@ -30,7 +45,7 @@ export function useAllUsers() {
         setLoading(true);
         try {
             const client = await getAuthClient(session, { strict: true });
-            const data = await fetchAllUsers(client);
+            const data = dedupeUsersByIdentity(await fetchAllUsers(client));
             setUsers(includeTestUsers ? data : data.filter((user) => !isTestUserProfile(user)));
         } catch {
             toast.error('유저 목록 로딩 실패');
