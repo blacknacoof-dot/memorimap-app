@@ -932,8 +932,8 @@ export const updateUserProfile = async (userId: string, data: Partial<{
     const { data: result, error } = await db
         .from('profiles')
         .upsert(
-            { clerk_id: userId, ...data, updated_at: new Date().toISOString() },
-            { onConflict: 'clerk_id' }
+            { id: userId, clerk_id: userId, ...data, updated_at: new Date().toISOString() },
+            { onConflict: 'id' }
         )
         .select()
         .single();

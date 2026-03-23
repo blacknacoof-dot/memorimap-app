@@ -28,11 +28,12 @@ const createSuperAdminFixtureUser = async (marker: string): Promise<FixtureUser>
   const userId = data.user.id;
 
   const { error: profileError } = await supabase.from('profiles').upsert({
+    id: userId,
     clerk_id: userId,
     email,
     full_name: `${marker}-super-admin`,
     role: 'super_admin',
-  }, { onConflict: 'clerk_id' });
+  }, { onConflict: 'id' });
 
   if (profileError) {
     throw new Error(`Failed to upsert super_admin profile: ${profileError.message}`);

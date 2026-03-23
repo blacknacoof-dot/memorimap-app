@@ -3,8 +3,9 @@ import { useUser, useSession } from '../lib/auth';
 import { getAuthClient, isSupabaseConfigured } from '../lib/supabaseClient';
 
 /**
- * Supabase Auth 로그인 시 profiles 테이블 upsert.
- * Clerk useAuthSync를 대체합니다.
+ * Sync the authenticated Supabase user into public.profiles.
+ * We anchor the profile row to profiles.id = auth user id so auth-created
+ * placeholder rows are updated instead of creating duplicates.
  */
 export const useProfileSync = () => {
   const { user, isSignedIn } = useUser();
@@ -26,28 +27,29 @@ export const useProfileSync = () => {
           .from('profiles')
           .upsert(
             {
+              id: user.id,
               clerk_id: user.id,
               email: user.primaryEmailAddress?.emailAddress,
               full_name: user.fullName || user.username || '사용자',
               avatar_url: user.imageUrl,
               updated_at: new Date().toISOString(),
             },
-            { onConflict: 'clerk_id' }
+            { onConflict: 'id' },
           );
 
         if (error) {
           const pgError = error as { code?: string; status?: number; message: string };
           if (pgError.code !== '42501' && pgError.status !== 401) {
-            // Profile sync failed (non-critical)
+            // Non-critical sync failure.
           }
         } else {
           hasSyncedRef.current = true;
         }
-      } catch (_err) {
-        // silent
+      } catch {
+        // Silent fallback.
       }
     };
 
     syncProfile();
-  }, [isSignedIn, user, session]);
+  }, [isSignedIn, session, user]);
 };

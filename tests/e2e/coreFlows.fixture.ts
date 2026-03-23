@@ -72,11 +72,12 @@ async function createUser(role: CoreRole, marker: string): Promise<CoreFlowUser>
   const { error: profileError } = await runInstrumentedStep(
     `createUser(${role}).supabase.profiles.upsert`,
     async () => await supabase.from('profiles').upsert({
+      id: userId,
       clerk_id: userId,
       email,
       full_name: `${marker}-${role}`,
       role,
-    }, { onConflict: 'clerk_id' }),
+    }, { onConflict: 'id' }),
   );
 
   if (profileError) {
@@ -144,6 +145,7 @@ export async function setupCoreFlowFixture(marker: string): Promise<CoreFlowFixt
 export async function teardownCoreFlowFixture(fixture: CoreFlowFixture): Promise<void> {
   const userIds = [fixture.regularUser.id, fixture.superAdminUser.id];
 
+  await supabase.from('user_subscriptions').delete().in('user_id', userIds);
   await supabase.from('facility_reviews').delete().eq('facility_id', fixture.facilityId).in('user_id', userIds);
   await supabase.from('reservations').delete().eq('facility_id', fixture.facilityId).in('user_id', userIds);
   await supabase.from('user_notifications').delete().in('user_id', userIds);
