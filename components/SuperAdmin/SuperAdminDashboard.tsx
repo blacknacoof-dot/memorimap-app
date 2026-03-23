@@ -217,7 +217,7 @@ function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
                             { id: 'monitoring', label: '통합 관제', icon: MonitorStop },
                             { id: 'admissions', label: '파트너 관리', icon: ShieldCheck },
                             { id: 'revenue', label: '매출 분석', icon: TrendingUp },
-                            { id: 'leads', label: '상담 관리', icon: Users },
+                            { id: 'leads', label: '상담 리드', icon: Users },
                         ].map((tab) => (
                             <button
                                 key={tab.id}
