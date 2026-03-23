@@ -55,8 +55,9 @@ export function useRevenue() {
             try {
                 const client = await getAuthClient(session, { strict: true });
                 const result = await fetchPayments(client);
+                const succeededPayments = result.payments.filter((payment) => payment.status === 'succeeded');
                 setPayments(result.payments);
-                setTotalRevenue(result.payments.reduce((acc, curr) => acc + (curr.amount || 0), 0));
+                setTotalRevenue(succeededPayments.reduce((acc, curr) => acc + (curr.amount || 0), 0));
                 if (result.facilityNameFailed) {
                     toast.warning('시설명 조회에 실패했습니다. 일부 항목이 (알 수 없음)으로 표시됩니다.');
                 }

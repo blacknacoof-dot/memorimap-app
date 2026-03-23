@@ -47,17 +47,19 @@ export const PartnerManagement: React.FC = () => {
             ? `"${label}"하면 파트너 자격이 영구 취소됩니다. 진행하시겠습니까?`
             : `상태를 "${label}" 하시겠습니까?`;
 
-        if (!await confirmAsync(confirmMsg)) return;
+        if (!await confirmAsync(confirmMsg)) return false;
 
         try {
             const { data: { user } } = await client.auth.getUser();
             const approvedBy = status === 'approved' ? user?.id : undefined;
             await updatePartnerStatus(id, status, approvedBy, client);
             toast.success(`${label} 처리되었습니다.`);
-            loadPartners();
+            await loadPartners();
+            return true;
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : '알 수 없는 오류';
             toast.error(`업데이트 실패: ${msg}`);
+            return false;
         }
     };
 

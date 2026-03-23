@@ -8,13 +8,15 @@ import { Partner } from '../../types';
 interface Props {
     partner: Partner;
     onClose: () => void;
-    onStatusChange: (id: string, status: Partner['status']) => Promise<void>;
+    onStatusChange: (id: string, status: Partner['status']) => Promise<boolean>;
 }
 
 export const PartnerDetailModal: React.FC<Props> = ({ partner, onClose, onStatusChange }) => {
     const handleAction = async (status: Partner['status']) => {
-        await onStatusChange(partner.id, status);
-        onClose();
+        const changed = await onStatusChange(partner.id, status);
+        if (changed) {
+            onClose();
+        }
     };
 
     return (
