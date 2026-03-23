@@ -138,6 +138,11 @@ export interface FetchPaymentsResult {
     facilityNameFailed: boolean;
 }
 
+const normalizePaymentStatus = (status?: string | null) => {
+    if (status === 'completed') return 'succeeded';
+    return status || 'pending';
+};
+
 export const fetchPayments = async (client: SupabaseClient): Promise<FetchPaymentsResult> => {
     const { data: payments, error: pError } = await client
         .from('subscription_payments')
@@ -146,19 +151,52 @@ export const fetchPayments = async (client: SupabaseClient): Promise<FetchPaymen
 
     if (pError) throw pError;
 
+    const normalizedPayments = payments.map((item: Payment) => ({
+        ...item,
+        status: normalizePaymentStatus(item.status),
+    })) as Payment[];
+
     try {
         const { data: subs, error: sError } = await client
-            .from('admin_subscriptions_with_facility')
-            .select('id, facility_name');
+            .from('facility_subscriptions')
+            .select('id, facility_id, facility_id_uuid, facility_id_bigint')
+            .in('id', normalizedPayments.map((payment) => payment.subscription_id).filter(Boolean));
 
         if (!sError && subs) {
-            const subMap = new Map(subs.map(s => [s.id, s.facility_name]));
+            const facilityIds = Array.from(new Set(
+                subs.flatMap((sub) => [sub.facility_id, sub.facility_id_uuid, sub.facility_id_bigint])
+                    .filter((value): value is string | number => value != null)
+                    .map(String)
+            ));
+
+            const facilityMap = new Map<string, string>();
+            if (facilityIds.length > 0) {
+                const { data: facilities, error: fError } = await client
+                    .from('facilities')
+                    .select('id, name')
+                    .in('id', facilityIds);
+
+                if (!fError && facilities) {
+                    facilities.forEach((facility) => {
+                        facilityMap.set(String(facility.id), facility.name);
+                    });
+                }
+            }
+
+            const subMap = new Map(subs.map((sub) => {
+                const facilityKey = [sub.facility_id, sub.facility_id_uuid, sub.facility_id_bigint]
+                    .find((value) => value != null);
+                return [sub.id, facilityKey ? facilityMap.get(String(facilityKey)) : undefined];
+            }));
+
+            const resolvedPayments = normalizedPayments.map((item: Payment) => ({
+                ...item,
+                facility_name: subMap.get(item.subscription_id ?? '') || '(시설 정보 유실)',
+            })) as PaymentWithFacility[];
+
             return {
-                payments: payments.map((item: Payment) => ({
-                    ...item,
-                    facility_name: subMap.get(item.subscription_id ?? '') || '(시설 정보 유실)',
-                })) as PaymentWithFacility[],
-                facilityNameFailed: false,
+                payments: resolvedPayments,
+                facilityNameFailed: resolvedPayments.some((payment) => payment.facility_name === '(시설 정보 유실)'),
             };
         }
     } catch {
@@ -166,7 +204,7 @@ export const fetchPayments = async (client: SupabaseClient): Promise<FetchPaymen
     }
 
     return {
-        payments: payments.map(p => ({ ...p, facility_name: '(알 수 없음)' })) as PaymentWithFacility[],
+        payments: normalizedPayments.map(p => ({ ...p, facility_name: '(알 수 없음)' })) as PaymentWithFacility[],
         facilityNameFailed: true,
     };
 };
