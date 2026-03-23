@@ -105,7 +105,7 @@ test.describe.serial('TICKET-C2 core E2E release-critical flows', () => {
     });
 
     await loginViaUi(page, fx.regularUser.email, fx.regularUser.password);
-    targetFacilityId = await openFixtureFacilityFromList(page, fx.facilityId);
+    targetFacilityId = await openFixtureFacilityFromList(page, fx.facilityId, fx.facilityName);
     expect(targetFacilityId).toBeTruthy();
 
     await page.getByTestId('facility-sheet-book-button').click();
@@ -174,7 +174,7 @@ test.describe.serial('TICKET-C2 core E2E release-critical flows', () => {
 
     await loginViaUi(page, fx.regularUser.email, fx.regularUser.password);
     const expectedFacilityId = targetFacilityId || fx.facilityId;
-    const openedFacilityId = await openFixtureFacilityFromList(page, expectedFacilityId);
+    const openedFacilityId = await openFixtureFacilityFromList(page, expectedFacilityId, fx.facilityName);
     targetFacilityId = openedFacilityId;
 
     if (openedFacilityId !== expectedFacilityId) {
