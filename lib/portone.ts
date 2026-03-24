@@ -119,6 +119,10 @@ export const verifyPayment = async (params: {
     paymentId: string;
     expectedAmount: number;
     orderId?: string;
+    paymentContext?: 'reservation' | 'facility_subscription' | 'personal_subscription';
+    facilityId?: string;
+    planId?: string;
+    targetUserId?: string;
 }): Promise<{ verified: boolean; error?: string }> => {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;

@@ -289,6 +289,9 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
             const verification = await verifyPayment({
                 paymentId: response.paymentId || paymentId,
                 expectedAmount: plan.price,
+                paymentContext: 'facility_subscription',
+                facilityId,
+                planId: plan.nameEn,
             });
             if (!verification.verified) {
                 toast.error(verification.error || '결제 검증에 실패했습니다. 고객센터에 문의해주세요.');

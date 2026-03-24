@@ -2,7 +2,10 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const ALLOWED_ORIGINS = [
+    'https://memorimap.kr',
+    'https://www.memorimap.kr',
     'https://memorimap-app.vercel.app',
+    'https://memorimap-app-ptys-projects.vercel.app',
     'https://memorimap.com',
     'https://www.memorimap.com',
 ];
@@ -48,6 +51,34 @@ async function verifyJWT(token: string): Promise<{ userId: string | null; error:
 }
 
 const PORTONE_API_URL = 'https://api.portone.io/v2';
+
+async function verifySubscriptionPlanExists(
+    supabaseAdmin: ReturnType<typeof createClient>,
+    planId: string,
+): Promise<boolean> {
+    const { data, error } = await supabaseAdmin
+        .from('subscription_plans')
+        .select('id')
+        .eq('name_en', planId)
+        .limit(1)
+        .maybeSingle();
+
+    return !error && !!data;
+}
+
+async function verifyFacilityOwnership(
+    supabaseAdmin: ReturnType<typeof createClient>,
+    facilityId: string,
+    verifiedUserId: string,
+): Promise<boolean> {
+    const { data, error } = await supabaseAdmin
+        .from('facilities')
+        .select('user_id')
+        .eq('id', facilityId)
+        .maybeSingle();
+
+    return !error && !!data && data.user_id === verifiedUserId;
+}
 
 serve(async (req: Request) => {
     const corsHeaders = getCorsHeaders(req);
@@ -100,7 +131,15 @@ serve(async (req: Request) => {
     );
 
     try {
-        const { paymentId, expectedAmount, orderId } = await req.json();
+        const {
+            paymentId,
+            expectedAmount,
+            orderId,
+            paymentContext,
+            facilityId,
+            planId,
+            targetUserId,
+        } = await req.json();
 
         if (!paymentId || !expectedAmount) {
             return new Response(JSON.stringify({ error: 'paymentId and expectedAmount are required' }), {
@@ -243,6 +282,86 @@ serve(async (req: Request) => {
                 payment_id: paymentId,
                 paid_at: new Date().toISOString(),
             }).eq('id', orderId);
+        }
+
+        if (paymentContext === 'facility_subscription') {
+            if (!facilityId || !planId) {
+                return new Response(JSON.stringify({
+                    verified: false,
+                    error: 'facilityId and planId are required for facility subscription verification.',
+                }), {
+                    status: 400,
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                });
+            }
+
+            const [planExists, facilityOwned] = await Promise.all([
+                verifySubscriptionPlanExists(supabaseAdmin, planId),
+                verifyFacilityOwnership(supabaseAdmin, facilityId, verifiedUserId),
+            ]);
+
+            if (!planExists || !facilityOwned) {
+                await supabaseAdmin.from('system_logs').insert({
+                    level: 'ERROR',
+                    message: 'Facility subscription verification rejected',
+                    meta: {
+                        paymentId,
+                        facilityId,
+                        planId,
+                        requestedBy: verifiedUserId,
+                        planExists,
+                        facilityOwned,
+                    },
+                    source: 'edge-function:verify-payment'
+                });
+
+                return new Response(JSON.stringify({
+                    verified: false,
+                    error: '시설 구독 결제 대상 검증에 실패했습니다.',
+                }), {
+                    status: 403,
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                });
+            }
+        }
+
+        if (paymentContext === 'personal_subscription') {
+            if (!targetUserId || !planId) {
+                return new Response(JSON.stringify({
+                    verified: false,
+                    error: 'targetUserId and planId are required for personal subscription verification.',
+                }), {
+                    status: 400,
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                });
+            }
+
+            const planExists = await verifySubscriptionPlanExists(supabaseAdmin, planId);
+            const isOwner = targetUserId === verifiedUserId;
+
+            if (!planExists || !isOwner) {
+                await supabaseAdmin.from('system_logs').insert({
+                    level: 'ERROR',
+                    message: 'Personal subscription verification rejected',
+                    meta: {
+                        paymentId,
+                        planId,
+                        targetUserId,
+                        requestedBy: verifiedUserId,
+                        planExists,
+                        isOwner,
+                    },
+                    source: 'edge-function:verify-payment'
+                });
+
+                return new Response(JSON.stringify({
+                    verified: false,
+                    error: '개인 구독 결제 대상 검증에 실패했습니다.',
+                }), {
+                    status: 403,
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                });
+            }
         }
         // ============================================================
 
