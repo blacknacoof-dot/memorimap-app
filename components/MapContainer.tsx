@@ -3,6 +3,50 @@ import { Facility } from '../types';
 import { getMarkerHtml, LeafletCompatibleBounds } from '../utils/naverMapHelper';
 import { toast } from 'sonner';
 
+const NAVER_MAP_CLIENT_ID = import.meta.env.VITE_NAVER_MAP_CLIENT_ID as string | undefined;
+let naverMapScriptPromise: Promise<void> | null = null;
+
+const loadNaverMapSdk = (): Promise<void> => {
+  if (typeof window === 'undefined') {
+    return Promise.reject(new Error('Naver Maps SDK can only load in the browser.'));
+  }
+
+  if (window.naver?.maps?.Map) {
+    return Promise.resolve();
+  }
+
+  if (naverMapScriptPromise) {
+    return naverMapScriptPromise;
+  }
+
+  if (!NAVER_MAP_CLIENT_ID) {
+    return Promise.reject(new Error('VITE_NAVER_MAP_CLIENT_ID is not configured.'));
+  }
+
+  naverMapScriptPromise = new Promise<void>((resolve, reject) => {
+    const existingScript = document.querySelector<HTMLScriptElement>('script[data-naver-map-sdk="true"]');
+    if (existingScript) {
+      existingScript.addEventListener('load', () => resolve(), { once: true });
+      existingScript.addEventListener('error', () => reject(new Error('Failed to load Naver Maps SDK.')), { once: true });
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.async = true;
+    script.defer = true;
+    script.dataset.naverMapSdk = 'true';
+    script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${NAVER_MAP_CLIENT_ID}`;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Failed to load Naver Maps SDK.'));
+    document.head.appendChild(script);
+  }).catch((error) => {
+    naverMapScriptPromise = null;
+    throw error;
+  });
+
+  return naverMapScriptPromise;
+};
+
 interface NaverMaps {
   Map: new (el: HTMLElement, opts: Record<string, unknown>) => NaverMapInstance;
   LatLng: new (lat: number, lng: number) => NaverLatLng;
@@ -116,18 +160,26 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
 
     // SDK 로드 대기 (index.html에서 미리 로드됨)
     const loadAndInitMap = () => {
+      let sdkLoadFailed = false;
+
+      loadNaverMapSdk().catch(() => {
+        sdkLoadFailed = true;
+        toast.error('지도 SDK를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
+      });
+
       if (window.naver && window.naver.maps && window.naver.maps.Map) {
-        // SDK already loaded, init immediately
         initMap();
         return;
       }
 
-      // Waiting for Naver SDK
       checkInterval = setInterval(() => {
+        if (sdkLoadFailed) {
+          if (checkInterval) clearInterval(checkInterval);
+          return;
+        }
         if (window.naver && window.naver.maps && window.naver.maps.Map) {
           if (checkInterval) clearInterval(checkInterval);
           if (isMounted) {
-            // SDK loaded via polling
             initMap();
           }
         }
