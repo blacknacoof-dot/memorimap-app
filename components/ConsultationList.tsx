@@ -25,7 +25,8 @@ export const ConsultationList: React.FC<Props> = ({ consultations, onAnswer, onR
 
             // Mark as read if expanding
             const item = consultations.find(c => c.id === id);
-            if (item && !item.is_read && onRead) {
+            const isAiConsultation = item?.source === 'ai' || item?.is_ai_response;
+            if (item && !item.is_read && !isAiConsultation && onRead) {
                 onRead(id);
             }
         }
@@ -63,8 +64,9 @@ export const ConsultationList: React.FC<Props> = ({ consultations, onAnswer, onR
         <div className="space-y-3">
             {consultations.map(item => {
                 const isExpanded = expandedId === item.id;
+                const isAiConsultation = item.source === 'ai' || item.is_ai_response;
                 const isAnswered = item.status === 'accepted' || item.status === 'completed' || !!item.answer;
-                const isUnread = !item.is_read;
+                const isUnread = !item.is_read && !isAiConsultation;
 
                 return (
                     <div key={item.id} className={`bg-white rounded-xl border overflow-hidden transition-all ${isExpanded ? 'ring-2 ring-primary/20 shadow-md' : 'hover:shadow-sm'}`}>
@@ -165,6 +167,10 @@ export const ConsultationList: React.FC<Props> = ({ consultations, onAnswer, onR
                                 ) : item.status === 'cancelled' ? (
                                     <div className="text-center py-2 text-gray-400 text-xs">
                                         취소된 상담입니다.
+                                    </div>
+                                ) : isAiConsultation ? (
+                                    <div className="bg-slate-50 p-3 rounded-lg border text-xs text-slate-600">
+                                        AI 상담 항목입니다. 이 목록에서는 답변 저장과 읽음 처리를 지원하지 않습니다.
                                     </div>
                                 ) : (
                                     <div className="mt-2">

@@ -34,11 +34,12 @@ const createFixtureUser = async (role: AuthFixtureUser['role'], marker: string):
 
   const userId = data.user.id;
   const { error: profileError } = await supabase.from('profiles').upsert({
+    id: userId,
     clerk_id: userId,
     email,
     full_name: `${marker}-${role}`,
     role,
-  }, { onConflict: 'clerk_id' });
+  }, { onConflict: 'id' });
 
   if (profileError) {
     throw new Error(`Failed to upsert profile (${role}): ${profileError.message}`);

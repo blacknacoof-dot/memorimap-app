@@ -48,13 +48,9 @@ export function useFacilityAdmin({ user, facilities }: UseFacilityAdminProps) {
 
       if (facilityId) {
         const foundInProps = facilities.find(f => f.id === facilityId);
-        if (foundInProps) {
-          setFetchedFacility(foundInProps);
-        } else {
-          const { getFacility } = await import('../../lib/queries');
-          const data = await getFacility(facilityId);
-          setFetchedFacility(data);
-        }
+        const { getFacility } = await import('../../lib/queries');
+        const freshFacility = await getFacility(facilityId);
+        setFetchedFacility(freshFacility ?? foundInProps ?? null);
 
         const { data: resData } = await client
           .from('reservations').select('*').eq('facility_id', facilityId).order('created_at', { ascending: false });
@@ -255,10 +251,13 @@ export function useFacilityAdmin({ user, facilities }: UseFacilityAdminProps) {
     } catch { /* ignore */ }
   }
 
-  const myFacility = facilities.find(f => f.id === myFacilityId) || fetchedFacility;
+  const facilityFromProps = facilities.find(f => f.id === myFacilityId);
+  const myFacility = (fetchedFacility && fetchedFacility.id === myFacilityId)
+    ? fetchedFacility
+    : facilityFromProps || fetchedFacility;
   const pendingCount = reservations.filter(r => r.status === 'pending' || r.status === 'urgent').length;
   const urgentCount = reservations.filter(r => r.status === 'urgent').length;
-  const consultationCount = consultations.filter(c => !c.is_read).length;
+  const consultationCount = consultations.filter(c => !c.is_read && c.source !== 'ai' && !c.is_ai_response).length;
 
   return {
     myFacilityId, myFacility,

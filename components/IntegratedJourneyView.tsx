@@ -141,6 +141,26 @@ export default function IntegratedJourneyView({
         try {
             const authClient = await getAuthClient(session, { strict: true });
 
+            // 프리 플랜: 공유 1회 제한
+            const isFree = !userPlan || userPlan.plan_name === 'PERSONAL_FREE';
+            if (isFree) {
+                const { count, error: shareCountError } = await authClient
+                    .from('user_shares')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('user_id', user.id)
+                    .eq('is_active', true);
+                if (shareCountError) {
+                    toast.error('공유 제한 확인에 실패했습니다. 잠시 후 다시 시도해주세요.');
+                    setIsCreatingShare(false);
+                    return;
+                }
+                if (count && count >= 1) {
+                    toast.error('무료 플랜은 공유 1회까지 가능합니다. 플랜을 업그레이드해주세요.');
+                    setIsCreatingShare(false);
+                    return;
+                }
+            }
+
             const { data, error } = await authClient.rpc('create_journey_share', {
                 p_preferences: note.preferences || [],
                 p_contact: note.contact || '',

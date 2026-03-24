@@ -46,11 +46,12 @@ export async function createHighRiskUser(role: HighRiskRole, marker: string): Pr
 
   const userId = data.user.id;
   const { error: profileError } = await supabase.from('profiles').upsert({
+    id: userId,
     clerk_id: userId,
     email,
     full_name: `${marker}-${role}`,
     role,
-  }, { onConflict: 'clerk_id' });
+  }, { onConflict: 'id' });
 
   if (profileError) {
     throw new Error(`Failed to upsert profile (${role}): ${profileError.message}`);
@@ -130,6 +131,7 @@ export async function createSangjoAdminLink(params: {
 }
 
 export async function deleteHighRiskUser(userId: string): Promise<void> {
+  await supabase.from('user_subscriptions').delete().eq('user_id', userId);
   await supabase.from('sangjo_dashboard_users').delete().eq('id', userId);
   await supabase.from('sangjo_hq_admins').delete().eq('user_id', userId);
   await supabase.from('super_admins').delete().eq('user_id', userId);

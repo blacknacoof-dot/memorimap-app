@@ -130,31 +130,13 @@ export default function EndingNoteEditModal({ isOpen, onClose, currentNote, onSa
                         <h3 className="text-[11px] font-bold text-gray-800 flex items-center gap-1.5">
                             <Phone size={12} className="text-gray-400" /> 비상 연락망
                         </h3>
-                        {endingNoteLevel === 'basic' ? (
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    disabled
-                                    placeholder="예: 아들 김철수 (010-1234-5678)"
-                                    className="w-full px-3.5 py-2.5 bg-gray-100 border border-gray-100 rounded-xl text-[11px] text-gray-300"
-                                />
-                                <div className="absolute inset-0 bg-white/70 rounded-xl flex items-center justify-center gap-1.5">
-                                    <Lock size={12} className="text-gray-400" />
-                                    <span className="text-[10px] text-gray-500 font-medium">베이직 플랜 이상</span>
-                                    {onUpgrade && (
-                                        <button onClick={onUpgrade} className="text-[10px] text-pink-500 font-bold underline ml-1">플랜 보기</button>
-                                    )}
-                                </div>
-                            </div>
-                        ) : (
-                            <input
-                                type="text"
-                                value={contact}
-                                onChange={(e) => setContact(e.target.value)}
-                                placeholder="예: 아들 김철수 (010-1234-5678)"
-                                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-[11px] focus:outline-none focus:ring-1 focus:ring-pink-300 transition-all placeholder:text-gray-300"
-                            />
-                        )}
+                        <input
+                            type="text"
+                            value={contact}
+                            onChange={(e) => setContact(e.target.value)}
+                            placeholder="예: 아들 김철수 (010-1234-5678)"
+                            className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-[11px] focus:outline-none focus:ring-1 focus:ring-pink-300 transition-all placeholder:text-gray-300"
+                        />
                     </div>
 
                     {/* 3. 한 줄 메모 */}
@@ -162,31 +144,13 @@ export default function EndingNoteEditModal({ isOpen, onClose, currentNote, onSa
                         <h3 className="text-[11px] font-bold text-gray-800 flex items-center gap-1.5">
                             <FileText size={12} className="text-gray-400" /> 한 줄 메모
                         </h3>
-                        {endingNoteLevel === 'basic' ? (
-                            <div className="relative">
-                                <textarea
-                                    disabled
-                                    rows={3}
-                                    placeholder="예: 장례식에는 웃는 얼굴 사진을 사용해주세요"
-                                    className="w-full px-3.5 py-2.5 bg-gray-100 border border-gray-100 rounded-xl text-[11px] resize-none text-gray-300"
-                                />
-                                <div className="absolute inset-0 bg-white/70 rounded-xl flex items-center justify-center gap-1.5">
-                                    <Lock size={12} className="text-gray-400" />
-                                    <span className="text-[10px] text-gray-500 font-medium">베이직 플랜 이상</span>
-                                    {onUpgrade && (
-                                        <button onClick={onUpgrade} className="text-[10px] text-pink-500 font-bold underline ml-1">플랜 보기</button>
-                                    )}
-                                </div>
-                            </div>
-                        ) : (
-                            <textarea
-                                value={memo}
-                                onChange={(e) => setMemo(e.target.value)}
-                                rows={3}
-                                placeholder="예: 장례식에는 웃는 얼굴 사진을 사용해주세요"
-                                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-[11px] focus:outline-none focus:ring-1 focus:ring-pink-300 transition-all resize-none placeholder:text-gray-300 leading-relaxed"
-                            />
-                        )}
+                        <textarea
+                            value={memo}
+                            onChange={(e) => setMemo(e.target.value)}
+                            rows={3}
+                            placeholder="예: 장례식에는 웃는 얼굴 사진을 사용해주세요"
+                            className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-[11px] focus:outline-none focus:ring-1 focus:ring-pink-300 transition-all resize-none placeholder:text-gray-300 leading-relaxed"
+                        />
                     </div>
                 </div>
 

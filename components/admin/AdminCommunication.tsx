@@ -130,7 +130,14 @@ export const AdminCommunication: React.FC<AdminCommunicationProps> = ({ initialF
                                     </thead>
                                     <tbody className="divide-y">
                                         {inquiries
-                                            .filter(i => !filterText || i.companyName?.toLowerCase().includes(filterText.toLowerCase()))
+                                            .filter((i) => {
+                                                if (!filterText) return true;
+                                                const keyword = filterText.toLowerCase();
+                                                return (
+                                                    i.companyName?.toLowerCase().includes(keyword) ||
+                                                    i.targetFacilityId?.toLowerCase().includes(keyword)
+                                                );
+                                            })
                                             .map((i) => (
                                                 <tr key={i.id} className="hover:bg-gray-50 cursor-pointer">
                                                     <td className="p-4 font-medium">{i.companyName}</td>

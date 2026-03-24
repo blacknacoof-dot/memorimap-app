@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-    Users, CheckCircle2, AlertCircle,
+    Users, CheckCircle2, AlertCircle, PauseCircle, XCircle,
     Building2, Mail, Phone, Calendar, X
 } from 'lucide-react';
 import { Partner } from '../../types';
@@ -8,10 +8,17 @@ import { Partner } from '../../types';
 interface Props {
     partner: Partner;
     onClose: () => void;
-    onStatusChange: (id: string, status: Partner['status']) => Promise<void>;
+    onStatusChange: (id: string, status: Partner['status']) => Promise<boolean>;
 }
 
 export const PartnerDetailModal: React.FC<Props> = ({ partner, onClose, onStatusChange }) => {
+    const handleAction = async (status: Partner['status']) => {
+        const changed = await onStatusChange(partner.id, status);
+        if (changed) {
+            onClose();
+        }
+    };
+
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4">
             <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80dvh] overflow-y-auto">
@@ -82,37 +89,57 @@ export const PartnerDetailModal: React.FC<Props> = ({ partner, onClose, onStatus
                         </div>
                     </div>
 
-                    <div className="flex gap-2 pt-2">
+                    {/* 상태별 액션 버튼 */}
+                    <div className="flex flex-col gap-2 pt-2">
                         {partner.status === 'pending' && (
-                            <div className="flex-1 text-center py-2.5 text-sm text-amber-600 bg-amber-50 rounded-xl border border-amber-100 font-medium">
+                            <div className="text-center py-2.5 text-sm text-amber-600 bg-amber-50 rounded-xl border border-amber-100 font-medium">
                                 "신규 입점 신청"에서 승인/거절 처리
                             </div>
                         )}
+
                         {partner.status === 'approved' && (
-                            <button
-                                onClick={async () => {
-                                    await onStatusChange(partner.id, 'suspended');
-                                    onClose();
-                                }}
-                                className="flex-1 bg-white text-slate-600 border border-slate-200 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-50 transition-all"
-                            >
-                                서비스 일시정지
-                            </button>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => handleAction('suspended')}
+                                    className="flex-1 bg-white text-orange-600 border border-orange-200 py-2.5 rounded-xl text-sm font-bold hover:bg-orange-50 transition-all flex items-center justify-center gap-1.5"
+                                >
+                                    <PauseCircle size={16} /> 서비스 일시정지
+                                </button>
+                                <button
+                                    onClick={() => handleAction('rejected')}
+                                    className="flex-1 bg-white text-red-600 border border-red-200 py-2.5 rounded-xl text-sm font-bold hover:bg-red-50 transition-all flex items-center justify-center gap-1.5"
+                                >
+                                    <XCircle size={16} /> 승인 취소
+                                </button>
+                            </div>
                         )}
+
                         {partner.status === 'suspended' && (
-                            <button
-                                onClick={async () => {
-                                    await onStatusChange(partner.id, 'approved');
-                                    onClose();
-                                }}
-                                className="flex-1 bg-blue-600 text-white py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-1.5"
-                            >
-                                <CheckCircle2 size={16} /> 서비스 재개
-                            </button>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => handleAction('approved')}
+                                    className="flex-1 bg-blue-600 text-white py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-1.5"
+                                >
+                                    <CheckCircle2 size={16} /> 서비스 재개
+                                </button>
+                                <button
+                                    onClick={() => handleAction('rejected')}
+                                    className="flex-1 bg-white text-red-600 border border-red-200 py-2.5 rounded-xl text-sm font-bold hover:bg-red-50 transition-all flex items-center justify-center gap-1.5"
+                                >
+                                    <XCircle size={16} /> 승인 취소
+                                </button>
+                            </div>
                         )}
+
+                        {partner.status === 'rejected' && (
+                            <div className="text-center py-2.5 text-sm text-red-500 bg-red-50 rounded-xl border border-red-100 font-medium">
+                                반려된 파트너입니다
+                            </div>
+                        )}
+
                         <button
                             onClick={onClose}
-                            className="flex-1 bg-slate-100 text-slate-600 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-200 transition-all"
+                            className="w-full bg-slate-100 text-slate-600 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-200 transition-all"
                         >
                             닫기
                         </button>

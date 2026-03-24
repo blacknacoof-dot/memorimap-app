@@ -339,9 +339,9 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                                                 <div className="w-[60px] h-[60px] rounded-lg bg-slate-100 shrink-0 flex items-center justify-center text-slate-300 text-lg">🕊️</div>
                                             )}
                                             <div className="flex-1 min-w-0">
-                                                <div className="flex justify-between items-start">
-                                                    <button onClick={() => onSwitchToFacility?.({ id: f.id, name: f.name, address: f.address, phone: f.phone })} className="font-bold text-sm text-emerald-700 hover:underline truncate text-left">{f.name}</button>
-                                                    <span className="bg-emerald-50 text-emerald-600 text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ml-1">추천 {idx + 1}</span>
+                                                <div className="flex flex-col items-start gap-1">
+                                                    <button onClick={() => onSwitchToFacility?.({ id: f.id, name: f.name, address: f.address, phone: f.phone })} className="w-full text-[15px] font-bold text-emerald-700 hover:underline text-left leading-tight whitespace-normal break-keep">{f.name}</button>
+                                                    <span className="bg-emerald-50 text-emerald-600 text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0">추천 {idx + 1}</span>
                                                 </div>
                                                 <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5 truncate"><MapPin size={11} className="shrink-0" /> {f.address || f.jibun_address || '주소 없음'}</div>
                                                 <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5"><Phone size={11} className="shrink-0" /> {f.phone || '연락처 없음'}</div>

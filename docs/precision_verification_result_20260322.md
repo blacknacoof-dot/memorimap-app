@@ -156,26 +156,16 @@
 | M2 | sangjo_contracts.admin_memo 컬럼 실존 | SQL Editor 확인 |
 | M3 | system_settings RLS가 anon SELECT 허용하는지 | SQL Editor 확인 |
 
-### 수동 확인용 SQL
+### SQL Editor 수동 확인 결과 (2026-03-22 실행)
 
-```sql
--- H2: plan_id 데이터 타입
-SELECT column_name, data_type FROM information_schema.columns
-WHERE table_schema='public' AND table_name='facility_subscriptions'
-AND column_name='plan_id';
+| ID | 결과 | 상세 |
+|----|------|------|
+| H2 | ✅ 해결 | `facility_subscriptions.plan_id` = TEXT, nullable. types/db.ts `plan_id?: string` 정확 |
+| M1 | ⚠️ 미등록 | `system_settings`에 `sj_%` 키 0건. 수수료 설정이 DB에 없음 → CommissionSimulator가 하드코딩 fallback 사용 중인지 확인 필요 |
+| M2 | ✅ 해결 | `sangjo_contracts.admin_memo` 존재 (text, nullable). 전체 20개 컬럼 확인 |
+| M3 | ⚠️ 제한적 | SELECT는 `is_super_admin()`만 허용. anon/일반유저 조회 불가 → 파트너가 수수료율 조회 시 빈 결과 가능 |
 
--- M1: 상조 수수료 설정
-SELECT * FROM system_settings WHERE key LIKE 'sj_%';
-
--- M2: sangjo_contracts 스키마
-SELECT column_name, data_type FROM information_schema.columns
-WHERE table_schema='public' AND table_name='sangjo_contracts'
-ORDER BY ordinal_position;
-
--- M3: system_settings RLS
-SELECT policyname, cmd, qual FROM pg_policies
-WHERE tablename='system_settings';
-```
+**M1 + M3 연관 이슈**: CommissionSimulator가 system_settings에서 수수료율을 읽는 구조라면, (1) 데이터가 없고 (2) 파트너 권한으로 조회도 불가. 코드 내 fallback 또는 하드코딩 여부 확인 필요.
 
 ---
 
@@ -188,15 +178,20 @@ WHERE tablename='system_settings';
 | DB 마이그레이션 | ✅ 7개 전수 존재, role cast/중복방지/동기화 확인 |
 | 요금제 맵핑 | ✅ 한글↔canonical 맵핑 완전, 정규화 전략 명확 |
 | 서비스 레이어 | ⚠️ 2/3 완전 통과, geminiService 300줄 초과 (P2) |
+| DB 타입/스키마 | ✅ H1 해결, H2/M2 확인 완료 |
+| system_settings | ⚠️ 수수료 미등록(M1) + RLS 제한(M3) — 파트너 수수료 조회 경로 점검 필요 |
 | 문서 참조 | ✅ 참조 파일 전수 존재 |
-| 미해결 이슈 | HIGH 2건 + MEDIUM 3건 (모두 이전 보고서에서 계승) |
 
 ### 최종 결론
 
 2026-03-21 작업의 코드 산출물은 문서에 기술된 내용과 **실제 코드베이스가 일치**한다.
 심층 정리 문서의 5개 축 분류, 검증 기준, 해석 가이드는 모두 코드 실측으로 뒷받침된다.
 
-**다음 단계로 넘어가기 위한 선행 조건:**
-1. SQL Editor에서 H2, M1, M2, M3 수동 확인 → 결과 기록
-2. types/db.ts에 UserSubscription 인터페이스 추가 (H1)
-3. geminiService.ts 300줄 초과 해결 (P2 — 즉시 필요하지는 않음)
+**해결 완료:**
+- ✅ H1: UserSubscription 인터페이스 추가 (커밋 `5af0ffd`)
+- ✅ H2: plan_id = TEXT 확인
+- ✅ M2: admin_memo 컬럼 존재 확인
+
+**남은 조치:**
+1. M1+M3: CommissionSimulator의 수수료율 조회 경로 점검 (하드코딩 fallback 확인 또는 sj_*_commission 데이터 INSERT)
+2. geminiService.ts 300줄 초과 해결 (P2)

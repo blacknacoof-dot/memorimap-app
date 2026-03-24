@@ -72,11 +72,12 @@ async function createUser(role: CoreRole, marker: string): Promise<CoreFlowUser>
   const { error: profileError } = await runInstrumentedStep(
     `createUser(${role}).supabase.profiles.upsert`,
     async () => await supabase.from('profiles').upsert({
+      id: userId,
       clerk_id: userId,
       email,
       full_name: `${marker}-${role}`,
       role,
-    }, { onConflict: 'clerk_id' }),
+    }, { onConflict: 'id' }),
   );
 
   if (profileError) {
@@ -117,9 +118,11 @@ export async function setupCoreFlowFixture(marker: string): Promise<CoreFlowFixt
     .from('facilities')
     .insert({
       name: facilityName,
-      type: 'funeral_home',
+      type: 'columbarium',
       user_id: superAdminUser.id,
       verified: true,
+      latitude: 37.5665,
+      longitude: 126.978,
       address: '서울특별시 강남구 테스트로 100',
     })
     .select('id, name')
@@ -142,6 +145,7 @@ export async function setupCoreFlowFixture(marker: string): Promise<CoreFlowFixt
 export async function teardownCoreFlowFixture(fixture: CoreFlowFixture): Promise<void> {
   const userIds = [fixture.regularUser.id, fixture.superAdminUser.id];
 
+  await supabase.from('user_subscriptions').delete().in('user_id', userIds);
   await supabase.from('facility_reviews').delete().eq('facility_id', fixture.facilityId).in('user_id', userIds);
   await supabase.from('reservations').delete().eq('facility_id', fixture.facilityId).in('user_id', userIds);
   await supabase.from('user_notifications').delete().in('user_id', userIds);
@@ -190,7 +194,8 @@ export async function loginViaUi(page: Page, email: string, password: string): P
   throw new Error(`UI login failed after ${LOGIN_MAX_ATTEMPTS} attempts: login-modal did not close and bottom-nav-list did not appear`);
 }
 
-export async function openFixtureFacilityFromList(page: Page, facilityId: string): Promise<string> {
+export async function openFixtureFacilityFromList(page: Page, facilityId: string, facilityName?: string): Promise<string> {
+  await expect(page.getByTestId('bottom-nav-list')).toBeVisible({ timeout: 30000 });
   await page.getByTestId('bottom-nav-list').click({ force: true }).catch(() => {});
   await page.evaluate(() => {
     const listButton = document.querySelector('[data-testid="bottom-nav-list"]') as HTMLElement | null;
@@ -208,33 +213,46 @@ export async function openFixtureFacilityFromList(page: Page, facilityId: string
     await page.waitForTimeout(300);
   }
 
-  const preferredCard = page.getByTestId(`facility-card-${facilityId}`);
-  if (await preferredCard.count()) {
-    const visible = await preferredCard.first().isVisible().catch(() => false);
-    if (visible) {
-      await preferredCard.first().click();
+  await expect(page.getByTestId('filter-category-all')).toBeVisible({ timeout: 30000 });
+
+  if (facilityName) {
+    const searchInput = page.locator('#smart-search-input');
+    if (await searchInput.isVisible().catch(() => false)) {
+      await searchInput.fill(facilityName);
+      await page.waitForTimeout(1000);
+    }
+  }
+
+  const preferredCard = page.getByTestId(`facility-card-${facilityId}`).first();
+  const categorySequence = ['all', 'funeral_home', 'columbarium', 'natural_burial', 'cemetery', 'pet_funeral', 'sea_burial'] as const;
+
+  for (const category of categorySequence) {
+    await page.getByTestId('filter-category-all').click();
+    if (category !== 'all') {
+      await page.getByTestId(`filter-category-${category}`).click();
+    }
+
+    await page.waitForTimeout(1000);
+
+    if (await preferredCard.isVisible().catch(() => false)) {
+      await preferredCard.click();
       return facilityId;
     }
-  }
 
-  const nonFuneralCategories = ['columbarium', 'natural_burial', 'cemetery', 'pet_funeral', 'sea_burial'];
-  let card = page.locator('[data-testid^="facility-card-"]').first();
+    if (facilityName) {
+      continue;
+    }
 
-  for (const category of nonFuneralCategories) {
-    await page.getByTestId('filter-category-all').click();
-    await page.getByTestId(`filter-category-${category}`).click();
-    const categoryCard = page.locator('[data-testid^="facility-card-"]').first();
-    if (await categoryCard.isVisible().catch(() => false)) {
-      card = categoryCard;
-      break;
+    const firstCard = page.locator('[data-testid^="facility-card-"]').first();
+    if (await firstCard.isVisible().catch(() => false)) {
+      const testId = await firstCard.getAttribute('data-testid');
+      if (!testId) {
+        throw new Error('Unable to resolve facility card test id');
+      }
+      await firstCard.click();
+      return testId.replace('facility-card-', '');
     }
   }
 
-  await expect(card).toBeVisible({ timeout: 30000 });
-  const testId = await card.getAttribute('data-testid');
-  if (!testId) {
-    throw new Error('Unable to resolve facility card test id');
-  }
-  await card.click();
-  return testId.replace('facility-card-', '');
+  throw new Error(`Unable to find facility card for fixture facility ${facilityId}`);
 }

@@ -32,7 +32,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
   } = useFacilityAdmin({ user, facilities });
 
   return (
-    <div className="h-full overflow-y-auto pt-24 pb-6 px-4 sm:px-6 md:px-8 bg-gray-50">
+    <div className="h-full overflow-y-auto pt-4 md:pt-6 pb-20 md:pb-6 px-4 sm:px-6 md:px-8 bg-gray-50">
       {/* Header */}
       <div className="mb-6 flex justify-between items-start">
         <div className="flex-1">

@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { useUser } from '../../lib/auth';
 import {
     Building2, TrendingUp, Users,
-    LogOut, Menu, X, FileText,
+    ArrowLeft, Menu, X, FileText,
     Settings, ShieldCheck,
     MonitorStop, MessageSquare,
     CreditCard, History, UserCog
 } from 'lucide-react';
+import { useConfirmModal } from '../../src/components/common/ConfirmModal';
 import { PartnerManagement } from './PartnerManagement';
 import { PartnerAdmissions } from './PartnerAdmissions';
 import { ContractMonitoring } from './ContractMonitoring';
@@ -21,6 +22,7 @@ import { AdminCommunication } from '../admin/AdminCommunication';
 import { AdminSettings } from './AdminSettings';
 import { SystemSettings } from './SystemSettings';
 import { SubscriptionManager } from './SubscriptionManager';
+import { PersonalSubscriptionManager } from './PersonalSubscriptionManager';
 import { SuperAdminGuard } from './SuperAdminGuard';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -59,7 +61,8 @@ const SideMenuDrawer = ({ isOpen, onClose, onNavigate }: { isOpen: boolean; onCl
                             { icon: ShieldCheck, label: '상조 파트너 관리', id: 'admissions' },
                             { icon: MonitorStop, label: '실시간 통합 관제', id: 'monitoring' },
                             { icon: Building2, label: '시설 통합 관리', id: 'facilities' },
-                            { icon: CreditCard, label: '구독 현황', id: 'subs' },
+                            { icon: CreditCard, label: '사업자 구독', id: 'subs' },
+                            { icon: UserCog, label: '개인 구독', id: 'personal_subs' },
                             { icon: Users, label: '회원/권한 관리', id: 'users' },
                             { icon: FileText, label: '공지사항 관리', id: 'notices' },
                             { icon: History, label: '시스템 활동 로그', id: 'logs' },
@@ -118,6 +121,7 @@ function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
     const navigate = useNavigate();
     type TabId =
         | 'subs'
+        | 'personal_subs'
         | 'revenue'
         | 'leads'
         | 'admissions'
@@ -132,6 +136,7 @@ function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
     const parseTabFromSearch = (search: string): TabId | null => {
         const tab = new URLSearchParams(search).get('tab');
         if (tab === 'subs') return 'subs';
+        if (tab === 'personal_subs') return 'personal_subs';
         if (tab === 'revenue') return 'revenue';
         if (tab === 'leads') return 'leads';
         if (tab === 'admissions') return 'admissions';
@@ -197,10 +202,13 @@ function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
                         <NotificationCenter />
                         <div className="h-5 w-[1px] bg-slate-200 mx-0.5 md:mx-1"></div>
                         <button
-                            onClick={() => onBack?.()}
-                            className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all text-xs font-bold"
+                            onClick={() => {
+                                useConfirmModal.getState().close();
+                                onBack?.();
+                            }}
+                            className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all text-xs font-bold"
                         >
-                            <LogOut className="w-4 h-4" />
+                            <ArrowLeft className="w-4 h-4" />
                             <span className="hidden sm:inline">나가기</span>
                         </button>
                     </div>
@@ -213,7 +221,7 @@ function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
                             { id: 'monitoring', label: '통합 관제', icon: MonitorStop },
                             { id: 'admissions', label: '파트너 관리', icon: ShieldCheck },
                             { id: 'revenue', label: '매출 분석', icon: TrendingUp },
-                            { id: 'leads', label: '상담 관리', icon: Users },
+                            { id: 'leads', label: '상담 리드', icon: Users },
                         ].map((tab) => (
                             <button
                                 key={tab.id}
@@ -241,6 +249,7 @@ function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
                         }}
                     />
                 )}
+                {activeTab === 'personal_subs' && <PersonalSubscriptionManager />}
                 {activeTab === 'monitoring' && <ContractMonitoring onNavigateCommunication={handleNavigateCommunication} />}
                 {activeTab === 'revenue' && <RevenueManagement />}
                 {activeTab === 'leads' && <AdminLeadsView />}

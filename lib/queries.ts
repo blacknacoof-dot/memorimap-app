@@ -932,8 +932,8 @@ export const updateUserProfile = async (userId: string, data: Partial<{
     const { data: result, error } = await db
         .from('profiles')
         .upsert(
-            { clerk_id: userId, ...data, updated_at: new Date().toISOString() },
-            { onConflict: 'clerk_id' }
+            { id: userId, clerk_id: userId, ...data, updated_at: new Date().toISOString() },
+            { onConflict: 'id' }
         )
         .select()
         .single();
@@ -1991,6 +1991,7 @@ export const fetchFacilitiesInView = async (bounds: MapBounds, token?: string, _
 export interface Inquiry {
     id: string;
     companyName?: string;
+    targetFacilityId?: string;
     managerName?: string;
     phone?: string;
     email?: string;
@@ -2050,12 +2051,13 @@ export const getInquiries = async (client: SupabaseClient) => {
         return [];
     }
 
-    return data.map((i: InquiryRow) => ({
-        id: i.id,
-        companyName: i.company_name,
-        managerName: i.manager_name,
-        phone: i.phone,
-        email: i.email,
+      return data.map((i: InquiryRow) => ({
+          id: i.id,
+          companyName: i.company_name,
+          targetFacilityId: typeof i.target_facility_id === 'string' ? i.target_facility_id : undefined,
+          managerName: i.manager_name,
+          phone: i.phone,
+          email: i.email,
         message: i.message,
         inquiryType: i.inquiry_type,
         type: i.business_type || i.type,
