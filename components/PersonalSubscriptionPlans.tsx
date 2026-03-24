@@ -160,12 +160,12 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
 
     const handleSelectPlan = async (plan: PersonalPlan) => {
         if (plan.id === currentPlan) return;
+        const userId = session?.user?.id;
 
         if (plan.id === 'personal_free') {
             // 무료 전환 = 기존 구독 취소 + DB 반영
             try {
                 const client = await getAuthClient(session, { strict: true });
-                const userId = session?.user?.id;
                 if (userId) {
                     await client.from('user_subscriptions')
                         .update({ status: 'cancelled' })
@@ -210,9 +210,17 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
             }
 
             // 서버사이드 결제 검증
+            if (!userId) {
+                toast.error('사용자 정보를 확인할 수 없습니다. 다시 로그인해 주세요.');
+                return;
+            }
+
             const verification = await verifyPayment({
                 paymentId: response.paymentId || paymentId,
                 expectedAmount: plan.price,
+                paymentContext: 'personal_subscription',
+                planId: plan.nameEn,
+                targetUserId: userId,
             });
             if (!verification.verified) {
                 toast.error(verification.error || '결제 검증에 실패했습니다. 고객센터에 문의해주세요.');
