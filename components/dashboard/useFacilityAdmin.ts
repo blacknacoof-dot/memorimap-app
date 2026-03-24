@@ -257,7 +257,7 @@ export function useFacilityAdmin({ user, facilities }: UseFacilityAdminProps) {
     : facilityFromProps || fetchedFacility;
   const pendingCount = reservations.filter(r => r.status === 'pending' || r.status === 'urgent').length;
   const urgentCount = reservations.filter(r => r.status === 'urgent').length;
-  const consultationCount = consultations.filter(c => !c.is_read).length;
+  const consultationCount = consultations.filter(c => !c.is_read && c.source !== 'ai' && !c.is_ai_response).length;
 
   return {
     myFacilityId, myFacility,
