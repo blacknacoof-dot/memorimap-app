@@ -112,6 +112,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
               <button
                 onClick={() => setEditingFacility(myFacility)}
                 className="flex flex-col items-center gap-1 px-4 py-3 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-all shadow-md active:scale-95 group"
+                data-testid="facility-edit-open-button"
               >
                 <div className="flex items-center gap-2 font-bold whitespace-nowrap">
                   <Edit size={18} />

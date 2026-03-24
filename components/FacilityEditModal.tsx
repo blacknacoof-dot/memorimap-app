@@ -235,7 +235,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
     const inputNoPadCls = "w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-gray-900";
 
     return (
-        <div className="fixed inset-0 z-[320] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[320] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" data-testid="facility-edit-modal">
             <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 max-h-[90dvh] flex flex-col">
                 {/* Header */}
                 <div className="flex justify-between items-center p-4 border-b shrink-0">
@@ -276,7 +276,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
                                     <label className="text-xs font-bold text-gray-700">시설 이름 *</label>
                                     <div className="relative">
                                         <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                                        <input type="text" value={name} onChange={e => setName(e.target.value)} className={inputCls} placeholder="시설 이름" required />
+                                        <input type="text" value={name} onChange={e => setName(e.target.value)} className={inputCls} placeholder="시설 이름" required data-testid="facility-edit-name-input" />
                                     </div>
                                 </div>
 
@@ -285,7 +285,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
                                     <label className="text-xs font-bold text-gray-700">주소 *</label>
                                     <div className="relative">
                                         <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                                        <input type="text" value={address} onChange={e => setAddress(e.target.value)} className={inputCls} placeholder="주소" required />
+                                        <input type="text" value={address} onChange={e => setAddress(e.target.value)} className={inputCls} placeholder="주소" required data-testid="facility-edit-address-input" />
                                     </div>
                                 </div>
 
@@ -294,7 +294,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
                                     <label className="text-xs font-bold text-gray-700">전화번호</label>
                                     <div className="relative">
                                         <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                                        <input type="tel" value={phone} onChange={e => handlePhoneChange(e.target.value, setPhone)} className={inputCls} placeholder="02-0000-0000" />
+                                        <input type="tel" value={phone} onChange={e => handlePhoneChange(e.target.value, setPhone)} className={inputCls} placeholder="02-0000-0000" data-testid="facility-edit-phone-input" />
                                     </div>
                                 </div>
 
@@ -587,7 +587,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
                         <button type="button" onClick={onClose} className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-200 active:scale-[0.98] transition-all">
                             취소
                         </button>
-                        <button type="submit" disabled={isSubmitting} className="flex-1 bg-primary text-white py-3 rounded-xl font-bold shadow-lg hover:bg-primary/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                        <button type="submit" disabled={isSubmitting} className="flex-1 bg-primary text-white py-3 rounded-xl font-bold shadow-lg hover:bg-primary/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2" data-testid="facility-edit-save-button">
                             {isSubmitting ? (
                                 <><Loader2 size={20} className="animate-spin" /> 저장 중...</>
                             ) : (
