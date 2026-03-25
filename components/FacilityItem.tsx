@@ -63,7 +63,7 @@ export const FacilityItem = React.memo(({ facility, onClick, isCompared, onToggl
                             </div>
                         )}
                     </div>
-                    <h3 className="font-bold text-[15px] text-gray-800 leading-tight whitespace-normal break-keep">{facility.name}</h3>
+                    <h3 className="font-bold text-[15px] text-gray-800 leading-tight break-all line-clamp-2">{facility.name}</h3>
                     <div className="text-xs text-gray-500 mt-1 truncate">{facility.address}</div>
                     <div className="flex items-center gap-1 mt-2">
                         <span className="text-yellow-500 text-xs">★ {Math.round(facility.rating || 0)}</span>

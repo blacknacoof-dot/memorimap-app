@@ -321,7 +321,7 @@ const PetSearchForm: React.FC<FormProps> = ({
                                         )}
                                         <div className="flex-1 min-w-0">
                                             <div className="flex flex-col items-start gap-1">
-                                                <button onClick={() => onSwitchToFacility?.({ id: f.id, name: f.name, address: f.address, phone: f.phone })} className="w-full text-[15px] font-bold text-orange-700 hover:underline text-left leading-tight whitespace-normal break-keep">{f.name}</button>
+                                                <button onClick={() => onSwitchToFacility?.({ id: f.id, name: f.name, address: f.address, phone: f.phone })} className="w-full text-[15px] font-bold text-orange-700 hover:underline text-left leading-tight break-all line-clamp-2">{f.name}</button>
                                                 <span className="bg-orange-50 text-orange-600 text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0">추천 {idx + 1}</span>
                                             </div>
                                             <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5 truncate"><MapPin size={11} className="shrink-0" /> {f.address || f.jibun_address || '주소 없음'}</div>

@@ -63,7 +63,7 @@ export const ComparisonModal: React.FC<Props> = ({ facilities, onClose, onRemove
                   <div className="p-4 flex-1 flex flex-col gap-4">
                     {/* Header */}
                     <div>
-                      <h3 className="font-bold text-lg leading-tight mb-1">{facility.name}</h3>
+                      <h3 className="font-bold text-lg leading-tight mb-1 break-all line-clamp-2">{facility.name}</h3>
                       <div className="flex items-center text-yellow-500 gap-1 text-sm">
                         <Star size={14} fill="currentColor" />
                         <span className="font-bold text-gray-900">{facility.rating}</span>

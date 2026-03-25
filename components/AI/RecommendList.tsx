@@ -41,7 +41,7 @@ export const RecommendList: React.FC<Props> = ({ facilities, onViewDetail }) => 
                     {/* Content */}
                     <div className="flex-1 p-2.5 min-w-0 flex flex-col justify-between">
                         <div>
-                            <h4 className="font-bold text-[15px] text-slate-800 leading-tight whitespace-normal break-keep">{facility.name}</h4>
+                            <h4 className="font-bold text-[15px] text-slate-800 leading-tight break-all line-clamp-2">{facility.name}</h4>
                             <div className="flex items-center gap-1 text-[11px] text-slate-500 mt-0.5">
                                 <MapPin size={10} className="shrink-0" />
                                 <span className="truncate">{facility.address || '주소 정보 없음'}</span>

@@ -66,7 +66,7 @@ export const SangjoCompanyCard: React.FC<SangjoCompanyCardProps> = ({
 
                 <div className="flex-1 min-w-0 pr-10">
                     <div className="flex justify-between items-start mb-0.5">
-                        <h3 className="font-bold text-[15px] text-gray-900 group-hover:text-primary transition-colors truncate">
+                        <h3 className="font-bold text-[15px] text-gray-900 group-hover:text-primary transition-colors break-all line-clamp-2">
                             {company.name}
                         </h3>
                         <div className="flex items-center gap-0.5 text-yellow-500">

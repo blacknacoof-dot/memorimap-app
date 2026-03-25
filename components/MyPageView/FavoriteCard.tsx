@@ -30,7 +30,7 @@ export const FavoriteCard: React.FC<Props> = ({ facility, onSelect, onRemove }) 
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-start">
-          <h3 className="font-bold text-gray-900 truncate pr-6">{facility.name}</h3>
+          <h3 className="font-bold text-gray-900 break-all line-clamp-2 pr-6">{facility.name}</h3>
           <button
             onClick={(e) => { e.stopPropagation(); onRemove(facility.id); }}
             className="text-red-500 hover:bg-red-50 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full absolute top-1 right-1 z-10"
