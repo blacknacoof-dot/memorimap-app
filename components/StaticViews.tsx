@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { useSession, useUser } from '../lib/auth';
 import { getAuthClient } from '../lib/supabaseClient';
 import { AdministrativeChecklist } from './AdministrativeChecklist';
+import { LegalModal } from './LegalModal';
 
 interface ViewProps {
   onBack: () => void;
@@ -152,6 +153,8 @@ export const SupportView: React.FC<ViewProps> = ({ onBack, user }) => {
   const { user: clerkUser } = useUser();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [faqTab, setFaqTab] = useState<string>(FAQ_TABS[0]);
+  const [showLegalModal, setShowLegalModal] = useState(false);
+  const [legalTab, setLegalTab] = useState<'terms' | 'privacy' | 'refund' | 'business' | 'license'>('terms');
   const [showInquiry, setShowInquiry] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -346,6 +349,54 @@ export const SupportView: React.FC<ViewProps> = ({ onBack, user }) => {
           ))}
         </div>
       </div>
+
+      <div className="bg-white p-4 mt-2">
+        <h3 className="font-bold mb-3">정책 및 사업자 정보</h3>
+        <div className="space-y-2">
+          <button
+            onClick={() => { setLegalTab('terms'); setShowLegalModal(true); }}
+            className="w-full flex justify-between items-center p-4 border rounded-lg hover:bg-gray-50"
+          >
+            <div className="flex items-center gap-3">
+              <FileText size={18} className="text-gray-600" />
+              <span className="text-sm font-medium text-gray-800">이용약관</span>
+            </div>
+            <ChevronLeft size={16} className="text-gray-300 rotate-180" />
+          </button>
+          <button
+            onClick={() => { setLegalTab('privacy'); setShowLegalModal(true); }}
+            className="w-full flex justify-between items-center p-4 border rounded-lg hover:bg-gray-50"
+          >
+            <div className="flex items-center gap-3">
+              <Shield size={18} className="text-gray-600" />
+              <span className="text-sm font-medium text-gray-800">개인정보처리방침</span>
+            </div>
+            <ChevronLeft size={16} className="text-gray-300 rotate-180" />
+          </button>
+          <button
+            onClick={() => { setLegalTab('refund'); setShowLegalModal(true); }}
+            className="w-full flex justify-between items-center p-4 border rounded-lg hover:bg-gray-50"
+          >
+            <div className="flex items-center gap-3">
+              <Info size={18} className="text-gray-600" />
+              <span className="text-sm font-medium text-gray-800">환불/해지 정책</span>
+            </div>
+            <ChevronLeft size={16} className="text-gray-300 rotate-180" />
+          </button>
+          <button
+            onClick={() => { setLegalTab('business'); setShowLegalModal(true); }}
+            className="w-full flex justify-between items-center p-4 border rounded-lg hover:bg-gray-50"
+          >
+            <div className="flex items-center gap-3">
+              <Info size={18} className="text-gray-600" />
+              <span className="text-sm font-medium text-gray-800">사업자 정보</span>
+            </div>
+            <ChevronLeft size={16} className="text-gray-300 rotate-180" />
+          </button>
+        </div>
+      </div>
+
+      {showLegalModal && <LegalModal initialTab={legalTab} onClose={() => setShowLegalModal(false)} />}
     </div>
   );
 };
