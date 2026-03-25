@@ -119,3 +119,28 @@
 
 작업 후에는 변경 파일, 마이그레이션 여부, 현재 동작 범위, 남은 작업을 같이 보고하세요.
 ```
+
+## 7. 2026-03-25 추가 상태 확인
+
+### 현재 확인 결과
+
+- 최신 구현 커밋은 `b0a922e feat(pricing): implement v1 pricing structure + payment flow hardening`
+- 이후 커밋 `4f97d6a`는 코드 변경이 아니라 핸드오프/방향 문서 추가다.
+- 현재 코드 기준으로 구독 결제 채널은 personal / facility 모두 `billing`으로 반영되어 있다.
+- 현재 코드 기준으로 personal 무료 비교상담 `5회`, facility LIGHT `사진 20장 / AI 50회`가 반영되어 있다.
+- `subscription_payments_insert_personal` 정책은 `supabase/migrations/20260325_pricing_v1_schema.sql`에 포함되어 있다.
+
+### 이번 후속 정리
+
+- `types/db.ts`
+  - canonical personal plan 타입과 legacy 허용값을 분리했다.
+- `components/SuperAdmin/PersonalSubscriptionManager.tsx`
+  - `PERSONAL_BASIC`를 `베이직 (단종)`으로 표시하도록 수정했다.
+- `npm run typecheck`
+  - 통과
+
+### 남은 확인 항목
+
+1. Supabase에 `20260325_pricing_v1_schema.sql`이 실제 적용되었는지 확인
+2. 운영 DB에 `PERSONAL_BASIC` 또는 소문자 personal plan_id 잔여 row가 남아 있는지 확인
+3. 남아 있으면 canonical 값 기준으로 백필 여부 결정

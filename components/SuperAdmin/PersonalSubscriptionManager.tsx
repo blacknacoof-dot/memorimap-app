@@ -1,16 +1,16 @@
 import React, { useMemo, useState } from 'react';
-import { CreditCard, Search, User, CheckCircle2, AlertCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle2, CreditCard, Search, User } from 'lucide-react';
 import { usePersonalSubscriptions } from '../../hooks/useFinancials';
 
 const PLAN_BADGE: Record<string, string> = {
     PERSONAL_FREE: 'bg-slate-100 text-slate-600 border-slate-200',
-    PERSONAL_BASIC: 'bg-blue-50 text-blue-600 border-blue-100',
+    PERSONAL_BASIC: 'bg-slate-100 text-slate-500 border-slate-200',
     PERSONAL_PREMIUM: 'bg-amber-50 text-amber-700 border-amber-100',
 };
 
 const PLAN_LABEL: Record<string, string> = {
     PERSONAL_FREE: '무료',
-    PERSONAL_BASIC: '베이직',
+    PERSONAL_BASIC: '베이직 (단종)',
     PERSONAL_PREMIUM: '프리미엄',
 };
 
@@ -55,7 +55,7 @@ export const PersonalSubscriptionManager: React.FC = () => {
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 md:p-6">
                 <h2 className="text-lg md:text-xl font-black text-slate-900">개인 구독 관리</h2>
                 <p className="mt-1 text-sm text-slate-500">
-                    일반 사용자 개인 플랜과 사용량 상태를 확인합니다.
+                    일반 사용자의 개인 플랜과 사용량 상태를 확인합니다.
                 </p>
             </div>
 

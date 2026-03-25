@@ -171,11 +171,11 @@ CREATE POLICY "subscription_payments_select_v2"
       payment_context = 'facility'
       AND EXISTS (
         SELECT 1 FROM facility_subscriptions fs
-        WHERE fs.id = subscription_payments.subscription_id
+        WHERE fs.id::text = subscription_payments.subscription_id::text
           AND EXISTS (
             SELECT 1 FROM facilities f
-            WHERE (f.id = fs.facility_id_uuid OR f.legacy_id = fs.facility_id_bigint)
-              AND f.admin_id = public.clerk_user_id()
+            WHERE (f.id::text = fs.facility_id_uuid::text OR f.legacy_id::text = fs.facility_id_bigint::text)
+              AND f.user_id = public.clerk_user_id()
           )
       )
     )

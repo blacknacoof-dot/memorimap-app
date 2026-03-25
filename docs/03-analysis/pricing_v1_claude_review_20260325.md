@@ -116,3 +116,17 @@
 
 - [subscription_pricing_migration.plan.md](C:/Users/black/Desktop/memorimap/docs/01-plan/features/subscription_pricing_migration.plan.md)
 - [claude_pricing_execution_handoff_20260325.md](C:/Users/black/Desktop/memorimap/docs/01-plan/claude_pricing_execution_handoff_20260325.md)
+
+## 2026-03-25 후속 확인 메모
+
+- 위 문서에서 지적한 4개 이슈 중 코드 기준으로 확인된 상태:
+  - personal / facility 구독 결제 채널은 현재 `billing` 사용
+  - personal 무료 비교상담 `5회` 반영
+  - facility LIGHT `사진 20장`, `AI 50회` 반영
+  - `subscription_payments_insert_personal` 정책은 pricing v1 마이그레이션에 포함
+- 추가 정리:
+  - `types/db.ts`에서 canonical personal 타입과 legacy 허용값을 분리
+  - `components/SuperAdmin/PersonalSubscriptionManager.tsx`에서 `PERSONAL_BASIC`를 `베이직 (단종)`으로 표기
+- 아직 별도 확인이 필요한 항목:
+  - Supabase 실DB에 `20260325_pricing_v1_schema.sql` 적용 여부
+  - 운영 데이터에 legacy personal plan 값이 남아 있는지 여부

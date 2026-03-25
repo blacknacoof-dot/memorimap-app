@@ -17,7 +17,9 @@ export type { FacilityCategoryType };
 export type SubscriptionPlan = 'free' | 'basic' | 'premium' | 'enterprise';
 export type SubscriptionStatus = 'active' | 'expired' | 'cancelled';
 /** personal_basic은 v1에서 단종 (is_active=false), 레거시 호환용 유지 */
-export type UserSubscriptionPlan = 'personal_free' | 'personal_basic' | 'personal_premium' | 'PERSONAL_FREE' | 'PERSONAL_PREMIUM';
+export type CanonicalUserSubscriptionPlan = 'PERSONAL_FREE' | 'PERSONAL_PREMIUM';
+export type LegacyUserSubscriptionPlan = 'PERSONAL_BASIC' | 'personal_free' | 'personal_basic' | 'personal_premium';
+export type UserSubscriptionPlan = CanonicalUserSubscriptionPlan | LegacyUserSubscriptionPlan;
 export type BillingCycle = 'monthly' | 'annual';
 export type PaymentContext = 'facility' | 'personal';
 export type TargetAudience = 'all' | 'facility_admin' | 'user';
@@ -161,7 +163,7 @@ export interface Subscription {
 export interface UserSubscription {
     user_id: string;
     plan_id: UserSubscriptionPlan;
-    plan_name: 'PERSONAL_FREE' | 'PERSONAL_BASIC' | 'PERSONAL_PREMIUM';
+    plan_name: CanonicalUserSubscriptionPlan | 'PERSONAL_BASIC';
     status: 'active' | 'expired' | 'cancelled';
     ai_consult_used: number;
     ai_consult_by_category: {
