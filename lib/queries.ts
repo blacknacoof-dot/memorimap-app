@@ -1506,6 +1506,7 @@ export const updateFacilitySubscription = async (facilityId: string, planId: str
             .from('subscription_payments')
             .insert([{
                 subscription_id: subData.id,
+                payment_context: 'facility',
                 amount: planData.price,
                 final_amount: planData.price,
                 status: 'completed',
@@ -1565,6 +1566,87 @@ export const updateSubscriptionBillingDate = async (facilityId: string, nextDate
     const { error } = await query;
     if (error) throw error;
     return true;
+};
+
+/**
+ * [추가] Personal 구독 업데이트 + 결제이력 기록
+ * PersonalSubscriptionPlans에서 호출. subscription_payments에 personal 결제이력 저장.
+ */
+export const updatePersonalSubscription = async (
+    userId: string,
+    planId: string,
+    planNameEn: string,
+    price: number,
+    portonePaymentId: string | null,
+    client: SupabaseClient
+) => {
+    const now = new Date();
+    const expiresAt = new Date(now);
+    expiresAt.setMonth(expiresAt.getMonth() + 1);
+
+    // 1. user_subscriptions upsert (plan_id도 uppercase canonical로 저장)
+    const { error: subError } = await client
+        .from('user_subscriptions')
+        .upsert({
+            user_id: userId,
+            plan_id: planNameEn,
+            plan_name: planNameEn,
+            status: 'active',
+            started_at: now.toISOString(),
+            expires_at: expiresAt.toISOString(),
+            billing_cycle: 'monthly',
+        }, { onConflict: 'user_id' });
+
+    if (subError) {
+        throw new Error(`구독 업데이트 실패: ${subError.message}`);
+    }
+
+    // 2. 결제이력 기록 (유료 플랜만)
+    if (price > 0) {
+        const periodEnd = new Date(now);
+        periodEnd.setMonth(periodEnd.getMonth() + 1);
+
+        const { error: payError } = await client
+            .from('subscription_payments')
+            .insert([{
+                user_id: userId,
+                payment_context: 'personal',
+                portone_payment_id: portonePaymentId,
+                amount: price,
+                final_amount: price,
+                status: 'completed',
+                payment_method: 'card',
+                paid_at: now.toISOString(),
+                billing_period_start: now.toISOString().split('T')[0],
+                billing_period_end: periodEnd.toISOString().split('T')[0],
+            }]);
+
+        if (payError) {
+            throw new Error(`결제 기록 생성 실패: ${payError.message}`);
+        }
+    }
+
+    // 3. 슈퍼 관리자 알림
+    try {
+        const { data: superAdmins } = await client
+            .from('profiles')
+            .select('clerk_id')
+            .eq('role', 'super_admin');
+
+        if (superAdmins && superAdmins.length > 0) {
+            const notifications = superAdmins.map(admin => ({
+                user_id: admin.clerk_id,
+                title: '개인 구독 결제',
+                message: `${planNameEn} 플랜 결제가 완료되었습니다.`,
+                type: 'success',
+                link: '/admin?tab=subs'
+            }));
+
+            await client.from('user_notifications').insert(notifications);
+        }
+    } catch {
+        // 알림 전송 실패 — non-fatal
+    }
 };
 
 /**

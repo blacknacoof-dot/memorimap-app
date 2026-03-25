@@ -58,12 +58,13 @@ async function verifySubscriptionPlanExists(
 ): Promise<boolean> {
     const { data, error } = await supabaseAdmin
         .from('subscription_plans')
-        .select('id')
+        .select('id, is_active')
         .eq('name_en', planId)
         .limit(1)
         .maybeSingle();
 
-    return !error && !!data;
+    // is_active가 null이면 (마이그레이션 전) true로 간주
+    return !error && !!data && (data.is_active !== false);
 }
 
 async function verifyFacilityOwnership(

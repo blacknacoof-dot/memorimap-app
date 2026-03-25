@@ -16,7 +16,10 @@ export type { FacilityCategoryType };
 // --- [Phase 4 New Types] ---
 export type SubscriptionPlan = 'free' | 'basic' | 'premium' | 'enterprise';
 export type SubscriptionStatus = 'active' | 'expired' | 'cancelled';
-export type UserSubscriptionPlan = 'personal_free' | 'personal_basic' | 'personal_premium';
+/** personal_basic은 v1에서 단종 (is_active=false), 레거시 호환용 유지 */
+export type UserSubscriptionPlan = 'personal_free' | 'personal_basic' | 'personal_premium' | 'PERSONAL_FREE' | 'PERSONAL_PREMIUM';
+export type BillingCycle = 'monthly' | 'annual';
+export type PaymentContext = 'facility' | 'personal';
 export type TargetAudience = 'all' | 'facility_admin' | 'user';
 
 export interface Favorite {
@@ -113,6 +116,24 @@ export interface PartnerInquiry {
 // --- [Phase 4 New Interfaces] ---
 
 /**
+ * [SubscriptionPlanRow] subscription_plans 테이블 행
+ */
+export interface SubscriptionPlanRow {
+    id: string;
+    name: string;
+    name_en: string;
+    price: number;
+    sms_quota: number;
+    ai_chat_quota: number;
+    features: Record<string, unknown>;
+    billing_cycle: BillingCycle;
+    display_plan_name: string | null;
+    discount_amount: number;
+    discount_reason: string | null;
+    is_active: boolean;
+}
+
+/**
  * [Subscriptions] 업체 구독 정보
  */
 export interface Subscription {
@@ -131,6 +152,7 @@ export interface Subscription {
     facility_id_uuid?: string;
     facility_id_bigint?: string | number;
     next_billing_date?: string;
+    billing_cycle?: BillingCycle;
 }
 
 /**
@@ -153,6 +175,7 @@ export interface UserSubscription {
     last_reset_at: string;
     started_at: string | null;
     expires_at: string | null;
+    billing_cycle?: BillingCycle;
 }
 
 /**
@@ -161,6 +184,9 @@ export interface UserSubscription {
 export interface Payment {
     id: string;
     subscription_id: string | null;
+    user_id?: string | null;
+    payment_context: PaymentContext;
+    portone_payment_id?: string | null;
     amount: number;
     final_amount?: number;
     currency: string;

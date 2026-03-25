@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
     Check, X, Sparkles, Crown, Zap, ChevronDown, ChevronUp,
-    MessageCircle, Shield,
-    ShieldCheck, ArrowLeft
+    MessageCircle, Shield, ArrowLeft
 } from 'lucide-react';
-import { requestPayment, verifyPayment, PORTONE_CONFIG } from '../lib/portone';
+import { requestPayment, verifyPayment, PORTONE_CONFIG, getChannelKey } from '../lib/portone';
 import { toast } from 'sonner';
 import { useSession } from '../lib/auth';
 import { getAuthClient } from '../lib/supabaseClient';
@@ -32,7 +31,7 @@ interface PersonalPlan {
 
 const personalPlans: PersonalPlan[] = [
     {
-        id: 'personal_free',
+        id: 'PERSONAL_FREE',
         name: '무료',
         nameEn: 'PERSONAL_FREE',
         price: 0,
@@ -41,7 +40,7 @@ const personalPlans: PersonalPlan[] = [
         features: [
             { name: '시설 지도 검색', included: true },
             { name: 'AI 상담', included: true, limit: '카테고리당 1건' },
-            { name: '상조 AI 비교상담', included: true, limit: '10회' },
+            { name: '상조 AI 비교상담', included: true, limit: '5회' },
             { name: '즐겨찾기', included: true, limit: '최대 5개' },
             { name: '엔딩노트', included: true, limit: '기본 항목만' },
             { name: '예약 / 리뷰', included: true },
@@ -51,35 +50,14 @@ const personalPlans: PersonalPlan[] = [
         ],
     },
     {
-        id: 'personal_basic',
-        name: '베이직',
-        nameEn: 'PERSONAL_BASIC',
-        price: 4900,
-        icon: <ShieldCheck className="w-6 h-6" />,
-        color: 'from-blue-500 to-indigo-600',
-        badge: '실속형',
-        popular: true,
-        features: [
-            { name: '시설 지도 검색', included: true },
-            { name: 'AI 상담', included: true, limit: '카테고리당 3건' },
-            { name: '상조 AI 비교상담', included: true, limit: '월 15회' },
-            { name: '즐겨찾기', included: true, limit: '최대 20개' },
-            { name: '엔딩노트', included: true, limit: '전체 항목' },
-            { name: '예약 / 리뷰', included: true },
-            { name: '광고 제거', included: true },
-            { name: '제휴 할인', included: true, description: '장례 용품 3% 할인' },
-            { name: '가족 공유', included: false },
-        ],
-    },
-    {
-        id: 'personal_premium',
+        id: 'PERSONAL_PREMIUM',
         name: '프리미엄',
         nameEn: 'PERSONAL_PREMIUM',
-        price: 9900,
-        originalPrice: 12900,
+        price: 4900,
         icon: <Crown className="w-6 h-6" />,
         color: 'from-purple-500 to-fuchsia-600',
-        badge: '최고 혜택',
+        badge: '추천',
+        popular: true,
         features: [
             { name: '시설 지도 검색', included: true },
             { name: 'AI 상담', included: true, limit: '무제한' },
@@ -91,7 +69,6 @@ const personalPlans: PersonalPlan[] = [
             { name: '제휴 할인', included: true, description: '장례 용품 5% 할인' },
             { name: '가족 공유', included: true, description: '최대 3명' },
             { name: 'VIP 배지', included: true },
-            { name: '전담 상담 우선 연결', included: true },
         ],
     },
 ];
@@ -101,9 +78,9 @@ interface PersonalSubscriptionPlansProps {
 }
 
 export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalSubscriptionPlansProps) {
-    const [_selectedPlan, setSelectedPlan] = useState<string>('personal_free');
-    const [expandedPlan, setExpandedPlan] = useState<string | null>('personal_basic');
-    const [currentPlan, setCurrentPlan] = useState<string>('personal_free');
+    const [_selectedPlan, setSelectedPlan] = useState<string>('PERSONAL_FREE');
+    const [expandedPlan, setExpandedPlan] = useState<string | null>('PERSONAL_PREMIUM');
+    const [currentPlan, setCurrentPlan] = useState<string>('PERSONAL_FREE');
     const [isLoading, setIsLoading] = useState(true);
     const [isPaymentOpen, setIsPaymentOpen] = useState(false);
     const [showLegalModal, setShowLegalModal] = useState(false);
@@ -165,7 +142,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
         if (plan.id === currentPlan) return;
         const userId = session?.user?.id;
 
-        if (plan.id === 'personal_free') {
+        if (plan.id === 'PERSONAL_FREE') {
             // 무료 전환 = 기존 구독 취소 + DB 반영
             try {
                 const client = await getAuthClient(session, { strict: true });
@@ -194,7 +171,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
             const paymentId = `psub_${Date.now()}`;
             const response = await requestPayment({
                 storeId: PORTONE_CONFIG.STORE_ID,
-                channelKey: PORTONE_CONFIG.CHANNEL_KEY,
+                channelKey: getChannelKey('billing'),
                 paymentId,
                 orderName: `[추모맵] 개인 ${plan.name} 플랜`,
                 totalAmount: plan.price,
@@ -230,19 +207,18 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                 return;
             }
 
-            // 결제 성공 → DB 업데이트
+            // 결제 성공 → DB 업데이트 + 결제이력 기록
             try {
                 const client = await getAuthClient(session, { strict: true });
-                const userId = session?.user?.id;
-                if (!userId) throw new Error('사용자 정보를 찾을 수 없습니다.');
-                await client.from('user_subscriptions').upsert({
-                    user_id: userId,
-                    plan_id: plan.id,
-                    plan_name: plan.nameEn,
-                    status: 'active',
-                    started_at: new Date().toISOString(),
-                    expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-                }, { onConflict: 'user_id' });
+                const { updatePersonalSubscription } = await import('../lib/queries');
+                await updatePersonalSubscription(
+                    userId,
+                    plan.id,
+                    plan.nameEn,
+                    plan.price,
+                    response.paymentId || paymentId,
+                    client
+                );
             } catch (_e) {
                 toast.error('결제는 완료되었으나 구독 정보 업데이트에 실패했습니다. 고객센터에 문의해주세요.');
             }
@@ -296,7 +272,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
             {/* 요금 비교 요약 */}
             <div className="px-4 py-4">
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                    <div className="grid grid-cols-4 text-center border-b border-slate-100">
+                    <div className="grid grid-cols-3 text-center border-b border-slate-100">
                         <div className="p-2 md:p-3 bg-slate-50">
                             <p className="text-[10px] font-bold text-slate-400">기능</p>
                         </div>
@@ -310,15 +286,15 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                         ))}
                     </div>
                     {[
-                        { label: 'AI 상담', values: ['1건', '3건', '무제한'] },
-                        { label: '상조 비교', values: ['10회', '15회/월', '무제한'] },
-                        { label: '즐겨찾기', values: ['5개', '20개', '무제한'] },
-                        { label: '엔딩노트', values: ['기본', '전체', 'PDF'] },
-                        { label: '광고 제거', values: ['X', 'O', 'O'] },
-                        { label: '제휴 할인', values: ['X', '3%', '5%'] },
-                        { label: '가족 공유', values: ['X', 'X', '3명'] },
+                        { label: 'AI 상담', values: ['1건', '무제한'] },
+                        { label: '상조 비교', values: ['5회', '무제한'] },
+                        { label: '즐겨찾기', values: ['5개', '무제한'] },
+                        { label: '엔딩노트', values: ['기본', 'PDF'] },
+                        { label: '광고 제거', values: ['X', 'O'] },
+                        { label: '제휴 할인', values: ['X', '5%'] },
+                        { label: '가족 공유', values: ['X', '3명'] },
                     ].map((row, idx) => (
-                        <div key={idx} className="grid grid-cols-4 text-center border-b border-slate-50 last:border-0">
+                        <div key={idx} className="grid grid-cols-3 text-center border-b border-slate-50 last:border-0">
                             <div className="p-1.5 md:p-2.5 bg-slate-50 text-left">
                                 <p className="text-[10px] font-medium text-slate-500">{row.label}</p>
                             </div>

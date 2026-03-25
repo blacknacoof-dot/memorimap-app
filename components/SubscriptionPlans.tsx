@@ -1,11 +1,10 @@
-﻿import React, { useState, useMemo, useCallback } from 'react';
+﻿import React, { useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Check, X, Sparkles, Crown, Zap, ChevronDown, ChevronUp, MessageCircle, ShieldCheck, ArrowLeft } from 'lucide-react';
-import { requestPayment, verifyPayment, PORTONE_CONFIG } from '../lib/portone';
+import { requestPayment, verifyPayment, PORTONE_CONFIG, getChannelKey } from '../lib/portone';
 import { toast } from 'sonner';
 import { useUser, useSession } from '../lib/auth';
 import { getAuthClient } from '../lib/supabaseClient';
-import { useSystemSettings } from '../hooks/useSystemSettings';
 import { normalizeSubscriptionPlanId } from '../lib/subscriptionPlanIds';
 import { LegalModal } from './LegalModal';
 
@@ -45,19 +44,20 @@ const facilityPlans: Plan[] = [
     },
     {
         id: 'basic',
-        name: '베이직',
+        name: '라이트',
         nameEn: 'BASIC',
-        price: 99000,
+        price: 49000,
         icon: <ShieldCheck className="w-6 h-6" />,
         color: 'from-blue-500 to-indigo-600',
         badge: '실속형',
+        popular: true,
         features: [
             { name: '시설 정보 등록/수정', included: true },
-            { name: '월 100건 알림톡 발송', included: true },
-            { name: '월 100회 AI 채팅 상담', included: true },
-            { name: '사진 무제한 업로드', included: true },
-            { name: '리뷰 조회', included: true },
+            { name: '리뷰 답글 작성', included: true },
             { name: '기본 통계 리포트', included: true },
+            { name: '알림 50건/월', included: true },
+            { name: '사진 업로드 (20장)', included: true },
+            { name: 'AI 채팅 상담 (50회/월)', included: true },
             { name: '상위 노출 광고', included: false },
         ],
     },
@@ -65,101 +65,63 @@ const facilityPlans: Plan[] = [
         id: 'premium',
         name: '프리미엄',
         nameEn: 'PREMIUM',
-        price: 299000,
+        price: 199000,
         icon: <Sparkles className="w-6 h-6" />,
         color: 'from-purple-500 to-fuchsia-600',
-        badge: '가장 많이 찾는',
-        popular: true,
+        badge: '성장형',
         features: [
             { name: '전 기능 무제한 사용', included: true },
             { name: '알림톡/문자 무제한', included: true },
             { name: 'AI 상담 무제한', included: true },
-            { name: '검색 상단 노출', included: true, description: '검색 우선 순위' },
+            { name: '우선 노출', included: true, description: '검색 우선 순위' },
             { name: '실버 인증 배지', included: true },
             { name: '리뷰 답글 권한', included: true },
-            { name: '정기 방문 통계', included: true },
-        ],
-    },
-    {
-        id: 'enterprise',
-        name: '엔터프라이즈',
-        nameEn: 'ENTERPRISE',
-        price: 499000,
-        icon: <Crown className="w-6 h-6" />,
-        color: 'from-amber-500 to-orange-600',
-        badge: 'VIP 파트너',
-        features: [
-            { name: '프리미엄 모든 기능', included: true },
-            { name: '최상단 고정 노출', included: true, description: '지역별 독점' },
-            { name: '골드 인증 배지', included: true },
-            { name: '전담 계정 매니저', included: true },
-            { name: 'AI 리뷰 분석/관리', included: true },
-            { name: '맞춤 디자인 지원', included: true },
-            { name: 'API 연동 지원', included: true },
+            { name: '상세 방문/예약 통계', included: true },
         ],
     },
 ];
 
-// badge는 DB system_settings에서 로드 (컴포넌트 내부에서 동적 적용)
-const SANGJO_COMMISSION_KEYS = [
-    'sj_starter_commission',
-    'sj_professional_commission',
-    'sj_enterprise_commission',
-] as const;
-
-const SANGJO_COMMISSION_DEFAULTS: Record<string, number> = {
-    sj_starter_commission: 10,
-    sj_professional_commission: 8,
-    sj_enterprise_commission: 5,
+/** 엔터프라이즈는 결제 불가 — 문의형 */
+const enterprisePlan: Plan = {
+    id: 'enterprise',
+    name: '엔터프라이즈',
+    nameEn: 'ENTERPRISE',
+    price: 0,
+    icon: <Crown className="w-6 h-6" />,
+    color: 'from-amber-500 to-orange-600',
+    badge: '맞춤 견적',
+    features: [
+        { name: '프리미엄 모든 기능', included: true },
+        { name: '최상단 고정 노출', included: true, description: '지역별 독점' },
+        { name: '골드 인증 배지', included: true },
+        { name: '전담 계정 매니저', included: true },
+        { name: 'AI 리뷰 분석/관리', included: true },
+        { name: '맞춤 디자인 지원', included: true },
+        { name: 'API 연동 지원', included: true },
+    ],
 };
 
-const sangjoPlansBase: Omit<Plan, 'badge'>[] = [
+/**
+ * 상조 v1: 파일럿 1개만 노출 (150만원/월, 3개월)
+ * SJ_PROFESSIONAL, SJ_ENTERPRISE는 비활성 (파일럿 종료 후 협의)
+ * 수수료형 로직은 넣지 않음
+ */
+const sangjoPlans: Plan[] = [
     {
         id: 'sj_starter',
-        name: '상조 STARTER',
+        name: '파일럿',
         nameEn: 'SJ_STARTER',
-        price: 3000000,
+        price: 1500000,
         icon: <Zap className="w-6 h-6" />,
         color: 'from-emerald-500 to-teal-600',
+        badge: '출시 한정',
         features: [
             { name: 'AI 24시간 자동 상담', included: true },
             { name: 'AI 계약 클로징 유도', included: true },
-            { name: '소비자 독점 혜택권 발행', included: true, description: '30만원 할인권' },
+            { name: '리드 전달', included: true },
             { name: '실시간 매출/성과 리포트', included: true },
-            { name: '일반 노출', included: true },
-        ],
-    },
-    {
-        id: 'sj_professional',
-        name: '상조 PROFESSIONAL',
-        nameEn: 'SJ_PROFESSIONAL',
-        price: 8000000,
-        icon: <Crown className="w-6 h-6" />,
-        color: 'from-blue-600 to-indigo-700',
-        popular: true,
-        features: [
-            { name: '데이터 기반 우선 노출', included: true },
-            { name: '고급 CRM 관리툴', included: true },
-            { name: '실시간 전환 대시보드', included: true },
-            { name: '전담 CS 지원', included: true },
-            { name: '상용 사은품 패키지 제공', included: true, description: '장지 할인권 등' },
-            { name: '주간 상세 리포트', included: true },
-        ],
-    },
-    {
-        id: 'sj_enterprise',
-        name: '상조 ENTERPRISE',
-        nameEn: 'SJ_ENTERPRISE',
-        price: 15000000,
-        icon: <Crown className="w-6 h-6" />,
-        color: 'from-amber-600 to-orange-700',
-        features: [
-            { name: '메인 배너 독점 광고', included: true },
-            { name: '완전 자동 계약 시스템', included: true },
-            { name: '전담 매니저 1:1 배정', included: true },
-            { name: '커스텀 브랜딩 페이지', included: true },
-            { name: 'API 연동 무제한', included: true },
-            { name: '최적화 컨설팅 리포트', included: true },
+            { name: '우선 노출', included: true },
+            { name: '파일럿 기간 3개월', included: true, description: '종료 후 SJ_STARTER 정가 전환 협의' },
         ],
     },
 ];
@@ -174,20 +136,6 @@ interface SubscriptionPlansProps {
 export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityId, type = 'facility' }: SubscriptionPlansProps) {
     const { user } = useUser();
     const { session } = useSession();
-    const { getNumber: getSettingNum } = useSystemSettings([...SANGJO_COMMISSION_KEYS]);
-
-    // 상조 플랜: DB에서 수수료율 로드 → badge 동적 생성
-    const sangjoPlans: Plan[] = useMemo(() => {
-        const commissionMap: Record<string, number> = {
-            sj_starter: getSettingNum('sj_starter_commission', SANGJO_COMMISSION_DEFAULTS.sj_starter_commission),
-            sj_professional: getSettingNum('sj_professional_commission', SANGJO_COMMISSION_DEFAULTS.sj_professional_commission),
-            sj_enterprise: getSettingNum('sj_enterprise_commission', SANGJO_COMMISSION_DEFAULTS.sj_enterprise_commission),
-        };
-        return sangjoPlansBase.map(plan => ({
-            ...plan,
-            badge: `수수료 ${commissionMap[plan.id] ?? 10}%`,
-        }));
-    }, [getSettingNum]);
 
     const plans = type === 'sangjo' ? sangjoPlans : facilityPlans;
     const [selectedPlan, setSelectedPlan] = useState<string | null>(normalizeSubscriptionPlanId(currentPlan) || null);
@@ -270,7 +218,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
             const paymentId = `sub_${Date.now()}`;
             const response = await requestPayment({
                 storeId: PORTONE_CONFIG.STORE_ID,
-                channelKey: PORTONE_CONFIG.CHANNEL_KEY,
+                channelKey: getChannelKey('billing'),
                 paymentId,
                 orderName: `[추모맵] ${plan.name} 플랜`,
                 totalAmount: plan.price,
@@ -439,6 +387,49 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                         </div>
                     );
                 })}
+
+                {/* 엔터프라이즈 문의형 카드 — 시설만 노출 */}
+                {type === 'facility' && (
+                    <div className="group relative bg-white rounded-2xl border-2 border-amber-200 shadow-sm">
+                        <div className="p-5 flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${enterprisePlan.color} flex items-center justify-center text-white shadow-inner`}>
+                                {enterprisePlan.icon}
+                            </div>
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                    <h3 className="font-bold text-slate-900">{enterprisePlan.name}</h3>
+                                    <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-medium">
+                                        {enterprisePlan.badge}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-slate-500 mt-0.5">대형 시설 맞춤 플랜</p>
+                            </div>
+                        </div>
+                        <div className="px-5 pb-5 border-t border-slate-50 pt-4">
+                            <div className="space-y-3 mb-6">
+                                {enterprisePlan.features.map((feature, idx) => (
+                                    <div key={idx} className="flex items-start gap-3">
+                                        <div className="mt-0.5 text-green-500">
+                                            <Check size={14} strokeWidth={3} />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-xs text-slate-700 font-medium">{feature.name}</p>
+                                            {feature.description && (
+                                                <p className="text-[10px] text-slate-400 mt-0.5">{feature.description}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <button
+                                onClick={() => setShowInquiryModal(true)}
+                                className="w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg"
+                            >
+                                <MessageCircle size={16} /> 맞춤 견적 문의하기
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 <div className="bg-white rounded-2xl border border-slate-100 p-5">
                     <h2 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">

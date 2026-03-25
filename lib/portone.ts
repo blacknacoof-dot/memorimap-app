@@ -102,12 +102,43 @@ export const requestPayment = async (params: PaymentRequest): Promise<PaymentRes
     }
 };
 
+/**
+ * PortOne 채널 역할 분리 구조
+ * - general: 일반결제 (단건, 예약금 등)
+ * - billing: 정기결제 (월 구독)
+ *
+ * 현재 NHN KCP 우선. 채널이 같을 경우 동일 env 값 사용.
+ * KG이니시스 확장 시 별도 env 추가만 하면 됨.
+ *
+ * env 변수:
+ *   VITE_PORTONE_STORE_ID          — 상점 ID (PG 무관, 1개)
+ *   VITE_PORTONE_CHANNEL_KEY       — 일반결제 채널 (fallback 겸용)
+ *   VITE_PORTONE_BILLING_CHANNEL_KEY — 정기결제 채널 (없으면 general과 동일)
+ */
+export type PaymentRole = 'general' | 'billing';
+
 export const PORTONE_CONFIG = {
     STORE_ID: import.meta.env.VITE_PORTONE_STORE_ID ?? '',
-    CHANNEL_KEY: import.meta.env.VITE_PORTONE_CHANNEL_KEY ?? '',
+    CHANNELS: {
+        general: import.meta.env.VITE_PORTONE_CHANNEL_KEY ?? '',
+        billing: import.meta.env.VITE_PORTONE_BILLING_CHANNEL_KEY
+            || import.meta.env.VITE_PORTONE_CHANNEL_KEY
+            || '',
+    },
+    /** @deprecated CHANNEL_KEY 직접 사용 대신 getChannelKey() 사용 */
+    get CHANNEL_KEY() { return this.CHANNELS.general; },
 } as const;
 
-if (!PORTONE_CONFIG.STORE_ID || !PORTONE_CONFIG.CHANNEL_KEY) {
+/** 역할별 채널 키 조회 */
+export function getChannelKey(role: PaymentRole = 'general'): string {
+    const key = PORTONE_CONFIG.CHANNELS[role];
+    if (!key) {
+        throw new Error(`PortOne ${role} 채널 키가 설정되지 않았습니다.`);
+    }
+    return key;
+}
+
+if (!PORTONE_CONFIG.STORE_ID || !PORTONE_CONFIG.CHANNELS.general) {
     // PortOne 설정 누락 — 결제 기능 사용 시 런타임 에러로 처리
 }
 
