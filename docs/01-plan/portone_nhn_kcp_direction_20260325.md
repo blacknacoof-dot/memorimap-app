@@ -166,3 +166,9 @@ Memorimap의 PortOne 연동은 `NHN KCP 우선 + general/billing 채널 분리` 
 - 프론트 `.env.local` 또는 Vercel보다 우선 확인해야 하는 곳은 Supabase Edge Function secret이다.
 - `verify-payment`는 Supabase Edge Function에서 PortOne API를 호출하므로, `PORTONE_API_SECRET`가 Supabase 환경에 없으면 결제 검증이 실패한다.
 - 따라서 운영 체크리스트에서는 `Supabase Dashboard -> Edge Functions -> Secrets` 확인을 최우선으로 둔다.
+
+### 10.4 facility 결제 정책 주의
+
+- 현재 facility / sangjo 결제 저장은 auth client 경로를 사용한다.
+- 따라서 PortOne 채널과 별개로 `subscription_payments` INSERT RLS 정책이 함께 맞아야 한다.
+- 구정책 `payments_insert_service_or_owner`를 제거하기 전에는 facility 결제이력 insert가 새 정책만으로 통과하는지 먼저 확인해야 한다.

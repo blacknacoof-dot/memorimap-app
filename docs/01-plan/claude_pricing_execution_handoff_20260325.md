@@ -158,3 +158,18 @@
 1. `PORTONE_API_SECRET`는 프론트 env보다 Supabase Edge Function secret 확인이 우선이다.
 2. 상조 결제 검증 시 `verify-payment` 입력 plan은 `SJ_STARTER`지만 실제 `facility_subscriptions.plan_id` 저장값은 `sj_starter`다.
 3. 상조 `3개월 후 전환`은 자동화 미구현 상태이며 현재는 수동 운영 전환으로 본다.
+
+## 9. 2026-03-25 facility 결제 RLS 주의
+
+- 현재 `updateFacilitySubscription()`은 auth client로 `subscription_payments` insert를 수행한다.
+- 그런데 pricing v1 마이그레이션의 신규 정책 `subscription_payments_insert_service`는 `service_role`만 허용한다.
+- 현재 facility / sangjo 결제 insert가 통과하는 이유는 구정책 `payments_insert_service_or_owner`가 아직 남아 있기 때문일 가능성이 크다.
+- 따라서 `payments_insert_service_or_owner`를 바로 DROP하면 facility / sangjo 결제 이력 insert가 실패할 수 있다.
+
+### 즉시 결론
+
+1. 구정책 DROP은 보류한다.
+2. 먼저 facility 결제 insert 경로를 아래 둘 중 하나로 정리한다.
+   - owner authenticated insert를 명시적으로 허용하는 신규 정책 추가
+   - facility 결제이력 insert를 Edge Function / service_role 경로로 이관
+3. 수정 후에만 `payments_insert_service_or_owner`를 DROP한다.

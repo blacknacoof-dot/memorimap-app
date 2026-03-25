@@ -136,3 +136,11 @@
 - `VITE_PORTONE_BILLING_CHANNEL_KEY` 미설정 fallback은 현재 테스트 가능 상태를 뜻하지만, KCP 빌링키 기반 자동 정기결제까지 보장하는 것은 아니다.
 - 상조 검증 시 입력 plan은 `SJ_STARTER`여도 실제 DB 저장 plan_id는 `sj_starter` 기준으로 확인해야 한다.
 - `PORTONE_API_SECRET` 확인 위치는 프론트 env보다 Supabase Edge Function secret이 우선이다.
+
+## 2026-03-25 facility 결제 RLS 재검토
+
+- `verify-payment`의 `planId='SJ_STARTER'` 검증과 `facility_subscriptions.plan_id='sj_starter'` 저장은 서로 다른 단계이므로 대소문자 차이 자체는 실패 원인이 아니다.
+- 실제 리스크는 facility 결제이력 insert 경로다.
+- `updateFacilitySubscription()`은 auth client로 `subscription_payments` insert를 수행하지만, 신규 정책 `subscription_payments_insert_service`는 service_role only다.
+- 따라서 기존 `payments_insert_service_or_owner` 정책이 남아 있는 동안만 facility / sangjo 결제 insert가 통과할 가능성이 높다.
+- 결론: 구정책을 먼저 DROP하면 안 된다. facility insert 경로를 새 정책과 맞춘 뒤 DROP해야 한다.
