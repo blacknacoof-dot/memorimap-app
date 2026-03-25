@@ -68,3 +68,14 @@ supabase/.temp/
 
 # Image optimization backups
 public/images/defaults/*/originals/
+
+# Staging/worktree temp directories
+.stage_*/
+.worktree_*/
+
+# Test artifacts
+playwright-report/
+test-results/
+
+# Root-level work memos (keep docs in docs/)
+/*.txt
