@@ -38,10 +38,8 @@ export const useProfileSync = () => {
           );
 
         if (error) {
-          const pgError = error as { code?: string; status?: number; message: string };
-          if (pgError.code !== '42501' && pgError.status !== 401) {
-            // Non-critical sync failure.
-          }
+          // 409 Conflict / 401 Unauthorized / 42501 permission — 재시도 불필요
+          hasSyncedRef.current = true;
         } else {
           hasSyncedRef.current = true;
         }
