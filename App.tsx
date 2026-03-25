@@ -148,8 +148,12 @@ const App: React.FC = () => {
   const handleLogout = async () => {
     try {
       await signOut();
+      showToast('로그아웃 되었습니다.', 'info');
+      return;
       showToast('로그?�웃 ?�었?�니??', 'info');
     } catch {
+      showToast('로그아웃 처리 중 오류가 발생했습니다.', 'error');
+      return;
       showToast('로그?�웃 처리 �??�류가 발생?�습?�다.', 'error');
     } finally {
       setViewState(ViewState.MAP);
