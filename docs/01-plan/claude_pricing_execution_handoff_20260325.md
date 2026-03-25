@@ -144,3 +144,17 @@
 1. Supabase에 `20260325_pricing_v1_schema.sql`이 실제 적용되었는지 확인
 2. 운영 DB에 `PERSONAL_BASIC` 또는 소문자 personal plan_id 잔여 row가 남아 있는지 확인
 3. 남아 있으면 canonical 값 기준으로 백필 여부 결정
+
+## 8. 2026-03-25 NHN KCP 테스트 메모
+
+### 현재 판단
+
+- `VITE_PORTONE_BILLING_CHANNEL_KEY`가 없어도 현재 코드는 `general` 채널로 fallback 되어 구독 상품 결제 테스트 자체는 가능하다.
+- 다만 이것은 `자동 정기결제 채널까지 완전히 대체됨`을 의미하지 않는다.
+- 현재 구현은 `구독 상품 1회 결제 + 내부 구독 상태 저장` 검증으로 해석하는 것이 정확하다.
+
+### 운영 체크 시 주의
+
+1. `PORTONE_API_SECRET`는 프론트 env보다 Supabase Edge Function secret 확인이 우선이다.
+2. 상조 결제 검증 시 `verify-payment` 입력 plan은 `SJ_STARTER`지만 실제 `facility_subscriptions.plan_id` 저장값은 `sj_starter`다.
+3. 상조 `3개월 후 전환`은 자동화 미구현 상태이며 현재는 수동 운영 전환으로 본다.

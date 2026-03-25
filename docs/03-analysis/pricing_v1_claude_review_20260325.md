@@ -130,3 +130,9 @@
 - 아직 별도 확인이 필요한 항목:
   - Supabase 실DB에 `20260325_pricing_v1_schema.sql` 적용 여부
   - 운영 데이터에 legacy personal plan 값이 남아 있는지 여부
+
+## 2026-03-25 NHN KCP 테스트 보정
+
+- `VITE_PORTONE_BILLING_CHANNEL_KEY` 미설정 fallback은 현재 테스트 가능 상태를 뜻하지만, KCP 빌링키 기반 자동 정기결제까지 보장하는 것은 아니다.
+- 상조 검증 시 입력 plan은 `SJ_STARTER`여도 실제 DB 저장 plan_id는 `sj_starter` 기준으로 확인해야 한다.
+- `PORTONE_API_SECRET` 확인 위치는 프론트 env보다 Supabase Edge Function secret이 우선이다.

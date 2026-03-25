@@ -146,3 +146,23 @@ Claude는 아래 기준으로 구현을 이어간다.
 ## 9. 한 줄 결론
 
 Memorimap의 PortOne 연동은 `NHN KCP 우선 + general/billing 채널 분리` 기준으로 가는 것이 맞다.
+
+## 10. 2026-03-25 테스트 보정 메모
+
+### 10.1 billing fallback 해석
+
+- 현재 코드에서 `VITE_PORTONE_BILLING_CHANNEL_KEY`가 비어 있으면 `VITE_PORTONE_CHANNEL_KEY`로 fallback 한다.
+- 이 fallback은 현재 구독 상품 결제 테스트를 진행할 수 있게 해주지만, KCP의 빌링키 기반 자동 정기결제까지 대체한다는 의미는 아니다.
+- 즉 현재 상태는 `구독 상품의 1회 결제 + 앱 내부 구독 상태 저장` 검증에는 사용할 수 있으나, 추후 자동 청구를 붙일 경우 billing 전용 채널과 KCP 계약 범위를 별도로 확인해야 한다.
+
+### 10.2 상조 plan_id 저장값
+
+- 상조 결제 검증 시 `verify-payment`에는 `SJ_STARTER`를 넘긴다.
+- 실제 `facility_subscriptions.plan_id` 저장값은 `normalizeSubscriptionPlanId()`를 거쳐 `sj_starter`로 저장된다.
+- 운영 검증 문서와 SQL 확인 예시는 저장값 기준으로 `sj_starter`를 사용한다.
+
+### 10.3 PORTONE_API_SECRET 확인 위치
+
+- 프론트 `.env.local` 또는 Vercel보다 우선 확인해야 하는 곳은 Supabase Edge Function secret이다.
+- `verify-payment`는 Supabase Edge Function에서 PortOne API를 호출하므로, `PORTONE_API_SECRET`가 Supabase 환경에 없으면 결제 검증이 실패한다.
+- 따라서 운영 체크리스트에서는 `Supabase Dashboard -> Edge Functions -> Secrets` 확인을 최우선으로 둔다.
