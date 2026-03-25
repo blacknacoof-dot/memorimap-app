@@ -336,3 +336,152 @@
 - 1차 코드 반영
 - 핵심 흐름 검증
 - 배포 가능/보류 판단
+
+## 17. Execution Tracks (2026-03-25 GPT 추가)
+
+현재 작업은 아래 2개 트랙으로 분리해서 진행한다.
+
+### Track A: PortOne live integration first
+
+목표:
+
+- 현재 월 구독 구조를 유지한 채 실결제를 먼저 운영 가능 상태로 만든다.
+- 요금제 정책 개편과 결제 안정화 리스크를 분리한다.
+
+작업 범위:
+
+- PortOne 가맹점 신청 및 승인 진행
+- `verify-payment` 구독 검증 보강
+- `SubscriptionPlans.tsx` 결제 흐름 보완
+- `PersonalSubscriptionPlans.tsx` 동일 수준 반영
+- Vercel / Supabase 운영 환경변수 입력
+- 테스트 결제 및 실제 기기 검증
+
+담당 제안:
+
+- 사용자
+  - PortOne 가맹점 신청 및 PG 승인 대응
+  - 운영 키 / 환경변수 입력
+  - 실결제 최종 승인 테스트
+- Claude
+  - `verify-payment` 검증 보강
+  - 결제 공통 흐름 정리
+  - `SubscriptionPlans.tsx` / `PersonalSubscriptionPlans.tsx` 반영
+  - 테스트 결제 검증 지원 및 결과 문서화
+- GPT
+  - 신청 체크리스트 및 정책 문서 정리
+  - 트랙 전환 기준 문서화
+
+완료 기준:
+
+- 운영 환경에서 월 구독 결제가 정상 승인된다.
+- 결제 성공 후 구독 상태와 결제 이력이 일관되게 저장된다.
+- PC / 모바일에서 결제 흐름이 모두 재현 가능하다.
+
+### Track B: Pricing migration after A stabilization
+
+목표:
+
+- 월/연간 토글, 할인, 상조 계약형 CTA 분리, 기존 가입자 이행까지 단계적으로 반영한다.
+
+작업 범위:
+
+- `billing_cycle` 등 스키마 확장
+- 타입 및 쿼리 반영
+- 월/연간 토글 및 할인 배지 UI
+- 상조 계약형 CTA 분리
+- 기존 가입자 백필 및 검증
+
+담당 제안:
+
+- GPT
+  - 스키마 초안 및 정책 문서 정리
+  - 프론트 UI 초안
+  - 상조 계약형 CTA 분리 설계
+- Claude
+  - 타입 / 쿼리 반영
+  - 백필 및 데이터 검증
+  - 기존 가입자 안전성 검토
+- 사용자
+  - 할인 정책 / 운영 정책 최종 승인
+  - 상조 계약형 운영 여부 확정
+
+완료 기준:
+
+- 월간 / 연간 표시와 결제 데이터 구조가 일치한다.
+- 기존 가입자는 안전하게 `monthly` 기준으로 유지 또는 백필된다.
+- 상조는 일반 구독과 구분된 CTA 및 운영 흐름을 가진다.
+
+## 18. Recommended sequence
+
+1. PortOne 신청
+2. Track A 실결제 MVP 연결
+3. 운영 검증 및 오류 수습
+4. 최소 스키마 확정
+5. Track B 요금제 개편 착수
+
+현재 권장 원칙:
+
+- 결제 안정화가 요금제 개편보다 우선이다.
+- 요금제 개편은 스키마와 정책을 먼저 확정하고 점진 반영한다.
+- 상조 계약형 CTA 분리는 Track B에서 별도 설계로 다룬다.
+
+## 19. 코드 실측 검증 (2026-03-25 Claude 검증)
+
+검증일: 2026-03-25
+검증 대상: 문서 내용 vs 실제 코드베이스 상태
+
+### 19.1 일치 확인 (정상)
+
+| 문서 주장 | 실제 파일 | 상태 |
+|-----------|-----------|------|
+| `lib/portone.ts` 존재 | SDK 연동, 모바일/PC 감지, `requestPayment`/`verifyPayment` 구현 | 일치 |
+| `verify-payment` Edge Function | JWT 검증 + 소유권 + 금액 이중검증 구현 | 일치 |
+| `facility_subscription` 검증 분기 | `planExists` + `facilityOwned` 검증 구현 | 일치 |
+| `personal_subscription` 검증 분기 | `planExists` + `isOwner` 검증 구현 | 일치 |
+| `SubscriptionPlans.tsx` 존재 | 시설 구독 결제 UI, `requestPayment`/`verifyPayment` import 확인 | 일치 |
+| `PersonalSubscriptionPlans.tsx` 존재 | 개인 구독 결제 UI, 동일 import 구조 | 일치 |
+| `billing_cycle` 등 필드 미추가 | DB에 없음 (Phase 1 미착수) | 일치 |
+
+### 19.2 발견된 이슈
+
+#### ISSUE-1: `subscription_payments` insert 로직 누락 가능성 (Track A 블로커)
+
+- `verify-payment` Edge Function은 **검증만** 수행하고, `subscription_payments` row를 생성하지 않음
+- 프론트(`SubscriptionPlans.tsx`, `PersonalSubscriptionPlans.tsx`)에서 검증 후 직접 insert하는 흐름인지 **미확인**
+- **결제 이력이 빠지면 MVP 완료 불가**
+- 조치: Track A 착수 시 결제→검증→구독갱신→이력저장 전체 흐름을 E2E로 추적 필요
+
+#### ISSUE-2: `subscription_plans` 테이블 실존 여부 미확인
+
+- `verify-payment`에서 `verifySubscriptionPlanExists()`가 `subscription_plans.name_en`으로 조회
+- 이 테이블이 실제 DB에 존재하고 데이터가 있는지 **Supabase SQL Editor에서 확인 필요**
+- 없으면 모든 구독 결제 검증이 실패함
+
+```sql
+SELECT id, name_en, price FROM subscription_plans ORDER BY id;
+```
+
+#### ISSUE-3: 문서 간 범위 중복
+
+- `portone_live_integration_mvp_checklist_20260324.md`와 Track A 범위가 거의 동일
+- 실행 기준 문서를 단일화하거나, MVP 체크리스트를 Track A의 세부 체크리스트로 명시 링크 권장
+
+### 19.3 Track A 착수 전 필수 확인 사항
+
+1. **Supabase SQL Editor에서 확인**:
+   - `subscription_plans` 테이블 존재 + 데이터 확인
+   - `subscription_payments` 테이블 존재 + 컬럼 구조 확인
+   - `facility_subscriptions` / `user_subscriptions` 현재 row 수 확인
+
+2. **환경변수 확인**:
+   - Vercel: `VITE_PORTONE_STORE_ID`, `VITE_PORTONE_CHANNEL_KEY` 설정 여부
+   - Supabase Edge Function: `PORTONE_API_SECRET` 설정 여부
+
+3. **PortOne 가맹점 신청 상태**: 승인 전이면 테스트 키로 먼저 연동 검증
+
+### 19.4 참조 문서
+
+- Track A 세부 체크리스트: `docs/04-report/portone_live_integration_mvp_checklist_20260324.md`
+- 요금 구조 리서치: `docs/04-report/subscription_pricing_research_20260324.md`
+- PortOne 신청 준비물: `docs/01-plan/portone_application_checklist_memorimap_20260325.md`
