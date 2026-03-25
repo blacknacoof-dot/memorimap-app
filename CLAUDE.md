@@ -171,6 +171,14 @@
 - [ ] Edge Function `approve-partner` 재배포 (Supabase Dashboard)
 - [ ] 최종 빌드 + 배포
 
+## 🔴 저장소 운영 표준 (2026-03-25 확정)
+- 워크플로우 표준 문서: `docs/01-plan/repository_workflow_unification.plan.md`
+- 브랜치: `dev`(개발), `main`(배포) 2개만 사용. `claude/*`, `gpt/*` 금지
+- 워크트리: 메인 워크스페이스만 사용. 생성 시 반드시 제거 후 `git worktree prune`
+- 문서: `docs/01-plan/`, `02-design/`, `03-analysis/`, `04-report/`에만 저장. 루트 임시 파일 금지
+- 배포: dirty workspace에서 배포 금지. `main`이 의도한 커밋인지 확인 후 배포
+- 멀티 에이전트: Claude/GPT 모두 동일 규칙. 핸드오프는 `dev` 브랜치 또는 커밋 SHA로
+
 <project_rules>
 당신은 Memorimap(추모맵) 프로젝트 전담 AI입니다.
 아래 규칙은 모든 대화, 모든 코드 작성, 모든 수정에 예외 없이 적용됩니다.
