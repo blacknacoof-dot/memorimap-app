@@ -21,9 +21,11 @@ const BUSINESS_INFO = {
   operatorName: '(주)아톰케어',
   representative: '박태용',
   registrationNumber: '576-87-02748',
-  address: '경기도 고양시 일산동구 탄중로 421번지 3층 305-1호',
+  address: '경기 고양시 일산동구 탄중로 421 (웅산프라자) 3층 305-1호',
   supportPhone: '031-975-3335',
-  supportEmail: 'atomcare@naver.com',
+  supportEmail: 'atomcare@kakao.com',
+  faxNumber: '0504-336-4569',
+  ecommerceRegistration: '2024-고양일산동-0025',
   businessHours: '평일 09:00 ~ 18:00',
 };
 
@@ -163,6 +165,8 @@ export const LegalModal: React.FC<Props> = ({ onClose, initialTab = 'privacy' })
                 <div><span className="font-bold text-gray-900">사업장 주소:</span> {BUSINESS_INFO.address}</div>
                 <div><span className="font-bold text-gray-900">고객센터:</span> {BUSINESS_INFO.supportPhone}</div>
                 <div><span className="font-bold text-gray-900">이메일:</span> {BUSINESS_INFO.supportEmail}</div>
+                <div><span className="font-bold text-gray-900">팩스:</span> {BUSINESS_INFO.faxNumber}</div>
+                <div><span className="font-bold text-gray-900">통신판매업신고:</span> {BUSINESS_INFO.ecommerceRegistration}</div>
                 <div><span className="font-bold text-gray-900">운영시간:</span> {BUSINESS_INFO.businessHours}</div>
               </div>
             </div>

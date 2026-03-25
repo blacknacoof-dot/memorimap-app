@@ -7,6 +7,7 @@ import { useUser, useSession } from '../lib/auth';
 import { getAuthClient } from '../lib/supabaseClient';
 import { useSystemSettings } from '../hooks/useSystemSettings';
 import { normalizeSubscriptionPlanId } from '../lib/subscriptionPlanIds';
+import { LegalModal } from './LegalModal';
 
 interface Plan {
     id: string;
@@ -196,6 +197,8 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+    const [showLegalModal, setShowLegalModal] = useState(false);
+    const [legalTab, setLegalTab] = useState<'terms' | 'privacy' | 'refund' | 'business' | 'license'>('business');
 
     const cancelPayment = useCallback(() => {
         const bodyChildren = document.body.children;
@@ -437,6 +440,41 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                     );
                 })}
 
+                <div className="bg-white rounded-2xl border border-slate-100 p-5">
+                    <h2 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <ShieldCheck size={16} className="text-primary" /> 결제 전 확인 정보
+                    </h2>
+                    <div className="grid grid-cols-2 gap-2">
+                        <button
+                            onClick={() => { setLegalTab('business'); setShowLegalModal(true); }}
+                            className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                        >
+                            사업자 정보
+                        </button>
+                        <button
+                            onClick={() => { setLegalTab('refund'); setShowLegalModal(true); }}
+                            className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                        >
+                            환불/해지 정책
+                        </button>
+                        <button
+                            onClick={() => { setLegalTab('terms'); setShowLegalModal(true); }}
+                            className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                        >
+                            이용약관
+                        </button>
+                        <button
+                            onClick={() => { setLegalTab('privacy'); setShowLegalModal(true); }}
+                            className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                        >
+                            개인정보처리방침
+                        </button>
+                    </div>
+                    <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
+                        결제 진행 전 사업자 정보, 약관, 환불/해지 정책을 확인할 수 있습니다.
+                    </p>
+                </div>
+
                 {/* FAQ Section */}
                 <div className="mt-8 pt-8 border-t border-slate-200">
                     <h2 className="text-sm font-bold text-slate-900 mb-6 flex items-center gap-2">
@@ -577,6 +615,8 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                     </div>
                 </div>
             )}
+
+            {showLegalModal && <LegalModal initialTab={legalTab} onClose={() => setShowLegalModal(false)} />}
         </div>
     );
 }

@@ -8,6 +8,7 @@ import { requestPayment, verifyPayment, PORTONE_CONFIG } from '../lib/portone';
 import { toast } from 'sonner';
 import { useSession } from '../lib/auth';
 import { getAuthClient } from '../lib/supabaseClient';
+import { LegalModal } from './LegalModal';
 
 interface PersonalPlanFeature {
     name: string;
@@ -105,6 +106,8 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
     const [currentPlan, setCurrentPlan] = useState<string>('personal_free');
     const [isLoading, setIsLoading] = useState(true);
     const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+    const [showLegalModal, setShowLegalModal] = useState(false);
+    const [legalTab, setLegalTab] = useState<'terms' | 'privacy' | 'refund' | 'business' | 'license'>('business');
     const { session } = useSession();
 
     const cancelPayment = useCallback(() => {
@@ -452,6 +455,41 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                     </div>
                 </div>
 
+                <div className="mt-4 bg-white rounded-2xl border border-slate-100 p-5">
+                    <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <Shield size={16} className="text-primary" /> 결제 전 확인 정보
+                    </h3>
+                    <div className="grid grid-cols-2 gap-2">
+                        <button
+                            onClick={() => { setLegalTab('business'); setShowLegalModal(true); }}
+                            className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                        >
+                            사업자 정보
+                        </button>
+                        <button
+                            onClick={() => { setLegalTab('refund'); setShowLegalModal(true); }}
+                            className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                        >
+                            환불/해지 정책
+                        </button>
+                        <button
+                            onClick={() => { setLegalTab('terms'); setShowLegalModal(true); }}
+                            className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                        >
+                            이용약관
+                        </button>
+                        <button
+                            onClick={() => { setLegalTab('privacy'); setShowLegalModal(true); }}
+                            className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                        >
+                            개인정보처리방침
+                        </button>
+                    </div>
+                    <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
+                        결제 전에 사업자 정보와 이용약관, 개인정보처리방침, 환불/해지 정책을 확인할 수 있습니다.
+                    </p>
+                </div>
+
                 {/* FAQ */}
                 <div className="mt-4 bg-white rounded-2xl border border-slate-100 p-5">
                     <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
@@ -477,6 +515,8 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                     </div>
                 </div>
             </div>
+
+            {showLegalModal && <LegalModal initialTab={legalTab} onClose={() => setShowLegalModal(false)} />}
         </div>
     );
 }
