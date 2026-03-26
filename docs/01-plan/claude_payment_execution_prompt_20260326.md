@@ -53,6 +53,7 @@
 
 ## 1. 기준 문서
 
+- `docs/01-plan/memorimap_release_validation_checklist_20260326.md`
 - `docs/01-plan/portone_nhn_kcp_direction_20260325.md`
 - `docs/01-plan/billing_key_recurring_payment_plan.md`
 - `docs/01-plan/features/subscription_pricing_migration.plan.md`

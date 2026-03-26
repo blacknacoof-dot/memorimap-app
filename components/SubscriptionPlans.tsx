@@ -139,7 +139,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
 
     const plans = type === 'sangjo' ? sangjoPlans : facilityPlans;
     const [selectedPlan, setSelectedPlan] = useState<string | null>(normalizeSubscriptionPlanId(currentPlan) || null);
-    const [expandedPlan, setExpandedPlan] = useState<string | null>(type === 'sangjo' ? 'sj_professional' : 'premium');
+    const [expandedPlan, setExpandedPlan] = useState<string | null>(type === 'sangjo' ? 'sj_starter' : 'premium');
     const [showInquiryModal, setShowInquiryModal] = useState(false);
     const [inquiryForm, setInquiryForm] = useState({ name: '', phone: '', email: '', message: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -332,14 +332,19 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                                     {plan.icon}
                                 </div>
                                 <div className="flex-1">
-                                    <div className="flex items-center gap-2">
-                                        <h3 className="font-bold text-slate-900">{plan.name}</h3>
-                                        {plan.badge && (
-                                            <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-medium">
-                                                {plan.badge}
-                                            </span>
-                                        )}
-                                    </div>
+                                <div className="flex items-center gap-2">
+                                    <h3 className="font-bold text-slate-900">{plan.name}</h3>
+                                    {plan.badge && (
+                                        <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-medium">
+                                            {plan.badge}
+                                        </span>
+                                    )}
+                                    {isSelected && (
+                                        <span className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">
+                                            구독중
+                                        </span>
+                                    )}
+                                </div>
                                     <div className="flex items-baseline gap-1 mt-0.5">
                                         <span className="text-xl font-black text-slate-900">
                                             {plan.price.toLocaleString()}

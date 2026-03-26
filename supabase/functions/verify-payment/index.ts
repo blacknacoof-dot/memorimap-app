@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const ALLOWED_ORIGINS = [
+const PRODUCTION_ORIGINS = [
     'https://memorimap.kr',
     'https://www.memorimap.kr',
     'https://memorimap-app.vercel.app',
@@ -10,9 +10,21 @@ const ALLOWED_ORIGINS = [
     'https://www.memorimap.com',
 ];
 
+// 개발 환경에서만 localhost 허용 (ENVIRONMENT=development 설정 시)
+const DEV_ORIGINS = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://127.0.0.1:5173',
+];
+
+const isDevMode = Deno.env.get('ENVIRONMENT') === 'development';
+const ALLOWED_ORIGINS = isDevMode
+    ? [...PRODUCTION_ORIGINS, ...DEV_ORIGINS]
+    : PRODUCTION_ORIGINS;
+
 const getCorsHeaders = (req: Request) => {
     const origin = req.headers.get('origin');
-    const allowedOrigin = ALLOWED_ORIGINS.includes(origin || '') ? origin : ALLOWED_ORIGINS[0];
+    const allowedOrigin = ALLOWED_ORIGINS.includes(origin || '') ? origin : PRODUCTION_ORIGINS[0];
     return {
         'Access-Control-Allow-Origin': allowedOrigin,
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -50,7 +62,7 @@ async function verifyJWT(token: string): Promise<{ userId: string | null; error:
     }
 }
 
-const PORTONE_API_URL = 'https://api.portone.io/v2';
+const PORTONE_API_URL = 'https://api.portone.io';
 
 type SupabaseAdmin = ReturnType<typeof createClient>;
 
@@ -74,25 +86,37 @@ async function verifyFacilityOwnership(
     facilityId: string,
     verifiedUserId: string,
 ): Promise<boolean> {
+    // 1. facilities.user_id 직접 소유 확인
     const { data, error } = await supabaseAdmin
         .from('facilities')
         .select('user_id')
         .eq('id', facilityId)
         .maybeSingle();
 
-    return !error && !!data && data.user_id === verifiedUserId;
+    if (!error && data && data.user_id === verifiedUserId) {
+        return true;
+    }
+
+    // 2. 상조 본사 관리자 (sangjo_hq_admins) 확인 — sangjo 시설은 user_id가 system_sangjo_import인 경우
+    const { data: adminData, error: adminError } = await supabaseAdmin
+        .from('sangjo_hq_admins')
+        .select('id')
+        .eq('sangjo_id', facilityId)
+        .eq('user_id', verifiedUserId)
+        .limit(1)
+        .maybeSingle();
+
+    return !adminError && !!adminData;
 }
 
 // ============================================================
 // DB 영속화: 구독 + 결제이력 (service_role — RLS 무시)
 // ============================================================
 
-/** plan_id 정규화: facility는 소문자, personal은 원본 유지 */
-function normalizePlanId(planId: string, context: string): string {
-    if (context === 'facility') {
-        return planId.trim().toLowerCase().replace(/[\s-]+/g, '_');
-    }
-    return planId; // personal: PERSONAL_FREE, PERSONAL_PREMIUM 등 그대로
+/** plan_id 정규화: subscription_plans.name_en 기준 (대문자 유지) */
+function normalizePlanId(planId: string, _context: string): string {
+    // FK가 subscription_plans.name_en 참조 → 원본 유지 (FREE, BASIC, PREMIUM, SJ_STARTER 등)
+    return planId.trim().replace(/[\s-]+/g, '_').toUpperCase();
 }
 
 async function persistFacilitySubscription(
