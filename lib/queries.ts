@@ -1439,7 +1439,7 @@ export const updateFacilitySubscription = async (facilityId: string, planId: str
     let { data: planData } = await db
         .from('subscription_plans')
         .select('*')
-        .ilike('name_en', planId)
+        .eq('name_en', planId)
         .maybeSingle();
 
     // name_en이 비어있으면 한글 name으로 재시도

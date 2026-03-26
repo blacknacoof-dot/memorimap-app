@@ -4,9 +4,7 @@ import { Consultation } from '../types/consultation';
 import MapComponent, { MapRef } from './MapContainer';
 import { FacilityList } from './FacilityList';
 import { Scale, Crosshair, Database, ArrowLeft, Building2, ShieldAlert, Shield, Loader2 } from 'lucide-react';
-import { updateFacilitySubscription } from '../lib/queries';
 import { useSession } from '../lib/auth';
-import { getAuthClient } from '../lib/supabaseClient';
 import { canAccessView } from '../lib/rolePolicy';
 
 // Lazy Load Components
@@ -398,16 +396,8 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
               <SubscriptionPlans
                 facilityId={adminFacilityId ?? undefined}
                 type={userRole === 'sangjo_hq_admin' ? 'sangjo' : 'facility'}
-                onSelectPlan={async (planId) => {
-                  if (adminFacilityId) {
-                    try {
-                      const subClient = await getAuthClient(session, { strict: true });
-                      await updateFacilitySubscription(adminFacilityId, planId, subClient);
-                      showToast('구독 정보가 업데이트되었습니다.', 'success');
-                    } catch {
-                      showToast('구독 정보 업데이트에 실패했습니다.', 'error');
-                    }
-                  }
+                onSelectPlan={() => {
+                  showToast('구독 정보가 업데이트되었습니다.', 'success');
                 }}
               />
             </div>

@@ -30,49 +30,11 @@ export interface PaymentResponse {
     txId?: string;
 }
 
-// 🔧 강화된 모바일 감지 (인앱 브라우저 대응)
-const detectDevice = () => {
-    const ua = navigator.userAgent.toLowerCase();
-
-    // 모바일 기기 감지
-    const isMobileDevice = /android|iphone|ipad|ipod|blackberry|windows phone/i.test(ua);
-
-    // 인앱 브라우저 감지 (네이버, 카카오, 페이스북, 인스타그램 등)
-    const isInAppBrowser = /naver|kakaotalk|line|facebook|instagram|twitter/i.test(ua);
-
-    // 터치 지원 여부
-    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
-    // 화면 크기 (태블릿 제외, 스마트폰만)
-    const isSmallScreen = window.innerWidth <= 768;
-
-    const isMobile = isMobileDevice || isInAppBrowser || (isTouchDevice && isSmallScreen);
-
-    return isMobile;
-};
-
 // 🎯 PortOne 결제 요청
 export const requestPayment = async (params: PaymentRequest): Promise<PaymentResponse> => {
     if (!window.PortOne) {
         throw new Error('PortOne SDK가 로드되지 않았습니다. 페이지를 새로고침해주세요.');
     }
-
-    const isMobile = detectDevice();
-
-    // URL 파라미터로 강제 모드 설정 가능 (디버깅용)
-    const urlParams = new URLSearchParams(window.location.search);
-    const forceMobile = urlParams.get('forceMobile') === 'true';
-    const forcePC = urlParams.get('forcePC') === 'true';
-
-    let _finalIsMobile = isMobile;
-    if (forceMobile) _finalIsMobile = true;
-    if (forcePC) _finalIsMobile = false;
-
-    // ✅ PortOne이 요구하는 형식: 객체로 pc/mobile 각각 지정
-    const windowType = {
-        pc: 'IFRAME' as const,
-        mobile: 'POPUP' as const
-    };
 
     // PortOne은 빈 문자열을 거부 (NON_EMPTY_STRING) → 빈 필드 제거
     const customer: Record<string, string> = {};
@@ -81,19 +43,14 @@ export const requestPayment = async (params: PaymentRequest): Promise<PaymentRes
     if (params.customer.email) customer.email = params.customer.email;
 
     try {
-        // KCP bypass — site_name은 모바일 필수
-        const bypass = params.bypass?.kcp_v2
-            ? { kcp_v2: params.bypass.kcp_v2 }
-            : { kcp_v2: { site_name: '추모맵' } };
-
-        // 최소 파라미터 테스트 — KCP 호환성 확인 후 하나씩 추가
-        const requestBody: Record<string, unknown> = {
+        // 최소 요청 — KCP v2 공식 예제 기반 (windowType/bypass 제거, currency: CURRENCY_KRW)
+        const requestBody: PortOneRequestPaymentParams = {
             storeId: params.storeId,
             channelKey: params.channelKey,
             paymentId: params.paymentId,
             orderName: params.orderName,
             totalAmount: params.totalAmount,
-            currency: params.currency,
+            currency: 'CURRENCY_KRW',
             payMethod: params.payMethod,
         };
 
@@ -102,10 +59,7 @@ export const requestPayment = async (params: PaymentRequest): Promise<PaymentRes
             requestBody.customer = customer;
         }
 
-        // 🔍 디버그 (테스트 완료 후 제거)
-        console.warn('[PortOne DEBUG] requestBody:', JSON.stringify(requestBody, null, 2));
-
-        const response = await window.PortOne.requestPayment(requestBody as PortOneRequestPaymentParams);
+        const response = await window.PortOne.requestPayment(requestBody);
 
         return response;
 
@@ -170,14 +124,14 @@ if (!PORTONE_CONFIG.STORE_ID || !PORTONE_CONFIG.CHANNELS.general) {
  * 클라이언트에서 결제 완료 후 반드시 호출하여 금액/상태 위변조 검증
  */
 export const verifyPayment = async (params: {
-    paymentId: string;
-    expectedAmount: number;
+    paymentId?: string;
+    expectedAmount?: number;
     orderId?: string;
-    paymentContext?: 'reservation' | 'facility_subscription' | 'personal_subscription';
+    paymentContext?: 'reservation' | 'facility_subscription' | 'personal_subscription' | 'facility_free_downgrade' | 'personal_free_downgrade';
     facilityId?: string;
     planId?: string;
     targetUserId?: string;
-}): Promise<{ verified: boolean; error?: string }> => {
+}): Promise<{ verified: boolean; persisted?: boolean; error?: string; subscriptionId?: string }> => {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -205,6 +159,12 @@ export const verifyPayment = async (params: {
         });
 
         const result = await response.json();
+        if (!response.ok) {
+            return {
+                verified: false,
+                error: result?.error || result?.details || `verify-payment failed (${response.status})`,
+            };
+        }
         return result;
     } catch (error: unknown) {
         const msg = error instanceof Error ? error.message : '결제 검증 실패';
@@ -254,10 +214,6 @@ interface PortOneRequestPaymentParams {
         phoneNumber?: string;
         email?: string;
     };
-    windowType?: {
-        pc: 'IFRAME' | 'POPUP' | 'REDIRECT';
-        mobile: 'IFRAME' | 'POPUP' | 'REDIRECT';
-    };
     bypass?: Record<string, unknown>;
 }
 
@@ -273,10 +229,6 @@ interface PortOneIssueBillingKeyParams {
     };
     offerPeriod?: {
         interval: string;
-    };
-    windowType?: {
-        pc: 'IFRAME' | 'POPUP' | 'REDIRECT';
-        mobile: 'IFRAME' | 'POPUP' | 'REDIRECT';
     };
     bypass?: Record<string, unknown>;
 }
@@ -322,10 +274,6 @@ export const requestIssueBillingKey = async (params: {
         ...(params.issueId && { issueId: params.issueId }),
         ...(params.issueName && { issueName: params.issueName }),
         ...(Object.keys(customer).length > 0 && { customer }),
-        windowType: {
-            pc: 'IFRAME',
-            mobile: 'POPUP',
-        },
         bypass: {
             kcp_v2: { site_name: '추모맵' },
         },

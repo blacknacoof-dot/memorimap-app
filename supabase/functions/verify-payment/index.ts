@@ -52,8 +52,10 @@ async function verifyJWT(token: string): Promise<{ userId: string | null; error:
 
 const PORTONE_API_URL = 'https://api.portone.io/v2';
 
+type SupabaseAdmin = ReturnType<typeof createClient>;
+
 async function verifySubscriptionPlanExists(
-    supabaseAdmin: ReturnType<typeof createClient>,
+    supabaseAdmin: SupabaseAdmin,
     planId: string,
 ): Promise<boolean> {
     const { data, error } = await supabaseAdmin
@@ -68,7 +70,7 @@ async function verifySubscriptionPlanExists(
 }
 
 async function verifyFacilityOwnership(
-    supabaseAdmin: ReturnType<typeof createClient>,
+    supabaseAdmin: SupabaseAdmin,
     facilityId: string,
     verifiedUserId: string,
 ): Promise<boolean> {
@@ -80,6 +82,314 @@ async function verifyFacilityOwnership(
 
     return !error && !!data && data.user_id === verifiedUserId;
 }
+
+// ============================================================
+// DB 영속화: 구독 + 결제이력 (service_role — RLS 무시)
+// ============================================================
+
+/** plan_id 정규화: facility는 소문자, personal은 원본 유지 */
+function normalizePlanId(planId: string, context: string): string {
+    if (context === 'facility') {
+        return planId.trim().toLowerCase().replace(/[\s-]+/g, '_');
+    }
+    return planId; // personal: PERSONAL_FREE, PERSONAL_PREMIUM 등 그대로
+}
+
+async function persistFacilitySubscription(
+    db: SupabaseAdmin,
+    facilityId: string,
+    planId: string,
+    portonePaymentId: string,
+    amount: number,
+): Promise<{ persisted: boolean; error?: string; subscriptionId?: string }> {
+    const normalizedPlanId = normalizePlanId(planId, 'facility');
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
+    const now = new Date();
+    const nextBilling = new Date(now);
+    nextBilling.setMonth(nextBilling.getMonth() + 1);
+
+    try {
+        // 1. 기존 구독 조회 + 이전 상태 캡처 (롤백용)
+        const filterCol = isUUID ? 'facility_id_uuid' : 'facility_id_bigint';
+        const filterVal = isUUID ? facilityId : Number(facilityId);
+
+        const { data: existing } = await db
+            .from('facility_subscriptions')
+            .select('id, plan_id, status, next_billing_date, billing_cycle')
+            .eq(filterCol, filterVal)
+            .limit(1)
+            .maybeSingle();
+
+        const previousState = existing
+            ? { plan_id: existing.plan_id, status: existing.status, next_billing_date: existing.next_billing_date, billing_cycle: existing.billing_cycle }
+            : null;
+
+        const subscriptionData: Record<string, unknown> = {
+            plan_id: normalizedPlanId,
+            status: 'active',
+            next_billing_date: nextBilling.toISOString(),
+            updated_at: now.toISOString(),
+            billing_cycle: 'monthly',
+        };
+
+        let subId: string | null = null;
+        const wasInsert = !existing;
+
+        if (existing) {
+            const { data, error } = await db
+                .from('facility_subscriptions')
+                .update(subscriptionData)
+                .eq('id', existing.id)
+                .select('id')
+                .single();
+
+            if (error) return { persisted: false, error: `facility_subscriptions UPDATE: ${error.message}` };
+            subId = data?.id;
+        } else {
+            if (isUUID) {
+                subscriptionData.facility_id_uuid = facilityId;
+            } else {
+                subscriptionData.facility_id_bigint = Number(facilityId);
+                subscriptionData.facility_id = Number(facilityId);
+            }
+
+            const { data, error } = await db
+                .from('facility_subscriptions')
+                .insert(subscriptionData)
+                .select('id')
+                .single();
+
+            if (error) return { persisted: false, error: `facility_subscriptions INSERT: ${error.message}` };
+            subId = data?.id;
+        }
+
+        // 2. 결제이력 기록 (유료 플랜만) — 실패 시 subscription 롤백
+        if (subId && amount > 0) {
+            const periodEnd = new Date(now);
+            periodEnd.setMonth(periodEnd.getMonth() + 1);
+
+            const { error: payError } = await db
+                .from('subscription_payments')
+                .insert({
+                    subscription_id: subId,
+                    payment_context: 'facility',
+                    portone_payment_id: portonePaymentId,
+                    amount: amount,
+                    final_amount: amount,
+                    status: 'completed',
+                    payment_method: 'card',
+                    paid_at: now.toISOString(),
+                    billing_period_start: now.toISOString().split('T')[0],
+                    billing_period_end: periodEnd.toISOString().split('T')[0],
+                });
+
+            if (payError) {
+                // 롤백: subscription을 이전 상태로 복원하거나 삭제
+                if (wasInsert) {
+                    await db.from('facility_subscriptions').delete().eq('id', subId);
+                } else if (previousState) {
+                    await db.from('facility_subscriptions').update({
+                        plan_id: previousState.plan_id,
+                        status: previousState.status,
+                        next_billing_date: previousState.next_billing_date,
+                        billing_cycle: previousState.billing_cycle,
+                        updated_at: now.toISOString(),
+                    }).eq('id', subId);
+                }
+                return { persisted: false, error: `subscription_payments INSERT 실패 → subscription 롤백 완료: ${payError.message}` };
+            }
+        }
+
+        return { persisted: true, subscriptionId: subId ?? undefined };
+    } catch (e) {
+        return { persisted: false, error: e instanceof Error ? e.message : 'Unknown persistence error' };
+    }
+}
+
+async function persistPersonalSubscription(
+    db: SupabaseAdmin,
+    userId: string,
+    planId: string,
+    portonePaymentId: string,
+    amount: number,
+): Promise<{ persisted: boolean; error?: string }> {
+    const now = new Date();
+    const expiresAt = new Date(now);
+    expiresAt.setMonth(expiresAt.getMonth() + 1);
+
+    try {
+        // 1. 기존 구독 조회 + 이전 상태 캡처 (롤백용)
+        const { data: existing } = await db
+            .from('user_subscriptions')
+            .select('id, plan_id, plan_name, status, started_at, expires_at, billing_cycle')
+            .eq('user_id', userId)
+            .limit(1)
+            .maybeSingle();
+
+        const previousState = existing
+            ? { plan_id: existing.plan_id, plan_name: existing.plan_name, status: existing.status, started_at: existing.started_at, expires_at: existing.expires_at, billing_cycle: existing.billing_cycle }
+            : null;
+
+        const subscriptionData: Record<string, unknown> = {
+            plan_id: planId,
+            plan_name: planId,
+            status: 'active',
+            started_at: now.toISOString(),
+            expires_at: expiresAt.toISOString(),
+            billing_cycle: 'monthly',
+        };
+
+        const wasInsert = !existing;
+        const existingId = existing?.id;
+
+        if (existing) {
+            const { error } = await db
+                .from('user_subscriptions')
+                .update(subscriptionData)
+                .eq('id', existing.id);
+
+            if (error) return { persisted: false, error: `user_subscriptions UPDATE: ${error.message}` };
+        } else {
+            subscriptionData.user_id = userId;
+
+            const { data, error } = await db
+                .from('user_subscriptions')
+                .insert(subscriptionData)
+                .select('id')
+                .single();
+
+            if (error) return { persisted: false, error: `user_subscriptions INSERT: ${error.message}` };
+            // existingId를 방금 생성된 row로 업데이트 (삭제 롤백용)
+            if (data?.id) {
+                // TypeScript workaround: reassign is not possible for const, use variable
+            }
+        }
+
+        // 2. 결제이력 기록 (유료 플랜만) — 실패 시 subscription 롤백
+        if (amount > 0) {
+            const periodEnd = new Date(now);
+            periodEnd.setMonth(periodEnd.getMonth() + 1);
+
+            const { error: payError } = await db
+                .from('subscription_payments')
+                .insert({
+                    user_id: userId,
+                    payment_context: 'personal',
+                    portone_payment_id: portonePaymentId,
+                    amount: amount,
+                    final_amount: amount,
+                    status: 'completed',
+                    payment_method: 'card',
+                    paid_at: now.toISOString(),
+                    billing_period_start: now.toISOString().split('T')[0],
+                    billing_period_end: periodEnd.toISOString().split('T')[0],
+                });
+
+            if (payError) {
+                // 롤백: subscription을 이전 상태로 복원하거나 삭제
+                if (wasInsert) {
+                    await db.from('user_subscriptions').delete().eq('user_id', userId);
+                } else if (previousState && existingId) {
+                    await db.from('user_subscriptions').update({
+                        plan_id: previousState.plan_id,
+                        plan_name: previousState.plan_name,
+                        status: previousState.status,
+                        started_at: previousState.started_at,
+                        expires_at: previousState.expires_at,
+                        billing_cycle: previousState.billing_cycle,
+                    }).eq('id', existingId);
+                }
+                return { persisted: false, error: `subscription_payments INSERT 실패 → subscription 롤백 완료: ${payError.message}` };
+            }
+        }
+
+        return { persisted: true };
+    } catch (e) {
+        return { persisted: false, error: e instanceof Error ? e.message : 'Unknown persistence error' };
+    }
+}
+
+// ============================================================
+// 무료 전환 처리 (결제 없음 — service_role DB 직접 변경)
+// ============================================================
+
+async function handleFacilityFreeDowngrade(
+    db: SupabaseAdmin,
+    facilityId: string,
+    verifiedUserId: string,
+): Promise<{ persisted: boolean; error?: string }> {
+    // 소유권 검증
+    const owned = await verifyFacilityOwnership(db, facilityId, verifiedUserId);
+    if (!owned) return { persisted: false, error: '시설 소유권 검증 실패' };
+
+    const normalizedPlanId = normalizePlanId('FREE', 'facility');
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
+    const filterCol = isUUID ? 'facility_id_uuid' : 'facility_id_bigint';
+    const filterVal = isUUID ? facilityId : Number(facilityId);
+
+    const { data: existing } = await db
+        .from('facility_subscriptions')
+        .select('id')
+        .eq(filterCol, filterVal)
+        .limit(1)
+        .maybeSingle();
+
+    const now = new Date().toISOString();
+
+    if (existing) {
+        const { error } = await db
+            .from('facility_subscriptions')
+            .update({ plan_id: normalizedPlanId, status: 'active', updated_at: now, billing_cycle: 'monthly' })
+            .eq('id', existing.id);
+        if (error) return { persisted: false, error: `facility free downgrade UPDATE: ${error.message}` };
+    } else {
+        const insertData: Record<string, unknown> = {
+            plan_id: normalizedPlanId,
+            status: 'active',
+            updated_at: now,
+            billing_cycle: 'monthly',
+        };
+        if (isUUID) {
+            insertData.facility_id_uuid = facilityId;
+        } else {
+            insertData.facility_id_bigint = Number(facilityId);
+            insertData.facility_id = Number(facilityId);
+        }
+
+        const { error } = await db.from('facility_subscriptions').insert(insertData);
+        if (error) return { persisted: false, error: `facility free downgrade INSERT: ${error.message}` };
+    }
+
+    return { persisted: true };
+}
+
+async function handlePersonalFreeDowngrade(
+    db: SupabaseAdmin,
+    userId: string,
+): Promise<{ persisted: boolean; error?: string }> {
+    const { data: existing } = await db
+        .from('user_subscriptions')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .limit(1)
+        .maybeSingle();
+
+    if (existing) {
+        const { error } = await db
+            .from('user_subscriptions')
+            .update({ plan_id: 'PERSONAL_FREE', plan_name: 'PERSONAL_FREE', status: 'active', billing_cycle: 'monthly' })
+            .eq('id', existing.id);
+        if (error) return { persisted: false, error: `personal free downgrade UPDATE: ${error.message}` };
+    }
+    // 구독 row가 없으면 이미 무료 상태 — 성공으로 처리
+
+    return { persisted: true };
+}
+
+// ============================================================
+// Main handler
+// ============================================================
 
 serve(async (req: Request) => {
     const corsHeaders = getCorsHeaders(req);
@@ -141,6 +451,32 @@ serve(async (req: Request) => {
             planId,
             targetUserId,
         } = await req.json();
+
+        // ============================================================
+        // 무료 전환 분기 (결제 없음 — PortOne 검증 스킵)
+        // ============================================================
+        if (paymentContext === 'facility_free_downgrade') {
+            if (!facilityId) {
+                return new Response(JSON.stringify({ verified: false, error: 'facilityId is required' }), {
+                    status: 400,
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                });
+            }
+            const result = await handleFacilityFreeDowngrade(supabaseAdmin, facilityId, verifiedUserId);
+            return new Response(JSON.stringify({ verified: true, ...result }), {
+                status: 200,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+        }
+
+        if (paymentContext === 'personal_free_downgrade') {
+            const result = await handlePersonalFreeDowngrade(supabaseAdmin, verifiedUserId);
+            return new Response(JSON.stringify({ verified: true, ...result }), {
+                status: 200,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+        }
+        // ============================================================
 
         if (!paymentId || !expectedAmount) {
             return new Response(JSON.stringify({ error: 'paymentId and expectedAmount are required' }), {
@@ -285,6 +621,9 @@ serve(async (req: Request) => {
             }).eq('id', orderId);
         }
 
+        // ============================================================
+        // 구독 결제: 검증 + DB 영속화 (service_role)
+        // ============================================================
         if (paymentContext === 'facility_subscription') {
             if (!facilityId || !planId) {
                 return new Response(JSON.stringify({
@@ -324,6 +663,41 @@ serve(async (req: Request) => {
                     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                 });
             }
+
+            // 검증 통과 → DB 영속화
+            const persistResult = await persistFacilitySubscription(
+                supabaseAdmin, facilityId, planId, paymentId, expectedAmount
+            );
+
+            if (!persistResult.persisted) {
+                await supabaseAdmin.from('system_logs').insert({
+                    level: 'ERROR',
+                    message: `Facility subscription persistence failed: ${persistResult.error}`,
+                    meta: { paymentId, facilityId, planId, requestedBy: verifiedUserId },
+                    source: 'edge-function:verify-payment'
+                });
+
+                return new Response(JSON.stringify({
+                    verified: true,
+                    persisted: false,
+                    error: `결제는 확인되었으나 구독 정보 저장에 실패했습니다: ${persistResult.error}`,
+                }), {
+                    status: 200,
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                });
+            }
+
+            return new Response(JSON.stringify({
+                verified: true,
+                persisted: true,
+                paymentId,
+                amount: paymentData.amount?.total,
+                status: paymentData.status,
+                subscriptionId: persistResult.subscriptionId,
+            }), {
+                status: 200,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
         }
 
         if (paymentContext === 'personal_subscription') {
@@ -363,9 +737,45 @@ serve(async (req: Request) => {
                     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                 });
             }
-        }
-        // ============================================================
 
+            // 검증 통과 → DB 영속화
+            const persistResult = await persistPersonalSubscription(
+                supabaseAdmin, verifiedUserId, planId, paymentId, expectedAmount
+            );
+
+            if (!persistResult.persisted) {
+                await supabaseAdmin.from('system_logs').insert({
+                    level: 'ERROR',
+                    message: `Personal subscription persistence failed: ${persistResult.error}`,
+                    meta: { paymentId, planId, targetUserId: verifiedUserId },
+                    source: 'edge-function:verify-payment'
+                });
+
+                return new Response(JSON.stringify({
+                    verified: true,
+                    persisted: false,
+                    error: `결제는 확인되었으나 구독 정보 저장에 실패했습니다: ${persistResult.error}`,
+                }), {
+                    status: 200,
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                });
+            }
+
+            return new Response(JSON.stringify({
+                verified: true,
+                persisted: true,
+                paymentId,
+                amount: paymentData.amount?.total,
+                status: paymentData.status,
+            }), {
+                status: 200,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+        }
+
+        // ============================================================
+        // 일반 결제 (예약 등) — 영속화 없이 검증만
+        // ============================================================
         return new Response(JSON.stringify({
             verified: true,
             paymentId,

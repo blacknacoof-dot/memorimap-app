@@ -162,17 +162,18 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
         const userId = session?.user?.id;
 
         if (plan.id === 'PERSONAL_FREE') {
-            // 무료 전환 = 기존 구독 취소 + DB 반영
+            // 무료 전환 — service_role 서버 경로
             try {
-                const client = await getAuthClient(session, { strict: true });
-                if (userId) {
-                    await client.from('user_subscriptions')
-                        .update({ status: 'cancelled' })
-                        .eq('user_id', userId)
-                        .eq('status', 'active');
+                const result = await verifyPayment({
+                    paymentContext: 'personal_free_downgrade',
+                });
+                if (!result.persisted) {
+                    toast.error(result.error || '무료 플랜 전환에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+                    return;
                 }
             } catch (_e) {
-                // 구독 취소 실패 (toast로 이미 알림)
+                toast.error('무료 플랜 전환에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+                return;
             }
             setSelectedPlan(plan.id);
             setCurrentPlan(plan.id);
@@ -198,8 +199,8 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                 payMethod: "CARD",
                 customer: {
                     fullName: user?.fullName || user?.firstName || "개인 사용자",
-                    phoneNumber: user?.primaryPhoneNumber?.phoneNumber || "01000000000",
-                    email: user?.primaryEmailAddress?.emailAddress || session?.user?.email || "user@memorimap.kr",
+                    phoneNumber: user?.primaryPhoneNumber?.phoneNumber || "",
+                    email: user?.primaryEmailAddress?.emailAddress || session?.user?.email || "",
                 },
             });
 
@@ -226,20 +227,10 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                 return;
             }
 
-            // 결제 성공 → DB 업데이트 + 결제이력 기록
-            try {
-                const client = await getAuthClient(session, { strict: true });
-                const { updatePersonalSubscription } = await import('../lib/queries');
-                await updatePersonalSubscription(
-                    userId,
-                    plan.id,
-                    plan.nameEn,
-                    plan.price,
-                    response.paymentId || paymentId,
-                    client
-                );
-            } catch (_e) {
-                toast.error('결제는 완료되었으나 구독 정보 업데이트에 실패했습니다. 고객센터에 문의해주세요.');
+            // DB 영속화는 verify-payment EF (service_role)에서 처리
+            if (verification.persisted === false) {
+                toast.error(verification.error || '결제는 완료되었으나 구독 정보 저장에 실패했습니다. 고객센터에 문의해주세요.');
+                return;
             }
 
             setSelectedPlan(plan.id);

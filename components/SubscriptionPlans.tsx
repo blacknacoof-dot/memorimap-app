@@ -192,9 +192,14 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
         if (plan.id === 'free') {
             if (facilityId) {
                 try {
-                    const subClient = await getAuthClient(session, { strict: true });
-                    const { updateFacilitySubscription } = await import('../lib/queries');
-                    await updateFacilitySubscription(facilityId, plan.nameEn, subClient);
+                    const result = await verifyPayment({
+                        paymentContext: 'facility_free_downgrade',
+                        facilityId,
+                    });
+                    if (!result.persisted) {
+                        toast.error(result.error || '무료 플랜 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+                        return;
+                    }
                 } catch (_e) {
                     toast.error('무료 플랜 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.');
                     return;
@@ -226,8 +231,8 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                 payMethod: "CARD",
                 customer: {
                     fullName: user?.fullName || user?.firstName || "업체 관리자",
-                    phoneNumber: user?.primaryPhoneNumber?.phoneNumber || "01000000000",
-                    email: user?.primaryEmailAddress?.emailAddress || session?.user?.email || "partner@memorimap.kr",
+                    phoneNumber: user?.primaryPhoneNumber?.phoneNumber || "",
+                    email: user?.primaryEmailAddress?.emailAddress || session?.user?.email || "",
                 },
             });
 
@@ -249,15 +254,11 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                 return;
             }
 
-            // 결제 성공 → DB 구독 업데이트
-            if (facilityId) {
-                try {
-                    const subClient = await getAuthClient(session, { strict: true });
-                    const { updateFacilitySubscription } = await import('../lib/queries');
-                    await updateFacilitySubscription(facilityId, plan.nameEn, subClient);
-                } catch (_e) {
-                    toast.error('결제는 완료되었으나 구독 정보 업데이트에 실패했습니다. 고객센터에 문의해주세요.');
-                }
+            // DB 영속화는 verify-payment EF (service_role)에서 처리
+            // persisted === false면 결제는 됐으나 DB 저장 실패
+            if (verification.persisted === false) {
+                toast.error(verification.error || '결제는 완료되었으나 구독 정보 저장에 실패했습니다. 고객센터에 문의해주세요.');
+                return;
             }
 
             setSelectedPlan(plan.id);
