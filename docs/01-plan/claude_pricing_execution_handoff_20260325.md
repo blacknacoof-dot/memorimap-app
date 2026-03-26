@@ -173,3 +173,44 @@
    - owner authenticated insert를 명시적으로 허용하는 신규 정책 추가
    - facility 결제이력 insert를 Edge Function / service_role 경로로 이관
 3. 수정 후에만 `payments_insert_service_or_owner`를 DROP한다.
+
+## 10. 2026-03-25 마지막 상태 저장
+
+### 오늘 완료된 상태
+
+- pricing v1 코드/문서/RLS 정리는 완료됐다.
+- `subscription_payments` INSERT 정책은 최종적으로 아래 3개 상태다.
+  - `insert_service`: service_role
+  - `insert_personal`: authenticated + personal + 본인
+  - `insert_facility`: authenticated + facility + 시설 소유자
+- 구정책 `payments_insert_service_or_owner`는 제거 완료됐다.
+- `.env.local`, Vercel env, Supabase Edge Function secret, Edge Function 배포까지 반영 완료됐다.
+
+### 현재 막힌 지점
+
+- 개인/시설/상조 결제 테스트에서 DB 반영 이전 단계에서 막힌다.
+- 브라우저 콘솔 기준 PortOne SDK 요청 직후 `POST https://checkout-service.prod.iamport.co/api/prepare/v2 400` 발생.
+- 즉 `verify-payment`나 DB insert 이전이 아니라 PortOne 결제 준비 단계 실패다.
+
+### 현재까지 확인한 내용
+
+- `currency`는 `KRW`로 수정했다.
+- `requestPayment()` 직전 콘솔 로그를 추가해 요청값을 확인 가능하게 했다.
+- 현재 로그상 확인된 값:
+  - `storeId = store-456544ef-fef3-4b77-90a7-f001e257e953`
+  - `paymentId = psub_*`
+  - `orderName = [추모맵] 개인 프리미엄 플랜`
+  - `totalAmount = 4900`
+- `billing` 채널을 일반 수기결제 채널로 바꿔도 `prepare/v2 400`이 계속 발생했다.
+
+### 다음 세션 첫 확인 항목
+
+1. PortOne 콘솔에서 현재 `storeId`와 실제 사용 중인 `channelKey`가 같은 스토어 소속인지 확인
+2. 해당 채널이 일반 결제 요청을 받을 수 있는 활성 채널인지 확인
+3. 브라우저 Network 탭에서 `prepare/v2` Response body 확인
+4. 필요 시 `customer.phoneNumber` 제거 또는 형식 강제 보정 테스트
+
+### 현재 결론
+
+- 앱 내부 구독 저장 로직보다 먼저 PortOne 준비 요청이 실패하고 있다.
+- 다음 세션에서는 PortOne `prepare/v2 400` 원인 추적을 최우선으로 진행한다.

@@ -38,8 +38,16 @@
   → next_billing_date 도래한 구독 조회
   → 빌링키로 자동 결제 (PortOne API)
   → 성공: 구독 갱신 + 결제이력 저장
-  → 실패: 재시도 (3일간 3회) → 최종 실패 시 구독 만료
+  → 실패: 재시도 (3일간 3회) → 최종 실패 시 구독 일시중지 또는 만료
 ```
+
+운영 기본 정책:
+
+- 월 정기결제는 `최초 카드 등록 후 매월 동일일 자동 청구`
+- 해지 신청 시 `다음 결제일부터 중단`
+- 이미 결제된 당월 이용기간은 유지
+- 이미 결제된 당월 결제분은 원칙적으로 환불하지 않음
+- 상조 파일럿은 `최소 3개월`을 기본 전제로 보고, 중도 해지 환불은 원칙적으로 제공하지 않음
 
 ## 3. 구현 범위
 
@@ -84,7 +92,7 @@ const response = await PortOne.requestIssueBillingKey({
   1. next_billing_date <= now() AND status = 'active' 조회
   2. 각 구독의 billing_key로 PortOne API 결제 요청
   3. 성공 → next_billing_date 갱신, subscription_payments insert
-  4. 실패 → retry_count 증가, 3회 초과 시 status = 'expired'
+  4. 실패 → retry_count 증가, 3회 초과 시 status = 'past_due' 또는 'expired'
 ```
 
 #### `issue-billing-key` (빌링키 저장)
@@ -99,6 +107,18 @@ const response = await PortOne.requestIssueBillingKey({
   4. 첫 결제 실행
 ```
 
+#### `cancel-subscription` (해지 예약)
+
+```text
+역할: 사용자 해지 요청을 받아 자동결제를 다음 청구일부터 중단
+입력: subscriptionId 또는 userId/facilityId
+로직:
+  1. JWT 인증
+  2. 본인/소유권 검증
+  3. status='cancel_scheduled', cancel_at_period_end=true 저장
+  4. UI에는 "다음 결제일부터 해지" 상태 노출
+```
+
 ### 3.3 DB 스키마 변경
 
 #### 신규 컬럼 (facility_subscriptions / user_subscriptions 공통)
@@ -108,13 +128,19 @@ ALTER TABLE facility_subscriptions
   ADD COLUMN IF NOT EXISTS billing_key TEXT,
   ADD COLUMN IF NOT EXISTS billing_key_issued_at TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS retry_count INTEGER DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS last_payment_error TEXT;
+  ADD COLUMN IF NOT EXISTS last_payment_error TEXT,
+  ADD COLUMN IF NOT EXISTS cancel_at_period_end BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS cancelled_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS cancelled_reason TEXT;
 
 ALTER TABLE user_subscriptions
   ADD COLUMN IF NOT EXISTS billing_key TEXT,
   ADD COLUMN IF NOT EXISTS billing_key_issued_at TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS retry_count INTEGER DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS last_payment_error TEXT;
+  ADD COLUMN IF NOT EXISTS last_payment_error TEXT,
+  ADD COLUMN IF NOT EXISTS cancel_at_period_end BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS cancelled_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS cancelled_reason TEXT;
 ```
 
 #### 보안 주의
@@ -168,9 +194,12 @@ SELECT cron.schedule(
 
 ### 4.3 상조 파일럿
 
-- 파일럿 3개월은 빌링키 자동 갱신으로 처리
-- 3회 결제 완료 후 자동 만료 또는 정가 전환 안내
-- 자동 전환은 미구현 → 수동 협의 후 plan 변경
+- 상조 유료 계약은 `본사`만 받는다.
+- `지사/대리점`은 본사 하위 운영 계정으로만 처리한다.
+- 파일럿 3개월은 빌링키 자동 갱신 또는 월 수동 청구 중 하나로 운영 가능하되, 계약 문구를 먼저 확정한다.
+- 3회 결제 완료 후 기본 전환안은 `Growth 300만원/월`
+- 대형 본사형 계약은 `Enterprise 500만원/월`
+- 자동 전환은 미구현 → 사전 안내 후 수동 협의로 plan 변경
 
 ## 5. 결제 3종 흐름 변경
 
@@ -182,6 +211,14 @@ SELECT cron.schedule(
 갱신: charge-subscription cron → 매월 4900 자동 청구
 ```
 
+### 개인 시그니처 (9,900원/월)
+
+```
+현재: 미구현
+변경: requestIssueBillingKey() → issue-billing-key EF → 첫 결제 → DB 저장
+갱신: charge-subscription cron → 매월 9900 자동 청구
+```
+
 ### 시설 라이트/프리미엄 (49,000 / 199,000원/월)
 
 ```
@@ -190,7 +227,17 @@ SELECT cron.schedule(
 갱신: charge-subscription cron → 매월 자동 청구
 ```
 
-### 상조 파일럿 (1,500,000원/월 × 3개월)
+### 시설 엔터프라이즈 (문의형)
+
+```text
+현재: self-serve 결제 없음
+변경: 영업/관리자 수동 승인 후 청구 또는 별도 계약형 결제
+원칙: 가격표 노출은 가능하지만 즉시 결제 버튼은 제공하지 않음
+```
+
+### 상조 본사 플랜
+
+#### 파일럿 (1,500,000원/월 × 3개월)
 
 ```
 현재: requestPayment(1500000) → verify → DB 저장
@@ -198,12 +245,28 @@ SELECT cron.schedule(
 갱신: charge-subscription cron → 매월 자동 청구 (3회 제한)
 ```
 
+#### Growth (3,000,000원/월)
+
+```text
+현재: 미구현
+변경: 본사 계약 전환 후 billing 채널로 월 자동 청구
+해지: 다음 결제일부터 중단, 당월 환불 없음
+```
+
+#### Enterprise (5,000,000원/월)
+
+```text
+현재: 미구현
+변경: 본사 맞춤 계약 + billing 채널 월 자동 청구
+비고: 하위 조직 계정/전담 운영 옵션 포함 가능
+```
+
 ## 6. 선행 조건 (구현 전 확인)
 
 | 항목 | 확인 위치 | 상태 |
 |------|-----------|------|
 | KCP 빌링키 계약 포함 여부 | PortOne 콘솔 / KCP 계약서 | 미확인 |
-| PortOne v2 SDK `requestIssueBillingKey` 지원 | PortOne 문서 | 미확인 |
+| PortOne v2 SDK `requestIssueBillingKey` 지원 | PortOne 문서 | 문서 확인 완료 |
 | Supabase pg_cron 또는 외부 cron 사용 가능 여부 | Supabase 플랜 | 미확인 |
 | billing_key 암호화 저장 필요 여부 | 보안 정책 | 미확인 |
 
@@ -218,17 +281,21 @@ Phase 1: 스키마 + 타입
 Phase 2: Edge Function
   - issue-billing-key (빌링키 저장 + 첫 결제)
   - charge-subscription (자동 갱신)
+  - cancel-subscription (다음 결제일부터 해지 예약)
 
 Phase 3: 프론트엔드
   - lib/portone.ts에 requestIssueBillingKey 추가
   - PersonalSubscriptionPlans.tsx 빌링키 흐름으로 변경
   - SubscriptionPlans.tsx 빌링키 흐름으로 변경
+  - 일반결제 / 정기결제 UI 분리
+  - 해지 예약 UI 추가
 
 Phase 4: Cron 설정 + 테스트
   - pg_cron 또는 외부 cron 설정
   - 테스트 결제 (빌링키 발급 → 첫 결제 → 자동 갱신)
   - 실패 재시도 테스트
   - 구독 만료 테스트
+  - 해지 예약 후 다음 청구 중단 테스트
 
 Phase 5: 기존 가입자 전환
   - 빌링키 미등록 안내 UI
@@ -240,9 +307,20 @@ Phase 5: 기존 가입자 전환
 1. KCP 빌링키 계약이 현재 포함되어 있는지 (미포함이면 추가 신청 필요)
 2. 출시 시점에 빌링키까지 갈 것인지, 1회 결제 + 수동 갱신으로 먼저 출시할 것인지
 3. 결제 실패 시 재시도 횟수/간격 정책 (권장: 3일간 3회)
-4. 상조 파일럿 3회 결제 후 자동 만료 vs 정가 자동 전환 vs 수동 협의
+4. 상조 파일럿 3회 결제 후 `Growth 300만원` 전환을 기본값으로 둘지 여부
 
-## 9. 참고 문서
+## 9. Claude 작업 기준
+
+Claude는 아래 기준으로 구현을 이어간다.
+
+1. 상조 유료 플랜은 `본사 계약형`만 지원한다.
+2. 지사/대리점은 독립 과금 대상이 아니라 본사 하위 운영 계정으로 본다.
+3. 월 정기결제 해지는 `다음 결제일부터 중단`으로 처리한다.
+4. 파일럿 3개월 중도 해지는 원칙적으로 환불하지 않는 정책을 UI/약관에 반영한다.
+5. Growth `300만원`, Enterprise `500만원`은 본사 전환 플랜으로 문서와 코드 상수에 반영한다.
+6. 일반결제와 정기결제는 UI, 용어, 버튼 라벨을 분리한다.
+
+## 10. 참고 문서
 
 - PortOne NHN KCP v2 연동: https://developers.portone.io/opi/ko/integration/pg/v2/kcp-v2?v=v2
 - `docs/01-plan/claude_pricing_execution_handoff_20260325.md`

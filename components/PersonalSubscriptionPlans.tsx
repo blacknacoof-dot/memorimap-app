@@ -3,9 +3,9 @@ import {
     Check, X, Sparkles, Crown, Zap, ChevronDown, ChevronUp,
     MessageCircle, Shield, ArrowLeft
 } from 'lucide-react';
-import { requestPayment, verifyPayment, PORTONE_CONFIG, getChannelKey } from '../lib/portone';
+import { requestPayment, verifyPayment, PORTONE_CONFIG, getChannelKey, generatePaymentId } from '../lib/portone';
 import { toast } from 'sonner';
-import { useSession } from '../lib/auth';
+import { useUser, useSession } from '../lib/auth';
 import { getAuthClient } from '../lib/supabaseClient';
 import { LegalModal } from './LegalModal';
 
@@ -71,6 +71,24 @@ const personalPlans: PersonalPlan[] = [
             { name: 'VIP 배지', included: true },
         ],
     },
+    {
+        id: 'PERSONAL_SIGNATURE',
+        name: '시그니처',
+        nameEn: 'PERSONAL_SIGNATURE',
+        price: 9900,
+        icon: <Sparkles className="w-6 h-6" />,
+        color: 'from-amber-500 to-orange-600',
+        badge: '프리미엄+',
+        features: [
+            { name: '프리미엄 모든 기능 포함', included: true },
+            { name: 'AI 상담', included: true, limit: '무제한 + 우선 응답' },
+            { name: '엔딩노트', included: true, limit: '전체 + PDF + 가족공유 5명' },
+            { name: '제휴 할인', included: true, description: '장례 용품 10% 할인' },
+            { name: '가족 공유', included: true, description: '최대 5명' },
+            { name: '전담 상담 우선 연결', included: true },
+            { name: '프리미엄 VIP 배지', included: true },
+        ],
+    },
 ];
 
 interface PersonalSubscriptionPlansProps {
@@ -85,6 +103,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
     const [isPaymentOpen, setIsPaymentOpen] = useState(false);
     const [showLegalModal, setShowLegalModal] = useState(false);
     const [legalTab, setLegalTab] = useState<'terms' | 'privacy' | 'refund' | 'business' | 'license'>('business');
+    const { user } = useUser();
     const { session } = useSession();
 
     const cancelPayment = useCallback(() => {
@@ -168,20 +187,20 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
 
         try {
             setIsPaymentOpen(true);
-            const paymentId = `psub_${Date.now()}`;
+            const paymentId = generatePaymentId('psub');
             const response = await requestPayment({
                 storeId: PORTONE_CONFIG.STORE_ID,
-                channelKey: getChannelKey('billing'),
+                channelKey: getChannelKey('general'),  // Phase C 전까지 일반결제 채널 사용
                 paymentId,
                 orderName: `[추모맵] 개인 ${plan.name} 플랜`,
                 totalAmount: plan.price,
-                currency: "CURRENCY_KRW",
+                currency: "KRW",
                 payMethod: "CARD",
                 customer: {
-                    fullName: session?.user?.fullName || session?.user?.firstName || "개인 사용자",
-                    phoneNumber: session?.user?.primaryPhoneNumber?.phoneNumber || "",
-                    email: session?.user?.primaryEmailAddress?.emailAddress || "",
-                }
+                    fullName: user?.fullName || user?.firstName || "개인 사용자",
+                    phoneNumber: user?.primaryPhoneNumber?.phoneNumber || "01000000000",
+                    email: user?.primaryEmailAddress?.emailAddress || session?.user?.email || "user@memorimap.kr",
+                },
             });
 
             if (response.code !== undefined) {
@@ -272,7 +291,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
             {/* 요금 비교 요약 */}
             <div className="px-4 py-4">
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                    <div className="grid grid-cols-3 text-center border-b border-slate-100">
+                    <div className="grid grid-cols-4 text-center border-b border-slate-100">
                         <div className="p-2 md:p-3 bg-slate-50">
                             <p className="text-[10px] font-bold text-slate-400">기능</p>
                         </div>
@@ -286,15 +305,15 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                         ))}
                     </div>
                     {[
-                        { label: 'AI 상담', values: ['1건', '무제한'] },
-                        { label: '상조 비교', values: ['5회', '무제한'] },
-                        { label: '즐겨찾기', values: ['5개', '무제한'] },
-                        { label: '엔딩노트', values: ['기본', 'PDF'] },
-                        { label: '광고 제거', values: ['X', 'O'] },
-                        { label: '제휴 할인', values: ['X', '5%'] },
-                        { label: '가족 공유', values: ['X', '3명'] },
+                        { label: 'AI 상담', values: ['1건', '무제한', '우선'] },
+                        { label: '상조 비교', values: ['5회', '무제한', '무제한'] },
+                        { label: '즐겨찾기', values: ['5개', '무제한', '무제한'] },
+                        { label: '엔딩노트', values: ['기본', 'PDF', 'PDF+5명'] },
+                        { label: '광고 제거', values: ['X', 'O', 'O'] },
+                        { label: '제휴 할인', values: ['X', '5%', '10%'] },
+                        { label: '가족 공유', values: ['X', '3명', '5명'] },
                     ].map((row, idx) => (
-                        <div key={idx} className="grid grid-cols-3 text-center border-b border-slate-50 last:border-0">
+                        <div key={idx} className="grid grid-cols-4 text-center border-b border-slate-50 last:border-0">
                             <div className="p-1.5 md:p-2.5 bg-slate-50 text-left">
                                 <p className="text-[10px] font-medium text-slate-500">{row.label}</p>
                             </div>
@@ -397,6 +416,18 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                                         ))}
                                     </div>
 
+                                    {/* 결제 안내 블록 — 유료 플랜만 */}
+                                    {plan.price > 0 && !isCurrent && (
+                                        <div className="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                            <p className="text-[10px] font-bold text-slate-600 mb-1">구독 결제 안내</p>
+                                            <ul className="text-[10px] text-slate-500 space-y-0.5">
+                                                <li>• 결제 완료 후 30일간 이용 가능</li>
+                                                <li>• 해지 시 다음 결제일부터 중단</li>
+                                                <li>• 이미 결제된 당월 금액은 환불되지 않습니다</li>
+                                            </ul>
+                                        </div>
+                                    )}
+
                                     <button
                                         onClick={() => handleSelectPlan(plan)}
                                         disabled={isCurrent}
@@ -409,7 +440,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                                             ? '현재 이용 중'
                                             : plan.price === 0
                                                 ? '무료로 시작하기'
-                                                : `월 ${plan.price.toLocaleString()}원으로 시작하기`}
+                                                : '구독 시작하기'}
                                     </button>
                                 </div>
                             )}
@@ -423,10 +454,10 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                         <Shield size={16} className="text-primary" /> 안내 사항
                     </h3>
                     <div className="space-y-3 text-[11px] text-slate-500 leading-relaxed">
-                        <p>• 모든 유료 플랜은 <strong className="text-slate-700">월 정기결제</strong>로 진행됩니다.</p>
-                        <p>• 결제일 기준 30일간 이용 가능하며, 자동 갱신됩니다.</p>
-                        <p>• 플랜 변경 시 즉시 적용되며, 잔여 기간은 일할 계산하여 차액 결제됩니다.</p>
-                        <p>• 해지는 마이페이지에서 언제든 가능하며, 잔여 기간까지 이용하실 수 있습니다.</p>
+                        <p>• 유료 플랜은 <strong className="text-slate-700">월 구독 결제</strong>로 진행됩니다.</p>
+                        <p>• 결제 완료 후 30일간 이용 가능합니다.</p>
+                        <p>• <strong className="text-slate-700">해지 시 다음 결제일부터 중단</strong>되며, 이미 결제된 당월은 환불되지 않습니다.</p>
+                        <p>• 해지 후에도 남은 이용 기간까지 서비스를 이용하실 수 있습니다.</p>
                         <p>• 결제 관련 문의: <strong className="text-slate-700">support@memorimap.kr</strong></p>
                     </div>
                 </div>

@@ -144,3 +144,13 @@
 - `updateFacilitySubscription()`은 auth client로 `subscription_payments` insert를 수행하지만, 신규 정책 `subscription_payments_insert_service`는 service_role only다.
 - 따라서 기존 `payments_insert_service_or_owner` 정책이 남아 있는 동안만 facility / sangjo 결제 insert가 통과할 가능성이 높다.
 - 결론: 구정책을 먼저 DROP하면 안 된다. facility insert 경로를 새 정책과 맞춘 뒤 DROP해야 한다.
+
+## 2026-03-25 PortOne prepare 400 메모
+
+- 최종적으로 facility INSERT 정책 추가 및 구정책 제거까지 반영했으나, 실제 결제 테스트는 PortOne 준비 단계에서 막혔다.
+- 브라우저 콘솔 기준 `checkout-service.prod.iamport.co/api/prepare/v2`가 400을 반환했다.
+- 따라서 현재 미해결 이슈는 DB/RLS가 아니라 PortOne `requestPayment()` 요청 파라미터 또는 `storeId-channelKey` 조합 문제다.
+- 다음 추적 우선순위:
+  - PortOne 콘솔에서 `storeId`와 `channelKey` 소속 일치 여부 확인
+  - `prepare/v2` Response body 확인
+  - 필요 시 customer 필드 최소화 테스트

@@ -1,7 +1,7 @@
 ﻿import React, { useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Check, X, Sparkles, Crown, Zap, ChevronDown, ChevronUp, MessageCircle, ShieldCheck, ArrowLeft } from 'lucide-react';
-import { requestPayment, verifyPayment, PORTONE_CONFIG, getChannelKey } from '../lib/portone';
+import { requestPayment, verifyPayment, PORTONE_CONFIG, getChannelKey, generatePaymentId } from '../lib/portone';
 import { toast } from 'sonner';
 import { useUser, useSession } from '../lib/auth';
 import { getAuthClient } from '../lib/supabaseClient';
@@ -215,20 +215,20 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
         setIsProcessing(true);
         setIsPaymentOpen(true);
         try {
-            const paymentId = `sub_${Date.now()}`;
+            const paymentId = generatePaymentId('sub');
             const response = await requestPayment({
                 storeId: PORTONE_CONFIG.STORE_ID,
-                channelKey: getChannelKey('billing'),
+                channelKey: getChannelKey('general'),  // Phase C 전까지 일반결제 채널 사용
                 paymentId,
                 orderName: `[추모맵] ${plan.name} 플랜`,
                 totalAmount: plan.price,
-                currency: "CURRENCY_KRW",
+                currency: "KRW",
                 payMethod: "CARD",
                 customer: {
                     fullName: user?.fullName || user?.firstName || "업체 관리자",
-                    phoneNumber: user?.primaryPhoneNumber?.phoneNumber || "",
-                    email: user?.primaryEmailAddress?.emailAddress || "",
-                }
+                    phoneNumber: user?.primaryPhoneNumber?.phoneNumber || "01000000000",
+                    email: user?.primaryEmailAddress?.emailAddress || session?.user?.email || "partner@memorimap.kr",
+                },
             });
 
             if (response.code !== undefined) {
@@ -372,6 +372,18 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                                         ))}
                                     </div>
 
+                                    {/* 결제 안내 블록 — 유료 플랜만 */}
+                                    {plan.price > 0 && !isSelected && (
+                                        <div className="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                            <p className="text-[10px] font-bold text-slate-600 mb-1">구독 결제 안내</p>
+                                            <ul className="text-[10px] text-slate-500 space-y-0.5">
+                                                <li>• 결제 완료 후 30일간 이용 가능</li>
+                                                <li>• 해지 시 다음 결제일부터 중단</li>
+                                                <li>• 이미 결제된 당월 금액은 환불되지 않습니다</li>
+                                            </ul>
+                                        </div>
+                                    )}
+
                                     <button
                                         onClick={() => handleSelectPlan(plan)}
                                         disabled={isSelected || isProcessing}
@@ -380,7 +392,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                                             : `bg-gradient-to-r ${plan.color} text-white shadow-lg shadow-blue-500/20`
                                             }`}
                                     >
-                                        {isProcessing ? '결제 처리 중...' : isSelected ? '현재 적용 중인 플랜' : `${plan.name} 시작하기`}
+                                        {isProcessing ? '결제 처리 중...' : isSelected ? '현재 적용 중인 플랜' : '구독 시작하기'}
                                     </button>
                                 </div>
                             )}
@@ -474,11 +486,11 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                     <div className="space-y-6">
                         <FAQItem
                             question="결제는 어떻게 진행되나요?"
-                            answer="국내 모든 신용카드 및 간편결제를 지원합니다. PortOne의 안전한 결제 시스템을 통해 매월 정기적으로 결제됩니다."
+                            answer="국내 모든 신용카드를 지원하며, 안전한 결제 시스템을 통해 처리됩니다. 결제 완료 후 30일간 이용 가능합니다."
                         />
                         <FAQItem
                             question="플랜 변경이나 해지는 언제든 가능한가요?"
-                            answer="네, 가능합니다. 대시보드 설정에서 언제든 해지하실 수 있습니다. 환불 관련 문의는 고객센터(1:1 문의)로 연락 주시면 안내해 드립니다."
+                            answer="네, 대시보드에서 언제든 해지할 수 있습니다. 해지 시 다음 결제일부터 중단되며, 이미 결제된 당월 금액은 환불되지 않습니다."
                         />
                         <FAQItem
                             question="AI 상담 데이터는 어떻게 학습되나요?"

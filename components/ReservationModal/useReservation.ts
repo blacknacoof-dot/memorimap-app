@@ -5,7 +5,7 @@ import { Facility, Reservation as LegacyReservation } from '../../types';
 import { ReservationSchema, ReservationFormValues } from '../../lib/schemas';
 import { format, addDays, startOfToday } from 'date-fns';
 import { toast } from 'sonner';
-import { requestPayment, verifyPayment, PORTONE_CONFIG } from '../../lib/portone';
+import { requestPayment, verifyPayment, PORTONE_CONFIG, getChannelKey, generatePaymentId } from '../../lib/portone';
 
 interface UseReservationProps {
   facility: Facility;
@@ -184,16 +184,20 @@ export function useReservation({ facility, onClose: _onClose, onConfirm, reserva
 
     try {
       setIsPaymentOpen(true);
-      const paymentId = `PAY-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      const paymentId = generatePaymentId('pay');
       const response = await requestPayment({
         storeId: PORTONE_CONFIG.STORE_ID,
-        channelKey: PORTONE_CONFIG.CHANNEL_KEY,
+        channelKey: getChannelKey('general'),
         paymentId,
         orderName: `${facility.name} 방문 예약금`,
         totalAmount: depositAmount,
-        currency: 'CURRENCY_KRW',
+        currency: 'KRW',
         payMethod: paymentMethod,
-        customer: { fullName: data.visitor_name, phoneNumber: data.contact_number },
+        customer: {
+          fullName: data.visitor_name,
+          phoneNumber: data.contact_number,
+          email: 'guest@memorimap.kr',
+        },
       });
 
       if (response.code != null) throw new Error(response.message || 'Payment failed');

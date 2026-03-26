@@ -11,6 +11,15 @@ export interface PaymentRequest {
         phoneNumber: string;
         email?: string;
     };
+    bypass?: {
+        kcp_v2?: {
+            site_name?: string;
+            shop_user_id?: string;
+            site_logo?: string;
+            skin_indx?: string;
+            kcp_pay_title?: string;
+        };
+    };
 }
 
 export interface PaymentResponse {
@@ -72,7 +81,13 @@ export const requestPayment = async (params: PaymentRequest): Promise<PaymentRes
     if (params.customer.email) customer.email = params.customer.email;
 
     try {
-        const response = await window.PortOne.requestPayment({
+        // KCP bypass — site_name은 모바일 필수
+        const bypass = params.bypass?.kcp_v2
+            ? { kcp_v2: params.bypass.kcp_v2 }
+            : { kcp_v2: { site_name: '추모맵' } };
+
+        // 최소 파라미터 테스트 — KCP 호환성 확인 후 하나씩 추가
+        const requestBody: Record<string, unknown> = {
             storeId: params.storeId,
             channelKey: params.channelKey,
             paymentId: params.paymentId,
@@ -80,9 +95,17 @@ export const requestPayment = async (params: PaymentRequest): Promise<PaymentRes
             totalAmount: params.totalAmount,
             currency: params.currency,
             payMethod: params.payMethod,
-            ...(Object.keys(customer).length > 0 && { customer }),
-            windowType: windowType, // ✅ 객체 형식으로 전달
-        });
+        };
+
+        // customer (KCP 필수: fullName)
+        if (Object.keys(customer).length > 0) {
+            requestBody.customer = customer;
+        }
+
+        // 🔍 디버그 (테스트 완료 후 제거)
+        console.warn('[PortOne DEBUG] requestBody:', JSON.stringify(requestBody, null, 2));
+
+        const response = await window.PortOne.requestPayment(requestBody as PortOneRequestPaymentParams);
 
         return response;
 
@@ -235,12 +258,92 @@ interface PortOneRequestPaymentParams {
         pc: 'IFRAME' | 'POPUP' | 'REDIRECT';
         mobile: 'IFRAME' | 'POPUP' | 'REDIRECT';
     };
+    bypass?: Record<string, unknown>;
+}
+
+interface PortOneIssueBillingKeyParams {
+    storeId: string;
+    channelKey: string;
+    billingKeyMethod: string;
+    issueId?: string;
+    issueName?: string;
+    customer?: {
+        fullName?: string;
+        email?: string;
+    };
+    offerPeriod?: {
+        interval: string;
+    };
+    windowType?: {
+        pc: 'IFRAME' | 'POPUP' | 'REDIRECT';
+        mobile: 'IFRAME' | 'POPUP' | 'REDIRECT';
+    };
+    bypass?: Record<string, unknown>;
+}
+
+export interface BillingKeyResponse {
+    billingKey?: string;
+    code?: string;
+    message?: string;
 }
 
 declare global {
     interface Window {
         PortOne?: {
             requestPayment: (params: PortOneRequestPaymentParams) => Promise<PaymentResponse>;
+            requestIssueBillingKey?: (params: PortOneIssueBillingKeyParams) => Promise<BillingKeyResponse>;
         };
     }
+}
+
+/**
+ * 빌링키 발급 요청 (카드 등록만, 결제 X)
+ * KCP 빌링키 사전계약 완료 후 사용 가능
+ */
+export const requestIssueBillingKey = async (params: {
+    channelKey?: string;
+    issueId?: string;
+    issueName?: string;
+    customerName?: string;
+    customerEmail?: string;
+}): Promise<BillingKeyResponse> => {
+    if (!window.PortOne?.requestIssueBillingKey) {
+        throw new Error('PortOne SDK 빌링키 발급 기능이 로드되지 않았습니다.');
+    }
+
+    const customer: Record<string, string> = {};
+    if (params.customerName) customer.fullName = params.customerName;
+    if (params.customerEmail) customer.email = params.customerEmail;
+
+    const response = await window.PortOne.requestIssueBillingKey({
+        storeId: PORTONE_CONFIG.STORE_ID,
+        channelKey: params.channelKey || getChannelKey('billing'),
+        billingKeyMethod: 'CARD',
+        ...(params.issueId && { issueId: params.issueId }),
+        ...(params.issueName && { issueName: params.issueName }),
+        ...(Object.keys(customer).length > 0 && { customer }),
+        windowType: {
+            pc: 'IFRAME',
+            mobile: 'POPUP',
+        },
+        bypass: {
+            kcp_v2: { site_name: '추모맵' },
+        },
+    });
+
+    return response;
+};
+
+/** paymentId 생성 유틸 — KCP 최대 40자, 영문+숫자+_- 만 */
+export function generatePaymentId(prefix: string): string {
+    const ts = Date.now().toString(36);
+    const rand = Math.random().toString(36).slice(2, 8);
+    return `${prefix}_${ts}_${rand}`.slice(0, 40);
+}
+
+/** 빌링키 발급 issueId 생성 — paymentId와 구분 */
+export function generateIssueId(prefix: string = 'bk'): string {
+    const ts = Date.now().toString(36);
+    const rand = Math.random().toString(36).slice(2, 8);
+    return `${prefix}_${ts}_${rand}`.slice(0, 40);
 }
