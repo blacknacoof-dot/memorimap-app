@@ -403,6 +403,13 @@ Claude는 아래 기준으로 구현을 이어간다.
 
 Memorimap의 PortOne 연동은 `NHN KCP 우선 + general/billing 채널 분리` 기준으로 가는 것이 맞다.
 
+### 🟢 2026-03-26 정정
+
+- **windowType은 KCP V2에서 미지원** — 코드에서 완전 제거됨. 이 문서의 windowType 예시는 무효.
+- **prepare/v2 400 해결** — 원인은 V1 채널키로 V2 SDK 호출. V2 채널 신규 생성 후 해결.
+- **bypass도 제거** — 최소 요청으로 정상 동작 확인. 필요 시 `kcp_v2.site_name`만 재추가.
+- **DB 영속화는 EF service_role 경유** — 프론트 직접 DB 쓰기는 제거됨.
+
 ## 11. 2026-03-25 테스트 보정 메모
 
 ### 10.1 billing fallback 해석

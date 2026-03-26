@@ -1,7 +1,55 @@
 # Claude Payment Execution Prompt
 
 작성일: 2026-03-26
+최종 업데이트: 2026-03-26
 목적: Claude가 Memorimap의 NHN KCP 실연동, 일반결제/정기결제 분리, 빌링키 준비 작업을 바로 수행할 수 있도록 작업 지시를 고정한다.
+
+---
+
+## 🟢 FINAL: 현재 상태 요약 (2026-03-26 최종)
+
+### 해결 완료
+
+| 이슈 | 원인 | 해결 |
+|------|------|------|
+| prepare/v2 400 | V1 채널키로 V2 SDK 호출 | V2 채널 신규 생성 + 채널키 교체 |
+| windowType KCP 미지원 | KCP V2에서 windowType 파라미터 거부 | 코드에서 완전 제거 |
+| bypass 호환성 | KCP V2 최소 요청과 불일치 | 제거 (추후 필요 시 재추가) |
+| currency 형식 | V2 공식 예제 기준 불일치 | `CURRENCY_KRW`로 통일 |
+| verifyPayment 응답 처리 | non-200 응답을 성공으로 처리 | 실패 분기 추가 |
+| PortOne DEBUG 로그 | console.warn 잔존 | 제거 |
+
+### 현재 아키텍처 (정확한 상태)
+
+- **결제 요청**: 클라이언트 V2 SDK (`PortOne.requestPayment()`)
+- **결제 검증 + DB 영속화**: `verify-payment` Edge Function (service_role)
+- **프론트 직접 DB 쓰기**: 제거됨 (EF 경유로 통일)
+- **free/downgrade**: EF의 `facility_free_downgrade` / `personal_free_downgrade` context로 처리
+
+### 남은 작업
+
+| Phase | 작업 | 선행 조건 |
+|-------|------|----------|
+| **즉시** | 테스트 결제 → DB 반영 확인 | 결제창 정상 열림 ✅ |
+| **B** | 일반결제/정기결제 UI·문구 분리 | DB 반영 확인 후 |
+| **B** | 개인 시그니처 9,900원 플랜 추가 | UI 분리와 동시 |
+| **C** | 빌링키 발급 UI 연결 | KCP 빌링키 계약 확인 |
+| **D** | 서버 자동결제/해지 Edge Function + cron | Phase C 후 |
+
+### 운영 체크리스트
+
+| 항목 | 상태 |
+|------|------|
+| V2 채널키 `.env.local` 반영 | ✅ 완료 |
+| `PORTONE_API_SECRET` Supabase 등록 | ✅ 완료 (03-25) |
+| Edge Function 배포 (verify-payment) | ✅ 완료 (03-25) |
+| KCP 빌링키 사전 계약 | ❌ 미확인 (Phase C 전 필수) |
+| `site_name` 최종 표기 확정 | ❌ 미확정 |
+| 더미 customer fallback 제거 | ❌ 실 사용자 정보 수집 흐름 전환 필요 |
+
+> ⚠️ 이하 섹션은 작업 과정 로그입니다. 현재 상태는 위 FINAL 섹션을 기준으로 하세요.
+
+---
 
 ## 1. 기준 문서
 

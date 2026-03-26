@@ -51,17 +51,16 @@
 | plan_id 백필 | PERSONAL_FREE 29건 완료 |
 | INSERT RLS 3정책 | service + personal + facility 정상 |
 
-## 미해결: 테스트 결제 DB 반영 0건
+## 미해결: 테스트 결제 DB 반영 0건 (03-25 시점)
 
 - 개인/시설/상조 3종 결제 테스트 실행
 - 결제 성공 toast는 표시됨
 - 그러나 DB 반영 0건 (user_subscriptions, facility_subscriptions, subscription_payments 모두 오늘 날짜 row 없음)
 - 원인 미확인 상태
 
-### 다음 세션 확인 사항
+### 🟢 2026-03-26 해결 경과
 
-1. 브라우저 F12 콘솔에서 결제 시 에러 로그 확인
-2. PortOne 결제창이 실제로 열렸는지 (카드 선택 화면 등) 확인
-3. verify-payment Edge Function이 실제로 호출되었는지 확인
-4. PortOne 콘솔에서 테스트 결제 내역 존재 여부 확인
-5. `.env.local` PortOne 키 중복 항목 정리 (STORE_ID, CHANNEL_KEY 각 2건 중복)
+- **DB 반영 0건의 전제 자체가 변경됨**: 당시 결제창이 열리지 않았음 (prepare/v2 400)
+- **400 원인 확정**: V1 채널키로 V2 SDK 호출 → V2 채널 신규 생성 후 결제창 정상 열림
+- **DB 영속화 구조**: verify-payment EF의 service_role 경유로 이미 이동 완료
+- **현재 상태**: 결제창 열림 ✅ → 테스트 결제 후 DB 반영 확인 필요
