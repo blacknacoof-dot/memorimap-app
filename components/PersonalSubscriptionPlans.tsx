@@ -444,7 +444,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                                             : isCurrent
                                                 ? '현재 이용 중'
                                                 : plan.price === 0
-                                                    ? isCancelling ? '이미 해지 예약됨' : '무료로 변경하기'
+                                                    ? isCancelling ? '이미 해지 예약됨' : '구독 해지하기'
                                                     : '구독 시작하기'}
                                     </button>
                                 </div>

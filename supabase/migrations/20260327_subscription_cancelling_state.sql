@@ -119,9 +119,11 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_personal_count INT := 0;
-  v_facility_count INT := 0;
+  v_personal_cancelled INT := 0;
+  v_facility_cancelled INT := 0;
+  v_personal_expired INT := 0;
 BEGIN
+  -- cancelling → cancelled + FREE 전환 (해지 예약 만료)
   WITH updated AS (
     UPDATE user_subscriptions SET
       plan_id = 'PERSONAL_FREE',
@@ -135,7 +137,7 @@ BEGIN
       AND expires_at <= NOW()
     RETURNING id
   )
-  SELECT count(*) INTO v_personal_count FROM updated;
+  SELECT count(*) INTO v_personal_cancelled FROM updated;
 
   WITH updated AS (
     UPDATE facility_subscriptions SET
@@ -149,8 +151,9 @@ BEGIN
       AND next_billing_date <= NOW()
     RETURNING id
   )
-  SELECT count(*) INTO v_facility_count FROM updated;
+  SELECT count(*) INTO v_facility_cancelled FROM updated;
 
+  -- active → expired (자동갱신 off + 만료된 건, 별도 카운터)
   WITH updated AS (
     UPDATE user_subscriptions SET
       status = 'expired',
@@ -162,12 +165,13 @@ BEGIN
       AND auto_renew = false
     RETURNING id
   )
-  SELECT v_personal_count + count(*) INTO v_personal_count FROM updated;
+  SELECT count(*) INTO v_personal_expired FROM updated;
 
   RETURN jsonb_build_object(
     'processed_at', NOW(),
-    'personal_converted', v_personal_count,
-    'facility_converted', v_facility_count
+    'personal_cancelled', v_personal_cancelled,
+    'facility_cancelled', v_facility_cancelled,
+    'personal_expired', v_personal_expired
   );
 END;
 $$;
