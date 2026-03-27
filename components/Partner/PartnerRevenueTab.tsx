@@ -13,6 +13,25 @@ import { normalizeSubscriptionPlanId } from '../../lib/subscriptionPlanIds';
 
 const SubscriptionPlans = lazy(() => import('../SubscriptionPlans'));
 
+const PLAN_DISPLAY_NAMES: Record<string, string> = {
+    sj_starter: '파일럿',
+    SJ_STARTER: '파일럿',
+    sj_professional: '프로페셔널',
+    SJ_PROFESSIONAL: '프로페셔널',
+    sj_enterprise: '엔터프라이즈',
+    SJ_ENTERPRISE: '엔터프라이즈',
+    free: '무료체험',
+    basic: '라이트',
+    premium: '프리미엄',
+    enterprise: '엔터프라이즈',
+};
+
+function getPlanDisplayName(subscription: Subscription | null): string {
+    if (!subscription) return '미구독';
+    const key = subscription.plan_id || subscription.plan_name || '';
+    return PLAN_DISPLAY_NAMES[key] || key || '미구독';
+}
+
 interface Props {
     consultations: Consultation[];
     reservations: Reservation[];
@@ -69,7 +88,9 @@ export const PartnerRevenueTab: React.FC<Props> = ({
 
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-3xl text-white shadow-xl relative overflow-hidden">
+                <div className={`p-6 rounded-3xl text-white shadow-xl relative overflow-hidden ${
+                    subscription ? 'bg-gradient-to-br from-emerald-500 to-teal-600' : 'bg-gradient-to-br from-blue-600 to-indigo-700'
+                }`}>
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
                     <div className="flex justify-between items-start mb-4 relative z-10">
                         <div className="p-2 bg-white/20 rounded-xl backdrop-blur-md">
@@ -82,12 +103,17 @@ export const PartnerRevenueTab: React.FC<Props> = ({
                             {subscription ? '요금제 변경' : '요금제 선택'}
                         </button>
                     </div>
-                    <p className="text-[11px] font-bold text-blue-100 uppercase tracking-widest opacity-80 mb-1">현재 구독</p>
+                    <p className="text-[11px] font-bold text-white/80 uppercase tracking-widest mb-1">나의 요금제</p>
                     <h2 className="text-2xl font-black tracking-tight">
-                        {subscription?.plan_name || '미구독'}
+                        {getPlanDisplayName(subscription)}
+                        {subscription && (
+                            <span className="ml-2 text-xs font-bold bg-white/20 px-2 py-0.5 rounded-full align-middle">
+                                구독중
+                            </span>
+                        )}
                     </h2>
                     {subscription?.next_billing_date && (
-                        <p className="text-[10px] text-blue-200 mt-2">
+                        <p className="text-[10px] text-white/70 mt-2">
                             다음 결제: {new Date(subscription.next_billing_date).toLocaleDateString()}
                         </p>
                     )}

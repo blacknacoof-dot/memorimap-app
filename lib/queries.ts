@@ -1200,7 +1200,7 @@ export const getFacilitySubscription = async (facilityId: string, client: Supaba
         if (data) {
             return {
                 ...data,
-                plan_name: data.subscription_plans?.name,
+                plan_name: data.subscription_plans?.name || data.plan_id,
                 plan_price: data.subscription_plans?.price,
                 next_billing_date: data.next_billing_date
             };

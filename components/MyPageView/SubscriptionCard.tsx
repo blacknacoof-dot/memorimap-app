@@ -1,6 +1,14 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Star, ChevronDown } from 'lucide-react';
 import { ViewState } from '../../types';
+import { useSession } from '../../lib/auth';
+import { getAuthClient } from '../../lib/supabaseClient';
+
+const PLAN_LABELS: Record<string, string> = {
+  PERSONAL_FREE: '무료 플랜 이용 중',
+  PERSONAL_BASIC: '베이직 이용 중',
+  PERSONAL_PREMIUM: '프리미엄 이용 중',
+};
 
 interface Props {
   userRole?: string;
@@ -9,6 +17,37 @@ interface Props {
 
 export const SubscriptionCard: React.FC<Props> = ({ userRole, onNavigate }) => {
   const isBusinessRole = ['facility_admin', 'facility_manager', 'sangjo_hq_admin', 'sangjo_branch_admin'].includes(userRole || '');
+  const { session } = useSession();
+  const [planLabel, setPlanLabel] = useState('요금제 확인');
+
+  useEffect(() => {
+    let mounted = true;
+    if (!session) return;
+
+    const userId = session.user?.id;
+    if (!userId) return;
+
+    getAuthClient(session, { strict: true })
+      .then((client) =>
+        client
+          .from('user_subscriptions')
+          .select('plan_id')
+          .eq('user_id', userId)
+          .eq('status', 'active')
+          .maybeSingle(),
+      )
+      .then(({ data }) => {
+        if (!mounted) return;
+        const planId = data?.plan_id ?? 'PERSONAL_FREE';
+        setPlanLabel(PLAN_LABELS[planId] ?? PLAN_LABELS['PERSONAL_FREE']);
+      })
+      .catch(() => {
+        if (mounted) setPlanLabel(PLAN_LABELS['PERSONAL_FREE']);
+      });
+
+    return () => { mounted = false; };
+  }, [session]);
+
   if (isBusinessRole) return null;
 
   return (
@@ -21,7 +60,7 @@ export const SubscriptionCard: React.FC<Props> = ({ userRole, onNavigate }) => {
       </div>
       <div className="flex-1 text-left">
         <p className="text-xs font-bold text-white/80">나의 요금제</p>
-        <p className="text-sm font-black">무료 플랜 이용 중</p>
+        <p className="text-sm font-black">{planLabel}</p>
       </div>
       <div className="text-white/60">
         <ChevronDown size={18} className="rotate-[-90deg]" />

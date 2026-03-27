@@ -397,7 +397,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
                 facilityId={adminFacilityId ?? undefined}
                 type={userRole === 'sangjo_hq_admin' ? 'sangjo' : 'facility'}
                 onSelectPlan={() => {
-                  showToast('구독 정보가 업데이트되었습니다.', 'success');
+                  // 토스트는 SubscriptionPlans 내부에서 이미 표시
                 }}
               />
             </div>

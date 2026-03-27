@@ -363,7 +363,7 @@ async function handleFacilityFreeDowngrade(
     if (existing) {
         const { error } = await db
             .from('facility_subscriptions')
-            .update({ plan_id: normalizedPlanId, status: 'active', updated_at: now, billing_cycle: 'monthly' })
+            .update({ plan_id: normalizedPlanId, status: 'active', updated_at: now, billing_cycle: 'monthly', next_billing_date: null })
             .eq('id', existing.id);
         if (error) return { persisted: false, error: `facility free downgrade UPDATE: ${error.message}` };
     } else {
@@ -402,7 +402,7 @@ async function handlePersonalFreeDowngrade(
     if (existing) {
         const { error } = await db
             .from('user_subscriptions')
-            .update({ plan_id: 'PERSONAL_FREE', plan_name: 'PERSONAL_FREE', status: 'active', billing_cycle: 'monthly' })
+            .update({ plan_id: 'PERSONAL_FREE', plan_name: 'PERSONAL_FREE', status: 'active', billing_cycle: 'monthly', expires_at: null, next_billing_date: null })
             .eq('id', existing.id);
         if (error) return { persisted: false, error: `personal free downgrade UPDATE: ${error.message}` };
     }

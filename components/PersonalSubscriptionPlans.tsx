@@ -71,24 +71,7 @@ const personalPlans: PersonalPlan[] = [
             { name: 'VIP 배지', included: true },
         ],
     },
-    {
-        id: 'PERSONAL_SIGNATURE',
-        name: '시그니처',
-        nameEn: 'PERSONAL_SIGNATURE',
-        price: 9900,
-        icon: <Sparkles className="w-6 h-6" />,
-        color: 'from-amber-500 to-orange-600',
-        badge: '프리미엄+',
-        features: [
-            { name: '프리미엄 모든 기능 포함', included: true },
-            { name: 'AI 상담', included: true, limit: '무제한 + 우선 응답' },
-            { name: '엔딩노트', included: true, limit: '전체 + PDF + 가족공유 5명' },
-            { name: '제휴 할인', included: true, description: '장례 용품 10% 할인' },
-            { name: '가족 공유', included: true, description: '최대 5명' },
-            { name: '전담 상담 우선 연결', included: true },
-            { name: '프리미엄 VIP 배지', included: true },
-        ],
-    },
+    // PERSONAL_SIGNATURE는 DB 미정의 → 출시 후 Phase B에서 추가 예정
 ];
 
 interface PersonalSubscriptionPlansProps {
@@ -140,10 +123,13 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
             return;
         }
         try {
+            const userId = session.user?.id;
+            if (!userId) { setIsLoading(false); return; }
             const client = await getAuthClient(session, { strict: true });
             const { data } = await client
                 .from('user_subscriptions')
                 .select('plan_id, status')
+                .eq('user_id', userId)
                 .eq('status', 'active')
                 .maybeSingle();
             if (data?.plan_id) {
