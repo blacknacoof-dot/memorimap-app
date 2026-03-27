@@ -361,28 +361,15 @@ async function handleFacilityFreeDowngrade(
     const now = new Date().toISOString();
 
     if (existing) {
+        // 갱신 중단 예약: plan_id 유지, status='cancelling', auto_renew=false
+        // next_billing_date까지 유료 권한 유지 → 만료 후 cron이 FREE 전환
         const { error } = await db
             .from('facility_subscriptions')
-            .update({ plan_id: normalizedPlanId, status: 'active', updated_at: now, billing_cycle: 'monthly', next_billing_date: null })
+            .update({ status: 'cancelling', auto_renew: false, updated_at: now })
             .eq('id', existing.id);
-        if (error) return { persisted: false, error: `facility free downgrade UPDATE: ${error.message}` };
-    } else {
-        const insertData: Record<string, unknown> = {
-            plan_id: normalizedPlanId,
-            status: 'active',
-            updated_at: now,
-            billing_cycle: 'monthly',
-        };
-        if (isUUID) {
-            insertData.facility_id_uuid = facilityId;
-        } else {
-            insertData.facility_id_bigint = Number(facilityId);
-            insertData.facility_id = Number(facilityId);
-        }
-
-        const { error } = await db.from('facility_subscriptions').insert(insertData);
-        if (error) return { persisted: false, error: `facility free downgrade INSERT: ${error.message}` };
+        if (error) return { persisted: false, error: `facility cancelling UPDATE: ${error.message}` };
     }
+    // 구독 row가 없으면 이미 무료 상태 — 성공으로 처리
 
     return { persisted: true };
 }
@@ -400,11 +387,13 @@ async function handlePersonalFreeDowngrade(
         .maybeSingle();
 
     if (existing) {
+        // 갱신 중단 예약: plan_id/plan_name 유지, status='cancelling', auto_renew=false
+        // expires_at까지 유료 권한 유지 → 만료 후 cron/RPC가 FREE 전환
         const { error } = await db
             .from('user_subscriptions')
-            .update({ plan_id: 'PERSONAL_FREE', plan_name: 'PERSONAL_FREE', status: 'active', billing_cycle: 'monthly', expires_at: null, next_billing_date: null })
+            .update({ status: 'cancelling', auto_renew: false })
             .eq('id', existing.id);
-        if (error) return { persisted: false, error: `personal free downgrade UPDATE: ${error.message}` };
+        if (error) return { persisted: false, error: `personal cancelling UPDATE: ${error.message}` };
     }
     // 구독 row가 없으면 이미 무료 상태 — 성공으로 처리
 

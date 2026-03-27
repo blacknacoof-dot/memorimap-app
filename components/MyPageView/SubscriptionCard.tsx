@@ -10,6 +10,21 @@ const PLAN_LABELS: Record<string, string> = {
   PERSONAL_PREMIUM: '프리미엄 이용 중',
 };
 
+interface SubInfo {
+  planId: string;
+  status: string;
+  expiresAt: string | null;
+}
+
+function getLabel(info: SubInfo): string {
+  if (info.status === 'cancelling' && info.expiresAt) {
+    const expDate = new Date(info.expiresAt).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
+    const planName = PLAN_LABELS[info.planId]?.replace(' 이용 중', '') || info.planId;
+    return `${planName} 해지 예정 (${expDate}까지)`;
+  }
+  return PLAN_LABELS[info.planId] ?? PLAN_LABELS['PERSONAL_FREE'];
+}
+
 interface Props {
   userRole?: string;
   onNavigate: (view: ViewState) => void;
@@ -19,6 +34,7 @@ export const SubscriptionCard: React.FC<Props> = ({ userRole, onNavigate }) => {
   const isBusinessRole = ['facility_admin', 'facility_manager', 'sangjo_hq_admin', 'sangjo_branch_admin'].includes(userRole || '');
   const { session } = useSession();
   const [planLabel, setPlanLabel] = useState('요금제 확인');
+  const [isCancelling, setIsCancelling] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -31,15 +47,20 @@ export const SubscriptionCard: React.FC<Props> = ({ userRole, onNavigate }) => {
       .then((client) =>
         client
           .from('user_subscriptions')
-          .select('plan_id')
+          .select('plan_id, status, expires_at')
           .eq('user_id', userId)
-          .eq('status', 'active')
+          .in('status', ['active', 'cancelling'])
           .maybeSingle(),
       )
       .then(({ data }) => {
         if (!mounted) return;
-        const planId = data?.plan_id ?? 'PERSONAL_FREE';
-        setPlanLabel(PLAN_LABELS[planId] ?? PLAN_LABELS['PERSONAL_FREE']);
+        const info: SubInfo = {
+          planId: data?.plan_id ?? 'PERSONAL_FREE',
+          status: data?.status ?? 'active',
+          expiresAt: data?.expires_at ?? null,
+        };
+        setPlanLabel(getLabel(info));
+        setIsCancelling(info.status === 'cancelling');
       })
       .catch(() => {
         if (mounted) setPlanLabel(PLAN_LABELS['PERSONAL_FREE']);
@@ -53,7 +74,11 @@ export const SubscriptionCard: React.FC<Props> = ({ userRole, onNavigate }) => {
   return (
     <button
       onClick={() => onNavigate(ViewState.PERSONAL_SUBSCRIPTION)}
-      className="w-full mb-6 bg-gradient-to-r from-purple-500 to-fuchsia-600 text-white rounded-2xl p-4 flex items-center gap-4 shadow-lg hover:shadow-xl transition-all active:scale-[0.98]"
+      className={`w-full mb-6 text-white rounded-2xl p-4 flex items-center gap-4 shadow-lg hover:shadow-xl transition-all active:scale-[0.98] ${
+        isCancelling
+          ? 'bg-gradient-to-r from-amber-500 to-orange-600'
+          : 'bg-gradient-to-r from-purple-500 to-fuchsia-600'
+      }`}
     >
       <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
         <Star size={20} />

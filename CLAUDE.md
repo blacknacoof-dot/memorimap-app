@@ -271,3 +271,8 @@ CLAUDE.md 규칙 준수하여 구현.
 완료 후 재검증 + 커밋.
 </project_rules>
 
+## AI Worktree Commit Rule
+- GPT/Claude가 작업한 기능 파일만 선택적으로 커밋한다.
+- `.next/`, `next-env.d.ts`, `.tsbuildinfo`, `supabase/.temp/*`, 로컬 설정 파일은 커밋하지 않는다.
+- 커밋 전 `git diff --cached`로 staged 내용만 다시 검토한다.
+

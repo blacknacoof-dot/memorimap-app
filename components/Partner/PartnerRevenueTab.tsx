@@ -89,7 +89,11 @@ export const PartnerRevenueTab: React.FC<Props> = ({
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 <div className={`p-6 rounded-3xl text-white shadow-xl relative overflow-hidden ${
-                    subscription ? 'bg-gradient-to-br from-emerald-500 to-teal-600' : 'bg-gradient-to-br from-blue-600 to-indigo-700'
+                    subscription?.status === 'cancelling'
+                        ? 'bg-gradient-to-br from-amber-500 to-orange-600'
+                        : subscription
+                            ? 'bg-gradient-to-br from-emerald-500 to-teal-600'
+                            : 'bg-gradient-to-br from-blue-600 to-indigo-700'
                 }`}>
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
                     <div className="flex justify-between items-start mb-4 relative z-10">
@@ -107,12 +111,19 @@ export const PartnerRevenueTab: React.FC<Props> = ({
                     <h2 className="text-2xl font-black tracking-tight">
                         {getPlanDisplayName(subscription)}
                         {subscription && (
-                            <span className="ml-2 text-xs font-bold bg-white/20 px-2 py-0.5 rounded-full align-middle">
-                                구독중
+                            <span className={`ml-2 text-xs font-bold px-2 py-0.5 rounded-full align-middle ${
+                                subscription.status === 'cancelling' ? 'bg-white/30' : 'bg-white/20'
+                            }`}>
+                                {subscription.status === 'cancelling' ? '해지 예정' : '구독중'}
                             </span>
                         )}
                     </h2>
-                    {subscription?.next_billing_date && (
+                    {subscription?.status === 'cancelling' && subscription?.next_billing_date && (
+                        <p className="text-[10px] text-white/80 mt-2">
+                            {new Date(subscription.next_billing_date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}까지 이용 가능
+                        </p>
+                    )}
+                    {subscription?.status !== 'cancelling' && subscription?.next_billing_date && (
                         <p className="text-[10px] text-white/70 mt-2">
                             다음 결제: {new Date(subscription.next_billing_date).toLocaleDateString()}
                         </p>

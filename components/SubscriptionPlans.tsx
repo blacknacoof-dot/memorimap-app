@@ -190,6 +190,9 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
     const handleSelectPlan = async (plan: Plan) => {
         if (isProcessing) return;
         if (plan.id === 'free') {
+            if (!confirm('구독을 해지하시겠습니까?\n\n현재 이용 기간이 끝날 때까지 유료 기능을 계속 사용할 수 있습니다.\n만료 후 자동으로 무료 플랜으로 전환됩니다.')) {
+                return;
+            }
             if (facilityId) {
                 try {
                     const result = await verifyPayment({
@@ -197,18 +200,16 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                         facilityId,
                     });
                     if (!result.persisted) {
-                        toast.error(result.error || '무료 플랜 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+                        toast.error(result.error || '구독 해지에 실패했습니다. 잠시 후 다시 시도해 주세요.');
                         return;
                     }
                 } catch (_e) {
-                    toast.error('무료 플랜 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+                    toast.error('구독 해지에 실패했습니다. 잠시 후 다시 시도해 주세요.');
                     return;
                 }
             }
 
-            setSelectedPlan(plan.id);
-            onSelectPlan?.(plan.id);
-            toast.success('무료 플랜으로 설정되었습니다.');
+            toast.success('구독 해지가 예약되었습니다. 이용 기간 만료까지 유료 기능을 사용할 수 있습니다.');
             return;
         }
 

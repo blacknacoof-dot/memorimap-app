@@ -42,11 +42,13 @@ export function useUserPlan() {
   });
 
   const isFree = !query.data || query.data.plan_name === 'PERSONAL_FREE';
+  const isCancelling = query.data?.status === 'cancelling';
 
   return {
     data: query.data ?? null,
     isLoading: query.isLoading,
     refetch: query.refetch,
     isFree,
+    isCancelling,
   };
 }

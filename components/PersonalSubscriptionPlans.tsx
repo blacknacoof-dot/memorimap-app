@@ -82,6 +82,8 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
     const [_selectedPlan, setSelectedPlan] = useState<string>('PERSONAL_FREE');
     const [expandedPlan, setExpandedPlan] = useState<string | null>('PERSONAL_PREMIUM');
     const [currentPlan, setCurrentPlan] = useState<string>('PERSONAL_FREE');
+    const [isCancelling, setIsCancelling] = useState(false);
+    const [cancelExpiresAt, setCancelExpiresAt] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isPaymentOpen, setIsPaymentOpen] = useState(false);
     const [showLegalModal, setShowLegalModal] = useState(false);
@@ -128,13 +130,19 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
             const client = await getAuthClient(session, { strict: true });
             const { data } = await client
                 .from('user_subscriptions')
-                .select('plan_id, status')
+                .select('plan_id, status, expires_at')
                 .eq('user_id', userId)
-                .eq('status', 'active')
+                .in('status', ['active', 'cancelling'])
                 .maybeSingle();
             if (data?.plan_id) {
                 setCurrentPlan(data.plan_id);
                 setSelectedPlan(data.plan_id);
+                setCancelExpiresAt(data.expires_at ?? null);
+                if (data.status === 'cancelling') {
+                    setIsCancelling(true);
+                } else {
+                    setIsCancelling(false);
+                }
             }
         } catch {
             // 테이블 없으면 무료 기본값 유지
@@ -148,22 +156,24 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
         const userId = session?.user?.id;
 
         if (plan.id === 'PERSONAL_FREE') {
-            // 무료 전환 — service_role 서버 경로
+            // 구독 해지 예약 — 갱신 중단, 만료까지 유료 유지
+            if (!confirm('구독을 해지하시겠습니까?\n\n현재 이용 기간이 끝날 때까지 유료 기능을 계속 사용할 수 있습니다.\n만료 후 자동으로 무료 플랜으로 전환됩니다.')) {
+                return;
+            }
             try {
                 const result = await verifyPayment({
                     paymentContext: 'personal_free_downgrade',
                 });
                 if (!result.persisted) {
-                    toast.error(result.error || '무료 플랜 전환에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+                    toast.error(result.error || '구독 해지에 실패했습니다. 잠시 후 다시 시도해 주세요.');
                     return;
                 }
             } catch (_e) {
-                toast.error('무료 플랜 전환에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+                toast.error('구독 해지에 실패했습니다. 잠시 후 다시 시도해 주세요.');
                 return;
             }
-            setSelectedPlan(plan.id);
-            setCurrentPlan(plan.id);
-            toast.success('무료 플랜으로 변경되었습니다.');
+            setIsCancelling(true);
+            toast.success('구독 해지가 예약되었습니다. 이용 기간 만료까지 유료 기능을 사용할 수 있습니다.');
             return;
         }
 
@@ -268,7 +278,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
             {/* 요금 비교 요약 */}
             <div className="px-4 py-4">
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                    <div className="grid grid-cols-4 text-center border-b border-slate-100">
+                    <div className="grid grid-cols-3 text-center border-b border-slate-100">
                         <div className="p-2 md:p-3 bg-slate-50">
                             <p className="text-[10px] font-bold text-slate-400">기능</p>
                         </div>
@@ -282,21 +292,21 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                         ))}
                     </div>
                     {[
-                        { label: 'AI 상담', values: ['1건', '무제한', '우선'] },
-                        { label: '상조 비교', values: ['5회', '무제한', '무제한'] },
-                        { label: '즐겨찾기', values: ['5개', '무제한', '무제한'] },
-                        { label: '엔딩노트', values: ['기본', 'PDF', 'PDF+5명'] },
-                        { label: '광고 제거', values: ['X', 'O', 'O'] },
-                        { label: '제휴 할인', values: ['X', '5%', '10%'] },
-                        { label: '가족 공유', values: ['X', '3명', '5명'] },
+                        { label: 'AI 상담', values: ['1건', '무제한'] },
+                        { label: '상조 비교', values: ['5회', '무제한'] },
+                        { label: '즐겨찾기', values: ['5개', '무제한'] },
+                        { label: '엔딩노트', values: ['기본', 'PDF + 공유'] },
+                        { label: '광고 제거', values: ['X', 'O'] },
+                        { label: '제휴 할인', values: ['X', '5%'] },
+                        { label: '가족 공유', values: ['X', '3명'] },
                     ].map((row, idx) => (
-                        <div key={idx} className="grid grid-cols-4 text-center border-b border-slate-50 last:border-0">
+                        <div key={idx} className="grid grid-cols-3 text-center border-b border-slate-50 last:border-0">
                             <div className="p-1.5 md:p-2.5 bg-slate-50 text-left">
                                 <p className="text-[10px] font-medium text-slate-500">{row.label}</p>
                             </div>
                             {row.values.map((val, vi) => (
                                 <div key={vi} className={`p-1.5 md:p-2.5 ${personalPlans[vi].id === currentPlan ? 'bg-primary/5' : ''}`}>
-                                    <p className={`text-[10px] font-bold ${val === 'X' ? 'text-slate-300' : val === '무제한' || val === 'PDF' ? 'text-purple-600' : 'text-slate-700'}`}>
+                                    <p className={`text-[10px] font-bold ${val === 'X' ? 'text-slate-300' : val === '무제한' || val === 'PDF + 공유' ? 'text-purple-600' : 'text-slate-700'}`}>
                                         {val}
                                     </p>
                                 </div>
@@ -324,8 +334,10 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                             )}
 
                             {isCurrent && (
-                                <div className="absolute -top-3 right-6 z-10 bg-green-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md">
-                                    현재 플랜
+                                <div className={`absolute -top-3 right-6 z-10 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md ${
+                                    isCancelling ? 'bg-amber-500' : 'bg-green-500'
+                                }`}>
+                                    {isCancelling ? '해지 예정' : '현재 플랜'}
                                 </div>
                             )}
 
@@ -405,19 +417,35 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                                         </div>
                                     )}
 
+                                    {isCurrent && isCancelling && cancelExpiresAt && (
+                                        <div className="mb-4 p-3 bg-amber-50 rounded-xl border border-amber-200">
+                                            <p className="text-[11px] font-bold text-amber-800">
+                                                {new Date(cancelExpiresAt).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}까지 이용 가능
+                                            </p>
+                                            <p className="text-[10px] text-amber-600 mt-0.5">
+                                                만료 후 자동으로 무료 플랜으로 전환됩니다.
+                                            </p>
+                                        </div>
+                                    )}
+
                                     <button
                                         onClick={() => handleSelectPlan(plan)}
-                                        disabled={isCurrent}
-                                        className={`w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${isCurrent
-                                            ? 'bg-slate-100 text-slate-400 cursor-default'
-                                            : `bg-gradient-to-r ${plan.color} text-white shadow-lg shadow-blue-500/20`
-                                            }`}
+                                        disabled={isCurrent && !isCancelling}
+                                        className={`w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
+                                            isCurrent && !isCancelling
+                                                ? 'bg-slate-100 text-slate-400 cursor-default'
+                                                : isCurrent && isCancelling
+                                                    ? 'bg-slate-100 text-slate-400 cursor-default'
+                                                    : `bg-gradient-to-r ${plan.color} text-white shadow-lg shadow-blue-500/20`
+                                        }`}
                                     >
-                                        {isCurrent
-                                            ? '현재 이용 중'
-                                            : plan.price === 0
-                                                ? '무료로 시작하기'
-                                                : '구독 시작하기'}
+                                        {isCurrent && isCancelling
+                                            ? '해지 예약됨'
+                                            : isCurrent
+                                                ? '현재 이용 중'
+                                                : plan.price === 0
+                                                    ? isCancelling ? '이미 해지 예약됨' : '무료로 변경하기'
+                                                    : '구독 시작하기'}
                                     </button>
                                 </div>
                             )}

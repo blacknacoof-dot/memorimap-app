@@ -35,6 +35,7 @@ export interface UserPlanInfo {
   sangjo_favorites_count: number;
   limits: UserPlanLimits;
   expires_at: string | null;
+  status?: 'active' | 'cancelling' | 'cancelled' | 'expired' | 'pending';
 }
 
 /** 쿼터 체크 결과 (check_and_increment RPC 반환) */

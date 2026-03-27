@@ -15,10 +15,10 @@ export type { FacilityCategoryType };
 
 // --- [Phase 4 New Types] ---
 export type SubscriptionPlan = 'free' | 'basic' | 'premium' | 'enterprise';
-export type SubscriptionStatus = 'active' | 'expired' | 'cancelled';
+export type SubscriptionStatus = 'active' | 'expired' | 'cancelled' | 'cancelling' | 'pending';
 /** personal_basic은 v1에서 단종 (is_active=false), 레거시 호환용 유지 */
-export type CanonicalUserSubscriptionPlan = 'PERSONAL_FREE' | 'PERSONAL_PREMIUM' | 'PERSONAL_SIGNATURE';
-export type LegacyUserSubscriptionPlan = 'PERSONAL_BASIC' | 'personal_free' | 'personal_basic' | 'personal_premium' | 'personal_signature';
+export type CanonicalUserSubscriptionPlan = 'PERSONAL_FREE' | 'PERSONAL_PREMIUM';
+export type LegacyUserSubscriptionPlan = 'PERSONAL_BASIC' | 'personal_free' | 'personal_basic' | 'personal_premium';
 export type UserSubscriptionPlan = CanonicalUserSubscriptionPlan | LegacyUserSubscriptionPlan;
 export type BillingCycle = 'monthly' | 'annual';
 export type PaymentContext = 'facility' | 'personal';
@@ -145,7 +145,7 @@ export interface Subscription {
     plan_name: 'Free' | 'Basic' | 'Premium' | 'Enterprise' | string;
     plan_price?: number;
     plan_id?: string;
-    status: 'active' | 'expired' | 'cancelled';
+    status: 'active' | 'expired' | 'cancelled' | 'cancelling';
     start_date: string;
     started_at?: string;
     end_date: string | null;
@@ -163,8 +163,8 @@ export interface Subscription {
 export interface UserSubscription {
     user_id: string;
     plan_id: UserSubscriptionPlan;
-    plan_name: CanonicalUserSubscriptionPlan | 'PERSONAL_BASIC' | 'PERSONAL_SIGNATURE';
-    status: 'active' | 'expired' | 'cancelled';
+    plan_name: CanonicalUserSubscriptionPlan | 'PERSONAL_BASIC';
+    status: 'active' | 'expired' | 'cancelled' | 'cancelling' | 'pending';
     ai_consult_used: number;
     ai_consult_by_category: {
         funeral_home: number;
