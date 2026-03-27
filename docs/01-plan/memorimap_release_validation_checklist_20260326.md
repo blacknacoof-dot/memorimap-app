@@ -15,7 +15,7 @@
 - [x] `windowType` 제거 확인
 - [x] `npm run typecheck` 통과
 - [x] `npm run build` 통과
-- [ ] 테스트 결제 후 DB 반영 확인
+- [x] 테스트 결제 후 DB 반영 확인
 - [ ] 실결제 payload 최종 확인
 
 ## 1. 현재 기준 상태
@@ -33,9 +33,9 @@
 
 가장 먼저 아래 3개 테이블을 확인한다.
 
-- [ ] `user_subscriptions`
-- [ ] `facility_subscriptions`
-- [ ] `subscription_payments`
+- [x] `user_subscriptions`
+- [x] `facility_subscriptions`
+- [x] `subscription_payments`
 
 - `user_subscriptions`
 - `facility_subscriptions`
@@ -84,6 +84,120 @@
 - KCP/PortOne이 요구하는 실제 사용자 정보가 누락되지 않는지 확인
 - `site_name` 최종 표기가 운영 기준과 맞는지 확인
 
+### 2.3 DB 확인용 SQL
+
+Supabase SQL Editor에서 아래 쿼리를 그대로 실행한다.
+
+```sql
+-- 1) 최근 결제 이력 확인
+select
+  id,
+  subscription_id,
+  user_id,
+  payment_context,
+  portone_payment_id,
+  amount,
+  final_amount,
+  status,
+  paid_at,
+  billing_period_start,
+  billing_period_end
+from public.subscription_payments
+order by paid_at desc
+limit 20;
+```
+
+```sql
+-- 2) 최근 개인 구독 상태 확인
+select
+  id,
+  user_id,
+  plan_id,
+  plan_name,
+  status,
+  started_at,
+  expires_at,
+  billing_cycle
+from public.user_subscriptions
+order by started_at desc nulls last, updated_at desc nulls last
+limit 20;
+```
+
+```sql
+-- 3) 최근 시설/상조 구독 상태 확인
+select
+  id,
+  facility_id,
+  facility_id_uuid,
+  facility_id_bigint,
+  plan_id,
+  status,
+  billing_cycle,
+  next_billing_date,
+  updated_at
+from public.facility_subscriptions
+order by updated_at desc nulls last
+limit 20;
+```
+
+```sql
+-- 4) 특정 PortOne paymentId로 결제 1건 추적
+-- 아래 값만 실제 paymentId로 바꿔서 사용
+select
+  id,
+  subscription_id,
+  user_id,
+  payment_context,
+  portone_payment_id,
+  amount,
+  status,
+  paid_at
+from public.subscription_payments
+where portone_payment_id = 'REPLACE_WITH_PAYMENT_ID';
+```
+
+```sql
+-- 5) 특정 시설 UUID 기준 구독 상태 추적
+-- 아래 값만 실제 facilityId로 바꿔서 사용
+select
+  id,
+  facility_id_uuid,
+  plan_id,
+  status,
+  billing_cycle,
+  next_billing_date,
+  updated_at
+from public.facility_subscriptions
+where facility_id_uuid = 'REPLACE_WITH_FACILITY_UUID'
+order by updated_at desc nulls last;
+```
+
+```sql
+-- 6) 특정 user_id 기준 개인 구독 상태 추적
+-- 아래 값만 실제 user_id로 바꿔서 사용
+select
+  id,
+  user_id,
+  plan_id,
+  plan_name,
+  status,
+  started_at,
+  expires_at,
+  billing_cycle
+from public.user_subscriptions
+where user_id = 'REPLACE_WITH_USER_ID'
+order by started_at desc nulls last, updated_at desc nulls last;
+```
+
+### 2.4 결제 직후 확인 순서
+
+1. 브라우저 Network에서 `paymentId`를 복사한다.
+2. `subscription_payments`에서 `portone_payment_id`로 결제 row를 찾는다.
+3. `payment_context`가 `personal`인지 `facility`인지 확인한다.
+4. 개인 결제면 `user_subscriptions`, 시설/상조 결제면 `facility_subscriptions`를 확인한다.
+5. `plan_id`, `status`, `billing_cycle`, 결제 기간 컬럼이 기대값과 맞는지 본다.
+6. 결제 성공 UI가 떴는데 row가 없으면 실패로 기록한다.
+
 ## 3. 결제 검증 시나리오
 
 ### 3.1 개인 유료 구독
@@ -102,6 +216,14 @@
 - `subscription_payments.payment_context = 'personal'`
 - `subscription_payments.status = 'completed'`
 
+검증 결과:
+
+- [x] 확인 완료
+- `PERSONAL_PREMIUM`
+- `status = active`
+- `payment_context = personal`
+- `billing_period_start/end` 저장 확인
+
 ### 3.2 시설 유료 구독
 
 행동:
@@ -117,6 +239,14 @@
 - 기대 `plan_id` 저장값 반영
 - `subscription_payments.payment_context = 'facility'`
 - `subscription_payments.status = 'completed'`
+
+검증 결과:
+
+- [x] 확인 완료
+- 시설 일반 구독 1건 저장 확인
+- 상조 구독 `SJ_STARTER` 1건 저장 확인
+- `payment_context = facility`
+- `billing_period_start/end` 저장 확인
 
 ### 3.3 시설 무료 전환
 
@@ -253,3 +383,104 @@
 2. `user_subscriptions`, `facility_subscriptions`, `subscription_payments` 확인
 3. 결제 요청 payload 최종 확인
 4. DB 반영이 확인되면 Phase B 시작
+
+## 11. 2026-03-27 실측 결과
+
+- `subscription_payments`
+  - personal 1건 저장 확인
+  - facility 2건 저장 확인
+  - 최신 row 기준 `status = completed`
+  - `billing_period_start`, `billing_period_end` 저장 확인
+
+- `user_subscriptions`
+  - `PERSONAL_PREMIUM` active 반영 확인
+
+- `facility_subscriptions`
+  - 시설 일반 구독 active 반영 확인
+  - 상조 구독 `SJ_STARTER` active 반영 확인
+
+- 아직 미확인
+  - free downgrade 실측
+  - 결제 취소 실측
+  - 실결제 payload 최종 확인
+
+### 11.1 실측 요약
+
+- [x] 개인 유료 결제 성공
+- [x] 시설 유료 결제 성공
+- [x] 상조 유료 결제 성공
+- [x] 결제 후 DB 3개 테이블 반영 확인
+- [x] billing period 컬럼 저장 확인
+
+### 11.2 확인된 최신 row 기준
+
+- 개인 결제
+  - `payment_context = personal`
+  - `portone_payment_id = psub_mn7jih05_r54s0g`
+  - `amount = 4900`
+  - `status = completed`
+  - `user_subscriptions.plan_id = PERSONAL_PREMIUM`
+
+- 상조 결제
+  - `payment_context = facility`
+  - `portone_payment_id = sub_mn7kvsz8_p4l343`
+  - `amount = 1500000`
+  - `status = completed`
+  - `facility_subscriptions.plan_id = SJ_STARTER`
+
+- 시설 일반 결제
+  - `payment_context = facility`
+  - `portone_payment_id = sub_mn7k6k23_wi65s3`
+  - `amount = 199000`
+  - `status = completed`
+  - `facility_subscriptions.plan_id = premium`
+
+## 12. 2026-03-27 해지 예약 검증
+
+### 12.1 개인 구독 해지 예약
+
+- 검증 계정
+  - `user_id = 2f3c8a86-07d7-42e5-99b5-c4389b1b31ed`
+
+- 사전 복구 상태
+  - `plan_id = PERSONAL_PREMIUM`
+  - `plan_name = PERSONAL_PREMIUM`
+  - `status = active`
+  - `auto_renew = true`
+  - `expires_at = 2026-04-26 14:01:55.921`
+
+- UI 확인
+  - 개인 구독 화면에서 `무료로 변경하기` 클릭
+  - confirm 문구:
+    `구독을 해지하시겠습니까? 현재 이용기간 만료 후 자동으로 무료 플랜으로 전환됩니다.`
+
+- API 응답
+  - `{"verified":true,"persisted":true}`
+
+- DB 결과
+  - `plan_id = PERSONAL_PREMIUM`
+  - `plan_name = PERSONAL_PREMIUM`
+  - `status = cancelling`
+  - `auto_renew = false`
+  - `expires_at = 2026-04-26 14:01:55.921`
+
+- 판정
+  - [x] 해지 직후 `cancelling` 전환 정상
+  - [x] 유료 플랜 유지 정상
+  - [x] `auto_renew=false` 반영 정상
+
+### 12.2 cron / 배치 상태
+
+- [x] `pg_cron` extension 활성화 확인
+- [x] `process_expired_subscriptions()` 함수 생성 확인
+- [x] cron job 등록 확인
+  - `jobname = process-expired-subscriptions`
+  - `schedule = 0 18 * * *`
+  - `command = select public.process_expired_subscriptions()`
+
+### 12.3 다음 검증
+
+- [ ] 만료 전 개인 유료 기능 접근 유지 확인
+- [ ] `expires_at` 과거 조정 후 `select public.process_expired_subscriptions();`
+- [ ] `PERSONAL_FREE` 전환 확인
+- [ ] 시설/상조 `cancelling -> FREE` 전환 확인

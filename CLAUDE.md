@@ -276,3 +276,17 @@ CLAUDE.md 규칙 준수하여 구현.
 - `.next/`, `next-env.d.ts`, `.tsbuildinfo`, `supabase/.temp/*`, 로컬 설정 파일은 커밋하지 않는다.
 - 커밋 전 `git diff --cached`로 staged 내용만 다시 검토한다.
 
+## Subscription Cancellation Validation Note
+- 개인/시설 무료 전환 버튼은 현재 즉시 FREE 전환이 아니라 해지 예약(`cancelling`) 동작이어야 한다.
+- 개인 해지 예약 성공 기준:
+  - `plan_id`/`plan_name` 유지
+  - `status = cancelling`
+  - `auto_renew = false`
+  - `expires_at` 유지
+- 시설 해지 예약 성공 기준:
+  - 기존 유료 `plan_id` 유지
+  - `status = cancelling`
+  - `auto_renew = false`
+  - `next_billing_date` 유지
+- 만료 후 전환 검증은 `select public.process_expired_subscriptions();` 로 수동 확인 가능하다.
+
