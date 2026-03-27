@@ -290,3 +290,39 @@ CLAUDE.md 규칙 준수하여 구현.
   - `next_billing_date` 유지
 - 만료 후 전환 검증은 `select public.process_expired_subscriptions();` 로 수동 확인 가능하다.
 
+## Release QA Priority
+- P0
+  - `verify-payment` Edge Function must be redeployed before release.
+  - Vercel production deploy must be followed by immediate smoke test on live URL.
+  - Smoke scope: personal subscription, facility/sangjo subscription state display, latest `verify-payment` path.
+- P1
+  - Super admin partner approval E2E
+  - Mobile UI check on real device
+- P2
+  - DB spot checks: `admin_memo`, `system_settings` RLS, `sangjo_contracts` RLS
+
+## Release QA Scope
+- General user
+  - signup/login
+  - funeral home / memorial facility / sangjo search and detail
+  - 마음이 상담 entry
+  - facility AI consultation
+  - sangjo AI comparison / consultation
+  - favorites add/remove
+  - reservation / consultation submission
+  - personal subscription payment and cancellation reservation
+- Facility partner
+  - partner application
+  - approval before/after permission difference
+  - dashboard entry
+  - subscription payment / cancellation reservation
+  - reservation and consultation intake
+- Sangjo partner
+  - partner application
+  - dashboard entry after approval
+  - subscription payment / cancellation reservation
+  - sangjo AI comparison linkage
+- Super admin
+  - partner approval / rejection
+  - post-approval permission reflection
+  - no runtime errors on admin views
