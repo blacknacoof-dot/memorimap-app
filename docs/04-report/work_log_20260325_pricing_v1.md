@@ -384,12 +384,12 @@ WHERE plan_id = 'basic' AND plan_type = 'facility';
 - **수정 완료**: 시설 BASIC (features 3항목)
 - **코드 경로 확인**: `get_user_plan_info()`, `check_and_increment_user_quota()`, `check_and_increment_facility_quota()` 모두 `subscription_plans.features` JSONB에서 limits 로드 → DB 수정으로 런타임 반영 완료
 
-### 후속 이슈 (별도 태스크, 미수정)
+### 후속 이슈
 
-| 우선순위 | 이슈 | 설명 |
-|----------|------|------|
-| MEDIUM | 엔딩노트 level gating 미구현 | `ending_note: 'basic'/'standard'/'premium'` 값은 DB에 있으나, UI에서 level별 분기 미구현 |
-| LOW | UpgradePrompt 문구 | "베이직 이상" → BASIC 단종 후 "프리미엄" 으로 변경 필요 |
-| LOW | 시설 SMS 초과 UI 피드백 없음 | quota 초과 시 사용자 안내 없이 실패 |
-| LOW | 미인증 fallback limits:{} | `get_user_plan_info()` 비인증 시 빈 limits 반환 → free plan features 포함 권장 |
-| LOW | 레거시 소문자 plan 행 4개 | `personal_free` 소문자 행 잔존 (e2e/테스트용, 운영 영향 없음) |
+| 우선순위 | 이슈 | 상태 | 설명 |
+|----------|------|------|------|
+| MEDIUM | 엔딩노트 level gating | ✅ 완료 (645c134) | basic=preferences only, 2중 방어, onUpgrade CTA 연결 |
+| LOW | UpgradePrompt 문구 | ✅ 완료 (f9af712) | "베이직 이상" → "프리미엄 플랜" 수정 |
+| LOW | 시설 SMS 초과 UI 피드백 | ⏸ 보류 | SMS 전송 기능 자체 미구현. SMS 기능 구현 시 함께 처리 |
+| LOW | 미인증 fallback limits:{} | ✅ 완료 (7dbc15a) | `FREE_PLAN_DEFAULT.limits`에 실제 PERSONAL_FREE 값 채움 |
+| LOW | 레거시 소문자 plan 행 4개 | ✅ 완료 (DB 직접) | `facility_subscriptions` 정규화 후 소문자 4행 삭제. 마이그레이션 기록: `20260328_cleanup_legacy_lowercase_plans.sql` |
