@@ -10,7 +10,15 @@ const FREE_PLAN_DEFAULT: UserPlanInfo = {
   sangjo_compare_used: 0,
   favorites_count: 0,
   sangjo_favorites_count: 0,
-  limits: {} as UserPlanInfo['limits'],
+  limits: {
+    ai_consult_per_category: 1,
+    sangjo_compare: 10,
+    favorites: 5,
+    ending_note: 'basic',
+    ads: true,
+    discount_pct: 0,
+    family_sharing: 0,
+  },
   expires_at: null,
 };
 
