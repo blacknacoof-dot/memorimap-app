@@ -59,7 +59,7 @@ export default function UpgradePrompt({
 
           <p className="text-xs text-gray-500 mb-5">
             무료 플랜의 월간 이용 한도에 도달했습니다.<br />
-            베이직 이상 플랜으로 업그레이드하시면 더 많이 이용할 수 있습니다.
+            프리미엄 플랜으로 업그레이드하시면 무제한으로 이용할 수 있습니다.
           </p>
 
           {/* CTA */}
