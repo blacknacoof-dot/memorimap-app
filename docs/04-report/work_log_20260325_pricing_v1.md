@@ -173,3 +173,111 @@
 
 - 이번 라운드는 `ErrorBoundary.tsx` 단일 파일 내 안전한 UI/UX 개선까지만 승인
 - boundary 분리, fallback 단계 세분화, 자동 라우팅은 별도 설계/승인 후 진행
+
+## 2026-03-28 Edge Function error log triage note
+
+### 로그 해석 결론
+
+- `approve-partner` 2026-03-20 에러는 현재 Edge Function 코드 수정보다 운영 DB 마이그레이션 적용 여부를 먼저 확인해야 함
+- 로컬 코드베이스에는 `approve_partner_transaction` 관련 `::public.user_role` 캐스트와 enum 보강 마이그레이션이 이미 존재함
+- `verify-payment`의 `billing_period_end` 에러도 현재 코드 버그 단정이 아니라 운영 DB에 `20260326_add_billing_period_columns.sql`이 반영되지 않았을 가능성이 큼
+- `verify-payment`의 `SJ_STARTER -> sj_starter` 단순 치환은 보류
+  - 현재 로컬 최신 코드/마이그레이션/문서 기준에서는 `SJ_STARTER` canonical 가능성이 더 강함
+- 가장 먼저 확인할 실질 이슈는 `facilityOwned: false`
+  - 상조 결제 요청에서 넘어오는 `facilityId`가 실제로 어떤 테이블의 어떤 id인지 운영 데이터로 대조 필요
+
+### Claude에 전달할 정확한 지시
+
+```text
+지금은 코드부터 고치지 말고 운영 DB 사실관계를 먼저 검증해라.
+
+목표:
+1. approve-partner / verify-payment 에러 로그의 실제 원인이 코드 미반영인지, DB 마이그레이션 미적용인지 구분
+2. verify-payment의 facilityOwned=false 원인을 실데이터 기준으로 확인
+
+수정 금지 사항:
+- approve-partner RPC를 바로 수정하지 말 것
+- verify-payment에서 SJ_STARTER를 sj_starter로 바로 바꾸지 말 것
+- billing_period_end 참조를 코드에서 바로 삭제하지 말 것
+
+먼저 확인할 것:
+1. 운영 DB에 아래 마이그레이션이 실제 적용됐는지 확인
+   - 20260320_fix_user_role_enum.sql
+   - 20260326_add_billing_period_columns.sql
+2. 운영 DB의 subscription_plans.name_en 실제 canonical 값 확인
+   - FREE / BASIC / PREMIUM / SJ_STARTER 계열이 실제 어떤 대소문자로 저장돼 있는지
+3. 상조 결제 요청 시 사용하는 facilityId의 실제 대상 확인
+   - facilities.id인지
+   - funeral_companies.id인지
+   - sangjo_hq_admins.sangjo_id와 매칭되는지
+4. facilityOwned=false가 나온 user/facility 조합으로 소유권 매핑을 SQL로 직접 확인
+
+원하는 산출물:
+- 코드 수정안이 아니라 사실확인 보고서
+- 항목별로
+  - 확인 SQL
+  - 실제 결과
+  - 원인 판정
+  - 그 다음 수정 필요 여부
+
+최종 판정 형식:
+- approve-partner: 코드 수정 필요 / DB 적용 필요 / 둘 다 불필요
+- verify-payment billing_period_end: 코드 수정 필요 / DB 적용 필요 / 둘 다 불필요
+- verify-payment plan_id canonical: SJ_STARTER 유지 / sj_starter로 변경 / 추가 확인 필요
+- verify-payment facilityOwned=false: 어떤 매핑이 깨졌는지 구체적으로
+```
+
+### 내부 판단 메모
+
+- 현재 단계에서 가장 위험한 오판은 `SJ_STARTER -> sj_starter`를 근거 없이 적용하는 것
+- 현재 단계에서 가장 가치 있는 확인은 운영 DB 기준 `facilityOwned=false` 재현 조합을 SQL로 직접 대조하는 것
+
+## 2026-03-28 Edge Function error log final verdict
+
+### 최종 판정
+
+- `approve-partner` enum 이슈
+  - 판정: 둘 다 불필요
+  - 근거: `facility_admin`, `sangjo_user` enum 존재 확인, `approve_partner_transaction`의 `::public.user_role` 캐스팅 확인
+  - 해석: 2026-03-20 로그는 마이그레이션 적용 이전 호출로 판단
+- `verify-payment` `billing_period_end`
+  - 판정: 둘 다 불필요
+  - 근거: 운영 DB에 `billing_period_start`, `billing_period_end` 컬럼 존재 확인
+  - 해석: 2026-03-26 로그는 마이그레이션 반영과 Edge Function 배포 시차 문제로 판단
+- `verify-payment` plan_id canonical
+  - 판정: `SJ_STARTER` 유지
+  - 근거: 운영 DB canonical 값이 `SJ_STARTER`, 현재 `normalizePlanId()`도 대문자 정규화
+  - 해석: 소문자 `sj_starter`로 바꾸는 수정은 금지
+- `verify-payment` `facilityOwned=false`
+  - 판정: 추가 확인 필요
+  - 근거: 현재 운영 데이터 기준으로는 `facilities.user_id = system_sangjo_import`, `sangjo_hq_admins` 매핑 정상, user role도 `sangjo_hq_admin` 정상
+  - 해석: 2026-03-26 당시 배포된 `verify-payment`가 현재 코드보다 구버전이어서 `sangjo_hq_admins` 소유권 체크가 빠졌을 가능성이 높음
+
+### 다음 액션
+
+- Supabase Dashboard에서 `verify-payment` 마지막 배포 시각 확인
+- 기준 시각: `2026-03-26 14:25 UTC`
+- 만약 해당 시각 이전 배포본이면 최신 코드로 `verify-payment` 재배포
+- 재배포 후 동일 상조 결제 케이스 1건 재검증
+- 재검증 결과만 별도 보고서 또는 작업 로그 후속 메모로 남김
+
+### Claude 전달 요약
+
+```text
+최종 판정:
+- approve-partner enum 이슈: 해결됨, 코드 수정 불필요
+- verify-payment billing_period_end 이슈: 해결됨, 코드 수정 불필요
+- verify-payment plan_id canonical: SJ_STARTER 유지
+- verify-payment facilityOwned=false: 현재 코드 기준 재현 근거 부족, 당시 배포 버전 확인 필요
+
+다음 액션:
+1. Supabase Dashboard에서 verify-payment 마지막 배포 시각 확인
+2. 2026-03-26 14:25 UTC 이전 배포본이면 최신 코드로 재배포
+3. 재배포 후 같은 상조 결제 케이스 1건 재검증
+4. 재검증 결과만 보고서로 남길 것
+
+주의:
+- SJ_STARTER를 sj_starter로 바꾸지 말 것
+- billing_period_end 제거하지 말 것
+- approve-partner RPC 수정하지 말 것
+```
