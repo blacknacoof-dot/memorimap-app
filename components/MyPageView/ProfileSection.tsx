@@ -14,63 +14,73 @@ interface Props {
 export const ProfileSection: React.FC<Props> = ({
   user, userRole, userPhone, pendingCount, onEditProfile, onNavigate,
 }) => (
-  <div className="flex items-center gap-3 mb-3">
-    <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center relative shrink-0">
+  <div className="mb-3 flex items-center gap-3">
+    <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gray-200">
       {user.imageUrl ? (
-        <img src={user.imageUrl} alt="Profile" className="w-full h-full rounded-full object-cover" />
+        <img src={user.imageUrl} alt="Profile" className="h-full w-full rounded-full object-cover" />
       ) : (
-        <div className="w-full h-full bg-gray-300 rounded-full flex items-center justify-center">
+        <div className="flex h-full w-full items-center justify-center rounded-full bg-gray-300">
           <User size={24} className="text-gray-500" />
         </div>
       )}
+
       {(userRole === 'facility_admin' || userRole === 'facility_manager') && (
-        <div className="absolute -bottom-1 -right-1 bg-amber-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold border-2 border-white">
+        <div className="absolute -bottom-1 -right-1 rounded-full border-2 border-white bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">
           업체
         </div>
       )}
+
       {(userRole === 'sangjo_hq_admin' || userRole === 'sangjo_branch_admin') && (
-        <div className="absolute -bottom-1 -right-1 bg-indigo-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold border-2 border-white">
+        <div className="absolute -bottom-1 -right-1 rounded-full border-2 border-white bg-indigo-500 px-2 py-0.5 text-[10px] font-bold text-white">
           상조
         </div>
       )}
     </div>
 
-    <div>
-      <div className="flex items-center gap-1.5">
-        <h2 className="font-bold text-base">{user.name || '이름 없음'}님</h2>
+    <div className="min-w-0 flex-1">
+      <div className="flex min-w-0 items-center gap-1.5">
+        <h2 className="min-w-0 truncate break-keep whitespace-nowrap font-bold text-base">
+          {user.name || '이름 없음'}님
+        </h2>
         <button
+          type="button"
           onClick={onEditProfile}
-          className="text-gray-400 hover:text-primary transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className="flex min-h-[44px] min-w-[44px] items-center justify-center text-gray-400 transition-colors hover:text-primary"
           title="프로필 수정"
         >
           <Settings2 size={16} />
         </button>
       </div>
-      <p className="text-xs text-gray-500 leading-tight">{user.email}</p>
+
+      <p className="truncate text-xs leading-tight text-gray-500">{user.email}</p>
       {userPhone ? (
-        <p className="text-xs text-gray-500 leading-tight">{userPhone}</p>
+        <p className="truncate text-xs leading-tight text-gray-500">{userPhone}</p>
       ) : (
         <p className="text-[11px] text-gray-400">등록된 전화번호가 없습니다</p>
       )}
+
       {pendingCount > 0 && (
-        <span className="inline-block mt-1 px-2 py-0.5 bg-primary/10 text-primary text-xs font-bold rounded-full">
-          예정된 예약 {pendingCount}건
+        <span className="mt-1 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">
+          일정 예약 {pendingCount}건
         </span>
       )}
     </div>
 
     {(userRole === 'facility_admin' || userRole === 'facility_manager') && onNavigate && (
       <button
+        type="button"
         onClick={() => onNavigate(ViewState.FACILITY_ADMIN)}
-        className="ml-auto bg-amber-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-md hover:bg-amber-600 transition-colors whitespace-nowrap"
+        className="ml-auto whitespace-nowrap rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-white shadow-md transition-colors hover:bg-amber-600"
       >
         시설 관리자
       </button>
     )}
+
     {(userRole === 'sangjo_hq_admin' || userRole === 'sangjo_branch_admin') && onNavigate && (
       <button
+        type="button"
         onClick={() => onNavigate(ViewState.SANGJO_DASHBOARD)}
-        className="ml-auto bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-md hover:bg-indigo-600 transition-colors whitespace-nowrap"
+        className="ml-auto whitespace-nowrap rounded-lg bg-indigo-500 px-3 py-1.5 text-xs font-bold text-white shadow-md transition-colors hover:bg-indigo-600"
       >
         상조 대시보드
       </button>
