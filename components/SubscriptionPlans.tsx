@@ -26,7 +26,7 @@ interface Plan {
 
 const facilityPlans: Plan[] = [
     {
-        id: 'free',
+        id: 'FREE',
         name: '무료체험',
         nameEn: 'FREE',
         price: 0,
@@ -43,7 +43,7 @@ const facilityPlans: Plan[] = [
         ],
     },
     {
-        id: 'basic',
+        id: 'BASIC',
         name: '라이트',
         nameEn: 'BASIC',
         price: 49000,
@@ -62,7 +62,7 @@ const facilityPlans: Plan[] = [
         ],
     },
     {
-        id: 'premium',
+        id: 'PREMIUM',
         name: '프리미엄',
         nameEn: 'PREMIUM',
         price: 199000,
@@ -83,7 +83,7 @@ const facilityPlans: Plan[] = [
 
 /** 엔터프라이즈는 결제 불가 — 문의형 */
 const enterprisePlan: Plan = {
-    id: 'enterprise',
+    id: 'ENTERPRISE',
     name: '엔터프라이즈',
     nameEn: 'ENTERPRISE',
     price: 0,
@@ -139,7 +139,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
 
     const plans = type === 'sangjo' ? sangjoPlans : facilityPlans;
     const [selectedPlan, setSelectedPlan] = useState<string | null>(normalizeSubscriptionPlanId(currentPlan) || null);
-    const [expandedPlan, setExpandedPlan] = useState<string | null>(type === 'sangjo' ? 'sj_starter' : 'premium');
+    const [expandedPlan, setExpandedPlan] = useState<string | null>(type === 'sangjo' ? 'sj_starter' : 'PREMIUM');
     const [showInquiryModal, setShowInquiryModal] = useState(false);
     const [inquiryForm, setInquiryForm] = useState({ name: '', phone: '', email: '', message: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -189,7 +189,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
 
     const handleSelectPlan = async (plan: Plan) => {
         if (isProcessing) return;
-        if (plan.id === 'free') {
+        if (plan.id === 'FREE') {
             if (!confirm('구독을 해지하시겠습니까?\n\n현재 이용 기간이 끝날 때까지 유료 기능을 계속 사용할 수 있습니다.\n만료 후 자동으로 무료 플랜으로 전환됩니다.')) {
                 return;
             }

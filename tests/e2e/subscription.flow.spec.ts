@@ -100,7 +100,7 @@ const getSubscriptionRow = async (facilityId: string) => {
   return data as FacilitySubscriptionRow | null;
 };
 
-const setFacilityPlan = async (facilityId: string, planId: 'free' | 'premium') => {
+const setFacilityPlan = async (facilityId: string, planId: 'FREE' | 'PREMIUM') => {
   const now = new Date();
   const nextDate = new Date(now);
   nextDate.setMonth(nextDate.getMonth() + 1);
@@ -199,13 +199,13 @@ test.describe.serial('High risk flow: subscription', () => {
     await openSubscriptionPlans(page);
     const planCards = page.locator('div.group.relative.bg-white.rounded-2xl');
 
-    await setFacilityPlan(facility.id, 'free');
+    await setFacilityPlan(facility.id, 'FREE');
     await expect(planCards.first()).toBeVisible({ timeout: 30000 });
     await expect(page.getByRole('heading', { name: '무료체험' })).toBeVisible({ timeout: 30000 });
 
     let row = await getSubscriptionRow(facility.id);
     expect(row).toBeTruthy();
-    expect(row!.plan_id).toBe('free');
+    expect(row!.plan_id).toBe('FREE');
     expect(row!.status).toBe('active');
     expect(row!.facility_id_uuid).toBe(isUuidLike(facility.id) ? facility.id : null);
     expect(row!.facility_id_bigint).toBe(isUuidLike(facility.id) ? null : Number(facility.id));
@@ -215,22 +215,22 @@ test.describe.serial('High risk flow: subscription', () => {
     await openSubscriptionPlans(page);
     await expect(planCards.nth(0)).toBeVisible({ timeout: 30000 });
 
-    await setFacilityPlan(facility.id, 'free');
+    await setFacilityPlan(facility.id, 'FREE');
     await page.reload();
     await expect(page.locator('button.bg-gradient-to-r.from-purple-500.to-purple-600')).toBeVisible({ timeout: 30000 });
     await openSubscriptionPlans(page);
     await expect(planCards.nth(0)).toBeVisible({ timeout: 30000 });
     await expect(page.getByRole('heading', { name: '무료체험' })).toBeVisible({ timeout: 30000 });
 
-    await setFacilityPlan(facility.id, 'premium');
+    await setFacilityPlan(facility.id, 'PREMIUM');
     await expect.poll(async () => (await getSubscriptionRow(facility.id))?.plan_id ?? null, {
       timeout: 30000,
       intervals: [1000, 2000],
-    }).toBe('premium');
+    }).toBe('PREMIUM');
 
     row = await getSubscriptionRow(facility.id);
     expect(row).toBeTruthy();
-    expect(row!.plan_id).toBe('premium');
+    expect(row!.plan_id).toBe('PREMIUM');
     expect(row!.status).toBe('active');
 
     const { count: premiumPaymentCount, error: paymentCountError } = await supabase
@@ -247,16 +247,16 @@ test.describe.serial('High risk flow: subscription', () => {
     await expect(planCards.nth(2)).toBeVisible({ timeout: 30000 });
     await expect(page.getByRole('heading', { name: '프리미엄' })).toBeVisible({ timeout: 30000 });
 
-    await setFacilityPlan(facility.id, 'free');
+    await setFacilityPlan(facility.id, 'FREE');
 
     await expect.poll(async () => (await getSubscriptionRow(facility.id))?.plan_id ?? null, {
       timeout: 30000,
       intervals: [1000, 2000],
-    }).toBe('free');
+    }).toBe('FREE');
 
     row = await getSubscriptionRow(facility.id);
     expect(row).toBeTruthy();
-    expect(row!.plan_id).toBe('free');
+    expect(row!.plan_id).toBe('FREE');
     expect(row!.status).toBe('active');
 
     const subscriptionCriteria = buildFacilitySubscriptionCriteria(facility.id);
@@ -284,8 +284,8 @@ test.describe.serial('High risk flow: subscription', () => {
     await loginAsFacilityAdmin(page, admin);
     await openSubscriptionPlans(page);
 
-    await setFacilityPlan(facility.id, 'free');
-    await setFacilityPlan(facility.id, 'free');
+    await setFacilityPlan(facility.id, 'FREE');
+    await setFacilityPlan(facility.id, 'FREE');
 
     const criteria = buildFacilitySubscriptionCriteria(facility.id);
     const beforeCount = await supabase
@@ -297,6 +297,6 @@ test.describe.serial('High risk flow: subscription', () => {
     expect(beforeCount.count).toBe(1);
 
     const afterRow = await getSubscriptionRow(facility.id);
-    expect(afterRow?.plan_id).toBe('free');
+    expect(afterRow?.plan_id).toBe('FREE');
   });
 });
