@@ -24,11 +24,23 @@ const PREFERENCE_OPTIONS = [
     "산골", "수목장 + 가족 참여", "전통 장례", "간소한 장례"
 ];
 
+/**
+ * 엔딩노트 필드 접근 규칙:
+ * - basic (PERSONAL_FREE): preferred_types만 편집 가능
+ * - full (PERSONAL_BASIC 단종, 기존 가입자 호환): 3필드 모두 편집
+ * - full_pdf (PERSONAL_PREMIUM): 3필드 모두 편집 + 향후 PDF 확장
+ */
+function isFieldLocked(level: EndingNoteLevel): boolean {
+    return level === 'basic';
+}
+
 export default function EndingNoteEditModal({ isOpen, onClose, currentNote, onSave, endingNoteLevel = 'full', onUpgrade }: EndingNoteEditModalProps) {
     const [preferences, setPreferences] = useState<string[]>([]);
     const [contact, setContact] = useState('');
     const [memo, setMemo] = useState('');
     const [saving, setSaving] = useState(false);
+
+    const locked = isFieldLocked(endingNoteLevel);
 
     useEffect(() => {
         if (isOpen && currentNote) {
@@ -36,7 +48,6 @@ export default function EndingNoteEditModal({ isOpen, onClose, currentNote, onSa
             setContact(currentNote.contact || '');
             setMemo(currentNote.memo || '');
         } else if (isOpen) {
-            // 초기화
             setPreferences([]);
             setContact('');
             setMemo('');
@@ -63,18 +74,22 @@ export default function EndingNoteEditModal({ isOpen, onClose, currentNote, onSa
     const handleSave = async () => {
         setSaving(true);
         try {
-            // 진행률 계산 로직 (간단히 필드 채워짐에 따라 0, 33, 66, 100)
+            // basic 레벨: contact/memo를 payload에서 제거 (서버 방어)
+            const safeContact = locked ? '' : contact;
+            const safeMemo = locked ? '' : memo;
+
             let filledCount = 0;
             if (preferences.length > 0) filledCount++;
-            if (contact.trim() !== '') filledCount++;
-            if (memo.trim() !== '') filledCount++;
+            if (safeContact.trim() !== '') filledCount++;
+            if (safeMemo.trim() !== '') filledCount++;
 
-            const percent = Math.round((filledCount / 3) * 100);
+            const totalFields = locked ? 1 : 3;
+            const percent = Math.round((filledCount / totalFields) * 100);
 
             await onSave({
                 preferences,
-                contact,
-                memo,
+                contact: safeContact,
+                memo: safeMemo,
                 percent
             });
             onClose();
@@ -101,7 +116,7 @@ export default function EndingNoteEditModal({ isOpen, onClose, currentNote, onSa
 
                 {/* Content - Compact */}
                 <div className="p-5 space-y-6 max-h-[75dvh] md:max-h-[60dvh] overflow-y-auto custom-scrollbar">
-                    {/* 1. 선호 방식 */}
+                    {/* 1. 선호 방식 — 모든 레벨 편집 가능 */}
                     <div className="space-y-3">
                         <h3 className="text-[11px] font-bold text-pink-500 flex items-center gap-1.5">
                             <Heart size={12} className="fill-pink-500" /> 나의 선호 방식
@@ -125,32 +140,51 @@ export default function EndingNoteEditModal({ isOpen, onClose, currentNote, onSa
                         </div>
                     </div>
 
-                    {/* 2. 비상 연락망 */}
+                    {/* 2. 비상 연락망 — basic 잠금 */}
                     <div className="space-y-3 relative">
                         <h3 className="text-[11px] font-bold text-gray-800 flex items-center gap-1.5">
                             <Phone size={12} className="text-gray-400" /> 비상 연락망
+                            {locked && <Lock size={10} className="text-gray-300" />}
                         </h3>
-                        <input
-                            type="text"
-                            value={contact}
-                            onChange={(e) => setContact(e.target.value)}
-                            placeholder="예: 아들 김철수 (010-1234-5678)"
-                            className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-[11px] focus:outline-none focus:ring-1 focus:ring-pink-300 transition-all placeholder:text-gray-300"
-                        />
+                        {locked ? (
+                            <LockedFieldOverlay
+                                existingValue={currentNote?.contact}
+                                placeholder="예: 아들 김철수 (010-1234-5678)"
+                                onUpgrade={onUpgrade}
+                            />
+                        ) : (
+                            <input
+                                type="text"
+                                value={contact}
+                                onChange={(e) => setContact(e.target.value)}
+                                placeholder="예: 아들 김철수 (010-1234-5678)"
+                                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-[11px] focus:outline-none focus:ring-1 focus:ring-pink-300 transition-all placeholder:text-gray-300"
+                            />
+                        )}
                     </div>
 
-                    {/* 3. 한 줄 메모 */}
+                    {/* 3. 한 줄 메모 — basic 잠금 */}
                     <div className="space-y-3 relative">
                         <h3 className="text-[11px] font-bold text-gray-800 flex items-center gap-1.5">
                             <FileText size={12} className="text-gray-400" /> 한 줄 메모
+                            {locked && <Lock size={10} className="text-gray-300" />}
                         </h3>
-                        <textarea
-                            value={memo}
-                            onChange={(e) => setMemo(e.target.value)}
-                            rows={3}
-                            placeholder="예: 장례식에는 웃는 얼굴 사진을 사용해주세요"
-                            className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-[11px] focus:outline-none focus:ring-1 focus:ring-pink-300 transition-all resize-none placeholder:text-gray-300 leading-relaxed"
-                        />
+                        {locked ? (
+                            <LockedFieldOverlay
+                                existingValue={currentNote?.memo}
+                                placeholder="예: 장례식에는 웃는 얼굴 사진을 사용해주세요"
+                                multiline
+                                onUpgrade={onUpgrade}
+                            />
+                        ) : (
+                            <textarea
+                                value={memo}
+                                onChange={(e) => setMemo(e.target.value)}
+                                rows={3}
+                                placeholder="예: 장례식에는 웃는 얼굴 사진을 사용해주세요"
+                                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-[11px] focus:outline-none focus:ring-1 focus:ring-pink-300 transition-all resize-none placeholder:text-gray-300 leading-relaxed"
+                            />
+                        )}
                     </div>
                 </div>
 
@@ -175,6 +209,36 @@ export default function EndingNoteEditModal({ isOpen, onClose, currentNote, onSa
                     </button>
                 </div>
             </div>
+        </div>
+    );
+}
+
+/** 잠금 필드 오버레이: 기존값 미리보기 + 업그레이드 안내 */
+function LockedFieldOverlay({ existingValue, placeholder, multiline, onUpgrade }: {
+    existingValue?: string;
+    placeholder: string;
+    multiline?: boolean;
+    onUpgrade?: () => void;
+}) {
+    const displayText = existingValue || placeholder;
+    const isPlaceholder = !existingValue;
+
+    return (
+        <div className="relative">
+            <div
+                className={`w-full px-3.5 py-2.5 bg-gray-100/60 border border-gray-200 rounded-xl text-[11px] select-none ${
+                    multiline ? 'min-h-[72px]' : ''
+                } ${isPlaceholder ? 'text-gray-300 italic' : 'text-gray-400'}`}
+            >
+                {displayText}
+            </div>
+            <button
+                onClick={onUpgrade}
+                className="mt-1.5 flex items-center gap-1 text-[10px] text-pink-500 font-bold hover:text-pink-600 transition-colors"
+            >
+                <Lock size={9} />
+                프리미엄 플랜에서 이용 가능합니다
+            </button>
         </div>
     );
 }

@@ -113,6 +113,7 @@ export const MyPageView: React.FC<Props> = ({
           consultationCount={consultationCount}
           refreshTrigger={journeyRefreshKey}
           onLoginClick={onLoginClick}
+          onUpgrade={onNavigate ? () => onNavigate(ViewState.PERSONAL_SUBSCRIPTION) : undefined}
         />
       </div>
 

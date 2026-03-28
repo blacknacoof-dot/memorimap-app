@@ -27,6 +27,7 @@ interface IntegratedJourneyViewProps {
     consultationCount?: number;
     refreshTrigger?: number;
     onLoginClick?: () => void;
+    onUpgrade?: () => void;
 }
 
 export default function IntegratedJourneyView({
@@ -35,6 +36,7 @@ export default function IntegratedJourneyView({
     consultationCount = 0,
     refreshTrigger = 0,
     onLoginClick,
+    onUpgrade,
 }: IntegratedJourneyViewProps) {
     const { isLoaded, isSignedIn, user } = useUser();
     const { session } = useSession();
@@ -80,6 +82,12 @@ export default function IntegratedJourneyView({
         setLoading(false);
     };
 
+    // 엔딩노트 필드 접근 규칙:
+    // basic (PERSONAL_FREE): preferred_types만 저장, contact/memo 제거
+    // full (PERSONAL_BASIC 단종 호환) / full_pdf (PERSONAL_PREMIUM): 3필드 모두 저장
+    const endingNoteLevel = userPlan?.limits?.ending_note ?? 'basic';
+    const isBasicLevel = endingNoteLevel === 'basic';
+
     // 엔딩 노트 저장 핸들러
     const handleSaveEndingNote = async (updates: Partial<EndingNote>) => {
         if (!user || !session) {
@@ -90,13 +98,17 @@ export default function IntegratedJourneyView({
         try {
             const authClient = await getAuthClient(session, { strict: true });
 
+            // basic 레벨: 저장 시점에서 contact/memo 강제 제거 (클라이언트 2중 방어)
+            const safeContact = isBasicLevel ? null : (updates.contact || null);
+            const safeMemo = isBasicLevel ? null : (updates.memo || null);
+
             const { error } = await authClient
                 .from('user_ending_notes')
                 .upsert({
                     user_id: user.id,
                     preferred_types: updates.preferences,
-                    emergency_contact: updates.contact,
-                    final_memo: updates.memo,
+                    emergency_contact: safeContact,
+                    final_memo: safeMemo,
                     progress_percent: updates.percent,
                     updated_at: new Date().toISOString()
                 });
@@ -324,8 +336,15 @@ export default function IntegratedJourneyView({
                     </div>
 
                     <div className="flex flex-col">
-                        <h4 className="text-[11px] font-bold text-gray-500 mb-1">비상 연락망</h4>
-                        {note?.contact ? (
+                        <h4 className="text-[11px] font-bold text-gray-500 mb-1 flex items-center gap-1">
+                            비상 연락망
+                            {isBasicLevel && <Lock size={9} className="text-gray-300" />}
+                        </h4>
+                        {isBasicLevel ? (
+                            <span className="text-[11px] text-gray-300 italic flex items-center gap-1">
+                                <Lock size={9} /> 프리미엄 플랜에서 이용 가능
+                            </span>
+                        ) : note?.contact ? (
                             <span className="text-xs text-gray-800 font-medium">{note.contact}</span>
                         ) : (
                             <span className="text-[11px] text-gray-400 italic">미등록 (예: 아들 김철수 010-1234-5678)</span>
@@ -333,8 +352,15 @@ export default function IntegratedJourneyView({
                     </div>
 
                     <div className="flex flex-col">
-                        <h4 className="text-[11px] font-bold text-gray-500 mb-1">한 줄 메모</h4>
-                        {note?.memo ? (
+                        <h4 className="text-[11px] font-bold text-gray-500 mb-1 flex items-center gap-1">
+                            한 줄 메모
+                            {isBasicLevel && <Lock size={9} className="text-gray-300" />}
+                        </h4>
+                        {isBasicLevel ? (
+                            <span className="text-[11px] text-gray-300 italic flex items-center gap-1">
+                                <Lock size={9} /> 프리미엄 플랜에서 이용 가능
+                            </span>
+                        ) : note?.memo ? (
                             <div className="border-l-2 border-pink-300 pl-2.5 py-0.5">
                                 <p className="text-xs text-gray-700 font-medium leading-relaxed italic">
                                     "{note.memo}"
@@ -372,7 +398,8 @@ export default function IntegratedJourneyView({
                 onClose={() => setIsEditModalOpen(false)}
                 currentNote={note}
                 onSave={handleSaveEndingNote}
-                endingNoteLevel={userPlan?.limits?.ending_note ?? 'basic'}
+                endingNoteLevel={endingNoteLevel}
+                onUpgrade={onUpgrade}
             />
 
             {/* 공유 모달 */}
