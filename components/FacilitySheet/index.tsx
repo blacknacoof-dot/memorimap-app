@@ -73,7 +73,7 @@ export const FacilitySheet: React.FC<Props> = ({
         {/* Hero Image */}
         <div className="relative h-32 md:h-48 shrink-0">
           <img src={facility.imageUrl} alt={facility.name} className="w-full h-full object-cover" />
-          <div className="absolute top-4 right-4 flex gap-2">
+          <div className="absolute top-4 right-4 flex gap-2 z-10">
             <button
               onClick={onToggleCompare}
               className={`p-2 rounded-full text-white backdrop-blur-sm transition-colors ${isInCompareList ? 'bg-primary border-primary' : 'bg-black/30'}`}
@@ -95,8 +95,16 @@ export const FacilitySheet: React.FC<Props> = ({
             </button>
           </div>
           <div className="absolute bottom-4 left-4 text-white">
-            <div className="bg-accent px-2 py-0.5 text-xs font-bold rounded mb-1 inline-block uppercase tracking-wider">
-              {facility.type || facility.category}
+            <div className="flex items-center gap-1.5 mb-1">
+              <div className="bg-accent px-2 py-0.5 text-xs font-bold rounded inline-block uppercase tracking-wider">
+                {facility.type || facility.category}
+              </div>
+              {facility.isVerified && (
+                <div className="flex items-center gap-1 bg-blue-500 text-white px-2 py-0.5 rounded-full shadow-lg border border-blue-400" title="업체 인증 완료">
+                  <ShieldCheck size={14} />
+                  <span className="text-[10px] font-bold">인증됨</span>
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <h2 className="text-2xl font-bold shadow-sm">{facility.name}</h2>
@@ -108,12 +116,6 @@ export const FacilitySheet: React.FC<Props> = ({
               {facility.subscription?.plan?.name_en === 'enterprise' && (
                 <div className="bg-gradient-to-r from-amber-400 to-amber-600 text-white p-1 rounded-full shadow-lg" title="프리미엄 골드 등급">
                   <Crown className="w-4 h-4" />
-                </div>
-              )}
-              {facility.isVerified && (
-                <div className="flex items-center gap-1 bg-blue-500 text-white px-2 py-0.5 rounded-full shadow-lg border border-blue-400" title="업체 인증 완료">
-                  <ShieldCheck size={14} />
-                  <span className="text-[10px] font-bold">인증됨</span>
                 </div>
               )}
             </div>

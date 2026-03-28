@@ -1,6 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { toast } from 'sonner';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { RefreshCw, Home } from 'lucide-react';
 
 interface Props {
     children: ReactNode;
@@ -111,10 +111,6 @@ export class ErrorBoundary extends Component<Props, State> {
         });
     };
 
-    handleRefresh = () => {
-        window.location.href = '/';
-    };
-
     handleGoHome = () => {
         window.location.href = '/';
     };
@@ -128,34 +124,34 @@ export class ErrorBoundary extends Component<Props, State> {
             const maxRetries = this.props.maxAutoRetries ?? MAX_AUTO_RETRIES;
             const isAutoRecovering = this.state.retryCount < maxRetries && this.state.countdown > 0;
 
-            // 자동 복구 중: 간단한 로딩 UI
+            // 자동 복구 중: 부드러운 로딩 UI
             if (isAutoRecovering) {
                 return (
                     <div className="flex items-center justify-center p-8">
                         <div className="text-center">
                             <div className="w-8 h-8 border-3 border-gray-200 border-t-primary rounded-full animate-spin mx-auto mb-3" />
-                            <p className="text-sm text-gray-500">
-                                자동 복구 중... ({this.state.countdown}초)
+                            <p className="text-sm text-gray-400">
+                                잠시만 기다려 주세요… ({this.state.countdown}초)
                             </p>
                         </div>
                     </div>
                 );
             }
 
-            // 자동 복구 실패: 정적 에러 UI
+            // 자동 복구 실패: 부드러운 에러 UI
             return (
                 <div className="min-h-[300px] flex items-center justify-center bg-gray-50 p-4">
                     <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
-                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <AlertTriangle className="w-8 h-8 text-red-500" />
+                        <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <RefreshCw className="w-6 h-6 text-gray-400" />
                         </div>
 
-                        <h1 className="text-xl font-bold text-gray-900 mb-2">
-                            일시적인 오류가 발생했습니다
+                        <h1 className="text-lg font-bold text-gray-900 mb-2">
+                            화면을 불러오지 못했어요
                         </h1>
 
-                        <p className="text-gray-600 mb-6 text-sm">
-                            자동 복구에 실패했습니다. 아래 버튼을 눌러 다시 시도해 주세요.
+                        <p className="text-gray-500 mb-6 text-sm">
+                            네트워크 상태를 확인하시거나, 아래 버튼을 눌러 주세요.
                         </p>
 
                         {process.env.NODE_ENV === 'development' && this.state.error && (
@@ -171,28 +167,21 @@ export class ErrorBoundary extends Component<Props, State> {
                             </div>
                         )}
 
-                        <div className="flex gap-3 justify-center">
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
                             <button
                                 onClick={this.handleRetry}
-                                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors"
+                                className="flex items-center justify-center gap-2 px-5 py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-colors min-h-[44px]"
                             >
                                 <RefreshCw size={18} />
                                 다시 시도
                             </button>
 
                             <button
-                                onClick={this.handleRefresh}
-                                className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
-                            >
-                                새로고침
-                            </button>
-
-                            <button
                                 onClick={this.handleGoHome}
-                                className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                                className="flex items-center justify-center gap-2 px-5 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors min-h-[44px]"
                             >
                                 <Home size={18} />
-                                홈
+                                홈으로
                             </button>
                         </div>
                     </div>

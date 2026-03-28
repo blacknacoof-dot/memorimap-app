@@ -1,15 +1,30 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const ALLOWED_ORIGINS = [
+const PRODUCTION_ORIGINS = [
+    'https://memorimap.kr',
+    'https://www.memorimap.kr',
     'https://memorimap-app.vercel.app',
+    'https://memorimap-app-ptys-projects.vercel.app',
     'https://memorimap.com',
     'https://www.memorimap.com',
 ];
 
+// 개발 환경에서만 localhost 허용 (ENVIRONMENT=development 설정 시)
+const DEV_ORIGINS = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://127.0.0.1:5173',
+];
+
+const isDevMode = Deno.env.get('ENVIRONMENT') === 'development';
+const ALLOWED_ORIGINS = isDevMode
+    ? [...PRODUCTION_ORIGINS, ...DEV_ORIGINS]
+    : PRODUCTION_ORIGINS;
+
 const getCorsHeaders = (req: Request) => {
     const origin = req.headers.get('origin');
-    const allowedOrigin = ALLOWED_ORIGINS.includes(origin || '') ? origin : ALLOWED_ORIGINS[0];
+    const allowedOrigin = ALLOWED_ORIGINS.includes(origin || '') ? origin : PRODUCTION_ORIGINS[0];
     return {
         'Access-Control-Allow-Origin': allowedOrigin,
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
