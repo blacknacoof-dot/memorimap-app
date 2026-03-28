@@ -1,5 +1,19 @@
 import React from 'react';
-import { X, User, Calendar, Heart, Settings, HelpCircle, LogOut, ChevronRight, Bell, BookOpen, LogIn, Building2, ClipboardCheck } from 'lucide-react';
+import {
+  X,
+  User,
+  Calendar,
+  Heart,
+  Settings,
+  HelpCircle,
+  LogOut,
+  ChevronRight,
+  Bell,
+  BookOpen,
+  LogIn,
+  Building2,
+  ClipboardCheck,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { ViewState } from '../types';
 import { confirmAsync } from '../src/components/common/ConfirmModal';
@@ -25,18 +39,18 @@ export const SideMenu: React.FC<Props> = ({
   user,
   userRole,
   onLogin,
-  onLogout
+  onLogout,
 }) => {
-
   const handleProtectedAction = async (action: () => void) => {
     if (!isLoggedIn) {
-      if (await confirmAsync('로그인이 필요한 서비스입니다. 로그인 하시겠습니까?')) {
+      if (await confirmAsync('로그인이 필요한 서비스입니다. 로그인하시겠습니까?')) {
         onLogin();
       }
-    } else {
-      action();
-      onClose();
+      return;
     }
+
+    action();
+    onClose();
   };
 
   const handleNav = (view: ViewState) => {
@@ -46,82 +60,112 @@ export const SideMenu: React.FC<Props> = ({
 
   return (
     <>
-      {/* Backdrop */}
       <div
-        className={`fixed inset-0 bg-black/50 z-[320] transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 z-[320] bg-black/50 transition-opacity duration-300 ${
+          isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+        }`}
         onClick={onClose}
       />
 
-      {/* Menu Panel */}
-      <div className={`fixed inset-y-0 left-0 w-[280px] bg-white z-[330] shadow-2xl transform transition-transform duration-300 flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-
-        {/* User Profile / Login Header */}
-        <div className="bg-primary px-6 pt-12 pb-12 text-white relative transition-all">
+      <div
+        className={`fixed inset-y-0 left-0 z-[330] flex w-[280px] flex-col bg-white shadow-2xl transition-transform duration-300 ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="relative bg-primary px-6 pb-12 pt-12 text-white transition-all">
           <button
+            type="button"
             onClick={onClose}
             data-testid="sidemenu-close-button"
-            className="absolute top-4 right-4 text-white/80 hover:text-white min-w-[44px] min-h-[44px] flex items-center justify-center"
+            className="absolute right-4 top-4 flex min-h-[44px] min-w-[44px] items-center justify-center text-white/80 hover:text-white"
           >
             <X size={24} />
           </button>
 
           {isLoggedIn && user ? (
             <>
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border-2 border-white/30">
+              <div className="mb-4 flex items-center gap-4">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-white/30 bg-white/20 backdrop-blur-sm">
                   <User size={28} className="text-white" />
                 </div>
-                <div>
-                  <h2 className="font-bold text-xl">{user.name} 님</h2>
-                  <p className="text-xs text-blue-100">{user.email}</p>
+
+                <div className="min-w-0 flex-1">
+                  <h2 className="truncate break-keep whitespace-nowrap font-bold text-xl">
+                    {user.name} 님
+                  </h2>
+                  <p className="truncate text-xs text-blue-100">{user.email}</p>
                 </div>
               </div>
+
               <button
-                onClick={() => { onNavigate(ViewState.MY_PAGE); onClose(); }}
+                type="button"
+                onClick={() => {
+                  onNavigate(ViewState.MY_PAGE);
+                  onClose();
+                }}
                 data-testid="sidemenu-profile-button"
-                className="text-sm bg-black/20 hover:bg-black/30 px-4 py-2 rounded-full flex items-center gap-1 transition-colors"
+                className="flex items-center gap-1 rounded-full bg-black/20 px-4 py-2 text-sm transition-colors hover:bg-black/30"
               >
-                내 정보 관리 <ChevronRight size={12} />
+                내 정보 관리
+                <ChevronRight size={12} />
               </button>
 
               {(userRole === 'facility_admin' || userRole === 'facility_manager' || userRole === 'super_admin') && (
                 <button
-                  onClick={() => { onNavigate(ViewState.FACILITY_ADMIN); onClose(); }}
-                  className="mt-2 text-sm bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-full flex items-center gap-1 transition-colors shadow-lg"
+                  type="button"
+                  onClick={() => {
+                    onNavigate(ViewState.FACILITY_ADMIN);
+                    onClose();
+                  }}
+                  className="mt-2 flex items-center gap-1 rounded-full bg-amber-500 px-4 py-2 text-sm text-white shadow-lg transition-colors hover:bg-amber-600"
                 >
-                  시설 관리자 <ChevronRight size={12} />
+                  시설 관리자
+                  <ChevronRight size={12} />
                 </button>
               )}
 
               {(userRole === 'sangjo_hq_admin' || userRole === 'sangjo_branch_admin' || userRole === 'super_admin') && (
                 <button
-                  onClick={() => { onNavigate(ViewState.SANGJO_DASHBOARD); onClose(); }}
-                  className="mt-2 text-sm bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-full flex items-center gap-1 transition-colors shadow-lg"
+                  type="button"
+                  onClick={() => {
+                    onNavigate(ViewState.SANGJO_DASHBOARD);
+                    onClose();
+                  }}
+                  className="mt-2 flex items-center gap-1 rounded-full bg-indigo-500 px-4 py-2 text-sm text-white shadow-lg transition-colors hover:bg-indigo-600"
                 >
-                  상조 대시보드 <ChevronRight size={12} />
+                  상조 대시보드
+                  <ChevronRight size={12} />
                 </button>
               )}
 
               {userRole === 'super_admin' && (
                 <button
-                  onClick={() => { onNavigate(ViewState.SUPER_ADMIN); onClose(); }}
+                  type="button"
+                  onClick={() => {
+                    onNavigate(ViewState.SUPER_ADMIN);
+                    onClose();
+                  }}
                   data-testid="sidemenu-superadmin-button"
-                  className="mt-2 text-sm bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-full flex items-center gap-1 transition-colors shadow-lg"
+                  className="mt-2 flex items-center gap-1 rounded-full bg-purple-600 px-4 py-2 text-sm text-white shadow-lg transition-colors hover:bg-purple-700"
                 >
-                  슈퍼 관리 컨트롤 센터 <ChevronRight size={12} />
+                  슈퍼 관리자 콘트롤 센터
+                  <ChevronRight size={12} />
                 </button>
               )}
             </>
           ) : (
             <div className="py-2">
-              <h2 className="font-bold text-xl mb-2">환영합니다!</h2>
-              <p className="text-xs text-blue-100 mb-6">
-                로그인하고 예약 내역과<br />관심 시설을 확인해보세요.
+              <h2 className="mb-2 font-bold text-xl">환영합니다</h2>
+              <p className="mb-6 text-xs text-blue-100">
+                로그인하고 예약 내역과
+                <br />
+                관심 시설을 확인해보세요.
               </p>
               <button
+                type="button"
                 onClick={onLogin}
                 data-testid="sidemenu-login-button"
-                className="w-full bg-white text-primary font-bold py-2.5 rounded-lg flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-transform"
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-white py-2.5 font-bold text-primary shadow-lg transition-transform active:scale-95"
               >
                 <LogIn size={18} />
                 로그인 / 회원가입
@@ -130,64 +174,82 @@ export const SideMenu: React.FC<Props> = ({
           )}
         </div>
 
-        {/* Quick Stats Dashboard */}
-        <div className="px-4 -mt-8 mb-6 relative z-10">
-          <div className="bg-white rounded-xl shadow-lg border p-4 flex justify-around items-center">
+        <div className="relative z-10 -mt-8 mb-6 px-4">
+          <div className="flex items-center justify-around rounded-xl border bg-white p-4 shadow-lg">
             <button
+              type="button"
               onClick={() => handleProtectedAction(() => onNavigate(ViewState.MY_PAGE))}
-              className="flex flex-col items-center gap-1 flex-1 border-r border-gray-100 relative group"
+              className="group relative flex flex-1 flex-col items-center gap-1 border-r border-gray-100"
             >
               <div className="relative">
-                <Calendar className={`transition-transform group-hover:scale-110 ${isLoggedIn ? 'text-primary' : 'text-gray-400'}`} size={24} />
+                <Calendar
+                  className={`transition-transform group-hover:scale-110 ${
+                    isLoggedIn ? 'text-primary' : 'text-gray-400'
+                  }`}
+                  size={24}
+                />
                 {isLoggedIn && reservationCount > 0 && (
-                  <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full font-bold border-2 border-white">
+                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-red-500 text-[10px] font-bold text-white">
                     {reservationCount}
                   </span>
                 )}
               </div>
-              <span className="text-xs font-medium text-gray-600 mt-1">예약현황</span>
+              <span className="mt-1 text-xs font-medium text-gray-600">예약현황</span>
             </button>
 
             <button
+              type="button"
               onClick={() => handleProtectedAction(() => onNavigate(ViewState.MY_PAGE))}
-              className="flex flex-col items-center gap-1 flex-1 group"
+              className="group flex flex-1 flex-col items-center gap-1"
             >
-              <Heart className={`transition-all group-hover:scale-110 ${isLoggedIn ? 'text-gray-400 group-hover:text-pink-500' : 'text-gray-300'}`} size={24} />
-              <span className="text-xs font-medium text-gray-600 mt-1">찜한목록</span>
+              <Heart
+                className={`transition-all group-hover:scale-110 ${
+                  isLoggedIn ? 'text-gray-400 group-hover:text-pink-500' : 'text-gray-300'
+                }`}
+                size={24}
+              />
+              <span className="mt-1 text-xs font-medium text-gray-600">찜한목록</span>
             </button>
           </div>
         </div>
 
-        {/* Menu Items */}
-        <div className="flex-1 overflow-y-auto py-2 px-4 space-y-1">
-          <div className="text-xs font-bold text-gray-400 mb-2 px-3 mt-2">서비스 안내</div>
+        <div className="flex-1 space-y-1 overflow-y-auto px-4 py-2">
+          <div className="mb-2 mt-2 px-3 text-xs font-bold text-gray-400">서비스 안내</div>
           <MenuItem icon={BookOpen} label="장례/추모 가이드" onClick={() => handleNav(ViewState.GUIDE)} />
-          <MenuItem icon={ClipboardCheck} label="장례 후 행정 체크리스트" onClick={() => handleNav(ViewState.ADMIN_CHECKLIST)} />
+          <MenuItem
+            icon={ClipboardCheck}
+            label="장례 후 행정 체크리스트"
+            onClick={() => handleNav(ViewState.ADMIN_CHECKLIST)}
+          />
           <MenuItem icon={Bell} label="공지사항 & 이벤트" onClick={() => handleNav(ViewState.NOTICES)} />
 
-          <div className="text-xs font-bold text-gray-400 mb-2 px-3 mt-6">고객 지원</div>
+          <div className="mb-2 mt-6 px-3 text-xs font-bold text-gray-400">고객 지원</div>
           <MenuItem icon={HelpCircle} label="고객센터 / 자주 묻는 질문" onClick={() => handleNav(ViewState.SUPPORT)} />
           <MenuItem icon={Settings} label="앱 설정" onClick={() => handleNav(ViewState.SETTINGS)} />
 
-          <div className="border-t mx-4 my-2"></div>
+          <div className="mx-4 my-2 border-t" />
           <MenuItem icon={Building2} label="업체 입점/제휴 문의" onClick={() => handleNav(ViewState.PARTNER_INQUIRY)} />
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-3 border-t bg-gray-50 pb-safe">
+        <div className="bg-gray-50 px-6 py-3 pb-safe border-t">
           {isLoggedIn && (
             <button
-              onClick={() => { onLogout(); onClose(); }}
+              type="button"
+              onClick={() => {
+                onLogout();
+                onClose();
+              }}
               data-testid="sidemenu-logout-button"
-              className="flex items-center gap-2 text-gray-500 text-sm hover:text-red-500 transition-colors w-full mb-2 min-h-[44px]"
+              className="mb-2 flex min-h-[44px] w-full items-center gap-2 text-sm text-gray-500 transition-colors hover:text-red-500"
             >
               <LogOut size={16} />
               로그아웃
             </button>
           )}
-          <div className="text-[10px] text-gray-500 flex flex-col items-start">
+
+          <div className="flex flex-col items-start text-[10px] text-gray-500">
             <span>버전 1.0.0</span>
-            <span>(주)아톰케어</span>
+            <span>(주)웨브캐쳐</span>
           </div>
         </div>
       </div>
@@ -195,9 +257,21 @@ export const SideMenu: React.FC<Props> = ({
   );
 };
 
-const MenuItem = ({ icon: Icon, label, onClick }: { icon: LucideIcon, label: string, onClick?: () => void }) => (
-  <button onClick={onClick} className="w-full flex items-center gap-3 p-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors text-left group">
-    <Icon size={20} className="text-gray-400 group-hover:text-primary transition-colors" />
+const MenuItem = ({
+  icon: Icon,
+  label,
+  onClick,
+}: {
+  icon: LucideIcon;
+  label: string;
+  onClick?: () => void;
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="group flex w-full items-center gap-3 rounded-lg p-3 text-left text-gray-700 transition-colors hover:bg-gray-50"
+  >
+    <Icon size={20} className="text-gray-400 transition-colors group-hover:text-primary" />
     <span className="text-sm font-medium group-hover:text-gray-900">{label}</span>
     <ChevronRight size={16} className="ml-auto text-gray-300" />
   </button>

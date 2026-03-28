@@ -101,10 +101,21 @@ const App: React.FC = () => {
 
   const userInfo = React.useMemo(() => {
     if (!user) return null;
+
+    const email = user.primaryEmailAddress?.emailAddress || '';
+    const emailLocalPart = email.split('@')[0] || '';
+    const safeUsername = user.username && !user.username.includes('@') ? user.username : '';
+    const displayName =
+      user.fullName?.trim() ||
+      user.firstName?.trim() ||
+      safeUsername ||
+      emailLocalPart ||
+      '회원';
+
     return {
       id: user.id,
-      name: user.firstName || user.username || '?�원',
-      email: user.primaryEmailAddress?.emailAddress || '',
+      name: displayName,
+      email,
       imageUrl: user.imageUrl,
     };
   }, [user]);
