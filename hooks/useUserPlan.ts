@@ -14,6 +14,8 @@ const FREE_PLAN_DEFAULT: UserPlanInfo = {
   expires_at: null,
 };
 
+const normalizePlanName = (planName?: string | null) => (planName || '').toUpperCase();
+
 /**
  * 유저 플랜 정보 조회 훅
  * get_user_plan_info RPC → React Query (staleTime: 60s)
@@ -41,7 +43,7 @@ export function useUserPlan() {
     retry: 1,
   });
 
-  const isFree = !query.data || query.data.plan_name === 'PERSONAL_FREE';
+  const isFree = !query.data || normalizePlanName(query.data.plan_name) === 'PERSONAL_FREE';
   const isCancelling = query.data?.status === 'cancelling';
 
   return {

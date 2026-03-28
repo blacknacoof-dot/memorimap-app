@@ -6,7 +6,7 @@ import type { UserQuotaType, AiConsultCategory, QuotaCheckResult } from '../type
 
 /**
  * 유저 쿼터 체크 & 증가 훅
- * fail-open 정책: RPC 에러 시 {allowed: true} 반환
+ * RPC 오류 시 호출부에서 중단 처리할 수 있도록 예외를 전달한다.
  */
 export function useQuotaGate() {
   const { session } = useSession();
@@ -26,7 +26,7 @@ export function useQuotaGate() {
       });
 
       if (error) {
-        return { allowed: true, current: 0, limit: -1 }; // fail-open
+        throw error;
       }
 
       const result = data as QuotaCheckResult;
@@ -35,8 +35,6 @@ export function useQuotaGate() {
       queryClient.invalidateQueries({ queryKey: ['user-plan'] });
 
       return result;
-    } catch (_err) {
-      return { allowed: true, current: 0, limit: -1 }; // fail-open
     } finally {
       setIsChecking(false);
     }

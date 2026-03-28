@@ -142,7 +142,7 @@ export default function IntegratedJourneyView({
             const authClient = await getAuthClient(session, { strict: true });
 
             // 프리 플랜: 공유 1회 제한
-            const isFree = !userPlan || userPlan.plan_name === 'PERSONAL_FREE';
+            const isFree = !userPlan || (userPlan.plan_name || '').toUpperCase() === 'PERSONAL_FREE';
             if (isFree) {
                 const { count, error: shareCountError } = await authClient
                     .from('user_shares')

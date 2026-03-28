@@ -105,7 +105,11 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
                     p_quota_type: 'sangjo_compare',
                     p_category: null,
                 });
-                if (!error && data) {
+                if (error) {
+                    toast.error('상조 비교 한도를 확인하지 못했습니다. 다시 시도해 주세요.');
+                    return;
+                }
+                if (data) {
                     const result = data as QuotaCheckResult;
                     if (!result.allowed) {
                         setQuotaExceeded(result);
@@ -122,6 +126,8 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
                     }
                 }
             } catch {
+                toast.error('상조 비교 한도를 확인하지 못했습니다. 다시 시도해 주세요.');
+                return;
                 // fail-open: 쿼터 체크 실패 시 통과
             }
             quotaCheckedRef.current = true;

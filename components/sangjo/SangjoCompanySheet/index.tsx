@@ -10,6 +10,7 @@ import { BenefitsTab } from './BenefitsTab';
 import { PriceTab } from './PriceTab';
 import { GalleryTab } from './GalleryTab';
 import { ReviewTab } from './ReviewTab';
+import UpgradePrompt from '../../UpgradePrompt';
 
 interface Props {
     company: FuneralCompany;
@@ -60,7 +61,12 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
     const [localReviews, setLocalReviews] = useState<Review[]>(initialReviews);
 
     // Using global store for favorite state
-    const { favoritedIds, toggleFavorite: storeToggleFavorite } = useSangjoFavoriteStore();
+    const {
+        favoritedIds,
+        toggleFavorite: storeToggleFavorite,
+        quotaExceeded,
+        clearQuotaExceeded
+    } = useSangjoFavoriteStore();
     const isLiked = favoritedIds.has(company.id);
 
     // Share Handler
@@ -208,6 +214,14 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                     가입/계약 신청
                 </button>
             </div>
+
+            <UpgradePrompt
+                isOpen={!!quotaExceeded}
+                onClose={clearQuotaExceeded}
+                featureName="상조 즐겨찾기"
+                current={quotaExceeded?.current ?? 0}
+                limit={quotaExceeded?.limit ?? 0}
+            />
         </div >
     );
 };

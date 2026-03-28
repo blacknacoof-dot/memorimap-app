@@ -5,6 +5,7 @@ import { supabase, getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
 import { toast } from 'sonner';
 import { logger } from '../../utils/logger';
+import { useQuotaGate } from '../../hooks/useQuotaGate';
 
 export type ActiveSheetTab = 'info' | 'photos' | 'reviews' | 'price' | 'ai';
 
@@ -35,6 +36,7 @@ export function useFacilitySheet({ facility, isLoggedIn, currentUser, onLoginReq
   const [isFavorite, setIsFavorite] = useState(false);
   const [dbPackages, setDbPackages] = useState<DbPackage[]>([]);
   const { session } = useSession();
+  const { checkQuota, decrementFavorite } = useQuotaGate();
 
   // Load facility_packages from DB
   useEffect(() => {
@@ -91,13 +93,29 @@ export function useFacilitySheet({ facility, isLoggedIn, currentUser, onLoginReq
 
   const handleToggleFavorite = async () => {
     if (!isLoggedIn || !currentUser) { onLoginRequired(); return; }
+    let quotaIncremented = false;
     try {
       const newStatus = !isFavorite;
       setIsFavorite(newStatus);
+      if (newStatus) {
+        const quota = await checkQuota('favorite', 'facility');
+        if (!quota.allowed) {
+          toast.error('즐겨찾기 한도에 도달했습니다.');
+          setIsFavorite(false);
+          return;
+        }
+        quotaIncremented = true;
+      }
       const client = await getAuthClient(session, { strict: true });
       const result = await favoriteService.toggleFavorite(currentUser.id, facility.id, client);
+      if (!result) {
+        await decrementFavorite(false);
+      }
       if (result !== newStatus) setIsFavorite(result);
     } catch (error: unknown) {
+      if (quotaIncremented) {
+        await decrementFavorite(false);
+      }
       logger.error('Failed to toggle favorite in facility detail', {
         facilityId: facility.id,
         userId: currentUser.id,

@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
 import { normalizeType } from '../../utils/facilityNormalizer';
+import { useQuotaGate } from '../../hooks/useQuotaGate';
 
 export type ActiveTab = 'consultations' | 'pending' | 'confirmed' | 'cancelled' | 'favorites' | 'sangjo_favorites';
 
@@ -33,6 +34,7 @@ export function useMyPage({ isLoggedIn, user, facilities: _facilities }: UseMyPa
   const [consultationCount, setConsultationCount] = useState(0);
   const [journeyRefreshKey, setJourneyRefreshKey] = useState(0);
   const { session } = useSession();
+  const { decrementFavorite } = useQuotaGate();
 
   useEffect(() => {
     if (isLoggedIn && user) {
@@ -153,6 +155,7 @@ export function useMyPage({ isLoggedIn, user, facilities: _facilities }: UseMyPa
     try {
       const client = await getAuthClient(session, { strict: true });
       await favoriteService.toggleFavorite(user.id, facilityId, client);
+      await decrementFavorite(false);
       setMyFavorites(prev => prev.filter(f => f.facility_id !== facilityId));
       toast.success('즐겨찾기가 해제되었습니다.');
     } catch {
@@ -171,6 +174,7 @@ export function useMyPage({ isLoggedIn, user, facilities: _facilities }: UseMyPa
         .eq('id', favId)
         .eq('user_id', user.id);
       if (error) throw error;
+      await decrementFavorite(true);
       setSangjoFavorites(prev => prev.filter(f => f.id !== favId));
       toast.success('즐겨찾기가 해제되었습니다.');
     } catch {

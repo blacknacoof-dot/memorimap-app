@@ -58,7 +58,11 @@ export const useSangjoFavoriteStore = create<SangjoFavoriteState>((set) => ({
                         p_quota_type: 'favorite',
                         p_category: 'sangjo',
                     });
-                    if (!error && data) {
+                    if (error) {
+                        toast.error('즐겨찾기 한도를 확인하지 못했습니다. 다시 시도해 주세요.');
+                        return false;
+                    }
+                    if (data) {
                         const result = data as QuotaCheckResult;
                         if (!result.allowed) {
                             set({ quotaExceeded: result });
@@ -68,6 +72,8 @@ export const useSangjoFavoriteStore = create<SangjoFavoriteState>((set) => ({
                         quotaIncremented = true;
                     }
                 } catch {
+                    toast.error('즐겨찾기 한도를 확인하지 못했습니다. 다시 시도해 주세요.');
+                    return false;
                     // fail-open: 쿼터 체크 실패 시 통과
                 }
             }

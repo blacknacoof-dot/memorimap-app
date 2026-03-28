@@ -7,6 +7,7 @@ import { createConsultation, updateConsultation, getFacilityFaqs } from '../../l
 import { getAuthClient } from '../../lib/supabaseClient';
 import { useUser, useSession } from '../../lib/auth';
 import { ArrowLeft, MoreVertical } from 'lucide-react';
+import { toast } from 'sonner';
 import { useQuotaGate } from '../../hooks/useQuotaGate';
 import type { AiConsultCategory } from '../../types/subscription';
 import UpgradePrompt from '../UpgradePrompt';
@@ -77,7 +78,13 @@ export const ConsultationView: React.FC<Props> = ({
         if (!consultationId) {
             // 새 상담 생성 전 쿼터 체크
             const category = getAiCategory();
-            const result = await checkQuota('ai_consult', category);
+            let result;
+            try {
+                result = await checkQuota('ai_consult', category);
+            } catch {
+                toast.error('AI 상담 이용 한도를 확인하지 못했습니다. 다시 시도해 주세요.');
+                return;
+            }
             if (!result.allowed) {
                 setQuotaExceeded({ current: result.current, limit: result.limit });
                 return;

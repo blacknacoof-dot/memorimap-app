@@ -326,3 +326,81 @@ CLAUDE.md 규칙 준수하여 구현.
   - partner approval / rejection
   - post-approval permission reflection
   - no runtime errors on admin views
+
+## Role-Based QA Matrix
+- General user
+  - funeral home / memorial facility reservation or consultation request
+  - sangjo AI consultation / comparison -> consultation request
+  - favorites, my page, personal subscription payment / cancellation reservation
+  - pass when request is saved, status is visible to the user, and flow continues without critical error
+- Facility admin
+  - receives user reservation / consultation in dashboard
+  - can approve / reject / cancel / change status
+  - pass when facility-side change is reflected back to user state
+- Sangjo admin
+  - receives sangjo consultation leads after AI consultation
+  - can process lead / change status / manage subscription
+  - pass when lead intake and status reflection work end-to-end
+- Super admin
+  - approves / rejects / cancels partner admission
+  - manages partner permissions and revenue/subscription views
+  - pass when partner permission changes are reflected correctly and admin views have no runtime errors
+
+## Core Flow Order
+1. User submits request
+2. Facility or sangjo admin receives it
+3. Admin processes approve/reject/cancel
+4. User-side status changes
+5. Super admin manages partner authority
+
+## Feature Gating Verification Order
+1. Level 1: static code verification
+2. Level 2: Supabase SQL Editor RPC verification
+3. Level 3: browser validation with FREE and PREMIUM accounts
+
+## Feature Gating Verified Paths
+- AI consult
+  - `components/AI/ChatInterface.tsx:322` calls `check_and_increment_user_quota('ai_consult')`
+  - `components/AI/ChatInterface.tsx:345` calls `check_and_increment_facility_quota('ai_chat')`
+  - `components/Consultation/ConsultationView.tsx:80` calls `checkQuota('ai_consult', category)`
+  - `components/Consultation/ConsultationView.tsx:192` renders `UpgradePrompt`
+- Sangjo compare
+  - `components/Consultation/SangjoConsultationModal.tsx:104` calls `check_and_increment_user_quota('sangjo_compare')`
+  - `components/Consultation/SangjoConsultationModal.tsx:246` renders `UpgradePrompt`
+- Favorites
+  - `hooks/useFavorites.ts:55` checks `favorite` quota for facility favorites
+  - `stores/useSangjoFavoriteStore.ts:57` checks `favorite` quota for sangjo favorites
+  - `hooks/useQuotaGate.ts:48`, `stores/useSangjoFavoriteStore.ts:80`, `stores/useSangjoFavoriteStore.ts:101` call `decrement_user_favorites_count`
+- Ending note
+  - `components/IntegratedJourneyView.tsx:145` branches by `userPlan`
+  - `components/IntegratedJourneyView.tsx:375` passes `endingNoteLevel={userPlan?.limits?.ending_note ?? 'basic'}`
+- Monthly reset
+  - `supabase/migrations/20260327_subscription_cancelling_state.sql` `get_user_plan_info()` resets monthly counters lazily
+  - `supabase/migrations/20260227_feature_gating.sql` `check_and_increment_user_quota()` also resets monthly counters lazily
+
+## Feature Gating Verified Notes
+- `get_user_plan_info()` no longer throws `Not authenticated` in the latest implementation. In `supabase/migrations/20260327_subscription_cancelling_state.sql` it returns a free-plan shaped payload with `limits = {}` when auth context is missing.
+- `check_and_increment_user_quota()` and `decrement_user_favorites_count()` still require auth and still raise `Not authenticated` when `clerk_user_id()` is missing.
+- `sangjo_compare` limits were updated by `supabase/migrations/20260310000000_update_sangjo_quota_limits.sql`.
+  - `PERSONAL_FREE = 10`
+  - `PERSONAL_BASIC = 15`
+  - `PERSONAL_PREMIUM = -1`
+- The correct sangjo favorite store path is `stores/useSangjoFavoriteStore.ts`.
+
+## Feature Gating Verified Risks
+- Fail-open behavior is present in quota paths.
+  - `hooks/useQuotaGate.ts` returns `{ allowed: true }` on quota RPC error.
+  - `components/AI/ChatInterface.tsx` and `components/Consultation/SangjoConsultationModal.tsx` continue on quota check exceptions.
+  - This means temporary auth/RPC failure can bypass gating.
+- AI consult user quota can be consumed before facility quota failure.
+  - `components/AI/ChatInterface.tsx` increments user quota first, then checks facility quota.
+  - If facility quota blocks, user quota has already been consumed.
+- AI consult quota can be consumed before consultation creation failure.
+  - `components/Consultation/ConsultationView.tsx` increments `ai_consult` before `createConsultation()`.
+  - There is no rollback RPC for failed consultation creation.
+- Free-plan detection depends on uppercase `PERSONAL_FREE`.
+  - Older subscription bootstrap paths wrote lowercase `personal_free`.
+  - `hooks/useUserPlan.ts` and `components/IntegratedJourneyView.tsx` compare only against uppercase `PERSONAL_FREE`.
+- Sangjo favorite quota exceed state is stored but no verified `UpgradePrompt` consumer was found.
+  - `stores/useSangjoFavoriteStore.ts` sets `quotaExceeded`
+  - `components/sangjo/SangjoCompanyList.tsx` and `components/sangjo/SangjoCompanySheet/index.tsx` do not render `UpgradePrompt`

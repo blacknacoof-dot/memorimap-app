@@ -323,7 +323,11 @@ export const ChatInterface: React.FC<Props> = ({
                     p_quota_type: 'ai_consult',
                     p_category: getAiCategory(),
                 });
-                if (!error && data) {
+                if (error) {
+                    toast.error('AI 상담 이용 한도를 확인하지 못했습니다. 다시 시도해 주세요.');
+                    return;
+                }
+                if (data) {
                     const result = data as QuotaCheckResult;
                     if (!result.allowed) {
                         setQuotaExceeded(result);
@@ -332,9 +336,8 @@ export const ChatInterface: React.FC<Props> = ({
                 }
                 sessionQuotaCheckedRef.current = true;
             } catch (_err) {
-                // fail-open
-                // fail-open: quota check error
-                sessionQuotaCheckedRef.current = true;
+                toast.error('AI 상담 이용 한도를 확인하지 못했습니다. 다시 시도해 주세요.');
+                return;
             }
         }
 
@@ -346,7 +349,11 @@ export const ChatInterface: React.FC<Props> = ({
                     p_facility_id: facility.id,
                     p_quota_type: 'ai_chat',
                 });
-                if (!error && data) {
+                if (error) {
+                    toast.error('시설 AI 상담 한도를 확인하지 못했습니다. 다시 시도해 주세요.');
+                    return;
+                }
+                if (data) {
                     const result = data as QuotaCheckResult;
                     if (!result.allowed) {
                         setQuotaExceeded(result);
@@ -355,9 +362,8 @@ export const ChatInterface: React.FC<Props> = ({
                 }
                 facilityQuotaCheckedRef.current = true;
             } catch (_err) {
-                // fail-open
-                // fail-open: facility quota error
-                facilityQuotaCheckedRef.current = true;
+                toast.error('시설 AI 상담 한도를 확인하지 못했습니다. 다시 시도해 주세요.');
+                return;
             }
         }
 

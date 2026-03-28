@@ -5,7 +5,7 @@ import type { FacilityQuotaType, QuotaCheckResult } from '../types/subscription'
 
 /**
  * 시설 쿼터 체크 훅 (AI 채팅 / SMS)
- * fail-open 정책: RPC 에러 시 {allowed: true} 반환
+ * RPC 오류 시 호출부에서 중단 처리할 수 있도록 예외를 전달한다.
  */
 export function useFacilityQuota() {
   const { session } = useSession();
@@ -24,12 +24,10 @@ export function useFacilityQuota() {
       });
 
       if (error) {
-        return { allowed: true, current: 0, limit: -1 }; // fail-open
+        throw error;
       }
 
       return data as QuotaCheckResult;
-    } catch (_err) {
-      return { allowed: true, current: 0, limit: -1 }; // fail-open
     } finally {
       setIsChecking(false);
     }

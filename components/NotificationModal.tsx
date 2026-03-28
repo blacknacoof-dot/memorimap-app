@@ -3,7 +3,6 @@ import { Bell, X, CheckCircle, AlertTriangle, Info, Trash2, Check } from 'lucide
 import { UserNotification } from '@/types/db';
 import { confirmAsync } from '../src/components/common/ConfirmModal';
 
-// Relative time display in Korean
 const getRelativeTime = (date: string): string => {
     const diff = Date.now() - new Date(date).getTime();
     if (diff < 60000) return '방금 전';
@@ -13,7 +12,6 @@ const getRelativeTime = (date: string): string => {
     return new Date(date).toLocaleDateString('ko-KR');
 };
 
-// Type badge component
 const TypeBadge: React.FC<{ type: string }> = ({ type }) => {
     const config: Record<string, { bg: string; text: string; label: string }> = {
         success: { bg: 'bg-green-100', text: 'text-green-700', label: '완료' },
@@ -22,6 +20,7 @@ const TypeBadge: React.FC<{ type: string }> = ({ type }) => {
         info: { bg: 'bg-blue-100', text: 'text-blue-700', label: '안내' },
     };
     const c = config[type] || config.info;
+
     return (
         <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold ${c.bg} ${c.text}`}>
             {c.label}
@@ -29,13 +28,16 @@ const TypeBadge: React.FC<{ type: string }> = ({ type }) => {
     );
 };
 
-// Type icon component
 const TypeIcon: React.FC<{ type: string }> = ({ type }) => {
     switch (type) {
-        case 'success': return <CheckCircle size={18} className="text-green-500" />;
-        case 'warning': return <AlertTriangle size={18} className="text-orange-500" />;
-        case 'error': return <X size={18} className="text-red-500" />;
-        default: return <Info size={18} className="text-blue-500" />;
+        case 'success':
+            return <CheckCircle size={18} className="text-green-500" />;
+        case 'warning':
+            return <AlertTriangle size={18} className="text-orange-500" />;
+        case 'error':
+            return <X size={18} className="text-red-500" />;
+        default:
+            return <Info size={18} className="text-blue-500" />;
     }
 };
 
@@ -56,30 +58,42 @@ export interface NotificationModalProps {
 }
 
 export const NotificationModal: React.FC<NotificationModalProps> = ({
-    isOpen, onClose, notifications, unreadCount, isLoading, loadError, onRetry, onMarkAsRead, onMarkAllAsRead, onDelete, onNavigate
+    isOpen,
+    onClose,
+    notifications,
+    unreadCount,
+    isLoading,
+    loadError,
+    onRetry,
+    onMarkAsRead,
+    onMarkAllAsRead,
+    onDelete,
+    onNavigate,
 }) => {
     const [filter, setFilter] = useState<FilterTab>('전체');
     const [isClosing, setIsClosing] = useState(false);
 
-    // Reset filter when modal opens (React: derive state from props)
-    const [prevIsOpen, setPrevIsOpen] = useState(false);
-    if (isOpen !== prevIsOpen) {
-        setPrevIsOpen(isOpen);
-        if (isOpen) {
+    // isOpen 전환 시 overflow 제어 + 열림 시 상태 리셋
+    const prevIsOpenRef = React.useRef(false);
+    useEffect(() => {
+        if (isOpen && !prevIsOpenRef.current) {
+            // 모달이 열릴 때 리셋 — DOM overflow 동기화와 함께 1회 수행
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setFilter('전체');
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setIsClosing(false);
         }
-    }
+        prevIsOpenRef.current = isOpen;
 
-    // Prevent body scroll when modal is open
-    useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = '';
         }
-        return () => { document.body.style.overflow = ''; };
-    }, [isOpen]);
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [isOpen]); // eslint-disable-line react-hooks/set-state-in-effect
 
     const handleClose = useCallback(() => {
         setIsClosing(true);
@@ -89,19 +103,19 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
         }, 200);
     }, [onClose]);
 
-    // Handle backdrop click
     const handleBackdropClick = useCallback((e: React.MouseEvent) => {
         if (e.target === e.currentTarget) {
             handleClose();
         }
     }, [handleClose]);
 
-    // Handle Escape key
     useEffect(() => {
         if (!isOpen) return;
+
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') handleClose();
         };
+
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [isOpen, handleClose]);
@@ -124,10 +138,10 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
         const path = rawPath.endsWith('/') && rawPath.length > 1 ? rawPath.slice(0, -1) : rawPath;
         const params = new URLSearchParams(rawQuery);
 
-        // Legacy admin subscription deeplink fallback.
         if (path === '/admin' && params.get('tab') === 'subs') {
             return '/super-admin?tab=subs';
         }
+
         return rawQuery ? `${path}?${rawQuery}` : path;
     };
 
@@ -135,6 +149,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
         if (!notif.is_read) {
             onMarkAsRead(notif.id);
         }
+
         if (notif.link) {
             onNavigate(normalizeNotificationLink(notif.link));
             handleClose();
@@ -154,7 +169,6 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
             onClick={handleBackdropClick}
             data-testid="notification-modal"
         >
-            {/* Modal Content */}
             <div
                 className={`
                     bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl
@@ -168,12 +182,10 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                 `}
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* Drag handle for mobile */}
                 <div className="flex justify-center pt-2 sm:hidden">
                     <div className="w-10 h-1 bg-gray-300 rounded-full" />
                 </div>
 
-                {/* Header */}
                 <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-2">
                         <Bell size={20} className="text-gray-700" />
@@ -192,7 +204,6 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                     </button>
                 </div>
 
-                {/* Filter Tabs */}
                 <div className="px-5 py-2 border-b border-gray-100 flex gap-1 shrink-0">
                     {(['전체', '안읽음'] as FilterTab[]).map((tab) => (
                         <button
@@ -214,7 +225,6 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                     ))}
                 </div>
 
-                {/* Notification List */}
                 <div className="flex-1 overflow-y-auto overscroll-contain">
                     {loadError ? (
                         <div className="p-8 text-center">
@@ -236,7 +246,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                         <div className="p-12 text-center">
                             <Bell size={40} className="mx-auto text-gray-200 mb-3" />
                             <p className="text-gray-400 text-sm">
-                                {filter === '안읽음' ? '읽지 않은 알림이 없습니다.' : '도착한 알림이 없습니다.'}
+                                {filter === '안읽음' ? '읽지 않은 알림이 없습니다.' : '아직 알림이 없습니다.'}
                             </p>
                         </div>
                     ) : (
@@ -251,17 +261,14 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                                     onClick={() => handleNotificationClick(notif)}
                                 >
                                     <div className="flex gap-3">
-                                        {/* Unread indicator */}
                                         {!notif.is_read && (
                                             <div className="absolute left-1.5 top-1/2 -translate-y-1/2 w-2 h-2 bg-blue-500 rounded-full" />
                                         )}
 
-                                        {/* Type icon */}
                                         <div className="mt-0.5 shrink-0">
                                             <TypeIcon type={notif.type} />
                                         </div>
 
-                                        {/* Content */}
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-1">
                                                 <TypeBadge type={notif.type} />
@@ -279,7 +286,6 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                                             </p>
                                         </div>
 
-                                        {/* Delete button */}
                                         <button
                                             onClick={(e) => handleDelete(e, notif.id)}
                                             className="shrink-0 p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors opacity-0 group-hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 active:opacity-100"
@@ -294,7 +300,6 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                     )}
                 </div>
 
-                {/* Footer */}
                 {notifications.length > 0 && (
                     <div className="px-5 py-3 border-t border-gray-100 shrink-0">
                         <button
@@ -313,7 +318,6 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                 )}
             </div>
 
-            {/* CSS animations */}
             <style>{`
                 @keyframes slide-up {
                     from { transform: translateY(100%); }

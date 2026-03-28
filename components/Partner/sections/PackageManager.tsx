@@ -116,15 +116,15 @@ export const PackageManager: React.FC<PackageManagerProps> = ({ facilityId, pack
 
     return (
         <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                <h3 className="font-black text-slate-800 flex items-center gap-2">
+            <div className="px-6 py-4 border-b border-slate-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <h3 className="font-black text-slate-800 flex items-center gap-2 break-keep whitespace-nowrap min-w-0">
                     <Package size={18} className="text-amber-600" />
                     가격/패키지 관리
                 </h3>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2 sm:flex-nowrap sm:justify-end">
                     <button
                         onClick={addPackage}
-                        className="flex items-center gap-1.5 px-3 py-2 bg-amber-50 text-amber-700 rounded-xl text-xs font-bold hover:bg-amber-100 transition-all border border-amber-200"
+                        className="flex min-h-[44px] items-center justify-center gap-1.5 px-3 py-2 bg-amber-50 text-amber-700 rounded-xl text-xs font-bold hover:bg-amber-100 transition-all border border-amber-200 break-keep whitespace-nowrap"
                     >
                         <Plus size={14} />
                         패키지 추가
@@ -132,7 +132,7 @@ export const PackageManager: React.FC<PackageManagerProps> = ({ facilityId, pack
                     <button
                         onClick={handleSavePackages}
                         disabled={saving}
-                        className="flex items-center gap-1.5 px-4 py-2 bg-amber-600 text-white rounded-xl text-xs font-bold hover:bg-amber-700 transition-all disabled:opacity-50"
+                        className="flex min-h-[44px] items-center justify-center gap-1.5 px-4 py-2 bg-amber-600 text-white rounded-xl text-xs font-bold hover:bg-amber-700 transition-all disabled:opacity-50 break-keep whitespace-nowrap"
                     >
                         <Save size={14} />
                         {saving ? '저장 중...' : '전체 저장'}

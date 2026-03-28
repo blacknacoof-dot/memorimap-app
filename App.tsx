@@ -294,7 +294,7 @@ const App: React.FC = () => {
         viewState={viewState}
         setViewState={setViewState}
         isMenuOpen={isMenuOpen}
-        setIsMenuOpen={setIsMenuOpen}
+        setIsMenuOpen={(open) => { if (open) setSelectedFacility(null); setIsMenuOpen(open); }}
         showPromo={showPromo}
         setShowPromo={setShowPromo}
         showSOS={showSOS}

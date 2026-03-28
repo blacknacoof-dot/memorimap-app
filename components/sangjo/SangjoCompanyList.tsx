@@ -8,6 +8,7 @@ import { useUser, useSession } from '../../lib/auth';
 import { useSangjoFavoriteStore } from '../../stores/useSangjoFavoriteStore';
 import { useSangjoCompanies } from '../../hooks/sangjo/useSangjoCompanies';
 import { SangjoCompanyCard } from './SangjoCompanyCard';
+import UpgradePrompt from '../UpgradePrompt';
 
 interface Props {
     onCompanySelect: (company: FuneralCompany, startChat?: boolean) => void;
@@ -34,7 +35,13 @@ export const SangjoCompanyList: React.FC<Props> = ({
     const { user } = useUser();
     const { session } = useSession();
 
-    const { favoritedIds, fetchFavorites, toggleFavorite: storeToggleFavorite } = useSangjoFavoriteStore();
+    const {
+        favoritedIds,
+        fetchFavorites,
+        toggleFavorite: storeToggleFavorite,
+        quotaExceeded,
+        clearQuotaExceeded
+    } = useSangjoFavoriteStore();
 
     const handleOpenConsultation = () => {
         if (!isLoggedIn) {
@@ -200,6 +207,14 @@ export const SangjoCompanyList: React.FC<Props> = ({
                     currentUser={user ? { id: user.id, name: user.fullName || user.firstName || '' } : null}
                 />
             )}
+
+            <UpgradePrompt
+                isOpen={!!quotaExceeded}
+                onClose={clearQuotaExceeded}
+                featureName="상조 즐겨찾기"
+                current={quotaExceeded?.current ?? 0}
+                limit={quotaExceeded?.limit ?? 0}
+            />
         </div>
     );
 };

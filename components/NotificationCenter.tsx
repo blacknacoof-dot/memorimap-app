@@ -1,12 +1,21 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Bell } from 'lucide-react';
-import { useNotifications } from '../hooks/useNotifications';
 import { useNavigate } from 'react-router-dom';
+import { useNotifications } from '../hooks/useNotifications';
 import { NotificationModal } from './NotificationModal';
 
 export const NotificationCenter: React.FC = () => {
-    const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, isLoading, notificationLoadError, retryNotifications } = useNotifications();
+    const {
+        notifications,
+        unreadCount,
+        markAsRead,
+        markAllAsRead,
+        deleteNotification,
+        isLoading,
+        notificationLoadError,
+        retryNotifications,
+    } = useNotifications();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const navigate = useNavigate();
 
@@ -16,7 +25,6 @@ export const NotificationCenter: React.FC = () => {
 
     return (
         <>
-            {/* Bell Icon Trigger */}
             <button
                 onClick={() => setIsModalOpen(true)}
                 data-testid="notification-bell-button"
@@ -30,8 +38,7 @@ export const NotificationCenter: React.FC = () => {
                 )}
             </button>
 
-            {/* Notification Modal — portal to body to escape backdrop-filter containing block */}
-            {createPortal(
+            {isModalOpen && createPortal(
                 <NotificationModal
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
