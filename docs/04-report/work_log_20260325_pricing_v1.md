@@ -393,3 +393,34 @@ WHERE plan_id = 'basic' AND plan_type = 'facility';
 | LOW | 시설 SMS 초과 UI 피드백 | ⏸ 보류 | SMS 전송 기능 자체 미구현. SMS 기능 구현 시 함께 처리 |
 | LOW | 미인증 fallback limits:{} | ✅ 완료 (7dbc15a) | `FREE_PLAN_DEFAULT.limits`에 실제 PERSONAL_FREE 값 채움 |
 | LOW | 레거시 소문자 plan 행 4개 | ✅ 완료 (DB 직접) | `facility_subscriptions` 정규화 후 소문자 4행 삭제. 마이그레이션 기록: `20260328_cleanup_legacy_lowercase_plans.sql` |
+## 2026-03-28 Side Menu display-name fix
+
+### Issue
+
+- Side menu top header showed the full email-style identifier as the display name.
+- For accounts such as `black23007@naver.com`, the top header rendered `black23007@naver.com 님`, and the long text partially overflowed.
+
+### Fix
+
+- `App.tsx`
+  - display name priority changed to:
+    - `fullName`
+    - `firstName`
+    - username only when it is not email-shaped
+    - email local-part before `@`
+- `components/SideMenu.tsx`
+  - user name and email header area updated with `min-w-0` / `truncate`
+  - side menu header now safely renders long identifiers without overflow
+
+### Result
+
+- Email-shaped usernames no longer appear as the top display name when a shorter local identifier is available.
+- Example outcome:
+  - before: `black23007@naver.com 님`
+  - after: `black23007 님`
+
+### Verification
+
+- `npm run typecheck` passed
+- commit created:
+  - `37830e4` `fix(ui): stabilize side menu user display name`
