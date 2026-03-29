@@ -43,4 +43,5 @@ export interface QuotaCheckResult {
   allowed: boolean;
   current: number;
   limit: number; // -1 = 무제한
+  reason?: 'user_limit' | 'facility_limit' | string | null;
 }

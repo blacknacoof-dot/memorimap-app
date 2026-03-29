@@ -89,7 +89,6 @@ export const ChatInterface: React.FC<Props> = ({
     const [formMode, setFormMode] = useState<'chat' | 'phone'>('chat');
     // [Quota] 세션별 쿼터 체크 (re-mount 중복 방지)
     const sessionQuotaCheckedRef = useRef(false);
-    const facilityQuotaCheckedRef = useRef(false);
     const [quotaExceeded, setQuotaExceeded] = useState<QuotaCheckResult | null>(null);
     // [PDCA VERIFICATION] Trace ID Generator
     const generateTraceId = () => Math.random().toString(36).substring(2, 11).toUpperCase();
@@ -323,45 +322,20 @@ export const ChatInterface: React.FC<Props> = ({
         }
 
         // [Quota] 첫 메시지 시 쿼터 체크 (세션당 1회)
-        // 순서: (1) 시설 가용성 선확인 (읽기 전용) → (2) 사용자 쿼터 차감 → (3) 시설 쿼터 차감
-        // ※ 이번 수정은 피해 우선순위를 고려해 사용자 선소모 문제를 막는 임시 완화다.
-        //   시설 가용성은 읽기 전용 RPC(check_facility_quota_availability)로 먼저 확인하고,
-        //   실제 시설 차감(check_and_increment_facility_quota)은 사용자 차감 성공 후 수행한다.
-        //   최종적으로는 사용자/시설 쿼터를 단일 RPC 트랜잭션으로 통합해야 한다.
-
-        // (1) 시설 AI 채팅 쿼터 가용성 선확인 (읽기 전용, increment 없음)
-        if (messages.length === 0 && !facilityQuotaCheckedRef.current && facility.id) {
-            try {
-                const client = await getAuthClient(session, { strict: true });
-                const { data, error } = await client.rpc('check_facility_quota_availability', {
-                    p_facility_id: facility.id,
-                    p_quota_type: 'ai_chat',
-                });
-                if (error) {
-                    toast.error('시설 AI 상담 한도를 확인하지 못했습니다. 다시 시도해 주세요.');
-                    return;
-                }
-                if (data) {
-                    const result = data as QuotaCheckResult;
-                    if (!result.allowed) {
-                        setQuotaExceeded(result);
-                        return;
-                    }
-                }
-            } catch (_err) {
-                toast.error('시설 AI 상담 한도를 확인하지 못했습니다. 다시 시도해 주세요.');
-                return;
-            }
-        }
-
-        // (2) 사용자 쿼터 차감 (시설 가용 확인 후에만 실행)
+        // 단일 RPC 호출 안에서 사용자/시설 쿼터를 함께 검증하고 함께 차감한다.
         if (messages.length === 0 && !sessionQuotaCheckedRef.current && currentUser) {
             try {
                 const client = await getAuthClient(session, { strict: true });
-                const { data, error } = await client.rpc('check_and_increment_user_quota', {
-                    p_quota_type: 'ai_consult',
-                    p_category: getAiCategory(),
-                });
+                const hasFacilityQuotaTarget = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(facility.id);
+                const { data, error } = hasFacilityQuotaTarget
+                    ? await client.rpc('check_and_increment_ai_consult_quotas', {
+                        p_facility_id: facility.id,
+                        p_category: getAiCategory(),
+                    })
+                    : await client.rpc('check_and_increment_user_quota', {
+                        p_quota_type: 'ai_consult',
+                        p_category: getAiCategory(),
+                    });
                 if (error) {
                     toast.error('AI 상담 이용 한도를 확인하지 못했습니다. 다시 시도해 주세요.');
                     return;
@@ -376,34 +350,6 @@ export const ChatInterface: React.FC<Props> = ({
                 sessionQuotaCheckedRef.current = true;
             } catch (_err) {
                 toast.error('AI 상담 이용 한도를 확인하지 못했습니다. 다시 시도해 주세요.');
-                return;
-            }
-        }
-
-        // (3) 시설 AI 채팅 쿼터 실제 차감 (사용자 차감 성공 후)
-        if (messages.length === 0 && !facilityQuotaCheckedRef.current && facility.id) {
-            try {
-                const client = await getAuthClient(session, { strict: true });
-                const { data, error } = await client.rpc('check_and_increment_facility_quota', {
-                    p_facility_id: facility.id,
-                    p_quota_type: 'ai_chat',
-                });
-                if (error) {
-                    toast.error('시설 AI 상담 한도를 확인하지 못했습니다. 다시 시도해 주세요.');
-                    return;
-                }
-                if (data) {
-                    const result = data as QuotaCheckResult;
-                    if (!result.allowed) {
-                        // 시설 가용성 선확인 통과 후 실제 차감에서 실패 (레이스 컨디션)
-                        // 사용자 쿼터는 이미 차감됨 — 후속 단일 RPC 통합으로 해결 예정
-                        setQuotaExceeded(result);
-                        return;
-                    }
-                }
-                facilityQuotaCheckedRef.current = true;
-            } catch (_err) {
-                toast.error('시설 AI 상담 한도를 확인하지 못했습니다. 다시 시도해 주세요.');
                 return;
             }
         }
@@ -985,13 +931,45 @@ export const ChatInterface: React.FC<Props> = ({
 
             {/* 쿼터 초과 모달 */}
             <UpgradePrompt
-                isOpen={!!quotaExceeded}
+                isOpen={!!quotaExceeded && quotaExceeded?.reason !== 'facility_limit'}
                 onClose={() => setQuotaExceeded(null)}
                 featureName={`AI 상담 (${getAiCategory() === 'funeral_home' ? '장례식장' : getAiCategory() === 'pet_funeral' ? '반려동물' : '추모시설 (납골당·수목장·묘지 등)'})`}
                 current={quotaExceeded?.current ?? 0}
                 limit={quotaExceeded?.limit ?? 0}
                 onNavigateToPlan={onGoToMyPage}
             />
+
+            {quotaExceeded?.reason === 'facility_limit' && (
+                <div className="fixed inset-0 z-[320] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px] animate-in fade-in duration-200">
+                    <div className="bg-white w-full max-w-sm rounded-[24px] shadow-xl overflow-hidden border border-gray-100 animate-in zoom-in-95 duration-200">
+                        <div className="p-5 border-b border-gray-50 flex justify-between items-center">
+                            <div>
+                                <h2 className="text-sm font-bold text-gray-900">지금은 AI 상담이 어렵습니다</h2>
+                            </div>
+                            <button
+                                onClick={() => setQuotaExceeded(null)}
+                                className="p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-50 rounded-full transition-colors text-gray-400"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        <div className="p-5">
+                            <p className="text-sm leading-6 text-gray-700 mb-5">
+                                현재 이 시설의 AI 상담 가능 횟수가 모두 사용되어 지금은 AI 상담을 진행하기 어렵습니다.
+                                다른 시설을 확인하시거나, 일반 문의 또는 예약 경로를 이용해 주세요.
+                            </p>
+
+                            <button
+                                onClick={() => setQuotaExceeded(null)}
+                                className="w-full py-3 bg-gray-900 text-white text-sm font-semibold rounded-xl hover:bg-gray-800 transition-colors"
+                            >
+                                닫기
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 };
