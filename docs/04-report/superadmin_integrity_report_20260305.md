@@ -149,7 +149,8 @@ handleRejectSubmit()
 
 **무결성 판단**: **통과**
 - confirm dialog: 승인 ConfirmModal ✓, 거절 별도 모달(사유 입력) ✓
-- isSubmitting/isRejecting 중복 방지 ✓
+- 승인/거절 제출 중복 방지 ✓
+  - 2026-03-29 재검증: `PartnerAdmissions.tsx`에서 `approvePartner.loading`을 `isApproving`으로 연결하고, 승인 버튼 / 거절 버튼 / 거절 모달 확인 버튼에 `disabled` 및 처리 중 상태를 적용
 - Edge Function에서 서버 사이드 super_admin 재검증 ✓
 - audit_log 기록 ✓
 

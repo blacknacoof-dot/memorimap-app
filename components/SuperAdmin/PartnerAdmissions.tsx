@@ -11,7 +11,7 @@ export const PartnerAdmissions: React.FC = () => {
     const client = useSuperAdminClient();
     const { data: inquiryData, isLoading, refetch } = usePartnerInquiries({ status: 'pending', client });
     const facilities = inquiryData?.data || [];
-    const { approvePartner } = useApprovePartner(client);
+    const { approvePartner, loading: isApproving } = useApprovePartner(client);
     const [searchTerm, setSearchTerm] = useState('');
     const [rejectTarget, setRejectTarget] = useState<{ id: string; name: string } | null>(null);
     const [rejectReason, setRejectReason] = useState('');
@@ -47,6 +47,7 @@ export const PartnerAdmissions: React.FC = () => {
             return;
         }
 
+        if (isApproving || isRejecting) return;
         if (!await confirmAsync(`${inquiry.company_name} 업체의 입점을 승인하시겠습니까?`, '입점 승인 확인')) return;
         try {
             const result = await approvePartner({ inquiryId: inquiry.id, action: 'approve' });
@@ -61,7 +62,7 @@ export const PartnerAdmissions: React.FC = () => {
     };
 
     const handleRejectSubmit = async () => {
-        if (!rejectTarget || isRejecting) return;
+        if (!rejectTarget || isRejecting || isApproving) return;
         setIsRejecting(true);
         try {
             await approvePartner({
@@ -159,14 +160,16 @@ export const PartnerAdmissions: React.FC = () => {
                                 <button
                                     onClick={() => handleApprove(f)}
                                     data-testid="approve-button"
-                                    className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-bold text-sm transition-all shadow-md active:scale-95 whitespace-nowrap min-w-[100px]"
+                                    disabled={isApproving || isRejecting}
+                                    className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-sm transition-all shadow-md whitespace-nowrap min-w-[100px] ${(isApproving || isRejecting) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700 active:scale-95'}`}
                                 >
-                                    <CheckCircle size={18} /> 승인
+                                    <CheckCircle size={18} /> {isApproving ? '처리 중...' : '승인'}
                                 </button>
                                 <button
                                     onClick={() => { setRejectTarget({ id: f.id, name: f.company_name }); setRejectReason(''); }}
                                     data-testid="reject-button"
-                                    className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-6 py-2.5 bg-red-50 text-red-600 border border-red-100 rounded-xl hover:bg-red-100 font-bold text-sm transition-all active:scale-95 whitespace-nowrap min-w-[100px]"
+                                    disabled={isApproving || isRejecting}
+                                    className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-6 py-2.5 bg-red-50 text-red-600 border border-red-100 rounded-xl font-bold text-sm transition-all whitespace-nowrap min-w-[100px] ${(isApproving || isRejecting) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-100 active:scale-95'}`}
                                 >
                                     <XCircle size={18} /> 거절
                                 </button>
@@ -194,14 +197,15 @@ export const PartnerAdmissions: React.FC = () => {
                         <div className="flex gap-3 justify-end">
                             <button
                                 onClick={() => setRejectTarget(null)}
+                                disabled={isRejecting || isApproving}
                                 className="px-4 py-2 min-h-[44px] text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
                             >
                                 취소
                             </button>
                             <button
                                 onClick={handleRejectSubmit}
-                                disabled={isRejecting}
-                                className={`px-4 py-2 min-h-[44px] text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors ${isRejecting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                disabled={isRejecting || isApproving}
+                                className={`px-4 py-2 min-h-[44px] text-sm font-bold text-white bg-red-600 rounded-xl transition-colors ${(isRejecting || isApproving) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-700'}`}
                             >
                                 {isRejecting ? '처리 중...' : '거절 확인'}
                             </button>
