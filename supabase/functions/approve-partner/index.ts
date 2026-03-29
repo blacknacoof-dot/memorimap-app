@@ -102,7 +102,18 @@ serve(async (req) => {
     try {
         const authHeader = req.headers.get('Authorization')
         if (!authHeader) {
-            throw new Error('Missing authorization header')
+            return new Response(JSON.stringify({ error: 'Missing authorization header' }), {
+                status: 401,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
+        }
+
+        const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+        if (!token || token === authHeader.trim()) {
+            return new Response(JSON.stringify({ error: 'Invalid authorization header' }), {
+                status: 401,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
         }
 
         // Admin client (service role) to execute transaction
@@ -113,7 +124,6 @@ serve(async (req) => {
         )
 
         // Verify JWT via Supabase Auth (native)
-        const token = authHeader.replace(/^Bearer\s+/i, '');
         const supabaseAuth = createClient(
             Deno.env.get('SUPABASE_URL')!,
             Deno.env.get('SUPABASE_ANON_KEY')!,
