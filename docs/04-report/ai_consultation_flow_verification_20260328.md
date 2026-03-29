@@ -289,7 +289,7 @@ ChatInterface.handleSend() [line 319]
 |----|------|------|------------|
 | **D1** | 시설 쿼터가 개인 상담을 차단 가능 | 시설 구독 없는 경우 자동 통과하므로 현실적 영향 낮음 | **LOW** |
 | **D4** | 비로그인 사용자 쿼터 미체크 | 로그인 없이 AI 응답 가능하나, 리드 저장 시 인증 필요 | **MEDIUM** |
-| **D5** | memorial_facility 버킷에 4개 시설 유형 합산 | FREE 사용자 혼란 가능 | **LOW** (설계 의도일 수 있음) |
+| **D5** | memorial_facility 버킷에 4개 시설 유형 합산 | FREE 사용자 혼란 가능 | **LOW** (2026-03-29 UX 안내 보강 완료) |
 
 ---
 
@@ -321,22 +321,16 @@ ChatInterface.handleSend() [line 319]
 ### 2026-03-29 업데이트
 - `C1` 1차 수정 완료: 시설 관리자 대시보드가 `leads`를 직접 조회하고, `source='lead'` 항목을 읽기 전용으로 표시하도록 반영
 - `D2` 1차 완화 완료: `check_facility_quota_availability` RPC로 시설 가용성을 먼저 확인한 뒤 사용자 쿼터를 차감하도록 순서 조정
+- `D4` 수정 완료: 비로그인 사용자는 첫 메시지 전 로그인 유도 흐름으로 차단
+- `C2` 정리 완료: `ScenarioBot`, `aiConsultationService`, `ai_consultations` 기반 dead path 제거. 운영 경로를 `ChatInterface + leads/consultations`로 단순화
+- `D5` 수정 완료: `memorial_facility` 통합 한도를 웰컴 문구와 `UpgradePrompt`에서 명시적으로 안내
 - 마이그레이션 배포 완료: `20260329_check_facility_quota_availability.sql`
 - 검증 완료: `tsc --noEmit`, `npm run lint:errors`, `npm run build`
-- 코드 커밋: `edb704c`
-
-### P1: 비로그인 사용자 상담 시작 제한 (D4)
-- `ChatInterface.tsx`에서 첫 메시지 전 `!currentUser` 시 로그인 모달 또는 인증 유도 흐름으로 차단
-
-### P2: ScenarioBot / ai_consultations 실제 활용 정리 (C2)
-- `ScenarioBot.tsx` 사용 여부를 확정하고, 유지 시 `ai_consultations` 쓰기 경로를 실제 운영 플로우에 연결
-- 미사용 유지라면 시설 대시보드의 관련 표시/구독 정책도 함께 정리
-
-### P2: memorial_facility 하위 카테고리 구분 (D5)
-- 현재 설계로도 동작하나, UX 안내 강화 또는 카테고리 세분화 검토
+- 코드 커밋: `edb704c`, `bcdd6f8`, `9395f19`, `53bf1b5`
 
 ### 후속 과제
 - `D2` 최종 해결: 사용자/시설 쿼터를 단일 RPC 트랜잭션으로 통합해 원자성 보장
+- 수동 E2E: 유저/시설/관리자 관점 최종 확인
 
 ---
 
@@ -356,4 +350,5 @@ ChatInterface.handleSend() [line 319]
 - AI 상담 시작 ~ 시설 가용성 확인 ~ 사용자 쿼터 차감 ~ 응답 ~ 리드 저장까지는 정상
 - `C1`은 해결됨. 시설 대시보드에서 `leads`를 직접 확인 가능
 - `D2`는 1차 완화됨. 사용자 선소모는 방지했지만, 최종적으로는 단일 RPC 트랜잭션 통합이 필요
-- 잔여 주요 이슈는 `D4`, `C2`, `D5`
+- `D4`, `C2`, `D5`는 해결 또는 정리 완료
+- 잔여 주요 후속 과제는 `D2` 단일 RPC 트랜잭션 통합과 수동 E2E 최종 확인
