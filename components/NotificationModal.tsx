@@ -78,9 +78,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
     useEffect(() => {
         if (isOpen && !prevIsOpenRef.current) {
             // 모달이 열릴 때 리셋 — DOM overflow 동기화와 함께 1회 수행
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setFilter('전체');
-            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setFilter('전체'); // eslint-disable-line react-hooks/set-state-in-effect
             setIsClosing(false);
         }
         prevIsOpenRef.current = isOpen;
@@ -93,7 +91,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
         return () => {
             document.body.style.overflow = '';
         };
-    }, [isOpen]); // eslint-disable-line react-hooks/set-state-in-effect
+    }, [isOpen]);
 
     const handleClose = useCallback(() => {
         setIsClosing(true);

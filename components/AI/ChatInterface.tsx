@@ -316,6 +316,38 @@ export const ChatInterface: React.FC<Props> = ({
         if (!textToSend.trim() || isLoading) return;
 
         // [Quota] 첫 메시지 시 쿼터 체크 (세션당 1회)
+        // 순서: (1) 시설 가용성 선확인 (읽기 전용) → (2) 사용자 쿼터 차감 → (3) 시설 쿼터 차감
+        // ※ 이번 수정은 피해 우선순위를 고려해 사용자 선소모 문제를 막는 임시 완화다.
+        //   시설 가용성은 읽기 전용 RPC(check_facility_quota_availability)로 먼저 확인하고,
+        //   실제 시설 차감(check_and_increment_facility_quota)은 사용자 차감 성공 후 수행한다.
+        //   최종적으로는 사용자/시설 쿼터를 단일 RPC 트랜잭션으로 통합해야 한다.
+
+        // (1) 시설 AI 채팅 쿼터 가용성 선확인 (읽기 전용, increment 없음)
+        if (messages.length === 0 && !facilityQuotaCheckedRef.current && facility.id) {
+            try {
+                const client = await getAuthClient(session, { strict: true });
+                const { data, error } = await client.rpc('check_facility_quota_availability', {
+                    p_facility_id: facility.id,
+                    p_quota_type: 'ai_chat',
+                });
+                if (error) {
+                    toast.error('시설 AI 상담 한도를 확인하지 못했습니다. 다시 시도해 주세요.');
+                    return;
+                }
+                if (data) {
+                    const result = data as QuotaCheckResult;
+                    if (!result.allowed) {
+                        setQuotaExceeded(result);
+                        return;
+                    }
+                }
+            } catch (_err) {
+                toast.error('시설 AI 상담 한도를 확인하지 못했습니다. 다시 시도해 주세요.');
+                return;
+            }
+        }
+
+        // (2) 사용자 쿼터 차감 (시설 가용 확인 후에만 실행)
         if (messages.length === 0 && !sessionQuotaCheckedRef.current && currentUser) {
             try {
                 const client = await getAuthClient(session, { strict: true });
@@ -341,7 +373,7 @@ export const ChatInterface: React.FC<Props> = ({
             }
         }
 
-        // [Quota] 시설 AI 채팅 쿼터 체크 (세션당 1회)
+        // (3) 시설 AI 채팅 쿼터 실제 차감 (사용자 차감 성공 후)
         if (messages.length === 0 && !facilityQuotaCheckedRef.current && facility.id) {
             try {
                 const client = await getAuthClient(session, { strict: true });
@@ -356,6 +388,8 @@ export const ChatInterface: React.FC<Props> = ({
                 if (data) {
                     const result = data as QuotaCheckResult;
                     if (!result.allowed) {
+                        // 시설 가용성 선확인 통과 후 실제 차감에서 실패 (레이스 컨디션)
+                        // 사용자 쿼터는 이미 차감됨 — 후속 단일 RPC 통합으로 해결 예정
                         setQuotaExceeded(result);
                         return;
                     }

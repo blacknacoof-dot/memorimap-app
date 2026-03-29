@@ -97,8 +97,44 @@ export function useFacilityAdmin({ user, facilities }: UseFacilityAdminProps) {
           }
         } catch { /* ai_consultations 조회 실패 시 빈 배열 유지 */ }
 
+        // 리드 (leads) — 상담 폼/AI 추천에서 생성된 리드
+        let leadsAdapted: Consultation[] = [];
+        try {
+          const { data: leadsData } = await client
+            .from('leads').select('*')
+            .eq('facility_id', facilityId)
+            .order('created_at', { ascending: false });
+          if (leadsData) {
+            leadsAdapted = (leadsData as Array<Record<string, unknown>>).map((lead) => ({
+              id: String(lead.id),
+              facility_id: String(lead.facility_id || ''),
+              facility_name: '',
+              user_id: String(lead.user_id || ''),
+              user_name: String(lead.contact_name || ''),
+              user_phone: String(lead.contact_phone || ''),
+              status: lead.status === 'completed' ? 'completed'
+                : lead.status === 'cancelled' ? 'cancelled' : 'pending',
+              created_at: String(lead.created_at || ''),
+              updated_at: String(lead.updated_at || lead.created_at || ''),
+              notes: String(
+                (lead.context_data as Record<string, unknown>)?.notes
+                || (lead.context_data as Record<string, unknown>)?.source
+                || `[${lead.category || ''}] ${lead.urgency || ''}`
+              ),
+              scale: String(lead.scale || 'small'),
+              religion: 'none',
+              schedule: '3day',
+              urgency: String(lead.urgency || 'inquiry'),
+              is_read: false,
+              is_ai_response: false,
+              source: 'lead',
+              metadata: (lead.context_data || {}) as Record<string, unknown>,
+            })) as unknown as Consultation[];
+          }
+        } catch { /* leads 조회 실패 시 빈 배열 유지 */ }
+
         // 병합 후 최신순 정렬
-        const merged = [...aiAdapted, ...legacyList]
+        const merged = [...aiAdapted, ...leadsAdapted, ...legacyList]
           .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         setConsultations(merged);
       } else {
@@ -183,10 +219,40 @@ export function useFacilityAdmin({ user, facilities }: UseFacilityAdminProps) {
           })
         .subscribe();
 
+      const leadsChannel = client.channel(`facility-leads-${myFacilityId}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'leads', filter: `facility_id=eq.${myFacilityId}` },
+          (payload) => {
+            const lead = payload.new as Record<string, unknown>;
+            const adapted: Consultation = {
+              id: String(lead.id),
+              facility_id: String(lead.facility_id || ''),
+              facility_name: '',
+              user_id: String(lead.user_id || ''),
+              user_name: String(lead.contact_name || ''),
+              user_phone: String(lead.contact_phone || ''),
+              status: 'pending',
+              created_at: String(lead.created_at || ''),
+              updated_at: String(lead.updated_at || lead.created_at || ''),
+              notes: String(
+                (lead.context_data as Record<string, unknown>)?.notes
+                || (lead.context_data as Record<string, unknown>)?.source
+                || `[${lead.category || ''}] ${lead.urgency || ''}`
+              ),
+              scale: String(lead.scale || 'small'),
+              religion: 'none', schedule: '3day',
+              urgency: String(lead.urgency || 'inquiry'),
+              is_read: false, is_ai_response: false, source: 'lead',
+              metadata: (lead.context_data || {}) as Record<string, unknown>,
+            } as unknown as Consultation;
+            setConsultations(prev => [adapted, ...prev]);
+          })
+        .subscribe();
+
       cleanup = () => {
         consultationChannel.unsubscribe();
         aiConsultationChannel.unsubscribe();
         reservationChannel.unsubscribe();
+        leadsChannel.unsubscribe();
       };
     });
 

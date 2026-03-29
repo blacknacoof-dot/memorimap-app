@@ -26,7 +26,8 @@ export const ConsultationList: React.FC<Props> = ({ consultations, onAnswer, onR
             // Mark as read if expanding
             const item = consultations.find(c => c.id === id);
             const isAiConsultation = item?.source === 'ai' || item?.is_ai_response;
-            if (item && !item.is_read && !isAiConsultation && onRead) {
+            const isLeadItemMark = item?.source === 'lead';
+            if (item && !item.is_read && !isAiConsultation && !isLeadItemMark && onRead) {
                 onRead(id);
             }
         }
@@ -65,8 +66,10 @@ export const ConsultationList: React.FC<Props> = ({ consultations, onAnswer, onR
             {consultations.map(item => {
                 const isExpanded = expandedId === item.id;
                 const isAiConsultation = item.source === 'ai' || item.is_ai_response;
+                const isLeadItem = item.source === 'lead';
+                const isReadOnly = isAiConsultation || isLeadItem;
                 const isAnswered = item.status === 'accepted' || item.status === 'completed' || !!item.answer;
-                const isUnread = !item.is_read && !isAiConsultation;
+                const isUnread = !item.is_read && !isReadOnly;
 
                 return (
                     <div key={item.id} className={`bg-white rounded-xl border overflow-hidden transition-all ${isExpanded ? 'ring-2 ring-primary/20 shadow-md' : 'hover:shadow-sm'}`}>
@@ -87,6 +90,12 @@ export const ConsultationList: React.FC<Props> = ({ consultations, onAnswer, onR
                                 <div className="min-w-0 flex-1">
                                     <div className="flex items-center gap-1.5 flex-wrap">
                                         <span className="font-bold text-xs text-gray-900">{item.user_name || '익명'}</span>
+                                        {isLeadItem && (
+                                            <span className="bg-indigo-100 text-indigo-700 text-[9px] px-1.5 py-0.5 rounded-full font-bold leading-none">리드</span>
+                                        )}
+                                        {isAiConsultation && (
+                                            <span className="bg-purple-100 text-purple-700 text-[9px] px-1.5 py-0.5 rounded-full font-bold leading-none">AI</span>
+                                        )}
                                         {isUnread && (
                                             <span className="bg-red-500 text-white text-[9px] px-1 py-0.5 rounded-full font-bold animate-pulse leading-none">N</span>
                                         )}
@@ -167,6 +176,10 @@ export const ConsultationList: React.FC<Props> = ({ consultations, onAnswer, onR
                                 ) : item.status === 'cancelled' ? (
                                     <div className="text-center py-2 text-gray-400 text-xs">
                                         취소된 상담입니다.
+                                    </div>
+                                ) : isLeadItem ? (
+                                    <div className="bg-indigo-50 p-3 rounded-lg border border-indigo-100 text-xs text-indigo-700">
+                                        AI 상담/폼을 통해 접수된 리드입니다. 연락처를 확인하고 직접 연락해 주세요.
                                     </div>
                                 ) : isAiConsultation ? (
                                     <div className="bg-slate-50 p-3 rounded-lg border text-xs text-slate-600">
