@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { getConsultationsByFacility, updateConsultationStatus, Consultation } from '@/lib/queries';
 import { Clock, CheckCircle, XCircle, Check, Phone, MapPin, Users, Calendar, ChevronDown, RefreshCw } from 'lucide-react';
-import { aiConsultationService } from '@/lib/api/aiConsultation';
-import { AiConsultationStatus } from '@/types';
 import { getAuthClient } from '@/lib/supabaseClient';
 import { useApiRetry } from '@/hooks/useApiRetry';
 import { useSession } from '@/lib/auth';
@@ -143,23 +141,26 @@ export const ConsultationList: React.FC<Props> = ({ facilityId }) => {
         }
     };
 
-    // [New] Handle Modal Confirmation
+    // [New] Handle Modal Confirmation — consultations 테이블 직접 업데이트
     const handleConfirmAccept = async ({ expectedTime, instruction }: { expectedTime: string; instruction: string }) => {
         if (!selectedConsultation) return;
 
         try {
             const client = await getAuthClient(session, { strict: true });
-            await aiConsultationService.updateStatus(
-                client,
-                selectedConsultation.id,
-                AiConsultationStatus.CONSULTATION_CONFIRMED,
-                {
-                    last_event: 'CONSULTATION_CONFIRMED',
-                    event_time: new Date().toISOString(),
-                    instruction: instruction,          // [New Field]
-                    expected_time: expectedTime        // [New Field]
-                }
-            );
+            const { error } = await client
+                .from('consultations')
+                .update({
+                    status: 'accepted',
+                    metadata: {
+                        last_event: 'CONSULTATION_CONFIRMED',
+                        event_time: new Date().toISOString(),
+                        instruction,
+                        expected_time: expectedTime,
+                    },
+                })
+                .eq('id', selectedConsultation.id);
+
+            if (error) throw error;
 
             // Optimistic UI Update
             setConsultations(prev =>

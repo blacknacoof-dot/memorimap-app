@@ -3,25 +3,20 @@ import { toast } from 'sonner';
 import { getConsultationsByUser, updateConsultationStatus, getFacility, Consultation } from '@/lib/queries';
 import { Clock, CheckCircle, XCircle, Check, Building2, Calendar, ChevronRight, RefreshCw, MessageSquare, Trash2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-// aiConsultationService import 제거 — 인증 클라이언트 미전달 방지
-import { AiConsultationStatus, Facility } from '@/types';
+import { Facility } from '@/types';
 import { getAuthClient } from '@/lib/supabaseClient';
 import { useApiRetry } from '@/hooks/useApiRetry';
 import { useSession } from '@/lib/auth';
 import { confirmAsync } from '@/src/components/common/ConfirmModal';
 
-/** Extended consultation type with AI-specific fields */
+/** Extended consultation type */
 type ExtendedConsultation = Consultation & {
-    conversation_id?: string;
-    isAi?: boolean;
-    ai_pk?: string;
-    originStatus?: string;
     facility_name?: string;
 };
 
 interface Props {
     userId: string;
-    onResumeChat?: (consultation: ExtendedConsultation) => void;
+    onResumeChat?: (consultation: ExtendedConsultation) => void; // 향후 AI 상담 인계 복구 시 활용
     onViewFacility?: (facility: Facility) => void;
 }
 
@@ -61,7 +56,7 @@ const _SCHEDULE_LABELS: Record<string, string> = {
     other: '기타'
 };
 
-export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewFacility }) => {
+export const MyConsultations: React.FC<Props> = ({ userId, onViewFacility }) => {
     const [consultations, setConsultations] = useState<ExtendedConsultation[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const { callWithRetry } = useApiRetry();
@@ -87,60 +82,13 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
             legacyData = await getConsultationsByUser(userId, fallbackClient);
         }
 
-        // 2. Fetch AI Consultations (인증 클라이언트 사용, deleted 제외)
-        let aiData: Array<Record<string, unknown>> = [];
-        try {
-            const aiClient = await getAuthClient(session, { strict: true });
-            const { data: aiResult, error: aiError } = await aiClient
-                .from('ai_consultations')
-                .select('*')
-                .eq('user_id', userId)
-                .order('updated_at', { ascending: false });
-            if (!aiError && aiResult) {
-                aiData = (aiResult as Array<Record<string, unknown>>).filter(ai => ai.status !== 'cancelled' && ai.status !== 'deleted');
-            }
-        } catch (_e) {
-            // ai_consultations 조회 실패 — 빈 배열로 fallback
-            // fallback 제거 — 인증 실패 시 빈 배열
-            aiData = [];
-        }
-
-        // 3. Merge & Adapt
-        const aiAdapted: ExtendedConsultation[] = aiData.map((ai) => ({
-            id: String(ai.id), // UUID PK - always exists
-            facility_id: String(ai.facility_id || ''),
-            user_id: String(ai.user_id || userId),
-            status: mapAiStatusToLegacy(ai.status as AiConsultationStatus) as ExtendedConsultation['status'],
-            created_at: String(ai.created_at || new Date().toISOString()),
-            updated_at: String(ai.updated_at || new Date().toISOString()),
-            facility_name: String(ai.facility_name || ''),
-            scale: 'small',
-            religion: 'none',
-            schedule: '3day',
-            urgency: 'inquiry',
-            is_ai_response: true,
-            metadata: (ai.metadata || {}) as Record<string, unknown>,
-            source: 'ai',
-            isAi: true,
-            conversation_id: String(ai.conversation_id || ''),
-            ai_pk: String(ai.id), // ai_consultations PK for delete/cancel
-            originStatus: String(ai.status || '')
-        }));
+        // ai_consultations 조회 제거 — ScenarioBot(유일한 쓰기 경로) 폐기로 빈 테이블
+        // 향후 AI 상담 인계 복구 시 여기에 다시 추가
 
         setConsultations(
-            [...aiAdapted, ...legacyData]
-                .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+            legacyData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         );
         setIsLoading(false);
-    };
-
-    const mapAiStatusToLegacy = (status: AiConsultationStatus): string => {
-        switch (status) {
-            case AiConsultationStatus.COMPLETED: return 'completed';
-            case AiConsultationStatus.AGENT_CONNECTED: return 'accepted';
-            case AiConsultationStatus.AGENT_REQUESTED: return 'waiting';
-            default: return 'waiting'; // AI_HANDLING -> waiting
-        }
     };
 
     useEffect(() => {
@@ -160,7 +108,7 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
                     {
                         event: '*',
                         schema: 'public',
-                        table: 'ai_consultations',
+                        table: 'consultations',
                         filter: `user_id=eq.${userId}`
                     },
                     () => { fetchConsultations(); }
@@ -178,39 +126,20 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
 
     const handleCancel = async (consultation: ExtendedConsultation) => {
         const consultationId = consultation.id;
-        if (!consultationId || consultationId.startsWith('ai_temp_')) {
+        if (!consultationId) {
             toast.error('상담 ID가 없어 취소할 수 없습니다.');
             return;
         }
         if (!await confirmAsync('상담을 취소하시겠습니까?')) return;
 
         try {
-            if (consultation.isAi) {
-                const aiId = consultation.ai_pk || consultation.id;
-                if (!aiId || String(aiId).startsWith('ai_temp_')) {
-                    toast.error('AI 상담 ID가 유효하지 않습니다.');
-                    return;
-                }
-                const cancelClient = await getAuthClient(session, { strict: true });
-                const { error } = await cancelClient
-                    .from('ai_consultations')
-                    .update({ status: 'cancelled', updated_at: new Date().toISOString() })
-                    .eq('id', aiId)
-                    .eq('user_id', userId);
-                if (error) {
-                    toast.error('취소 중 오류가 발생했습니다.');
-                    return;
-                }
-            } else {
-                // 일반 상담: 자동 재시도 포함
-                const client = await getAuthClient(session, { strict: true });
-                const success = await callWithRetry(() =>
-                    updateConsultationStatus(consultationId, 'cancelled', undefined, client)
-                );
-                if (!success) {
-                    toast.error('취소 중 오류가 발생했습니다.');
-                    return;
-                }
+            const client = await getAuthClient(session, { strict: true });
+            const success = await callWithRetry(() =>
+                updateConsultationStatus(consultationId, 'cancelled', undefined, client)
+            );
+            if (!success) {
+                toast.error('취소 중 오류가 발생했습니다.');
+                return;
             }
             setConsultations(prev =>
                 prev.map(c => c.id === consultationId ? { ...c, status: 'cancelled' } : c)
@@ -225,28 +154,13 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
         if (!await confirmAsync('상담 내역을 삭제하시겠습니까?')) return;
 
         try {
-            if (consultation.isAi) {
-                const aiId = consultation.ai_pk || consultation.id;
-                if (!aiId || String(aiId).startsWith('ai_temp_')) {
-                    toast.error('AI 상담 ID가 유효하지 않아 삭제할 수 없습니다.');
-                    return;
-                }
-                const cancelClient = await getAuthClient(session, { strict: true });
-                const { error } = await cancelClient
-                    .from('ai_consultations')
-                    .update({ status: 'cancelled', updated_at: new Date().toISOString() })
-                    .eq('id', aiId)
-                    .eq('user_id', userId);
-                if (error) throw error;
-            } else {
-                const legacyCancelClient = await getAuthClient(session, { strict: true });
-                const { error } = await legacyCancelClient
-                    .from('consultations')
-                    .update({ status: 'cancelled' })
-                    .eq('id', consultation.id)
-                    .eq('user_id', userId);
-                if (error) throw error;
-            }
+            const client = await getAuthClient(session, { strict: true });
+            const { error } = await client
+                .from('consultations')
+                .update({ status: 'cancelled' })
+                .eq('id', consultation.id)
+                .eq('user_id', userId);
+            if (error) throw error;
 
             setConsultations(prev => prev.filter(c => c.id !== consultation.id));
             toast.success('상담 내역이 삭제되었습니다.');
@@ -403,23 +317,6 @@ export const MyConsultations: React.FC<Props> = ({ userId, onResumeChat, onViewF
                             )}
 
                             {/* Actions */}
-                            {/* [AI] Resume Chat Button */}
-                            {consultation.isAi && consultation.originStatus !== AiConsultationStatus.COMPLETED && (
-                                <button
-                                    onClick={() => {
-                                        if (onResumeChat) {
-                                            onResumeChat(consultation);
-                                        } else {
-                                            toast.info(`[상담 이어하기] 채팅창을 엽니다.\nID: ${consultation.id}`);
-                                        }
-                                    }}
-                                    className="w-full py-2 mb-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition font-bold flex items-center justify-center gap-2"
-                                >
-                                    <MessageSquare size={16} />
-                                    상담 이어하기
-                                </button>
-                            )}
-
                             {(['waiting', 'pending'].includes(consultation.status)) && (
                                 <button
                                     onClick={() => handleCancel(consultation)}

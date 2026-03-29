@@ -311,26 +311,32 @@ ChatInterface.handleSend() [line 319]
 | AI 추천 확인 | ✅ | ❌ (자동 전환 없음) | ❌ | ❌ |
 | 추천 시설 "예약" 클릭 | (기존 lead 사용) | ✅ RPC | ✅ | ✅ |
 | 긴급 예약 확정 | ✅ | ❌ | ✅ (reservations) | ✅ (reservations) |
-| 상담 폼 제출 | ✅ | ❌ | ❌ | **❌ 전달 안 됨** |
+| 상담 폼 제출 | ✅ | ❌ | ✅ (`leads` Realtime) | ✅ (`leads` 직접 조회) |
 | 직접 상담 (ConsultationView) | ❌ | ✅ 직접 생성 | ✅ | ✅ |
 
 ---
 
 ## 9. 수정 우선순위 권장
 
-### P0: 상담 폼 제출 시 시설 전달 (C1)
-- `ChatInterface.tsx:685-725`에서 `createLead()` 후 `createConsultationFromLead()` 추가 호출
-- 또는 시설 대시보드에 `leads` 테이블 직접 조회 추가
-
-### P0: 쿼터 소모 후 시설 쿼터 실패 롤백 (D2)
-- 시설 쿼터를 먼저 체크하거나, 사용자 쿼터를 별도 RPC로 분리 (check만 → 성공 후 increment)
-- 또는 두 쿼터를 하나의 트랜잭션 RPC로 통합
+### 2026-03-29 업데이트
+- `C1` 1차 수정 완료: 시설 관리자 대시보드가 `leads`를 직접 조회하고, `source='lead'` 항목을 읽기 전용으로 표시하도록 반영
+- `D2` 1차 완화 완료: `check_facility_quota_availability` RPC로 시설 가용성을 먼저 확인한 뒤 사용자 쿼터를 차감하도록 순서 조정
+- 마이그레이션 배포 완료: `20260329_check_facility_quota_availability.sql`
+- 검증 완료: `tsc --noEmit`, `npm run lint:errors`, `npm run build`
+- 코드 커밋: `edb704c`
 
 ### P1: 비로그인 사용자 상담 시작 제한 (D4)
-- `ChatInterface.tsx:319`에서 `!currentUser` 시 로그인 모달 표시
+- `ChatInterface.tsx`에서 첫 메시지 전 `!currentUser` 시 로그인 모달 또는 인증 유도 흐름으로 차단
+
+### P2: ScenarioBot / ai_consultations 실제 활용 정리 (C2)
+- `ScenarioBot.tsx` 사용 여부를 확정하고, 유지 시 `ai_consultations` 쓰기 경로를 실제 운영 플로우에 연결
+- 미사용 유지라면 시설 대시보드의 관련 표시/구독 정책도 함께 정리
 
 ### P2: memorial_facility 하위 카테고리 구분 (D5)
-- 현재 설계로도 동작하나, UX 개선 시 카테고리 세분화 검토
+- 현재 설계로도 동작하나, UX 안내 강화 또는 카테고리 세분화 검토
+
+### 후속 과제
+- `D2` 최종 해결: 사용자/시설 쿼터를 단일 RPC 트랜잭션으로 통합해 원자성 보장
 
 ---
 
@@ -342,10 +348,12 @@ ChatInterface.handleSend() [line 319]
 | 상담 row 저장됨 | ⚠️ PARTIAL | leads 저장 O, consultations 자동 전환 조건부 |
 | facility_id / category / user_id 정확 | ⚠️ PARTIAL | leads.category 네이밍 불일치 (F1), 기능은 정상 |
 | 예약/문의 전환 시 후속 row 생성됨 | ✅ PASS | RECOMMEND→RPC, 긴급→reservations 확인 |
-| 시설측 조회 경로에서 확인 가능 | 🔴 PARTIAL FAIL | leads만 생성된 경우 시설 미조회 (C1) |
+| 시설측 조회 경로에서 확인 가능 | ✅ PASS | 시설 대시보드에서 `leads` 직접 조회 및 Realtime 반영 |
 | FREE 카테고리별 1회 제한 | ✅ PASS | per-category JSONB, 독립 카운트 확인 |
 | PREMIUM 반복 가능 | ✅ PASS | limit=-1 (무제한) 확인 |
 
-### 종합 판정: ⚠️ **조건부 통과**
-- AI 상담 시작 ~ 쿼터 체크 ~ 응답 ~ 리드 저장까지는 정상
-- **시설측 전달 갭(C1)과 쿼터 롤백 부재(D2)가 해결되어야 출시 가능**
+### 종합 판정: ✅ **조건부 통과 유지**
+- AI 상담 시작 ~ 시설 가용성 확인 ~ 사용자 쿼터 차감 ~ 응답 ~ 리드 저장까지는 정상
+- `C1`은 해결됨. 시설 대시보드에서 `leads`를 직접 확인 가능
+- `D2`는 1차 완화됨. 사용자 선소모는 방지했지만, 최종적으로는 단일 RPC 트랜잭션 통합이 필요
+- 잔여 주요 이슈는 `D4`, `C2`, `D5`
