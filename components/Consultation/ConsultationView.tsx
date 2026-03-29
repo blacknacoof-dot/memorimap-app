@@ -199,7 +199,7 @@ export const ConsultationView: React.FC<Props> = ({
             <UpgradePrompt
                 isOpen={!!quotaExceeded}
                 onClose={() => setQuotaExceeded(null)}
-                featureName={`AI 상담 (${getAiCategory() === 'funeral_home' ? '장례식장' : getAiCategory() === 'pet_funeral' ? '반려동물' : '추모시설'})`}
+                featureName={`AI 상담 (${getAiCategory() === 'funeral_home' ? '장례식장' : getAiCategory() === 'pet_funeral' ? '반려동물' : '추모시설 (납골당·수목장·묘지 등)'})`}
                 current={quotaExceeded?.current ?? 0}
                 limit={quotaExceeded?.limit ?? 0}
             />

@@ -202,7 +202,7 @@ export const ChatInterface: React.FC<Props> = ({
                     // Scenario B: Memorial Facility Form
                     setMessages([{
                         role: 'model',
-                        text: `고인과 유족분들의 평온한 안식을 위해 최선을 다해 돕겠습니다. \n원하시는 조건(지역, 종교, 예산 등)을 선택해 주시면, 맞춤 추모시설을 추천해 드립니다.`,
+                        text: `고인과 유족분들의 평온한 안식을 위해 최선을 다해 돕겠습니다.\n납골당·수목장·묘지 등 추모시설을 통합 안내해 드립니다. 원하시는 조건(지역, 종교, 예산 등)을 선택해 주세요.`,
                         timestamp: new Date(),
                         action: 'SHOW_FORM_B'
                     }]);
@@ -987,7 +987,7 @@ export const ChatInterface: React.FC<Props> = ({
             <UpgradePrompt
                 isOpen={!!quotaExceeded}
                 onClose={() => setQuotaExceeded(null)}
-                featureName={`AI 상담 (${getAiCategory() === 'funeral_home' ? '장례식장' : getAiCategory() === 'pet_funeral' ? '반려동물' : '추모시설'})`}
+                featureName={`AI 상담 (${getAiCategory() === 'funeral_home' ? '장례식장' : getAiCategory() === 'pet_funeral' ? '반려동물' : '추모시설 (납골당·수목장·묘지 등)'})`}
                 current={quotaExceeded?.current ?? 0}
                 limit={quotaExceeded?.limit ?? 0}
                 onNavigateToPlan={onGoToMyPage}
