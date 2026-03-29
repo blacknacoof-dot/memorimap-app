@@ -643,7 +643,7 @@ export const ChatInterface: React.FC<Props> = ({
                 actionType = 'SHOW_FORM_A';
             } else if (scenario === 'memorial') {
                 setActiveScenario('memorial');
-                welcomeMsg = `고인과 유족분들의 평온한 안식을 위해 최선을 다해 돕겠습니다. \n원하시는 조건(지역, 종교, 예산 등)을 선택해 주시면, 맞춤 추모시설을 추천해 드립니다.`;
+                welcomeMsg = `고인과 유족분들의 평온한 안식을 위해 최선을 다해 돕겠습니다.\n납골당·수목장·묘지 등 추모시설을 통합 안내해 드립니다. 원하시는 조건(지역, 종교, 예산 등)을 선택해 주세요.`;
                 actionType = 'SHOW_FORM_B';
             } else if (scenario === 'pet') {
                 setActiveScenario('pet');
