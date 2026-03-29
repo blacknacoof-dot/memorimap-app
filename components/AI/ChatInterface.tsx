@@ -315,6 +315,13 @@ export const ChatInterface: React.FC<Props> = ({
 
         if (!textToSend.trim() || isLoading) return;
 
+        // [Auth Gate] AI 호출 전 비로그인 차단 — 무인증 AI 사용 및 비용 남용 방지
+        if (!currentUser) {
+            toast.error('AI 상담을 이용하려면 로그인이 필요합니다.');
+            openSignIn?.();
+            return;
+        }
+
         // [Quota] 첫 메시지 시 쿼터 체크 (세션당 1회)
         // 순서: (1) 시설 가용성 선확인 (읽기 전용) → (2) 사용자 쿼터 차감 → (3) 시설 쿼터 차감
         // ※ 이번 수정은 피해 우선순위를 고려해 사용자 선소모 문제를 막는 임시 완화다.
