@@ -7,6 +7,7 @@ import { Facility, FacilityPackage, FacilityManager } from '../types';
 import { toast } from 'sonner';
 import { confirmAsync } from '../src/components/common/ConfirmModal';
 import { facilityUpdateSchema } from '../lib/validation/facilitySchema';
+import OptimizedImage from './ui/OptimizedImage';
 
 interface Props {
     facility: Facility;
@@ -359,7 +360,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
                                         <div className="flex gap-4 items-center">
                                             {imageUrl ? (
                                                 <div className="relative w-32 h-24 rounded-lg overflow-hidden border group">
-                                                    <img src={imageUrl} alt="Main" className="w-full h-full object-cover" />
+                                                    <OptimizedImage src={imageUrl} alt="Main" className="w-full h-full" storageBucket="facility-images" />
                                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                                         <label className="p-1.5 bg-white text-gray-700 rounded-full cursor-pointer hover:bg-gray-100" title="교체">
                                                             <ImagePlus size={14} />
@@ -387,7 +388,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
                                         <div className="grid grid-cols-4 gap-2">
                                             {galleryImages.map((url, idx) => (
                                                 <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border group">
-                                                    <img src={url} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+                                                    <OptimizedImage src={url} alt={`Gallery ${idx}`} className="w-full h-full" storageBucket="facility-images" />
                                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                                         <label className="p-1.5 bg-white text-gray-700 rounded-full cursor-pointer hover:bg-gray-100" title="교체">
                                                             <ImagePlus size={12} />

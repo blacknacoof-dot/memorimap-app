@@ -4,6 +4,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { normalizeSubscriptionPlanId } from './subscriptionPlanIds';
 import { z } from 'zod';
 import { logger } from '../utils/logger';
+import type { Review } from '../types';
 
 import {
     buildSafeObjectName,
@@ -11,6 +12,12 @@ import {
     validateImageFile,
     validatePartnerDocumentFile,
 } from './security/fileValidation';
+import { sanitizeImageFile } from './security/imageSanitize';
+import {
+    createSignedStorageImageUrl,
+    createSignedStorageImageUrls,
+    SIGNED_IMAGE_URL_TTL_SECONDS,
+} from './security/storageImage';
 import { buildSafeOrFilter, normalizeSearchInput } from './security/sqlSanitize';
 import { isZodIssueCode } from './validation/commonSchema';
 import { facilityUpdateSchema } from './validation/facilitySchema';
@@ -45,6 +52,48 @@ function validateFacilityUpdateInput(updates: Record<string, unknown>): void {
         logValidationFailure('updateFacility', result.error);
         throw result.error;
     }
+}
+
+async function signFacilityImageValue(value: string | null | undefined, client: SupabaseClient = supabase): Promise<string> {
+    if (!value) return '';
+    return createSignedStorageImageUrl(client, 'facility-images', value, SIGNED_IMAGE_URL_TTL_SECONDS);
+}
+
+async function signFacilityImageList(values: string[] | null | undefined, client: SupabaseClient = supabase): Promise<string[]> {
+    if (!values || values.length === 0) return [];
+    return createSignedStorageImageUrls(client, 'facility-images', values, SIGNED_IMAGE_URL_TTL_SECONDS);
+}
+
+async function signReviewImageList(values: string[], client: SupabaseClient = supabase): Promise<string[]> {
+    if (values.length === 0) return [];
+    const resolved = await Promise.allSettled(
+        values.map((value) => createSignedStorageImageUrl(client, 'review-images', value, SIGNED_IMAGE_URL_TTL_SECONDS)),
+    );
+
+    return resolved
+        .filter((result): result is PromiseFulfilledResult<string> => result.status === 'fulfilled')
+        .map((result) => result.value)
+        .filter(Boolean);
+}
+
+function extractReviewPhotoPaths(row: Record<string, unknown>): string[] {
+    if (Array.isArray(row.images)) {
+        return row.images.filter((value): value is string => typeof value === 'string');
+    }
+
+    if (Array.isArray(row.photos)) {
+        return row.photos
+            .map((item) => {
+                if (typeof item === 'string') return item;
+                if (item && typeof item === 'object' && 'url' in item && typeof item.url === 'string') {
+                    return item.url;
+                }
+                return null;
+            })
+            .filter((value): value is string => Boolean(value));
+    }
+
+    return [];
 }
 
 // --- Internal helper types (replacing `any`) ---
@@ -233,18 +282,19 @@ export const uploadReviewImage = async (userId: string, file: File, client: Supa
     const fileExt = validation.sanitizedExtension || 'jpg';
     const fileName = buildSafeObjectName(file, fileExt);
     const filePath = `review-images/${userId}/${fileName}`;
+    const sanitizedFile = await sanitizeImageFile(file, fileExt);
 
     const { error: uploadError } = await db.storage
-        .from('reviews') // 'reviews' bucket must exist in Supabase
-        .upload(filePath, file);
+        .from('review-images')
+        .upload(filePath, sanitizedFile, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: sanitizedFile.type,
+        });
 
     if (uploadError) throw uploadError;
 
-    const { data } = db.storage
-        .from('reviews')
-        .getPublicUrl(filePath);
-
-    return data.publicUrl;
+    return filePath;
 };
 
 export { supabase };
@@ -535,14 +585,14 @@ export const getIntelligentRecommendations = async (
     results = results.slice(0, 5);
 
     // Map to Frontend Model
-    return results.map(r => ({
+    return Promise.all(results.map(async (r) => ({
         ...r,
         lat: r.latitude || r.lat,
         lng: r.longitude || r.lng,
-        imageUrl: r.image_url || ((r.images && r.images.length > 0) ? r.images[0] : null),
+        imageUrl: await signFacilityImageValue((r.image_url as string | undefined) || ((r.images && r.images.length > 0) ? r.images[0] : null)),
         reviewCount: r.review_count,
         rating: r.rating || 0
-    }));
+    })));
 };
 
 
@@ -724,9 +774,9 @@ export const getFacility = async (id: string) => {
         ...data,
         lat: data.latitude,
         lng: data.longitude,
-        imageUrl: data.image_url,
+        imageUrl: await signFacilityImageValue(data.image_url),
         priceRange: data.price_range,
-        galleryImages: data.images || []
+        galleryImages: await signFacilityImageList(data.images || [])
     };
 };
 
@@ -875,7 +925,19 @@ export const getReviews = async (facilityId: string) => {
             return [];
         }
 
-        return (data || []).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        const sortedRows = (data || []).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        const resolvedRows: Review[] = await Promise.all(sortedRows.map(async (row: Record<string, unknown>) => ({
+            id: String(row.id || ''),
+            user_id: typeof row.user_id === 'string' ? row.user_id : undefined,
+            userName: String(row.author_name || row.userName || '익명'),
+            rating: Number(row.rating || 0),
+            content: String(row.content || ''),
+            images: await signReviewImageList(extractReviewPhotoPaths(row)),
+            created_at: row.created_at ? String(row.created_at) : undefined,
+            date: row.created_at ? new Date(String(row.created_at)).toLocaleDateString() : new Date().toLocaleDateString(),
+        })));
+
+        return resolvedRows;
     } catch (_e) {
         // silent fallback
         return [];
@@ -896,7 +958,17 @@ export const getUserReviews = async (userId: string, client: SupabaseClient) => 
         return [];
     }
 
-    return (data || []).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    const sortedRows = (data || []).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return Promise.all(sortedRows.map(async (row: Record<string, unknown>): Promise<Review> => ({
+        id: String(row.id || ''),
+        user_id: typeof row.user_id === 'string' ? row.user_id : undefined,
+        userName: String(row.author_name || row.userName || '익명'),
+        rating: Number(row.rating || 0),
+        content: String(row.content || ''),
+        images: await signReviewImageList(extractReviewPhotoPaths(row), db),
+        created_at: row.created_at ? String(row.created_at) : undefined,
+        date: row.created_at ? new Date(String(row.created_at)).toLocaleDateString() : new Date().toLocaleDateString(),
+    })));
 };
 
 export const createReview = async (
@@ -1358,12 +1430,16 @@ export const submitPartnerApplication = async (data: PartnerApplicationInput, cl
             const fileName = buildSafeObjectName(data.businessLicenseImage, fileExt);
             const ownerScope = (data.userId || 'authenticated-user').replace(/[^a-zA-Z0-9-]/g, '-');
             const filePath = `licenses/${ownerScope}/${fileName}`;
+            const uploadFile = ['jpg', 'jpeg', 'png', 'webp'].includes(fileExt)
+                ? await sanitizeImageFile(data.businessLicenseImage, fileExt)
+                : data.businessLicenseImage;
 
             const { error: uploadError, data: _uploadData } = await client.storage
                 .from('partner_docs')
-                .upload(filePath, data.businessLicenseImage, {
+                .upload(filePath, uploadFile, {
                     cacheControl: '3600',
-                    upsert: false
+                    upsert: false,
+                    contentType: uploadFile.type
                 });
 
             if (uploadError) {
@@ -1423,18 +1499,19 @@ export const uploadFacilityImage = async (facilityId: string, file: File, client
     const fileExt = validation.sanitizedExtension || 'jpg';
     const fileName = buildSafeObjectName(file, fileExt);
     const filePath = `${facilityId}/${fileName}`;
+    const sanitizedFile = await sanitizeImageFile(file, fileExt);
 
     const { error: uploadError } = await client.storage
         .from('facility-images')
-        .upload(filePath, file);
+        .upload(filePath, sanitizedFile, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: sanitizedFile.type
+        });
 
     if (uploadError) throw uploadError;
 
-    const { data } = client.storage
-        .from('facility-images')
-        .getPublicUrl(filePath);
-
-    return data.publicUrl;
+    return filePath;
 };
 
 /**
@@ -1459,7 +1536,7 @@ export const getFacilityImages = async (facilityId: string) => {
 
         if (!error && data) {
             if (data.images && Array.isArray(data.images) && data.images.length > 0) {
-                return data.images;
+                return await signFacilityImageList(data.images);
             }
         }
         return [];
@@ -1861,7 +1938,11 @@ export const getFacilityLatestInfo = async (facilityId: string) => {
             return null;
         }
 
-        return data;
+        return {
+            ...data,
+            image_url: await signFacilityImageValue(data.image_url),
+            images: await signFacilityImageList(data.images || [])
+        };
     } catch (_e) {
         // silent fallback
         return null;

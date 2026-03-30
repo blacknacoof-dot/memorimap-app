@@ -7,12 +7,14 @@
  * @version 2026-02-02
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
     SUPABASE_IMAGE_TRANSFORM_ENABLED,
     IMAGE_TRANSFORM_QUALITY,
     THUMBNAIL_SIZE
 } from '../../lib/featureFlags';
+import { supabase } from '../../lib/supabaseClient';
+import { createSignedStorageImageUrl, type StorageImageBucket } from '../../lib/security/storageImage';
 
 interface OptimizedImageProps {
     src: string;
@@ -28,6 +30,7 @@ interface OptimizedImageProps {
     fallbackSrc?: string;
     /** Object fit style */
     objectFit?: 'cover' | 'contain' | 'fill' | 'none';
+    storageBucket?: StorageImageBucket;
 }
 
 /**
@@ -94,18 +97,67 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     loading = 'lazy',
     fallbackSrc,
     objectFit = 'cover',
+    storageBucket = 'facility-images',
 }) => {
     const [hasError, setHasError] = useState(false);
-    const [isLoaded, setIsLoaded] = useState(false);
+    const [loadedSrc, setLoadedSrc] = useState('');
+    const [resolvedSrc, setResolvedSrc] = useState(src);
 
     // Determine dimensions
     const imgWidth = thumbnail ? THUMBNAIL_SIZE.width : width;
     const imgHeight = thumbnail ? THUMBNAIL_SIZE.height : height;
 
-    // Get optimized URL
-    const optimizedSrc = hasError
-        ? (fallbackSrc || DEFAULT_FALLBACKS.default)
-        : getOptimizedUrl(src, imgWidth, imgHeight);
+    useEffect(() => {
+        let cancelled = false;
+
+        const resolveSource = async () => {
+            if (hasError) {
+                setResolvedSrc(fallbackSrc || DEFAULT_FALLBACKS.default);
+                return;
+            }
+
+            if (!src) {
+                setResolvedSrc(fallbackSrc || DEFAULT_FALLBACKS.default);
+                return;
+            }
+
+            const isLocalAsset = src.startsWith('/') || src.startsWith('data:');
+            if (isLocalAsset) {
+                setResolvedSrc(src);
+                return;
+            }
+
+            try {
+                const signedUrl = await createSignedStorageImageUrl(
+                    supabase,
+                    storageBucket,
+                    src,
+                    60 * 60,
+                    SUPABASE_IMAGE_TRANSFORM_ENABLED
+                        ? {
+                            width: imgWidth,
+                            height: imgHeight,
+                            quality: IMAGE_TRANSFORM_QUALITY,
+                        }
+                        : undefined,
+                );
+
+                if (!cancelled) {
+                    setResolvedSrc(signedUrl);
+                }
+            } catch {
+                if (!cancelled) {
+                    setResolvedSrc(getOptimizedUrl(src, imgWidth, imgHeight));
+                }
+            }
+        };
+
+        void resolveSource();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [fallbackSrc, hasError, imgHeight, imgWidth, src, storageBucket]);
 
     const handleError = useCallback(() => {
         if (!hasError) {
@@ -114,8 +166,10 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     }, [hasError]);
 
     const handleLoad = useCallback(() => {
-        setIsLoaded(true);
-    }, []);
+        setLoadedSrc(resolvedSrc);
+    }, [resolvedSrc]);
+
+    const isLoaded = loadedSrc === resolvedSrc;
 
     return (
         <div
@@ -134,7 +188,8 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
             )}
 
             <img
-                src={optimizedSrc}
+                key={resolvedSrc}
+                src={resolvedSrc}
                 alt={alt}
                 loading={loading}
                 onError={handleError}

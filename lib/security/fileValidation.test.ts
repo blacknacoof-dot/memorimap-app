@@ -11,10 +11,14 @@ function createFile(parts: BlobPart[], name: string, type: string): File {
     return new File(parts, name, { type });
 }
 
+function base64ToUint8Array(value: string): Uint8Array {
+    return Uint8Array.from(Buffer.from(value, 'base64'));
+}
+
 describe('fileValidation', () => {
     it('accepts a valid png facility image', async () => {
-        const pngHeader = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00]);
-        const file = createFile([pngHeader], 'facility-photo.PNG', 'image/png');
+        const pngBytes = base64ToUint8Array('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a7FoAAAAASUVORK5CYII=');
+        const file = createFile([pngBytes], 'facility-photo.PNG', 'image/png');
 
         const result = await validateFacilityImageFile(file);
 

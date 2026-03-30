@@ -96,6 +96,28 @@ async function matchesDeclaredFileType(file: File, extension: string): Promise<b
     return false;
 }
 
+function isImageExtension(extension: string): boolean {
+    return ['jpg', 'jpeg', 'png', 'webp'].includes(extension);
+}
+
+async function canDecodeImage(file: File): Promise<boolean> {
+    try {
+        if (typeof createImageBitmap === 'function') {
+            const bitmap = await createImageBitmap(file);
+            bitmap.close();
+            return true;
+        }
+
+        const sharpModule = await import('sharp');
+        const sharp = sharpModule.default;
+        const buffer = new Uint8Array(await file.arrayBuffer());
+        const metadata = await sharp(buffer, { failOn: 'error' }).metadata();
+        return Boolean(metadata.width && metadata.height);
+    } catch {
+        return false;
+    }
+}
+
 export async function validateFile(file: File, rule: FileValidationRule): Promise<FileValidationResult> {
     if (file.size > rule.maxBytes) {
         return {
@@ -123,8 +145,18 @@ export async function validateFile(file: File, rule: FileValidationRule): Promis
     if (!signatureMatches) {
         return {
             valid: false,
-            error: `${rule.label} 내용이 확장자와 일치하지 않습니다.`,
+            error: `${rule.label} 내용과 확장자가 일치하지 않습니다.`,
         };
+    }
+
+    if (isImageExtension(extension)) {
+        const decodeMatches = await canDecodeImage(file);
+        if (!decodeMatches) {
+            return {
+                valid: false,
+                error: `${rule.label} 파일을 디코드할 수 없습니다.`,
+            };
+        }
     }
 
     return {

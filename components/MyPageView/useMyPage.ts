@@ -9,6 +9,7 @@ import { getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
 import { normalizeType } from '../../utils/facilityNormalizer';
 import { useQuotaGate } from '../../hooks/useQuotaGate';
+import { createSignedStorageImageUrl, SIGNED_IMAGE_URL_TTL_SECONDS } from '../../lib/security/storageImage';
 
 export type ActiveTab = 'consultations' | 'pending' | 'confirmed' | 'cancelled' | 'favorites' | 'sangjo_favorites';
 
@@ -86,19 +87,24 @@ export function useMyPage({ isLoggedIn, user, facilities: _facilities }: UseMyPa
       if (facilityIds.length > 0) {
         const { data: facData } = await client.from('facilities').select('*').in('id', facilityIds);
         if (facData && facData.length > 0) {
-          const mappedFacs: Facility[] = facData.map((f: Record<string, unknown>) => ({
+          const mappedFacs: Facility[] = await Promise.all(facData.map(async (f: Record<string, unknown>) => ({
             id: String(f.id || ''),
             legacy_id: f.legacy_id as string | number | undefined,
             name: String(f.name || '이름 없음'),
             address: String(f.address || ''),
-            imageUrl: String(f.image_url || (Array.isArray(f.images) && f.images[0]) || ''),
+            imageUrl: await createSignedStorageImageUrl(
+              client,
+              'facility-images',
+              String(f.image_url || (Array.isArray(f.images) && f.images[0]) || ''),
+              SIGNED_IMAGE_URL_TTL_SECONDS,
+            ),
             type: normalizeType(String(f.type || ''), String(f.name || '')),
             rating: Number(f.rating || 0),
             reviewCount: Number(f.review_count || 0),
             lat: Number(f.lat || f.latitude || 0),
             lng: Number(f.lng || f.longitude || 0),
             category: 'funeral_home' as const,
-          }));
+          })));
           setExtraFacilities(() => {
             const newMap = new Map<string, Facility>();
             mappedFacs.forEach(f => {
