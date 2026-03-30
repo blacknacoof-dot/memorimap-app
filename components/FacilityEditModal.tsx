@@ -353,7 +353,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
                                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                                         <label className="p-1.5 bg-white text-gray-700 rounded-full cursor-pointer hover:bg-gray-100" title="교체">
                                                             <ImagePlus size={14} />
-                                                            <input type="file" className="hidden" accept="image/*" onChange={handleMainImageChange} />
+                                                            <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp" onChange={handleMainImageChange} />
                                                         </label>
                                                         <button type="button" onClick={async () => { if (await confirmAsync('대표 이미지를 삭제하시겠습니까?')) setImageUrl(''); }} className="p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600" title="삭제">
                                                             <Trash2 size={14} />
@@ -364,7 +364,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
                                                 <label className="w-32 h-24 flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
                                                     <ImagePlus size={24} className="text-gray-400 mb-1" />
                                                     <span className="text-[10px] text-gray-500">이미지 추가</span>
-                                                    <input type="file" className="hidden" accept="image/*" onChange={handleMainImageChange} />
+                                                    <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp" onChange={handleMainImageChange} />
                                                 </label>
                                             )}
                                             <p className="text-[10px] text-gray-500">목록에서 가장 먼저 보여지는 대표 사진입니다.</p>
@@ -381,7 +381,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
                                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                                         <label className="p-1.5 bg-white text-gray-700 rounded-full cursor-pointer hover:bg-gray-100" title="교체">
                                                             <ImagePlus size={12} />
-                                                            <input type="file" className="hidden" accept="image/*" onChange={(e) => handleReplaceGalleryImage(e, idx)} />
+                                                            <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp" onChange={(e) => handleReplaceGalleryImage(e, idx)} />
                                                         </label>
                                                         <button type="button" onClick={async () => { if (await confirmAsync('이 갤러리 이미지를 삭제하시겠습니까?')) setGalleryImages(prev => prev.filter((_, i) => i !== idx)); }} className="p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600" title="삭제">
                                                             <Trash2 size={12} />
@@ -392,7 +392,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
                                             {galleryImages.length < 3 && (
                                                 <label className="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
                                                     <Plus size={24} className="text-gray-400" />
-                                                    <input type="file" className="hidden" accept="image/*" onChange={handleAddGalleryImage} />
+                                                    <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp" onChange={handleAddGalleryImage} />
                                                 </label>
                                             )}
                                         </div>

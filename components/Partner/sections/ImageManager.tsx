@@ -3,6 +3,7 @@ import { Image as ImageIcon, Upload, Trash2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getAuthClient } from '../../../lib/supabaseClient';
 import { useSession } from '../../../lib/auth';
+import { buildSafeObjectName, validateFacilityImageFile } from '../../../lib/security/fileValidation';
 import { confirmAsync } from '../../../src/components/common/ConfirmModal';
 
 interface ImageManagerProps {
@@ -24,8 +25,15 @@ export const ImageManager: React.FC<ImageManagerProps> = ({ facilityId, images, 
         const newImages = [...images];
 
         for (const file of Array.from(files)) {
-            const ext = file.name.split('.').pop();
-            const path = `${facilityId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+            const validation = await validateFacilityImageFile(file);
+            if (!validation.valid) {
+                toast.error(validation.error || `업로드할 수 없는 파일입니다: ${file.name}`);
+                continue;
+            }
+
+            const ext = validation.sanitizedExtension || 'jpg';
+            const safeFileName = buildSafeObjectName(file, ext);
+            const path = `${facilityId}/${safeFileName}`;
 
             const { error: uploadError } = await client.storage
                 .from('facility-images')
@@ -87,7 +95,7 @@ export const ImageManager: React.FC<ImageManagerProps> = ({ facilityId, images, 
                     ref={fileInputRef}
                     type="file"
                     multiple
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp"
                     onChange={handleImageUpload}
                     className="hidden"
                 />

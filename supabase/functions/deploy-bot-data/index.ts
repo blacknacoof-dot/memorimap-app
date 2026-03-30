@@ -6,6 +6,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
+import { parseFacilityIdentifier, type FacilityIdentifier } from "./facilityId.ts";
 
 const PRODUCTION_ORIGINS = [
     "https://memorimap.kr",
@@ -36,6 +37,90 @@ function getCorsOrigin(req: Request): string {
 interface DeployRequest {
     facility_id?: string;
     action?: "update_timestamp" | "regenerate_all";
+}
+
+async function requireExistingLegacyFacility(
+    supabase: ReturnType<typeof createClient>,
+    facilityId: number,
+): Promise<boolean> {
+    const { data, error } = await supabase
+        .from("facilities")
+        .select("id")
+        .eq("legacy_id", facilityId)
+        .limit(1)
+        .maybeSingle();
+
+    return !error && !!data;
+}
+
+async function requireExistingSangjoFacility(
+    supabase: ReturnType<typeof createClient>,
+    facilityId: string,
+): Promise<boolean> {
+    const { data, error } = await supabase
+        .from("facilities")
+        .select("id")
+        .eq("id", facilityId)
+        .eq("type", "sangjo")
+        .limit(1)
+        .maybeSingle();
+
+    return !error && !!data;
+}
+
+async function canManageLegacyFacility(
+    supabase: ReturnType<typeof createClient>,
+    userId: string,
+    facilityId: number,
+): Promise<boolean> {
+    const { data, error } = await supabase
+        .from("facilities")
+        .select("id")
+        .eq("legacy_id", facilityId)
+        .eq("user_id", userId)
+        .limit(1)
+        .maybeSingle();
+
+    return !error && !!data;
+}
+
+async function canManageSangjoFacility(
+    supabase: ReturnType<typeof createClient>,
+    userId: string,
+    facilityId: string,
+): Promise<boolean> {
+    const { data: ownedSangjo, error: sangjoError } = await supabase
+        .from("sangjo_hq_admins")
+        .select("id")
+        .eq("sangjo_id", facilityId)
+        .eq("user_id", userId)
+        .limit(1)
+        .maybeSingle();
+
+    return !sangjoError && !!ownedSangjo;
+}
+
+async function requireExistingFacility(
+    supabase: ReturnType<typeof createClient>,
+    facilityId: FacilityIdentifier,
+): Promise<boolean> {
+    if (facilityId.type === "legacy") {
+        return requireExistingLegacyFacility(supabase, facilityId.value);
+    }
+
+    return requireExistingSangjoFacility(supabase, facilityId.value);
+}
+
+async function canManageFacility(
+    supabase: ReturnType<typeof createClient>,
+    userId: string,
+    facilityId: FacilityIdentifier,
+): Promise<boolean> {
+    if (facilityId.type === "legacy") {
+        return canManageLegacyFacility(supabase, userId, facilityId.value);
+    }
+
+    return canManageSangjoFacility(supabase, userId, facilityId.value);
 }
 
 serve(async (req: Request) => {
@@ -112,6 +197,52 @@ serve(async (req: Request) => {
         }
 
         const { facility_id, action = "update_timestamp" } = body;
+        const isSuperAdmin = profile.role === "super_admin";
+        let parsedFacilityId: FacilityIdentifier | null = null;
+
+        if (action === "regenerate_all" && !isSuperAdmin) {
+            return new Response(
+                JSON.stringify({ success: false, error: "Forbidden: super admin access required" }),
+                { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+        }
+
+        if (action === "update_timestamp" && facility_id !== undefined) {
+            const parsed = parseFacilityIdentifier(facility_id);
+            if (!parsed.ok) {
+                return new Response(
+                    JSON.stringify({ success: false, error: parsed.error }),
+                    { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                );
+            }
+
+            parsedFacilityId = parsed.identifier;
+
+            const facilityExists = await requireExistingFacility(supabase, parsed.identifier);
+            if (!facilityExists) {
+                return new Response(
+                    JSON.stringify({ success: false, error: "facility_id does not exist" }),
+                    { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                );
+            }
+        }
+
+        if (action === "update_timestamp" && !isSuperAdmin) {
+            if (!parsedFacilityId) {
+                return new Response(
+                    JSON.stringify({ success: false, error: "facility_id is required for facility admins" }),
+                    { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                );
+            }
+
+            const canManage = await canManageFacility(supabase, user.id, parsedFacilityId);
+            if (!canManage) {
+                return new Response(
+                    JSON.stringify({ success: false, error: "Forbidden: facility ownership required" }),
+                    { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                );
+            }
+        }
 
         // Action: Update timestamp for specific facility or all
         if (action === "update_timestamp") {
@@ -119,8 +250,10 @@ serve(async (req: Request) => {
                 .from("bot_data")
                 .update({ bot_last_updated_at: new Date().toISOString() });
 
-            if (facility_id) {
-                query = query.eq("facility_id", facility_id);
+            if (parsedFacilityId) {
+                // bot_data.facility_id is a mixed legacy/sangjo contract in current production data.
+                // We parse it explicitly at the function boundary to avoid ambiguous string coercion.
+                query = query.eq("facility_id", parsedFacilityId.value);
             }
 
             const { data, error } = await query.select();

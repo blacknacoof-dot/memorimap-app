@@ -5,6 +5,7 @@ import { useUser, useSession } from '../lib/auth';
 import { submitPartnerApplication, searchKnownFacilities, PARTNER_CATEGORIES } from '../lib/queries';
 import { useApiRetry } from '../hooks/useApiRetry';
 import { getAuthClient } from '../lib/supabaseClient';
+import { FILE_SIZE_LIMITS, validatePartnerDocumentFile } from '../lib/security/fileValidation';
 import { FUNERAL_COMPANIES } from '../constants';
 import { toast } from 'sonner'; // [Phase 2] Error Handler
 
@@ -176,10 +177,19 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack, onLoginClick }) =>
         }));
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            setSelectedFile(e.target.files[0]);
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const validation = await validatePartnerDocumentFile(file);
+        if (!validation.valid) {
+            setSelectedFile(null);
+            e.target.value = '';
+            toast.error(validation.error || '업로드할 수 없는 파일입니다.');
+            return;
         }
+
+        setSelectedFile(file);
     };
 
     if (isSuccess) {
@@ -312,7 +322,7 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack, onLoginClick }) =>
                                     type="file"
                                     ref={fileInputRef}
                                     onChange={handleFileChange}
-                                    accept="image/*,.pdf"
+                                    accept="image/jpeg,image/png,image/webp,application/pdf"
                                     className="hidden"
                                 />
 
@@ -328,7 +338,7 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack, onLoginClick }) =>
                                             <Upload size={20} className="text-gray-400" />
                                         </div>
                                         <p className="text-sm font-bold text-gray-600">사업자등록증 사진 업로드</p>
-                                        <p className="text-xs text-gray-400 mt-1">탭하여 파일 선택</p>
+                                        <p className="text-xs text-gray-400 mt-1">JPG, PNG, WebP, PDF / 최대 {FILE_SIZE_LIMITS.partnerDocument / (1024 * 1024)}MB</p>
                                     </>
                                 )}
                             </div>

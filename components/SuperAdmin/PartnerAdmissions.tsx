@@ -7,6 +7,48 @@ import { confirmAsync } from '../../src/components/common/ConfirmModal';
 import { useSuperAdminClient } from './SuperAdminGuard';
 import { toast } from 'sonner';
 
+const PARTNER_DOC_PUBLIC_MARKER = '/storage/v1/object/public/partner_docs/';
+const PARTNER_DOC_SIGNED_MARKER = '/storage/v1/object/sign/partner_docs/';
+
+export function normalizePartnerDocPath(value: string): string | null {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+
+    if (/^https?:\/\//i.test(trimmed)) {
+        try {
+            const url = new URL(trimmed);
+            const publicMarkerIndex = url.pathname.indexOf(PARTNER_DOC_PUBLIC_MARKER);
+            if (publicMarkerIndex >= 0) {
+                return decodeURIComponent(
+                    url.pathname.slice(publicMarkerIndex + PARTNER_DOC_PUBLIC_MARKER.length).replace(/^\/+/, ''),
+                );
+            }
+
+            const signedMarkerIndex = url.pathname.indexOf(PARTNER_DOC_SIGNED_MARKER);
+            if (signedMarkerIndex >= 0) {
+                return decodeURIComponent(
+                    url.pathname.slice(signedMarkerIndex + PARTNER_DOC_SIGNED_MARKER.length).replace(/^\/+/, ''),
+                );
+            }
+        } catch {
+            return null;
+        }
+
+        return null;
+    }
+
+    if (trimmed.startsWith('partner_docs/')) {
+        return trimmed.slice('partner_docs/'.length).replace(/^\/+/, '') || null;
+    }
+
+    if (trimmed.startsWith('licenses/')) {
+        return trimmed;
+    }
+
+    const normalized = trimmed.replace(/^\/+/, '');
+    return normalized || null;
+}
+
 export const PartnerAdmissions: React.FC = () => {
     const client = useSuperAdminClient();
     const { data: inquiryData, isLoading, refetch } = usePartnerInquiries({ status: 'pending', client });
@@ -16,11 +58,11 @@ export const PartnerAdmissions: React.FC = () => {
     const [rejectTarget, setRejectTarget] = useState<{ id: string; name: string } | null>(null);
     const [rejectReason, setRejectReason] = useState('');
     const [isRejecting, setIsRejecting] = useState(false);
+    const [openingLicenseId, setOpeningLicenseId] = useState<string | null>(null);
 
     const handleApprove = async (inquiry: PartnerInquiry) => {
-        // 상조 타입 신청 시 기존 상조 관리자 여부 경고
         try {
-            if (inquiry.business_type === 'sangjo' || inquiry.business_type === 'sangjo_hq' as string) {
+            if (inquiry.business_type === 'sangjo' || inquiry.business_type === ('sangjo_hq' as string)) {
                 const { data: existing } = await client
                     .from('sangjo_dashboard_users')
                     .select('sangjo_id')
@@ -36,7 +78,7 @@ export const PartnerAdmissions: React.FC = () => {
 
                     const existingName = existingFacility?.name || existing.sangjo_id;
                     if (!await confirmAsync(
-                        `이 사용자는 이미 "${existingName}" 상조를 관리 중입니다.\n승인하면 새 시설이 생성되지만, 기존 상조 매핑은 유지됩니다.\n계속 진행하시겠습니까?`,
+                        `이 사용자는 이미 "${existingName}" 상조를 관리 중입니다.\n확인하면 새 시설을 생성하지 않고 기존 상조 매핑만 유지됩니다.\n계속 진행하시겠습니까?`,
                         '기존 상조 관리자 경고'
                     )) return;
                 }
@@ -54,7 +96,7 @@ export const PartnerAdmissions: React.FC = () => {
             if (result && 'warning' in result && result.warning) {
                 toast.warning(result.warning as string);
             }
-            toast.success('승인되었습니다.');
+            toast.success('승인 처리했습니다.');
             refetch();
         } catch (error: unknown) {
             toast.error('승인 처리 중 오류: ' + (error instanceof Error ? error.message : '알 수 없는 오류'));
@@ -68,9 +110,9 @@ export const PartnerAdmissions: React.FC = () => {
             await approvePartner({
                 inquiryId: rejectTarget.id,
                 action: 'reject',
-                rejectionReason: rejectReason.trim() || '운영팀 문의 요망'
+                rejectionReason: rejectReason.trim() || '운영팀 문의 부탁드립니다.'
             });
-            toast.success('거절되었습니다.');
+            toast.success('거절 처리를 완료했습니다.');
             setRejectTarget(null);
             setRejectReason('');
             refetch();
@@ -81,6 +123,35 @@ export const PartnerAdmissions: React.FC = () => {
         }
     };
 
+    const handleOpenBusinessLicense = async (inquiry: PartnerInquiry) => {
+        const storedValue = inquiry.business_license_url?.trim();
+        if (!storedValue) return;
+
+        const objectPath = normalizePartnerDocPath(storedValue);
+        if (!objectPath) {
+            toast.error('문서 경로를 해석할 수 없습니다. 기존 업로드 형식을 확인해 주세요.');
+            return;
+        }
+
+        setOpeningLicenseId(inquiry.id);
+        try {
+            const { data, error } = await client.storage
+                .from('partner_docs')
+                .createSignedUrl(objectPath, 60);
+
+            if (error || !data?.signedUrl) {
+                throw error || new Error('signed URL generation failed');
+            }
+
+            window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+        } catch (error) {
+            console.error('Failed to open business license', error);
+            toast.error('사업자등록증을 여는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+        } finally {
+            setOpeningLicenseId(null);
+        }
+    };
+
     const filtered = facilities.filter(f =>
         f.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (f.contact_person || '').toLowerCase().includes(searchTerm.toLowerCase())
@@ -88,7 +159,6 @@ export const PartnerAdmissions: React.FC = () => {
 
     return (
         <div className="space-y-4">
-            {/* Search Bar */}
             <div className="bg-white p-4 rounded-xl shadow-sm border flex items-center gap-2">
                 <Search className="text-gray-400" size={20} />
                 <input
@@ -97,7 +167,7 @@ export const PartnerAdmissions: React.FC = () => {
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="업체명, 담당자 검색..."
+                    placeholder="업체명 또는 담당자 검색..."
                     className="flex-1 outline-none text-sm"
                 />
                 <div onClick={() => refetch()} className="cursor-pointer p-2 hover:bg-gray-100 rounded-full" title="새로고침">
@@ -105,7 +175,6 @@ export const PartnerAdmissions: React.FC = () => {
                 </div>
             </div>
 
-            {/* List */}
             <div className="space-y-3" data-testid="pending-list">
                 {filtered.length === 0 ? (
                     <div className="text-center py-12 text-gray-500 bg-white rounded-xl border">
@@ -122,7 +191,7 @@ export const PartnerAdmissions: React.FC = () => {
                                             {f.business_type === 'funeral_home' ? '장례식장' :
                                                 f.business_type === 'memorial_park' ? '봉안/묘지' :
                                                     f.business_type === 'sangjo' ? '상조회사' :
-                                                        f.business_type === 'pet_funeral' ? '동물장묘' : f.business_type}
+                                                        f.business_type === 'pet_funeral' ? '반려동물 장례' : f.business_type}
                                         </span>
                                         <span className="px-2 py-0.5 text-xs rounded border font-bold flex items-center gap-1 whitespace-nowrap bg-amber-50 text-amber-600 border-amber-100">
                                             <FileText size={10} />
@@ -138,13 +207,18 @@ export const PartnerAdmissions: React.FC = () => {
                                     </div>
                                     <div className="flex flex-wrap gap-x-4 text-xs">
                                         <p className="text-gray-400">Email: {f.company_email}</p>
-                                        <p className="text-gray-400">신청일: {new Date(f.created_at).toLocaleDateString()}</p>
+                                        <p className="text-gray-400">요청일: {new Date(f.created_at).toLocaleDateString()}</p>
                                     </div>
-                                    {f.business_license_url && /^https?:\/\//i.test(f.business_license_url) && (
+                                    {f.business_license_url && (
                                         <div className="mt-2">
-                                            <a href={f.business_license_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 text-xs hover:underline flex items-center gap-1">
-                                                <FileText size={12} /> 사업자등록증 보기
-                                            </a>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleOpenBusinessLicense(f)}
+                                                disabled={openingLicenseId === f.id}
+                                                className="text-blue-500 text-xs hover:underline flex items-center gap-1 disabled:opacity-50"
+                                            >
+                                                <FileText size={12} /> {openingLicenseId === f.id ? '문서 여는 중...' : '사업자등록증 보기'}
+                                            </button>
                                         </div>
                                     )}
                                     {f.message && (
@@ -179,7 +253,6 @@ export const PartnerAdmissions: React.FC = () => {
                 )}
             </div>
 
-            {/* 거절 사유 입력 모달 */}
             {rejectTarget && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 p-4">
                     <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 max-h-[80vh] overflow-y-auto">
@@ -190,7 +263,7 @@ export const PartnerAdmissions: React.FC = () => {
                         <textarea
                             value={rejectReason}
                             onChange={(e) => setRejectReason(e.target.value)}
-                            placeholder="거절 사유를 입력하세요 (미입력 시 '운영팀 문의 요망')"
+                            placeholder="거절 사유를 입력하세요. 미입력 시 '운영팀 문의 부탁드립니다.'가 사용됩니다."
                             rows={3}
                             className="w-full border border-slate-200 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-red-200 resize-none"
                         />

@@ -14,6 +14,10 @@ This contains everything you need to run your app locally.
 
 View your app in AI Studio: https://ai.studio/apps/drive/1B4P7vNrcMNxVaQTfNh4bHom3_KbHxM5f
 
+## Release Docs
+
+- Latest security patch status: `docs/04-report/release_security_patch_status_20260330.md`
+
 ## Run Locally
 
 **Prerequisites:**  Node.js

@@ -22,6 +22,7 @@ tests/
 test-results/
 playwright-report/
 *.log
+public/ai-test.html
 
 # Sensitive/Local
 .env

@@ -3,7 +3,12 @@ import { supabase, setSupabaseAuth } from './supabaseClient';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { normalizeSubscriptionPlanId } from './subscriptionPlanIds';
 
-import { validateImageFile } from './security/fileValidation';
+import {
+    buildSafeObjectName,
+    validateFacilityImageFile,
+    validateImageFile,
+    validatePartnerDocumentFile,
+} from './security/fileValidation';
 import { sanitizeSearchInput } from './security/sqlSanitize';
 
 // --- Internal helper types (replacing `any`) ---
@@ -184,13 +189,13 @@ export const checkConfirmedReservationForReview = async (userId: string, facilit
 export const uploadReviewImage = async (userId: string, file: File, client: SupabaseClient) => {
     const db = client;
     // [Security] 파일 검증
-    const validation = validateImageFile(file);
+    const validation = await validateImageFile(file);
     if (!validation.valid) {
         throw new Error(validation.error || '파일 검증 실패');
     }
 
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}_${crypto.randomUUID().slice(0, 8)}.${fileExt}`;
+    const fileExt = validation.sanitizedExtension || 'jpg';
+    const fileName = buildSafeObjectName(file, fileExt);
     const filePath = `review-images/${userId}/${fileName}`;
 
     const { error: uploadError } = await db.storage
@@ -1303,12 +1308,18 @@ export const getFacilitiesByCategory = async (category: string) => {
  */
 export const submitPartnerApplication = async (data: PartnerApplicationInput, client: SupabaseClient) => {
     // 1. 파일 업로드
-    let licenseUrl = '';
+    let licensePath = '';
     if (data.businessLicenseImage) {
         try {
-            const fileExt = data.businessLicenseImage.name.split('.').pop();
-            const fileName = `${Date.now()}_${crypto.randomUUID().slice(0, 8)}.${fileExt}`;
-            const filePath = `licenses/${fileName}`;
+            const validation = await validatePartnerDocumentFile(data.businessLicenseImage);
+            if (!validation.valid) {
+                throw new Error(validation.error || '?뚯씪 寃利??ㅽ뙣');
+            }
+
+            const fileExt = validation.sanitizedExtension || 'pdf';
+            const fileName = buildSafeObjectName(data.businessLicenseImage, fileExt);
+            const ownerScope = (data.userId || 'authenticated-user').replace(/[^a-zA-Z0-9-]/g, '-');
+            const filePath = `licenses/${ownerScope}/${fileName}`;
 
             const { error: uploadError, data: _uploadData } = await client.storage
                 .from('partner_docs')
@@ -1321,10 +1332,7 @@ export const submitPartnerApplication = async (data: PartnerApplicationInput, cl
                 throw new Error(`파일 업로드 실패: ${uploadError.message}`);
             }
 
-            const { data: urlData } = client.storage
-                .from('partner_docs')
-                .getPublicUrl(filePath);
-            licenseUrl = urlData.publicUrl;
+            licensePath = filePath;
         } catch (uploadErr) {
             throw uploadErr instanceof Error ? uploadErr : new Error('파일 업로드 실패');
         }
@@ -1348,7 +1356,7 @@ export const submitPartnerApplication = async (data: PartnerApplicationInput, cl
             company_email: data.companyEmail,
             email: data.email,
             address: data.address,
-            business_license_url: licenseUrl,
+            business_license_url: licensePath,
             message: '',
             privacy_consent: data.privacyConsent,    // \ucd94\uac00: \uac1c\uc778\uc815\ubcf4 \ub3d9\uc758
             status: 'pending',
@@ -1369,8 +1377,13 @@ export const submitPartnerApplication = async (data: PartnerApplicationInput, cl
  * [추가] 시설 이미지 업로드
  */
 export const uploadFacilityImage = async (facilityId: string, file: File, client: SupabaseClient) => {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}_${crypto.randomUUID().slice(0, 8)}.${fileExt}`;
+    const validation = await validateFacilityImageFile(file);
+    if (!validation.valid) {
+        throw new Error(validation.error || '?뚯씪 寃利??ㅽ뙣');
+    }
+
+    const fileExt = validation.sanitizedExtension || 'jpg';
+    const fileName = buildSafeObjectName(file, fileExt);
     const filePath = `${facilityId}/${fileName}`;
 
     const { error: uploadError } = await client.storage
