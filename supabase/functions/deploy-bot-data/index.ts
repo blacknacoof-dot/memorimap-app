@@ -39,6 +39,36 @@ interface DeployRequest {
     action?: "update_timestamp" | "regenerate_all";
 }
 
+/**
+ * facility_id contract
+ *
+ * This function intentionally supports only the production contracts that currently
+ * exist in bot_data:
+ * - legacy number string: regular funeral/memorial facilities matched via facilities.legacy_id
+ * - sangjo UUID string: sangjo organizations matched via facilities.id where type = 'sangjo'
+ *
+ * Plain UUIDs for non-sangjo facilities are not accepted here.
+ */
+function validateDeployRequest(body: DeployRequest): { ok: true; value: DeployRequest } | { ok: false; error: string } {
+    const action = body.action ?? "update_timestamp";
+
+    if (!["update_timestamp", "regenerate_all"].includes(action)) {
+        return { ok: false, error: "action must be update_timestamp or regenerate_all" };
+    }
+
+    if (body.facility_id !== undefined && typeof body.facility_id !== "string") {
+        return { ok: false, error: "facility_id must be a string" };
+    }
+
+    return {
+        ok: true,
+        value: {
+            action,
+            facility_id: body.facility_id?.trim() || undefined,
+        },
+    };
+}
+
 async function requireExistingLegacyFacility(
     supabase: ReturnType<typeof createClient>,
     facilityId: number,
@@ -66,6 +96,20 @@ async function requireExistingSangjoFacility(
         .maybeSingle();
 
     return !error && !!data;
+}
+
+async function isNonSangjoFacilityUuid(
+    supabase: ReturnType<typeof createClient>,
+    facilityId: string,
+): Promise<boolean> {
+    const { data, error } = await supabase
+        .from("facilities")
+        .select("id, type")
+        .eq("id", facilityId)
+        .limit(1)
+        .maybeSingle();
+
+    return !error && !!data && data.type !== "sangjo";
 }
 
 async function canManageLegacyFacility(
@@ -196,7 +240,15 @@ serve(async (req: Request) => {
             }
         }
 
-        const { facility_id, action = "update_timestamp" } = body;
+        const validatedRequest = validateDeployRequest(body);
+        if (!validatedRequest.ok) {
+            return new Response(
+                JSON.stringify({ success: false, error: validatedRequest.error }),
+                { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+        }
+
+        const { facility_id, action } = validatedRequest.value;
         const isSuperAdmin = profile.role === "super_admin";
         let parsedFacilityId: FacilityIdentifier | null = null;
 
@@ -217,6 +269,19 @@ serve(async (req: Request) => {
             }
 
             parsedFacilityId = parsed.identifier;
+
+            if (parsed.identifier.type === "sangjo") {
+                const isWrongUuidContract = await isNonSangjoFacilityUuid(supabase, parsed.identifier.value);
+                if (isWrongUuidContract) {
+                    return new Response(
+                        JSON.stringify({
+                            success: false,
+                            error: "facility_id contract mismatch: non-sangjo facilities must use legacy numeric IDs",
+                        }),
+                        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                    );
+                }
+            }
 
             const facilityExists = await requireExistingFacility(supabase, parsed.identifier);
             if (!facilityExists) {
@@ -251,8 +316,9 @@ serve(async (req: Request) => {
                 .update({ bot_last_updated_at: new Date().toISOString() });
 
             if (parsedFacilityId) {
-                // bot_data.facility_id is a mixed legacy/sangjo contract in current production data.
-                // We parse it explicitly at the function boundary to avoid ambiguous string coercion.
+                // bot_data.facility_id intentionally remains mixed in production data.
+                // The function boundary normalizes the contract so ownership checks and updates
+                // use the same identifier that bot_data stores today.
                 query = query.eq("facility_id", parsedFacilityId.value);
             }
 

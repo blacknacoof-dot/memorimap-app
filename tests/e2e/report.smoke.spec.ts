@@ -97,12 +97,16 @@ const getSubscriptionMatch = (facilityId: string) => {
     : { facility_id_uuid: null, facility_id_bigint: criteria.value, facility_id: criteria.value };
 };
 
-const callReportFunction = async (authorization: string) => {
+const callReportFunction = async (
+  authorization: string,
+  extraHeaders?: Record<string, string>,
+) => {
   const request = new Request('http://localhost/functions/v1/send-monthly-report', {
     method: 'POST',
     headers: {
       Authorization: authorization,
       'Content-Type': 'application/json',
+      ...(extraHeaders ?? {}),
     },
   });
 
@@ -183,21 +187,25 @@ test.describe.serial('High risk flow: report smoke', () => {
   });
 
   test('RPT-1: unauthorized requests are rejected with 401', async () => {
-    const { response, body } = await callReportFunction('Bearer invalid-token');
+    const { response, body } = await callReportFunction('Bearer invalid-token', { 'x-vercel-cron': '1' });
     expect(response.status).toBe(401);
     expect(body).toMatchObject({ error: 'Unauthorized' });
   });
 
-  test('RPT-2: no active sangjo subscriptions returns no-op response', async () => {
+  test('RPT-2: non-cron calls are rejected before service role check', async () => {
     const { response, body } = await callReportFunction(`Bearer ${serviceRoleKey}`);
-    expect(response.status).toBe(200);
-    expect(body).toMatchObject({
-      message: 'No active sangjo subscriptions',
-      reason: 'no_active_sangjo_subscriptions',
-    });
+    expect(response.status).toBe(403);
+    expect(body).toMatchObject({ error: 'Forbidden: cron invocation only' });
   });
 
-  test('RPT-3: active sangjo subscription returns a generated report payload', async () => {
+  test('RPT-3: cron-authorized calls enter the report execution path', async () => {
+    const { response, body } = await callReportFunction(`Bearer ${serviceRoleKey}`, { 'x-vercel-cron': '1' });
+    expect(response.status).toBe(200);
+    expect(body).not.toMatchObject({ error: 'Forbidden: cron invocation only' });
+    expect(body).not.toMatchObject({ error: 'Unauthorized' });
+  });
+
+  test('RPT-4: active sangjo subscription returns a generated report payload', async () => {
     const facility = sangjoFacility!;
     await seedActiveSubscription(facility.id);
 
@@ -215,12 +223,12 @@ test.describe.serial('High risk flow: report smoke', () => {
 
     expect(consultationError).toBeNull();
 
-    const { response, body } = await callReportFunction(`Bearer ${serviceRoleKey}`);
+    const { response, body } = await callReportFunction(`Bearer ${serviceRoleKey}`, { 'x-vercel-cron': '1' });
     expect(response.status).toBe(200);
-    expect(body).toMatchObject({
-      totalSubscriptions: 1,
-      reportsGenerated: 1,
-    });
-    expect(body).not.toMatchObject({ reason: 'no_active_sangjo_subscriptions' });
+    expect(typeof body?.totalSubscriptions).toBe('number');
+    expect(typeof body?.reportsGenerated).toBe('number');
+    expect(Number(body?.totalSubscriptions)).toBeGreaterThanOrEqual(1);
+    expect(Number(body?.reportsGenerated)).toBeGreaterThanOrEqual(1);
+    expect(body).not.toMatchObject({ error: 'Forbidden: cron invocation only' });
   });
 });

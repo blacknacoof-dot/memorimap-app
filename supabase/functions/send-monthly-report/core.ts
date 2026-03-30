@@ -15,6 +15,7 @@ export interface MonthlyReportOptions {
   resendApiKey?: string | null;
   dryRun?: boolean;
   now?: Date;
+  requireCronHeader?: boolean;
 }
 
 interface SupabaseQueryResult {
@@ -43,6 +44,14 @@ export async function handleSendMonthlyReportRequest(
   client: SupabaseLikeClient,
   options: MonthlyReportOptions,
 ): Promise<Response> {
+  const requireCronHeader = options.requireCronHeader ?? true;
+  if (requireCronHeader) {
+    const cronHeader = req.headers.get('x-vercel-cron');
+    if (cronHeader !== '1') {
+      return jsonResponse({ error: 'Forbidden: cron invocation only' }, 403);
+    }
+  }
+
   const bearerToken = parseBearerToken(req.headers.get('Authorization'));
   if (!bearerToken || bearerToken !== options.serviceRoleKey) {
     return jsonResponse({ error: 'Unauthorized' }, 401);
