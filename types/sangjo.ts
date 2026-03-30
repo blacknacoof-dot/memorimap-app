@@ -160,6 +160,7 @@ export interface Partner {
   name: string;
   company_name: string;
   company_logo_url?: string;
+  business_license_url?: string;
   status: 'pending' | 'approved' | 'rejected' | 'suspended';
   subscription_plan: 'free' | 'basic' | 'premium' | 'enterprise';
   subscription_expires_at?: string;
