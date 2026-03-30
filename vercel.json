@@ -4,14 +4,18 @@
     "buildCommand": "npm run build",
     "outputDirectory": "dist",
     "installCommand": "npm install",
-    "rewrites": [
+    "routes": [
         {
-            "source": "/manifest.json",
-            "destination": "/manifest.json"
+            "src": "/ai-test\\.html",
+            "status": 404,
+            "dest": "/404.html"
         },
         {
-            "source": "/(.*)",
-            "destination": "/index.html"
+            "handle": "filesystem"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/index.html"
         }
     ],
     "headers": [

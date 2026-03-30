@@ -20,7 +20,7 @@
 - `supabase/migrations/20260330_secure_partner_docs.sql`
 - `supabase/migrations/20260330123000_upload_policy_hardening.sql`
 - `vercel.json`
-- `.vercelignore`
+- `public/404.html`
 
 ## 반영된 보안 수정
 
@@ -93,7 +93,8 @@
 
 - `PartnerAdmissions.tsx`의 한글 깨짐 문자열을 복구했다.
 - 기존 public URL, signed URL, `partner_docs/...`, `licenses/...` 입력을 모두 정규화한다.
-- `public/ai-test.html`은 삭제하지 않고 `.vercelignore`로 운영 배포에서 제외했다.
+- `public/ai-test.html`은 삭제했다.
+- `vercel.json`에서 `/ai-test.html` 경로를 명시적으로 `404.html`로 보내도록 라우팅을 추가했다.
 
 ## 검증 명령
 
@@ -135,7 +136,7 @@ npx vitest run supabase/functions/deploy-bot-data/facilityId.test.ts components/
 
 1. 최신 `vercel.json`이 실제 응답 헤더에 반영되었는지 확인
 2. `unsafe-eval`이 응답 CSP에 남아 있지 않은지 확인
-3. `public/ai-test.html`이 운영 URL에서 404 또는 비배포 상태인지 확인
+3. `/ai-test.html`이 운영 URL에서 404로 응답하는지 확인
 
 ### 기능/권한
 
@@ -147,7 +148,6 @@ npx vitest run supabase/functions/deploy-bot-data/facilityId.test.ts components/
 ## 남은 리스크
 
 - `partner_docs`를 로그인 신청 기준으로 유지할지에 대한 제품 측 최종 확정이 필요하다.
-- `ai-test.html`은 소스 트리에는 남아 있으므로, 실제 배포 제외가 동작하는지 운영 URL에서 확인해야 한다.
 - `unsafe-inline`은 아직 남아 있으므로 CSP 강화의 다음 단계로 별도 관리가 필요하다.
 
 ## 재검증 완료 기준
