@@ -433,7 +433,7 @@ serve(async (req: Request) => {
     const token = authHeader.replace('Bearer ', '');
     const { userId: verifiedUserId, error: authError } = await verifyJWT(token);
     if (authError || !verifiedUserId) {
-        return new Response(JSON.stringify({ error: 'Unauthorized', details: authError }), {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
             status: 401,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
@@ -527,10 +527,20 @@ serve(async (req: Request) => {
 
         if (!portoneResponse.ok) {
             const errorText = await portoneResponse.text();
+            await supabaseAdmin.from('system_logs').insert({
+                level: 'ERROR',
+                message: 'PortOne API error during payment verification',
+                meta: {
+                    paymentId,
+                    status: portoneResponse.status,
+                    requestedBy: verifiedUserId,
+                    upstreamError: errorText,
+                },
+                source: 'edge-function:verify-payment'
+            });
             return new Response(JSON.stringify({
                 verified: false,
                 error: 'PortOne API error',
-                details: errorText
             }), {
                 status: 200,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },

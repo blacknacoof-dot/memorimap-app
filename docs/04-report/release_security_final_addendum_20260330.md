@@ -17,6 +17,24 @@ Note:
 - Production review image bucket name is `review-images`, not `reviews`.
 - App code, migration, and runtime checks were aligned to `review-images`.
 
+### Storage Policy Final Verification
+
+Executed checks:
+- storage INSERT/select policy inspection
+- storage bucket public/private inspection
+
+Observed final results:
+- `review-images` bucket is private
+- `partner_docs` bucket is private
+- `facility-images` bucket is public
+- active INSERT policy exists for `bucket_id = 'review-images'`
+- legacy policy `Authenticated Upload reviews` has been removed
+
+Decision:
+- Release blocker resolved
+- Storage configuration passes launch criteria
+- Stale policy cleanup completed
+
 ### Direct URL Verification
 
 - old `review-images` public URL: blocked (`400 Bad Request`)
@@ -80,9 +98,13 @@ Interpretation:
 - `Release Ready: YES`
 - `Risk Level: LOW`
 
+Launch interpretation:
+- Storage launch criteria: PASS
+- Edge Function hardening: PASS
+- Final release decision: GO
+
 ## Remaining Post-release Improvements
 
 - Remove CSP `unsafe-inline`
 - Standardize Edge Function error responses further
 - Add CI secret scanning and built-asset grep checks
-
