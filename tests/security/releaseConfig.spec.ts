@@ -9,11 +9,15 @@ function readRepoFile(relativePath: string): string {
 }
 
 describe('release security configuration', () => {
-  it('vercel.json keeps ai-test blocked and production CSP excludes unsafe-eval', () => {
+  it('vercel.json keeps ai-test and sourcemaps blocked while production CSP excludes unsafe-eval', () => {
     const vercelConfig = JSON.parse(readRepoFile('vercel.json')) as {
       routes?: Array<Record<string, unknown>>;
       headers?: Array<{ source?: string; headers?: Array<{ key?: string; value?: string }> }>;
     };
+
+    const sourcemapRoute = vercelConfig.routes?.find((route) => route.src === '/(?:assets/.*|.*)\\.map$');
+    expect(sourcemapRoute).toBeTruthy();
+    expect(sourcemapRoute?.status).toBe(404);
 
     const aiTestRoute = vercelConfig.routes?.find((route) => route.src === '/ai-test\\.html');
     expect(aiTestRoute).toBeTruthy();
