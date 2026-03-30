@@ -1,29 +1,37 @@
 /**
- * SQL Injection Prevention Utilities
- * Phase 1-4: Security Hardening
+ * Search normalization helpers.
+ * These helpers reduce free-text input to a constrained allowlist before it is
+ * interpolated into Supabase ilike/or filter strings. Callers must still rely
+ * on parameterized Supabase filters and RPCs for the actual query boundary.
  */
 
-/**
- * SQL Injection 방지를 위한 입력 검증
- */
-export function sanitizeSearchInput(input: string): string {
+export function normalizeSearchInput(input: string): string {
     if (!input || typeof input !== 'string') return '';
 
-    // 위험한 SQL 키워드 제거
     const dangerous = /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|SCRIPT)\b)/gi;
+    const allowlistRemoved = /[^0-9a-zA-Z가-힣\s-]/g;
 
-    // 특수문자 이스케이핑 (%, _, ;, --, /*, */)
     return input
         .replace(dangerous, '')
-        .replace(/[%_';\\]/g, '')
+        .replace(allowlistRemoved, '')
         .trim()
-        .slice(0, 200); // 최대 길이 제한
+        .slice(0, 200);
 }
 
-/**
- * ILIKE 쿼리용 안전한 패턴 생성
- */
 export function createSafeIlikePattern(input: string): string {
-    const sanitized = sanitizeSearchInput(input);
-    return `%${sanitized}%`;
+    const normalized = normalizeSearchInput(input);
+    return `%${normalized}%`;
 }
+
+export function buildSafeOrFilter(filters: string[]): string {
+    const safeFilterPattern = /^(?:[a-z_]+)\.(?:ilike|eq)\.[0-9a-zA-Z가-힣%@._-]+$/;
+    for (const filter of filters) {
+        if (!safeFilterPattern.test(filter)) {
+            throw new Error('Unsafe OR filter');
+        }
+    }
+    return filters.join(',');
+}
+
+/** @deprecated Use normalizeSearchInput */
+export const sanitizeSearchInput = normalizeSearchInput;

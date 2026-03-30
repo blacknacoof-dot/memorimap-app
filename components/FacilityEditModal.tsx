@@ -6,6 +6,7 @@ import { useSession } from '../lib/auth';
 import { Facility, FacilityPackage, FacilityManager } from '../types';
 import { toast } from 'sonner';
 import { confirmAsync } from '../src/components/common/ConfirmModal';
+import { facilityUpdateSchema } from '../lib/validation/facilitySchema';
 
 interface Props {
     facility: Facility;
@@ -202,6 +203,15 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
     // --- Submit ---
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        const validation = facilityUpdateSchema.safeParse({
+            name,
+            description,
+            website: website || null,
+        });
+        if (!validation.success) {
+            toast.error('입력값을 확인한 뒤 다시 시도해 주세요.');
+            return;
+        }
         setIsSubmitting(true);
         try {
             const priceRange = calcPriceRange();

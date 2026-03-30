@@ -5,6 +5,7 @@ import { useUser, useSession } from '../lib/auth';
 import { getAuthClient } from '../lib/supabaseClient';
 import { toast } from 'sonner';
 import { logger } from '../utils/logger';
+import { reviewSubmissionSchema } from '../lib/validation/reviewSchema';
 
 interface Props {
     spaceId: string;
@@ -94,7 +95,7 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
             <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 text-center mb-6">
                 <p className="text-sm text-blue-800 mb-1 font-bold">이미 작성한 리뷰가 있습니다</p>
                 <p className="text-xs text-blue-600">
-                    한 시설당 리뷰는 1회만 작성할 수 있습니다. 수정 또는 삭제가 필요하면 마이페이지에서 관리해주세요.
+                    같은 시설에는 리뷰를 한 번만 작성할 수 있습니다. 수정 또는 삭제가 필요하면 마이페이지에서 관리해 주세요.
                 </p>
             </div>
         );
@@ -103,17 +104,18 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
     if (!hasConfirmedReservation) {
         return (
             <div className="bg-orange-50 p-6 rounded-xl border border-orange-100 text-center mb-6">
-                <p className="text-sm text-orange-800 mb-1 font-bold">예약 완료 사용자만 리뷰를 작성할 수 있습니다</p>
+                <p className="text-sm text-orange-800 mb-1 font-bold">예약 완료 이용자만 리뷰를 작성할 수 있습니다</p>
                 <p className="text-xs text-orange-600">
-                    실제 이용 경험 기반의 후기만 받기 위해 예약 이력이 있는 경우에만 작성 가능합니다.
+                    실제 이용 경험 기반 후기만 받기 위해 예약 이력이 있는 경우에만 작성 가능합니다.
                 </p>
             </div>
         );
     }
 
     const handleSubmit = async () => {
-        if (!content.trim() || content.trim().length < 10) {
-            toast.warning('리뷰 내용은 10자 이상 입력해주세요.');
+        const reviewValidation = reviewSubmissionSchema.safeParse({ content });
+        if (!reviewValidation.success) {
+            toast.warning('리뷰 내용은 10자 이상 1000자 이하로 입력해 주세요.');
             return;
         }
 
@@ -133,7 +135,7 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
                 spaceId,
                 user!.id,
                 rating,
-                content,
+                reviewValidation.data.content,
                 user!.firstName || user!.username || 'user',
                 imageUrls,
                 authClient,
@@ -161,7 +163,7 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
             const newFiles = Array.from(e.target.files);
 
             if (images.length + newFiles.length > 3) {
-                toast.warning('이미지는 최대 3장까지 업로드할 수 있습니다.');
+                toast.warning('이미지는 최대 3개까지 업로드할 수 있습니다.');
                 return;
             }
             setImages((prev) => [...prev, ...newFiles]);
@@ -195,7 +197,8 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
             />
             <div className="flex justify-between items-center mt-1 px-1">
                 <span className={`text-[10px] ${content.length < 10 ? 'text-red-500 font-bold' : 'text-gray-400'}`}>
-                    {content.length}/10자{content.length < 10 && ' (10자 이상 입력해주세요)'}
+                    {content.length}/1000
+                    {content.length < 10 && ' (10자 이상 입력해 주세요)'}
                 </span>
             </div>
 

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
-import { openInExternalBrowser, getBrowserInfo } from '../utils/browserDetection';
+import { openInExternalBrowser, getBrowserInfo, normalizeSafeRedirectUrl } from '../utils/browserDetection';
 
 export const ExternalBrowserGuidePage: React.FC = () => {
     // Router 컨텍스트 밖에서도 동작하도록 직접 URL 파싱
     const searchParams = new URLSearchParams(window.location.search);
     const browser = searchParams.get('browser') || 'kakaotalk';
-    const redirectUrl = searchParams.get('redirect') || window.location.origin;
+    const redirectUrl = normalizeSafeRedirectUrl(searchParams.get('redirect'), window.location.origin);
     const [showDebug, setShowDebug] = useState(false);
 
     const browserGuides: Record<string, { name: string; icon: string; steps: string[] }> = {

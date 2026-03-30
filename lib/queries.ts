@@ -2,6 +2,8 @@ import { FUNERAL_COMPANIES } from '../constants';
 import { supabase, setSupabaseAuth } from './supabaseClient';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { normalizeSubscriptionPlanId } from './subscriptionPlanIds';
+import { z } from 'zod';
+import { logger } from '../utils/logger';
 
 import {
     buildSafeObjectName,
@@ -9,7 +11,41 @@ import {
     validateImageFile,
     validatePartnerDocumentFile,
 } from './security/fileValidation';
-import { sanitizeSearchInput } from './security/sqlSanitize';
+import { buildSafeOrFilter, normalizeSearchInput } from './security/sqlSanitize';
+import { isZodIssueCode } from './validation/commonSchema';
+import { facilityUpdateSchema } from './validation/facilitySchema';
+import { reviewContentSchema } from './validation/reviewSchema';
+
+function logValidationFailure(scope: string, error: z.ZodError) {
+    const firstIssue = error.issues[0];
+    logger.error('Validation failed', {
+        scope,
+        code: isZodIssueCode(firstIssue?.message || ''),
+        field: firstIssue?.path?.join('.') || 'unknown',
+        issueCount: error.issues.length,
+    });
+}
+
+function validateReviewContent(content: string): string {
+    const result = reviewContentSchema.safeParse(content);
+    if (!result.success) {
+        logValidationFailure('createReview', result.error);
+        throw result.error;
+    }
+    return result.data;
+}
+
+function validateFacilityUpdateInput(updates: Record<string, unknown>): void {
+    const result = facilityUpdateSchema.safeParse({
+        name: updates.name as string | undefined,
+        description: updates.description as string | null | undefined,
+        website: updates.website as string | null | undefined,
+    });
+    if (!result.success) {
+        logValidationFailure('updateFacility', result.error);
+        throw result.error;
+    }
+}
 
 // --- Internal helper types (replacing `any`) ---
 
@@ -515,7 +551,7 @@ export const searchFacilitiesByRegion = async (
     category?: string
 ) => {
     // [Security] Sanitize input to prevent SQL injection
-    const sanitized = sanitizeSearchInput(region);
+    const sanitized = normalizeSearchInput(region);
     const optimizedRegion = sanitized.trim().replace(/\s+/g, '%');
 
     const { data, error } = await supabase.rpc('search_facilities_by_text', {
@@ -536,7 +572,7 @@ export const searchFacilitiesByRegion = async (
  */
 export const getDistinctRegions = async (searchText: string) => {
     // [Security] Sanitize input to prevent SQL injection
-    const sanitized = sanitizeSearchInput(searchText);
+    const sanitized = normalizeSearchInput(searchText);
 
     const { data, error } = await supabase.rpc('get_distinct_regions', {
         search_text: sanitized
@@ -555,7 +591,7 @@ export const getDistinctRegions = async (searchText: string) => {
  * - 시/도 + 시/군/구 단위로 추출
  */
 export const getDistinctRegionsFromFacilities = async (searchText: string) => {
-    const sanitized = sanitizeSearchInput(searchText);
+    const sanitized = normalizeSearchInput(searchText);
     if (!sanitized || sanitized.length < 2) return [];
 
     const { data, error } = await supabase
@@ -873,11 +909,12 @@ export const createReview = async (
     client: SupabaseClient
 ): Promise<Record<string, unknown> | null> => {
     const db = client;
+    const validatedContent = validateReviewContent(content);
     const insertData = {
         facility_id: facilityId,
         user_id: userId,
         rating,
-        content,
+        content: validatedContent,
         author_name: userName || '익명',
         photos: images.map(url => ({ url })), // TEXT[] -> JSONB 형식 변환
         is_active: true,
@@ -913,6 +950,7 @@ export const deleteReview = async (reviewId: string, client: SupabaseClient) => 
  */
 export const updateFacility = async (id: string, updates: Record<string, unknown>, client: SupabaseClient) => {
     const db = client;
+    validateFacilityUpdateInput(updates);
     const { data, error } = await db
         .from('facilities') // Changed from memorial_spaces
         .update(updates)
@@ -1191,7 +1229,7 @@ export const getFacilitySubscription = async (facilityId: string, client: Supaba
             // Legacy/BIGINT — 숫자만 허용 (PostgREST 필터 주입 방어)
             const numericId = facilityId.replace(/[^0-9]/g, '');
             if (!numericId) return null;
-            query = query.or(`facility_id.eq.${numericId},facility_id_bigint.eq.${numericId}`);
+            query = query.or(buildSafeOrFilter([`facility_id.eq.${numericId}`, `facility_id_bigint.eq.${numericId}`]));
         }
 
         const { data, error } = await query.maybeSingle();
@@ -1258,7 +1296,7 @@ export const searchKnownFacilities = async (query: string, type?: string) => {
     let queryBuilder = supabase
         .from('facilities') // Changed from memorial_spaces
         .select('id, name, address, type, user_id') // [Fix] category -> type, manager_id -> user_id
-        .ilike('name', `%${sanitizeSearchInput(query)}%`);
+        .ilike('name', `%${normalizeSearchInput(query)}%`);
     // Note: Removed owner_user_id filter - show all facilities, UI will warn if already claimed
 
     if (type) {

@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from './supabaseClient';
+import { buildSafeOrFilter, normalizeSearchInput } from './security/sqlSanitize';
 
 export interface AdminUser {
     id: string;
@@ -122,7 +123,7 @@ export const searchUsers = async (query: string): Promise<AdminUser[]> => {
         .select('id, clerk_id, email, full_name, role, phone_number, created_at, avatar_url');
 
     if (query) {
-        const sanitized = query.trim().replace(/[%_\\]/g, '\\$&').replace(/[,.()"']/g, '');
+        const sanitized = normalizeSearchInput(query);
         if (!sanitized) return enrichUsersWithPlans([]);
         const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sanitized);
 
@@ -136,7 +137,7 @@ export const searchUsers = async (query: string): Promise<AdminUser[]> => {
         } else {
             filters.push(`phone_number.ilike.${pattern}`);
         }
-        queryBuilder = queryBuilder.or(filters.join(','));
+        queryBuilder = queryBuilder.or(buildSafeOrFilter(filters));
     }
 
     const { data, error } = await queryBuilder.limit(20);
