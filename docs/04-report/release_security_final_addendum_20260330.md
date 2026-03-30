@@ -108,3 +108,10 @@ Launch interpretation:
 - Remove CSP `unsafe-inline`
 - Standardize Edge Function error responses further
 - Add CI secret scanning and built-asset grep checks
+
+## Operational References
+
+- Pre-deploy checklist:
+  - `docs/04-report/predeploy_security_checklist_20260330.md`
+- Playwright security execution plan:
+  - `docs/04-report/playwright_security_execution_plan_20260330.md`
