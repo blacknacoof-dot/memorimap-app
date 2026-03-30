@@ -17,6 +17,7 @@ View your app in AI Studio: https://ai.studio/apps/drive/1B4P7vNrcMNxVaQTfNh4bHo
 ## Release Docs
 
 - Latest security patch status: `docs/04-report/release_security_patch_status_20260330.md`
+- Latest final security addendum: `docs/04-report/release_security_final_addendum_20260330.md`
 
 ## Run Locally
 

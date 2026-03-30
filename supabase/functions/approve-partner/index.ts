@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { z } from 'https://esm.sh/zod@3.22.4'
+import { rateLimit } from '../_shared/rateLimit.ts'
 
 const PRODUCTION_ORIGINS = [
     'https://memorimap.kr',
@@ -160,13 +161,36 @@ serve(async (req) => {
             email: userEmail
         };
 
+        const rateLimitResult = await rateLimit(req, {
+            endpoint: 'approve-partner',
+            maxRequests: 10,
+            windowSeconds: 60,
+            userId,
+        });
+
+        if (!rateLimitResult.allowed) {
+            return new Response(JSON.stringify({ error: 'Too many requests' }), {
+                status: 429,
+                headers: {
+                    ...corsHeaders,
+                    'Content-Type': 'application/json',
+                    'Retry-After': String(rateLimitResult.retryAfterSeconds ?? 60),
+                }
+            })
+        }
+
         // Parse and Validate Request with Zod
         const body = await req.json();
         const validationResult = ApproveRequestSchema.safeParse(body);
 
         if (!validationResult.success) {
             const errorMsg = `Validation failed: ${validationResult.error.errors.map(e => e.path + ': ' + e.message).join(', ')}`;
-            await logToDB(supabaseAdmin, 'WARN', errorMsg, { body });
+            const rawBody = body && typeof body === 'object' ? body as Record<string, unknown> : {};
+            await logToDB(supabaseAdmin, 'WARN', errorMsg, {
+                inquiryId: typeof rawBody.inquiryId === 'string' || typeof rawBody.inquiryId === 'number' ? rawBody.inquiryId : null,
+                action: typeof rawBody.action === 'string' ? rawBody.action : null,
+                error: 'VALIDATION_FAILED',
+            });
             throw new Error(errorMsg);
         }
 

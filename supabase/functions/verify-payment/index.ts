@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { rateLimit } from '../_shared/rateLimit.ts'
 
 const PRODUCTION_ORIGINS = [
     'https://memorimap.kr',
@@ -435,6 +436,24 @@ serve(async (req: Request) => {
         return new Response(JSON.stringify({ error: 'Unauthorized', details: authError }), {
             status: 401,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+    }
+
+    const rateLimitResult = await rateLimit(req, {
+        endpoint: 'verify-payment',
+        maxRequests: 20,
+        windowSeconds: 60,
+        userId: verifiedUserId,
+    });
+
+    if (!rateLimitResult.allowed) {
+        return new Response(JSON.stringify({ error: 'Too many requests' }), {
+            status: 429,
+            headers: {
+                ...corsHeaders,
+                'Content-Type': 'application/json',
+                'Retry-After': String(rateLimitResult.retryAfterSeconds ?? 60),
+            },
         });
     }
     // ============================================================

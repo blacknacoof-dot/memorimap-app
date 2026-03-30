@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { rateLimit } from '../_shared/rateLimit.ts'
 
 const PRODUCTION_ORIGINS = [
     'https://memorimap.kr',
@@ -64,6 +65,25 @@ async function verifyJWT(token: string): Promise<{ userId: string | null; error:
 
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:streamGenerateContent';
 
+async function logToDB(level: 'WARN' | 'ERROR', message: string, meta: Record<string, unknown> = {}) {
+    try {
+        const supabase = createClient(
+            Deno.env.get('SUPABASE_URL')!,
+            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+            { auth: { persistSession: false, autoRefreshToken: false } }
+        );
+
+        await supabase.from('system_logs').insert({
+            level,
+            message,
+            meta,
+            source: 'edge-function:gemini-proxy'
+        });
+    } catch (error) {
+        console.error('Failed to write gemini-proxy log', error);
+    }
+}
+
 serve(async (req: Request) => {
     const corsHeaders = getCorsHeaders(req);
 
@@ -90,9 +110,31 @@ serve(async (req: Request) => {
     const token = authHeader.replace('Bearer ', '');
     const { userId, error: authError } = await verifyJWT(token);
     if (authError || !userId) {
-        return new Response(JSON.stringify({ error: 'Unauthorized', details: authError }), {
+        await logToDB('WARN', 'Gemini proxy auth failed', {
+            error: authError || 'Unauthorized',
+            hasAuthorizationHeader: Boolean(authHeader),
+        });
+        return new Response(JSON.stringify({ error: 'AI request failed' }), {
             status: 401,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+    }
+
+    const rateLimitResult = await rateLimit(req, {
+        endpoint: 'gemini-proxy',
+        maxRequests: 30,
+        windowSeconds: 60,
+        userId,
+    });
+
+    if (!rateLimitResult.allowed) {
+        return new Response(JSON.stringify({ error: 'Too many requests' }), {
+            status: 429,
+            headers: {
+                ...corsHeaders,
+                'Content-Type': 'application/json',
+                'Retry-After': String(rateLimitResult.retryAfterSeconds ?? 60),
+            },
         });
     }
 
@@ -142,7 +184,12 @@ serve(async (req: Request) => {
 
         if (!geminiResponse.ok) {
             const errorText = await geminiResponse.text();
-            return new Response(JSON.stringify({ error: 'Gemini API error', details: errorText }), {
+            await logToDB('ERROR', 'Gemini upstream request failed', {
+                userId,
+                status: geminiResponse.status,
+                upstreamError: errorText,
+            });
+            return new Response(JSON.stringify({ error: 'AI request failed' }), {
                 status: geminiResponse.status,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             });
@@ -159,7 +206,11 @@ serve(async (req: Request) => {
             },
         });
     } catch (error: unknown) {
-        return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Internal error' }), {
+        await logToDB('ERROR', 'Gemini proxy request failed', {
+            userId,
+            error: error instanceof Error ? error.message : 'Internal error',
+        });
+        return new Response(JSON.stringify({ error: 'AI request failed' }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
