@@ -32,11 +32,34 @@
             "handle": "filesystem"
         },
         {
+            "src": "/assets/(.*)",
+            "status": 404,
+            "dest": "/404.html"
+        },
+        {
             "src": "/(.*)",
             "dest": "/index.html"
         }
     ],
     "headers": [
+        {
+            "source": "/",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "no-cache, no-store, must-revalidate"
+                }
+            ]
+        },
+        {
+            "source": "/index.html",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "no-cache, no-store, must-revalidate"
+                }
+            ]
+        },
         {
             "source": "/assets/:path*",
             "headers": [
