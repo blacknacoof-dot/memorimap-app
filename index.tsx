@@ -5,6 +5,9 @@ import App from './App';
 import './index.css';
 import './lib/analytics';
 import { ClerkProviderWrapper } from './lib/auth';
+import { installChunkRecoveryHandlers } from './lib/chunkRecovery';
+
+installChunkRecoveryHandlers();
 
 // Initialize QueryClient
 const queryClient = new QueryClient({
