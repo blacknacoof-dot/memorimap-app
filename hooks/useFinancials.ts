@@ -56,9 +56,12 @@ export function useRevenue() {
                 const client = await getAuthClient(session, { strict: true });
                 const result = await fetchPayments(client);
                 const succeededPayments = result.payments.filter((payment) => payment.status === 'succeeded');
+                const hasFacilityNameFailure = result.payments.some((payment) => (
+                    payment.payment_context === 'facility' && payment.facility_name.startsWith('(')
+                ));
                 setPayments(result.payments);
                 setTotalRevenue(succeededPayments.reduce((acc, curr) => acc + (curr.amount || 0), 0));
-                if (result.facilityNameFailed) {
+                if ((result.activeFacilityNameFailed ?? result.facilityNameFailed) && hasFacilityNameFailure) {
                     toast.warning('시설명 조회에 실패했습니다. 일부 항목이 (알 수 없음)으로 표시됩니다.');
                 }
             } catch {

@@ -36,6 +36,8 @@ export interface UserPlanInfo {
   limits: UserPlanLimits;
   expires_at: string | null;
   status?: 'active' | 'cancelling' | 'cancelled' | 'expired' | 'pending';
+  premium_source?: 'beta_manual' | 'beta_coupon' | 'beta_invite' | 'cs_comp' | 'partner_test' | null;
+  is_beta_premium?: boolean;
 }
 
 /** 쿼터 체크 결과 (check_and_increment RPC 반환) */

@@ -56,6 +56,43 @@ export interface PersonalSubscriptionAdminRow {
     created_at: string | null;
 }
 
+export interface PremiumGrantRow {
+    id: string;
+    user_id: string;
+    plan_tier: 'premium';
+    premium_status: 'active' | 'expired' | 'revoked';
+    premium_source: 'beta_manual' | 'beta_coupon' | 'beta_invite' | 'cs_comp' | 'partner_test';
+    premium_granted_at: string;
+    premium_expires_at: string | null;
+    granted_by_admin_id: string | null;
+    notes: string | null;
+    revoked_at: string | null;
+    revoked_by_admin_id: string | null;
+    revoke_reason: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface UserPremiumStatus {
+    activeGrant: PremiumGrantRow | null;
+    history: PremiumGrantRow[];
+}
+
+export interface PremiumExpiryTarget {
+    user_id: string;
+    grant_id: string;
+    premium_expires_at: string;
+    premium_source: PremiumGrantRow['premium_source'];
+}
+
+export interface GrantPremiumInput {
+    userId: string;
+    premiumSource: PremiumGrantRow['premium_source'];
+    expiresAt: string;
+    notes?: string;
+    grantedByAdminId: string;
+}
+
 export const fetchAllUsers = async (client: SupabaseClient) => {
     const { data, error } = await client
         .from('profiles')
@@ -163,6 +200,192 @@ export const fetchPersonalSubscriptions = async (client: SupabaseClient) => {
         expires_at: row.expires_at || null,
         created_at: row.created_at || null,
     })) as PersonalSubscriptionAdminRow[];
+};
+
+const assertFutureDate = (expiresAt: string) => {
+    const expiry = new Date(expiresAt);
+    if (Number.isNaN(expiry.getTime())) {
+        throw new Error('Invalid premium_expires_at');
+    }
+    if (expiry <= new Date()) {
+        throw new Error('premium_expires_at must be in the future');
+    }
+};
+
+export const getUserPremiumStatus = async (
+    userId: string,
+    client: SupabaseClient,
+): Promise<UserPremiumStatus> => {
+    const { data, error } = await client
+        .from('premium_grants')
+        .select('*')
+        .eq('user_id', userId)
+        .order('premium_granted_at', { ascending: false });
+
+    if (error) throw error;
+
+    const history = (data || []) as PremiumGrantRow[];
+    const now = Date.now();
+    const activeGrant = history.find((row) => (
+        row.premium_status === 'active'
+        && (!row.premium_expires_at || new Date(row.premium_expires_at).getTime() > now)
+    )) || null;
+
+    return { activeGrant, history };
+};
+
+export const grantPremium = async (
+    input: GrantPremiumInput,
+    client: SupabaseClient,
+) => {
+    assertFutureDate(input.expiresAt);
+
+    const current = await getUserPremiumStatus(input.userId, client);
+    if (current.activeGrant) {
+        throw new Error('User already has an active premium grant');
+    }
+
+    const { data, error } = await client
+        .from('premium_grants')
+        .insert({
+            user_id: input.userId,
+            plan_tier: 'premium',
+            premium_status: 'active',
+            premium_source: input.premiumSource,
+            premium_expires_at: input.expiresAt,
+            granted_by_admin_id: input.grantedByAdminId,
+            notes: input.notes ?? null,
+        })
+        .select('*')
+        .single();
+
+    if (error) throw error;
+
+    const { error: _auditError } = await client.from('audit_logs').insert({
+        user_id: input.grantedByAdminId,
+        action: 'premium_granted',
+        resource_type: 'premium_grants',
+        resource_id: data.id,
+        metadata: {
+            target_user_id: input.userId,
+            premium_source: input.premiumSource,
+            premium_expires_at: input.expiresAt,
+            notes: input.notes ?? null,
+        },
+    });
+
+    return data as PremiumGrantRow;
+};
+
+export const revokePremium = async (
+    grantId: string,
+    reason: string,
+    adminId: string,
+    client: SupabaseClient,
+) => {
+    if (!reason.trim()) {
+        throw new Error('revoke reason is required');
+    }
+
+    const { data, error } = await client
+        .from('premium_grants')
+        .update({
+            premium_status: 'revoked',
+            revoked_at: new Date().toISOString(),
+            revoked_by_admin_id: adminId,
+            revoke_reason: reason,
+        })
+        .eq('id', grantId)
+        .eq('premium_status', 'active')
+        .select('*')
+        .single();
+
+    if (error) throw error;
+
+    const { error: _auditError } = await client.from('audit_logs').insert({
+        user_id: adminId,
+        action: 'premium_revoked',
+        resource_type: 'premium_grants',
+        resource_id: grantId,
+        metadata: {
+            target_user_id: data.user_id,
+            revoke_reason: reason,
+        },
+    });
+
+    return data as PremiumGrantRow;
+};
+
+export const extendPremium = async (
+    grantId: string,
+    adminId: string,
+    client: SupabaseClient,
+    options: { days?: number; newExpiresAt?: string },
+) => {
+    const { data: existing, error: existingError } = await client
+        .from('premium_grants')
+        .select('*')
+        .eq('id', grantId)
+        .eq('premium_status', 'active')
+        .single();
+
+    if (existingError) throw existingError;
+
+    const currentExpiry = existing.premium_expires_at ? new Date(existing.premium_expires_at) : new Date();
+    let nextExpiry: Date;
+
+    if (options.newExpiresAt) {
+        nextExpiry = new Date(options.newExpiresAt);
+    } else if (options.days && options.days > 0) {
+        nextExpiry = new Date(currentExpiry.getTime() + options.days * 24 * 60 * 60 * 1000);
+    } else {
+        throw new Error('Either days or newExpiresAt is required');
+    }
+
+    if (Number.isNaN(nextExpiry.getTime())) {
+        throw new Error('Invalid extension date');
+    }
+
+    const { data, error } = await client
+        .from('premium_grants')
+        .update({
+            premium_expires_at: nextExpiry.toISOString(),
+        })
+        .eq('id', grantId)
+        .select('*')
+        .single();
+
+    if (error) throw error;
+
+    const { error: _auditError } = await client.from('audit_logs').insert({
+        user_id: adminId,
+        action: 'premium_extended',
+        resource_type: 'premium_grants',
+        resource_id: grantId,
+        metadata: {
+            target_user_id: data.user_id,
+            previous_expires_at: existing.premium_expires_at,
+            premium_expires_at: nextExpiry.toISOString(),
+            days: options.days ?? null,
+        },
+    });
+
+    return data as PremiumGrantRow;
+};
+
+export const fetchPremiumExpiringSoon = async (
+    days: number,
+    client: SupabaseClient,
+) => {
+    const { data, error } = await client.rpc('get_premium_expiring_targets', { p_days: days });
+    if (error) throw error;
+    return (data || []) as PremiumExpiryTarget[];
+};
+
+export const processExpiredPremiumGrants = async (client: SupabaseClient) => {
+    const { data, error } = await client.rpc('process_expired_premium_grants');
+    if (error) throw error;
+    return data;
 };
 
 export const updateUserRole = async (userId: string, newRole: string, client: SupabaseClient, actorId?: string) => {
@@ -345,6 +568,7 @@ export interface PaymentWithFacility extends Payment {
 export interface FetchPaymentsResult {
     payments: PaymentWithFacility[];
     facilityNameFailed: boolean;
+    activeFacilityNameFailed?: boolean;
 }
 
 const normalizePaymentStatus = (status?: string | null) => {
@@ -365,11 +589,15 @@ export const fetchPayments = async (client: SupabaseClient): Promise<FetchPaymen
         status: normalizePaymentStatus(item.status),
     })) as Payment[];
 
+    const facilityPayments = normalizedPayments.filter((payment) => (
+        payment.payment_context === 'facility' && Boolean(payment.subscription_id)
+    ));
+
     try {
         const { data: subs, error: sError } = await client
             .from('facility_subscriptions')
-            .select('id, facility_id, facility_id_uuid, facility_id_bigint')
-            .in('id', normalizedPayments.map((payment) => payment.subscription_id).filter(Boolean));
+            .select('id, status, facility_id, facility_id_uuid, facility_id_bigint')
+            .in('id', facilityPayments.map((payment) => payment.subscription_id).filter(Boolean));
 
         if (!sError && subs) {
             const facilityMap = await resolveFacilityNameMap(client, subs);
@@ -380,13 +608,27 @@ export const fetchPayments = async (client: SupabaseClient): Promise<FetchPaymen
                 return [sub.id, resolvedFacilityName];
             }));
 
+            const activeSubscriptionIds = new Set(
+                subs
+                    .filter((sub) => sub.status === 'active')
+                    .map((sub) => sub.id)
+            );
+
             const resolvedPayments = normalizedPayments.map((item: Payment) => ({
                 ...item,
                 facility_name: subMap.get(item.subscription_id ?? '') || '(시설 정보 유실)',
             })) as PaymentWithFacility[];
 
+            const activeFacilityNameFailed = resolvedPayments.some((payment) => (
+                payment.payment_context === 'facility'
+                && payment.subscription_id !== null
+                && activeSubscriptionIds.has(payment.subscription_id)
+                && payment.facility_name.startsWith('(')
+            ));
+
             return {
                 payments: resolvedPayments,
+                activeFacilityNameFailed,
                 facilityNameFailed: resolvedPayments.some((payment) => payment.facility_name === '(시설 정보 유실)'),
             };
         }
