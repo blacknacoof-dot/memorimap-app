@@ -28,12 +28,16 @@ const STATUS_BADGE: Record<string, string> = {
     active: 'bg-green-50 text-green-600 border-green-100',
     expired: 'bg-orange-50 text-orange-600 border-orange-100',
     cancelled: 'bg-slate-100 text-slate-600 border-slate-200',
+    cancelling: 'bg-amber-50 text-amber-700 border-amber-100',
+    pending: 'bg-blue-50 text-blue-700 border-blue-100',
 };
 
 const STATUS_LABEL: Record<string, string> = {
     active: '활성',
     expired: '만료',
     cancelled: '해지',
+    cancelling: '해지 예정',
+    pending: '대기',
 };
 
 const PREMIUM_SOURCE_OPTIONS = [
@@ -53,15 +57,13 @@ export const PersonalSubscriptionManager: React.FC = () => {
     const { data: users, loading } = usePersonalSubscriptions();
     const { session } = useSession();
     const { user } = useUser();
+
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'expired'>('all');
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
     const [selectedPremium, setSelectedPremium] = useState<UserPremiumStatus | null>(null);
     const [premiumLoading, setPremiumLoading] = useState(false);
-    const [grantDays, setGrantDays] = useState(30);
     const [grantSource, setGrantSource] = useState<PremiumSourceValue>('beta_manual');
-    const [notes, setNotes] = useState('');
-    const [customExtendDate, setCustomExtendDate] = useState('');
     const [revokeReason, setRevokeReason] = useState('');
 
     const filteredUsers = useMemo(() => users.filter((userRow) => {
@@ -82,11 +84,12 @@ export const PersonalSubscriptionManager: React.FC = () => {
 
     const loadPremium = async (userId: string) => {
         if (!session) return;
+
         setPremiumLoading(true);
         try {
             const client = await getAuthClient(session, { strict: true });
-            const status = await getUserPremiumStatus(userId, client);
-            setSelectedPremium(status);
+            const premiumStatus = await getUserPremiumStatus(userId, client);
+            setSelectedPremium(premiumStatus);
         } catch (error) {
             toast.error(error instanceof Error ? error.message : '프리미엄 상태를 불러오지 못했습니다.');
             setSelectedPremium(null);
@@ -97,9 +100,8 @@ export const PersonalSubscriptionManager: React.FC = () => {
 
     const handleSelectUser = async (userId: string) => {
         setSelectedUserId(userId);
-        setNotes('');
+        setSelectedPremium(null);
         setRevokeReason('');
-        setCustomExtendDate('');
         await loadPremium(userId);
     };
 
@@ -108,49 +110,33 @@ export const PersonalSubscriptionManager: React.FC = () => {
 
         try {
             const client = await getAuthClient(session, { strict: true });
-            const expiresAt = new Date(Date.now() + grantDays * 24 * 60 * 60 * 1000).toISOString();
+            const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
             await grantPremium({
                 userId: selectedUserId,
                 premiumSource: grantSource,
                 expiresAt,
-                notes,
+                notes: 'super_admin_manual_grant',
                 grantedByAdminId: user.id,
             }, client);
 
-            toast.success('베타 프리미엄이 부여되었습니다.');
-            setNotes('');
+            toast.success('베타 프리미엄 30일을 부여했습니다.');
             await loadPremium(selectedUserId);
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : '프리미엄 부여에 실패했습니다.');
+            toast.error(error instanceof Error ? error.message : '베타 프리미엄 부여에 실패했습니다.');
         }
     };
 
-    const handleExtendByDays = async (days: number) => {
+    const handleExtend = async (days: number) => {
         if (!session || !selectedPremium?.activeGrant || !user?.id) return;
 
         try {
             const client = await getAuthClient(session, { strict: true });
             await extendPremium(selectedPremium.activeGrant.id, user.id, client, { days });
-            toast.success(`프리미엄이 ${days}일 연장되었습니다.`);
+            toast.success(`프리미엄을 ${days}일 연장했습니다.`);
             await loadPremium(selectedPremium.activeGrant.user_id);
         } catch (error) {
             toast.error(error instanceof Error ? error.message : '프리미엄 연장에 실패했습니다.');
-        }
-    };
-
-    const handleExtendToDate = async () => {
-        if (!session || !selectedPremium?.activeGrant || !user?.id || !customExtendDate) return;
-
-        try {
-            const client = await getAuthClient(session, { strict: true });
-            const isoDate = new Date(customExtendDate).toISOString();
-            await extendPremium(selectedPremium.activeGrant.id, user.id, client, { newExpiresAt: isoDate });
-            toast.success('프리미엄 만료일이 수정되었습니다.');
-            setCustomExtendDate('');
-            await loadPremium(selectedPremium.activeGrant.user_id);
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : '프리미엄 날짜 수정에 실패했습니다.');
         }
     };
 
@@ -159,8 +145,13 @@ export const PersonalSubscriptionManager: React.FC = () => {
 
         try {
             const client = await getAuthClient(session, { strict: true });
-            await revokePremium(selectedPremium.activeGrant.id, revokeReason, user.id, client);
-            toast.success('프리미엄이 회수되었습니다.');
+            await revokePremium(
+                selectedPremium.activeGrant.id,
+                revokeReason.trim() || 'super_admin_manual_revoke',
+                user.id,
+                client,
+            );
+            toast.success('프리미엄을 회수했습니다.');
             setRevokeReason('');
             await loadPremium(selectedPremium.activeGrant.user_id);
         } catch (error) {
@@ -177,7 +168,7 @@ export const PersonalSubscriptionManager: React.FC = () => {
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 md:p-6">
                 <h2 className="text-lg md:text-xl font-black text-slate-900">개인 구독 / 베타 프리미엄 운영</h2>
                 <p className="mt-1 text-sm text-slate-500">
-                    기존 개인 구독 상태를 보면서, 슈퍼관리자만 베타 프리미엄 override를 부여/연장/회수할 수 있습니다.
+                    슈퍼관리자가 개인 사용자별 베타 프리미엄 override를 부여, 연장, 회수할 수 있습니다.
                 </p>
             </div>
 
@@ -234,17 +225,21 @@ export const PersonalSubscriptionManager: React.FC = () => {
                                 type="text"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder="이름, 이메일, 플랜명 검색..."
+                                placeholder="이름, 이메일, 플랜명 검색"
                                 className="bg-transparent text-xs outline-none w-40"
                             />
                         </div>
                     </div>
+
                     <div className="divide-y divide-slate-100 max-h-[720px] overflow-y-auto">
                         {filteredUsers.map((userRow) => (
                             <button
                                 key={userRow.user_id}
+                                type="button"
                                 onClick={() => handleSelectUser(userRow.user_id)}
-                                className={`w-full p-4 flex items-center justify-between text-left hover:bg-slate-50 transition-colors ${selectedUserId === userRow.user_id ? 'bg-blue-50/70' : ''}`}
+                                className={`w-full p-4 flex items-center justify-between text-left transition-colors hover:bg-slate-50 ${
+                                    selectedUserId === userRow.user_id ? 'bg-blue-50 ring-1 ring-inset ring-blue-200' : ''
+                                }`}
                             >
                                 <div className="space-y-2">
                                     <div className="flex items-center gap-3 flex-wrap">
@@ -270,6 +265,7 @@ export const PersonalSubscriptionManager: React.FC = () => {
                                 </div>
                             </button>
                         ))}
+
                         {filteredUsers.length === 0 && (
                             <div className="p-5 text-center text-xs text-slate-400">
                                 조회 조건에 맞는 개인 구독자가 없습니다.
@@ -281,7 +277,7 @@ export const PersonalSubscriptionManager: React.FC = () => {
                 <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 md:p-5 space-y-4">
                     {!selectedUser ? (
                         <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-400">
-                            왼쪽 목록에서 사용자를 선택하면 베타 프리미엄 상태를 관리할 수 있습니다.
+                            사용자를 선택하세요.
                         </div>
                     ) : (
                         <>
@@ -292,56 +288,38 @@ export const PersonalSubscriptionManager: React.FC = () => {
                             </div>
 
                             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                                <div className="text-xs font-bold text-slate-500 mb-2">현재 베타 프리미엄 상태</div>
+                                <div className="text-xs font-bold text-slate-500 mb-2">현재 상태</div>
                                 {premiumLoading ? (
-                                    <div className="text-sm text-slate-400">상태 조회 중...</div>
+                                    <div className="text-sm text-slate-400">불러오는 중...</div>
                                 ) : selectedPremium?.activeGrant ? (
                                     <div className="space-y-1 text-sm">
                                         <div className="font-bold text-green-700">Active override</div>
                                         <div className="text-slate-600">Source: {selectedPremium.activeGrant.premium_source}</div>
                                         <div className="text-slate-600">만료일: {formatDateTime(selectedPremium.activeGrant.premium_expires_at)}</div>
-                                        <div className="text-slate-600">메모: {selectedPremium.activeGrant.notes || '-'}</div>
                                     </div>
                                 ) : (
-                                    <div className="text-sm font-bold text-slate-500">Free / override 없음</div>
+                                    <div className="text-sm font-bold text-slate-500">Free / Override 없음</div>
                                 )}
                             </div>
 
                             <div className="rounded-xl border border-slate-200 p-4 space-y-3">
                                 <div className="text-sm font-bold text-slate-800">베타 프리미엄 부여</div>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <select
-                                        value={grantSource}
-                                        onChange={(e) => setGrantSource(e.target.value as PremiumSourceValue)}
-                                        className="rounded-lg border px-3 py-2 text-sm"
-                                    >
-                                        {PREMIUM_SOURCE_OPTIONS.map((option) => (
-                                            <option key={option.value} value={option.value}>{option.label}</option>
-                                        ))}
-                                    </select>
-                                    <select
-                                        value={grantDays}
-                                        onChange={(e) => setGrantDays(Number(e.target.value))}
-                                        className="rounded-lg border px-3 py-2 text-sm"
-                                    >
-                                        <option value={7}>7일</option>
-                                        <option value={14}>14일</option>
-                                        <option value={30}>30일</option>
-                                    </select>
-                                </div>
-                                <textarea
-                                    value={notes}
-                                    onChange={(e) => setNotes(e.target.value)}
-                                    rows={3}
-                                    placeholder="부여 메모"
-                                    className="w-full rounded-lg border px-3 py-2 text-sm resize-none"
-                                />
+                                <select
+                                    value={grantSource}
+                                    onChange={(e) => setGrantSource(e.target.value as PremiumSourceValue)}
+                                    className="w-full rounded-lg border px-3 py-2 text-sm"
+                                >
+                                    {PREMIUM_SOURCE_OPTIONS.map((option) => (
+                                        <option key={option.value} value={option.value}>{option.label}</option>
+                                    ))}
+                                </select>
                                 <button
+                                    type="button"
                                     onClick={handleGrant}
-                                    disabled={!!selectedPremium?.activeGrant}
+                                    disabled={premiumLoading || !!selectedPremium?.activeGrant}
                                     className="w-full rounded-lg bg-blue-600 text-white py-2 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-50"
                                 >
-                                    베타 프리미엄 부여
+                                    30일 부여
                                 </button>
                             </div>
 
@@ -349,33 +327,20 @@ export const PersonalSubscriptionManager: React.FC = () => {
                                 <div className="text-sm font-bold text-slate-800">연장</div>
                                 <div className="grid grid-cols-2 gap-2">
                                     <button
-                                        onClick={() => handleExtendByDays(7)}
-                                        disabled={!selectedPremium?.activeGrant}
+                                        type="button"
+                                        onClick={() => handleExtend(7)}
+                                        disabled={premiumLoading || !selectedPremium?.activeGrant}
                                         className="rounded-lg bg-amber-500 text-white py-2 text-sm font-bold disabled:opacity-50"
                                     >
                                         +7일
                                     </button>
                                     <button
-                                        onClick={() => handleExtendByDays(30)}
-                                        disabled={!selectedPremium?.activeGrant}
+                                        type="button"
+                                        onClick={() => handleExtend(30)}
+                                        disabled={premiumLoading || !selectedPremium?.activeGrant}
                                         className="rounded-lg bg-amber-600 text-white py-2 text-sm font-bold disabled:opacity-50"
                                     >
                                         +30일
-                                    </button>
-                                </div>
-                                <div className="flex gap-2">
-                                    <input
-                                        type="datetime-local"
-                                        value={customExtendDate}
-                                        onChange={(e) => setCustomExtendDate(e.target.value)}
-                                        className="flex-1 rounded-lg border px-3 py-2 text-sm"
-                                    />
-                                    <button
-                                        onClick={handleExtendToDate}
-                                        disabled={!selectedPremium?.activeGrant || !customExtendDate}
-                                        className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 disabled:opacity-50"
-                                    >
-                                        날짜 수정
                                     </button>
                                 </div>
                             </div>
@@ -390,11 +355,12 @@ export const PersonalSubscriptionManager: React.FC = () => {
                                     className="w-full rounded-lg border px-3 py-2 text-sm resize-none"
                                 />
                                 <button
+                                    type="button"
                                     onClick={handleRevoke}
-                                    disabled={!selectedPremium?.activeGrant || !revokeReason.trim()}
+                                    disabled={premiumLoading || !selectedPremium?.activeGrant}
                                     className="w-full rounded-lg bg-red-600 text-white py-2 text-sm font-bold disabled:opacity-50"
                                 >
-                                    프리미엄 회수
+                                    회수
                                 </button>
                             </div>
 
@@ -413,7 +379,7 @@ export const PersonalSubscriptionManager: React.FC = () => {
                                             <div className="text-slate-600">revoke reason: {row.revoke_reason || '-'}</div>
                                         </div>
                                     )) : (
-                                        <div className="text-xs text-slate-400">베타 프리미엄 이력이 없습니다.</div>
+                                        <div className="text-xs text-slate-400">이력이 없습니다.</div>
                                     )}
                                 </div>
                             </div>

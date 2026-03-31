@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
     Check, X, Sparkles, Crown, Zap, ChevronDown, ChevronUp,
     MessageCircle, Shield, ArrowLeft
@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { useUser, useSession } from '../lib/auth';
 import { getAuthClient } from '../lib/supabaseClient';
 import { LegalModal } from './LegalModal';
+import { useUserPlan } from '../hooks/useUserPlan';
 
 interface PersonalPlanFeature {
     name: string;
@@ -81,15 +82,22 @@ interface PersonalSubscriptionPlansProps {
 export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalSubscriptionPlansProps) {
     const [_selectedPlan, setSelectedPlan] = useState<string>('PERSONAL_FREE');
     const [expandedPlan, setExpandedPlan] = useState<string | null>('PERSONAL_PREMIUM');
-    const [currentPlan, setCurrentPlan] = useState<string>('PERSONAL_FREE');
-    const [isCancelling, setIsCancelling] = useState(false);
-    const [cancelExpiresAt, setCancelExpiresAt] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
     const [isPaymentOpen, setIsPaymentOpen] = useState(false);
     const [showLegalModal, setShowLegalModal] = useState(false);
     const [legalTab, setLegalTab] = useState<'terms' | 'privacy' | 'refund' | 'business' | 'license'>('business');
     const { user } = useUser();
-    const { session } = useSession();
+    const { session, isLoaded } = useSession();
+    const { data: userPlanData, isLoading: isUserPlanLoading, refetch: refetchUserPlan } = useUserPlan();
+
+    const currentPlan = (userPlanData?.plan_name || 'PERSONAL_FREE').toUpperCase();
+    const isCancelling = userPlanData?.status === 'cancelling';
+    const cancelExpiresAt = userPlanData?.expires_at ?? null;
+    const isBetaPremium = userPlanData?.is_beta_premium === true;
+    const isLoading = !isLoaded || isUserPlanLoading;
+    const setCurrentPlan = (_value: string) => {};
+    const setIsCancelling = (_value: boolean) => {};
+    const setCancelExpiresAt = (_value: string | null) => {};
+    const setIsLoading = (_value: boolean) => {};
 
     const cancelPayment = useCallback(() => {
         // PortOne이 body에 직접 추가한 모든 overlay/iframe 제거
@@ -114,10 +122,6 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
         setIsPaymentOpen(false);
         toast('결제가 취소되었습니다.');
     }, []);
-
-    useEffect(() => {
-        loadCurrentPlan();
-    }, [session]);
 
     const loadCurrentPlan = async () => {
         if (!session) {
@@ -172,7 +176,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                 toast.error('구독 해지에 실패했습니다. 잠시 후 다시 시도해 주세요.');
                 return;
             }
-            setIsCancelling(true);
+            await refetchUserPlan();
             toast.success('구독 해지가 예약되었습니다. 이용 기간 만료까지 유료 기능을 사용할 수 있습니다.');
             return;
         }
@@ -230,7 +234,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
             }
 
             setSelectedPlan(plan.id);
-            setCurrentPlan(plan.id);
+            await refetchUserPlan();
             toast.success(`${plan.name} 구독이 시작되었습니다!`);
         } catch (error) {
             const msg = error instanceof Error ? error.message : '';
@@ -314,6 +318,12 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                         </div>
                     ))}
                 </div>
+                {isBetaPremium && (
+                    <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-xs font-bold text-blue-700">
+                        베타 프리미엄 사용 중
+                        {cancelExpiresAt ? ` (${new Date(cancelExpiresAt).toLocaleDateString('ko-KR')}까지)` : ''}
+                    </div>
+                )}
             </div>
 
             {/* Plan Cards */}
@@ -335,7 +345,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
 
                             {isCurrent && (
                                 <div className={`absolute -top-3 right-6 z-10 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md ${
-                                    isCancelling ? 'bg-amber-500' : 'bg-green-500'
+                                    isBetaPremium ? 'bg-blue-500' : isCancelling ? 'bg-amber-500' : 'bg-green-500'
                                 }`}>
                                     {isCancelling ? '해지 예정' : '현재 플랜'}
                                 </div>
