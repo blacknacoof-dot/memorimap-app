@@ -5,11 +5,12 @@ import type { FacilityCategoryType } from '../types';
 import { FUNERAL_COMPANIES } from '../constants';
 
 // ── Bad URL Detection ──
+// 주의: '/defaults/'는 DB에 의도적으로 배정한 기본 이미지 경로이므로 차단 대상이 아님
 const BAD_URL_PATTERNS = [
   'placeholder', 'placehold.it', 'placehold.co',
   'mediahub.seoul.go.kr',
   'noimage', 'no-image', 'guitar',
-  '_random', '/defaults/'
+  '_random',
 ];
 
 const MISSING_ONLY_PATTERNS = ['placeholder', 'noimage', 'guitar'];
@@ -159,6 +160,17 @@ const DEFAULT_IMAGE_MAP_REMOTE: Record<string, string[]> = {
   ],
 };
 
+// ── FNV-1a Hash (결정론적, 균일 분산) ──
+function fnv1aHash(str: string): number {
+  if (!str) return 0;
+  let hash = 0x811c9dc5; // FNV offset basis (32-bit)
+  for (let i = 0; i < str.length; i++) {
+    hash ^= str.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193); // FNV prime (32-bit)
+  }
+  return Math.abs(hash);
+}
+
 // ── Image Selection ──
 export function selectFacilityImage(
   rawImages: string[],
@@ -180,12 +192,11 @@ export function selectFacilityImage(
       || undefined;
   }
 
-  // 3. Ultimate Fallback: Category-based default
+  // 3. Ultimate Fallback: Category-based default (FNV-1a hash for even distribution)
   if (!selectedImage) {
     const defaultMap = useRemoteDefaults ? DEFAULT_IMAGE_MAP_REMOTE : DEFAULT_IMAGE_MAP_LOCAL;
     const options = defaultMap[type] || defaultMap['funeral'];
-    const idHash = id ? String(id).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) : 0;
-    selectedImage = options[idHash % options.length];
+    selectedImage = options[fnv1aHash(id) % options.length];
   }
 
   return selectedImage!;

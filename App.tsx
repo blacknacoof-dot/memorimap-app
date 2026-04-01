@@ -16,6 +16,11 @@ import { useUserRole } from './hooks/useUserRole';
 import { useReviews } from './hooks/useReviews';
 import { useCompanySelect } from './hooks/useCompanySelect';
 import { isInAppBrowser } from './src/utils/browserDetection';
+import { isMobileViewport } from './src/utils/device';
+import { FEATURE_FLAGS } from './config/featureFlags';
+import { analytics } from './lib/analytics';
+import { hasSeenWelcome } from './src/utils/onboarding';
+import { WelcomeSheet } from './components/WelcomeSheet';
 
 // Phase 4-4/4-5 Components
 import { ContentRouter, ContentRouterProps, LoadingFallback } from './components/ContentRouter';
@@ -31,7 +36,12 @@ const App: React.FC = () => {
 
   const mapRef = React.useRef<MapRef>(null);
   const { location: userLocation, getCurrentPosition } = useLocation();
-  const [viewState, setViewState] = useState<ViewState>(ViewState.MAP);
+  const [viewState, setViewState] = useState<ViewState>(() => {
+    if (FEATURE_FLAGS.mobileListDefault && isMobileViewport()) {
+      return ViewState.LIST;
+    }
+    return ViewState.MAP; // 기존 로직 보존 (fallback)
+  });
   const { toast, showToast } = useToast();
 
   // Facility Data Hook
@@ -46,6 +56,9 @@ const App: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showPromo, setShowPromo] = useState(true);
   const [showSOS, setShowSOS] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(() =>
+    FEATURE_FLAGS.mobileWelcomeSheet && isMobileViewport() && !hasSeenWelcome()
+  );
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [routeLayout, setRouteLayout] = useState<RouteLayoutType>(() => getInitialLayoutFromHash(window.location.hash));
@@ -121,6 +134,36 @@ const App: React.FC = () => {
   }, [user]);
 
   useEffect(() => { getCurrentPosition(); }, [getCurrentPosition]);
+
+  // Phase 0: 온보딩 계측 — screenView + bounce
+  useEffect(() => {
+    if (!FEATURE_FLAGS.analytics) return;
+    const device = isMobileViewport() ? 'mobile' : 'desktop';
+    const isFirstVisit = !localStorage.getItem('memorimap_visited');
+    analytics.screenView(viewState, device, isFirstVisit);
+    if (isFirstVisit) {
+      localStorage.setItem('memorimap_visited', 'true');
+    }
+
+    // bounce: 10초 후 상호작용 없으면 기록
+    let interacted = false;
+    const onInteract = () => { interacted = true; };
+    window.addEventListener('click', onInteract, { once: true });
+    window.addEventListener('scroll', onInteract, { once: true });
+    window.addEventListener('touchstart', onInteract, { once: true });
+    const bounceTimer = setTimeout(() => {
+      if (!interacted) {
+        analytics.bounce(viewState, device);
+      }
+    }, 10_000);
+    return () => {
+      clearTimeout(bounceTimer);
+      window.removeEventListener('click', onInteract);
+      window.removeEventListener('scroll', onInteract);
+      window.removeEventListener('touchstart', onInteract);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // 마운트 1회만
 
   // Legacy path entry canonicalization: /foo -> /#/foo
   useEffect(() => {
@@ -320,6 +363,14 @@ const App: React.FC = () => {
         contentRouterProps={contentRouterProps}
         modalContainerProps={modalContainerProps}
       />
+      {showWelcome && (
+        <WelcomeSheet
+          onNavigateList={() => { setShowWelcome(false); setViewState(ViewState.LIST); }}
+          onNavigateSangjo={() => { setShowWelcome(false); setViewState(ViewState.FUNERAL_COMPANIES); }}
+          onNavigateSOS={() => { setShowWelcome(false); setShowSOS(true); openChat('funeral_home'); }}
+          onClose={() => setShowWelcome(false)}
+        />
+      )}
       <ConfirmModal />
       <PromptModal />
     </>

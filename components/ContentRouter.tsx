@@ -6,6 +6,8 @@ import { FacilityList } from './FacilityList';
 import { Scale, Crosshair, Database, ArrowLeft, Building2, ShieldAlert, Shield, Loader2 } from 'lucide-react';
 import { useSession } from '../lib/auth';
 import { canAccessView } from '../lib/rolePolicy';
+import { FEATURE_FLAGS } from '../config/featureFlags';
+import { analytics } from '../lib/analytics';
 
 // Lazy Load Components
 const AdminView = React.lazy(() => import('./AdminView').then(m => ({ default: m.AdminView })));
@@ -190,7 +192,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
           <div className="h-full flex flex-col pt-24 pb-20 bg-gray-50">
             <div className="px-4 shrink-0">
               {showPromo && <div className="h-12"></div>}
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-1">
                 <h2 className="font-bold text-lg">추천 시설 목록</h2>
                 {isDataLoading && (
                   <div className="text-xs text-primary flex items-center gap-1">
@@ -198,11 +200,17 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
                   </div>
                 )}
               </div>
+              <p className="text-xs text-gray-500 mb-2 md:hidden">내 주변 장례·추모 시설을 한눈에 찾고 비교하세요</p>
             </div>
             <div className="flex-1 px-4 min-h-0">
               <FacilityList
                 facilities={filteredFacilities}
-                onSelect={handleFacilitySelect}
+                onSelect={(facility) => {
+                  if (FEATURE_FLAGS.analytics) {
+                    analytics.firstInteraction('card');
+                  }
+                  handleFacilitySelect(facility);
+                }}
                 compareList={compareList}
                 onToggleCompare={toggleCompare}
               />

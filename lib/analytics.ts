@@ -85,4 +85,31 @@ export const analytics = {
     if (!GA_ID || typeof window.gtag !== 'function') return;
     window.gtag('event', 'page_view', { page_path: path });
   },
+
+  // ── Phase 0: 온보딩 계측 이벤트 ──
+
+  /** 화면 진입 */
+  screenView(screen: string, device: 'mobile' | 'desktop', isFirstVisit: boolean) {
+    ga('screen_view', { screen, device, is_first_visit: isFirstVisit });
+  },
+
+  /** 첫 유의미 행동 (카드 클릭 / 탭 전환 / CTA 클릭 / 검색) */
+  firstInteraction(type: 'card' | 'tab' | 'cta' | 'search') {
+    ga('first_interaction', { interaction_type: type });
+  },
+
+  /** 하단 탭 전환 */
+  tabSwitch(from: string, to: string) {
+    ga('tab_switch', { from_tab: from, to_tab: to });
+  },
+
+  /** CTA 클릭 */
+  ctaClick(ctaName: string, source: string) {
+    ga('cta_click', { cta_name: ctaName, source });
+  },
+
+  /** 이탈 (10초 + 상호작용 없음) */
+  bounce(screen: string, device: 'mobile' | 'desktop') {
+    ga('bounce', { screen, device });
+  },
 };
