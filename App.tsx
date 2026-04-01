@@ -37,7 +37,7 @@ const App: React.FC = () => {
   const mapRef = React.useRef<MapRef>(null);
   const { location: userLocation, getCurrentPosition } = useLocation();
   const [viewState, setViewState] = useState<ViewState>(() => {
-    if (FEATURE_FLAGS.mobileListDefault && isMobileViewport()) {
+    if (FEATURE_FLAGS.mobileListDefault) {
       return ViewState.LIST;
     }
     return ViewState.MAP; // 기존 로직 보존 (fallback)
@@ -57,7 +57,7 @@ const App: React.FC = () => {
   const [showPromo, setShowPromo] = useState(true);
   const [showSOS, setShowSOS] = useState(false);
   const [showWelcome, setShowWelcome] = useState(() =>
-    FEATURE_FLAGS.mobileWelcomeSheet && isMobileViewport() && !hasSeenWelcome()
+    FEATURE_FLAGS.mobileWelcomeSheet && !hasSeenWelcome()
   );
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
