@@ -12,9 +12,8 @@ export default defineConfig({
   envPrefix: ['VITE_', 'REACT_APP_'],
   server: {
     port: 5173,
-    host: '0.0.0.0',
+    host: 'localhost',
     strictPort: true,
-    allowedHosts: true,
     hmr: {
       overlay: false, // 에러 오버레이 비활성화 (CPU 절약)
     },
