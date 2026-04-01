@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useRef, useCallback } from 'react';
 import { Map as MapIcon, List, User, Award } from 'lucide-react';
 import { ViewState } from '../types';
+import { FEATURE_FLAGS } from '../config/featureFlags';
+import { analytics } from '../lib/analytics';
 
 interface BottomNavProps {
   viewState: ViewState;
@@ -20,6 +22,19 @@ const NAV_ITEMS = [
 ] as const;
 
 export const BottomNav: React.FC<BottomNavProps> = ({ viewState, setViewState }) => {
+  const firstInteractionFired = useRef(false);
+
+  const handleTabClick = useCallback((targetView: ViewState) => {
+    if (FEATURE_FLAGS.analytics) {
+      analytics.tabSwitch(viewState, targetView);
+      if (!firstInteractionFired.current) {
+        firstInteractionFired.current = true;
+        analytics.firstInteraction('tab');
+      }
+    }
+    setViewState(targetView);
+  }, [viewState, setViewState]);
+
   if (!VISIBLE_VIEWS.has(viewState)) return null;
 
   return (
@@ -27,7 +42,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ viewState, setViewState })
       {NAV_ITEMS.map(({ view, icon: Icon, label }) => (
         <button
           key={view}
-          onClick={() => setViewState(view)}
+          onClick={() => handleTabClick(view)}
           data-testid={`bottom-nav-${String(view).toLowerCase()}`}
           className={`flex flex-col items-center justify-center min-w-[56px] min-h-[48px] ${viewState === view ? 'text-primary' : 'text-gray-400'}`}
         >
