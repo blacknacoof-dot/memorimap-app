@@ -66,17 +66,33 @@ body {
   
   /* ��ü ���� (����� �ּ�â ����) */
   min-height: 100vh;
-  min-height: -webkit-fill-available;
 }
 
 #root {
   min-height: 100vh;
-  min-height: -webkit-fill-available;
 }
 
 /* Safe Area Utility Classes */
 .pb-safe {
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+@supports (min-height: 100dvh) {
+  body,
+  #root {
+    min-height: 100dvh;
+  }
+}
+
+@supports (-webkit-touch-callout: none) {
+  html {
+    height: -webkit-fill-available;
+  }
+
+  body,
+  #root {
+    min-height: -webkit-fill-available;
+  }
 }
 
 
