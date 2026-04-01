@@ -404,3 +404,13 @@ CLAUDE.md 규칙 준수하여 구현.
 - Sangjo favorite quota exceed state is stored but no verified `UpgradePrompt` consumer was found.
   - `stores/useSangjoFavoriteStore.ts` sets `quotaExceeded`
   - `components/sangjo/SangjoCompanyList.tsx` and `components/sangjo/SangjoCompanySheet/index.tsx` do not render `UpgradePrompt`
+
+## Deployment Unification Rule
+- Production deployment must target the single existing Vercel project: `memorimap-app`.
+- Do not deploy from an unlinked worktree or any directory that can implicitly create a new Vercel project.
+- Before any `vercel --prod`, verify `.vercel/project.json` points to `memorimap-app` and the expected `projectId`.
+- If a worktree is used for release verification, link that worktree to the same Vercel project before deployment.
+- Production deploy is allowed only from `main` or an explicitly approved release branch.
+- Never deploy from a dirty workspace.
+- After deployment, always verify the alias with `vercel inspect https://memorimap.kr`.
+- Deployment is not complete until `memorimap.kr` points to the intended new production deployment.

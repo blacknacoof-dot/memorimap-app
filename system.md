@@ -194,3 +194,13 @@ git reset --hard HEAD
 
 **마지막 업데이트**: 2026-02-08
 **버전**: 2.0 (코드 수정 안전 규칙 추가)
+
+## Deployment Unification Rule
+- Production deployment must target the single existing Vercel project: `memorimap-app`.
+- Do not deploy from an unlinked worktree or any directory that can implicitly create a new Vercel project.
+- Before any `vercel --prod`, verify `.vercel/project.json` points to `memorimap-app` and the expected `projectId`.
+- If a worktree is used for release verification, link that worktree to the same Vercel project before deployment.
+- Production deploy is allowed only from `main` or an explicitly approved release branch.
+- Never deploy from a dirty workspace.
+- After deployment, always verify the alias with `vercel inspect https://memorimap.kr`.
+- Deployment is not complete until `memorimap.kr` points to the intended new production deployment.
