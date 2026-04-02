@@ -2,18 +2,7 @@ import React from 'react';
 import { Check, Scale, Award, Bot, BadgeCheck } from 'lucide-react';
 import { Facility } from '../types';
 import { OptimizedImage } from './ui/OptimizedImage';
-import { getCategoryLabel, isSharedDefaultImage } from '../utils/facilityNormalizer';
-
-/** 카테고리별 썸네일 배경색 (공용 이미지 대체용) */
-const CATEGORY_CARD_STYLE: Record<string, string> = {
-    funeral: 'from-rose-50 to-rose-100 text-rose-400',
-    charnel: 'from-indigo-50 to-indigo-100 text-indigo-400',
-    natural: 'from-green-50 to-green-100 text-green-400',
-    park: 'from-emerald-50 to-emerald-100 text-emerald-400',
-    pet: 'from-amber-50 to-amber-100 text-amber-400',
-    sea: 'from-blue-50 to-blue-100 text-blue-400',
-    sangjo: 'from-purple-50 to-purple-100 text-purple-400',
-};
+import { getCategoryLabel } from '../utils/facilityNormalizer';
 
 interface FacilityItemProps {
     facility: Facility;
@@ -31,7 +20,7 @@ export const FacilityItem = React.memo(({ facility, onClick, isCompared, onToggl
                 data-testid={`facility-card-${facility.id}`}
                 className="bg-white p-4 rounded-xl shadow-sm border flex gap-4 cursor-pointer hover:bg-gray-50 transition-colors group h-full"
             >
-                {facility.imageUrl && !isSharedDefaultImage(facility.imageUrl) ? (
+                {facility.imageUrl && !facility.imageUrl.includes('placeholder') && !facility.imageUrl.includes('via.placeholder') ? (
                     <OptimizedImage
                         src={facility.imageUrl}
                         alt={facility.name}
@@ -43,9 +32,8 @@ export const FacilityItem = React.memo(({ facility, onClick, isCompared, onToggl
                         fallbackSrc="/images/defaults/funeral/funeral_1.webp"
                     />
                 ) : (
-                    <div className={`w-20 h-20 rounded-lg shrink-0 flex flex-col items-center justify-center gap-0.5 bg-gradient-to-br border border-gray-200 p-1.5 ${CATEGORY_CARD_STYLE[facility.type || ''] || 'from-gray-50 to-gray-100 text-gray-400'}`}>
-                        <span className="text-[9px] font-bold">{getCategoryLabel(facility.type || '') || '시설'}</span>
-                        <span className="text-[9px] text-gray-500 font-medium text-center leading-tight line-clamp-2">{facility.name.slice(0, 8)}</span>
+                    <div className="w-20 h-20 rounded-lg bg-gray-100 shrink-0 flex items-center justify-center text-gray-400 text-[10px] text-center px-1">
+                        {facility.name.slice(0, 6)}
                     </div>
                 )}
                 <div className="flex-1 min-w-0">
