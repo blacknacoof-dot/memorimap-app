@@ -177,6 +177,9 @@
 - 워크트리: 메인 워크스페이스만 사용. 생성 시 반드시 제거 후 `git worktree prune`
 - 문서: `docs/01-plan/`, `02-design/`, `03-analysis/`, `04-report/`에만 저장. 루트 임시 파일 금지
 - 배포: dirty workspace에서 배포 금지. `main`이 의도한 커밋인지 확인 후 배포
+- 운영 배포: dirty workspace 금지, worktree 금지, 원본 저장소에서만 실행
+- 운영 배포: 반드시 `.vercel/project.json`이 `memorimap-app`를 가리키는 상태에서만 실행
+- 운영 배포 완료 기준: `vercel --prod --yes` 실행 후 `vercel inspect https://memorimap.kr`로 alias 이동까지 확인
 - 멀티 에이전트: Claude/GPT 모두 동일 규칙. 핸드오프는 `dev` 브랜치 또는 커밋 SHA로
 
 <project_rules>
@@ -407,6 +410,7 @@ CLAUDE.md 규칙 준수하여 구현.
 
 ## Deployment Unification Rule
 - Production deployment must target the single existing Vercel project: `memorimap-app`.
+- Production deployment must run only from the original repository workspace, not from any worktree.
 - Do not deploy from an unlinked worktree or any directory that can implicitly create a new Vercel project.
 - Before any `vercel --prod`, verify `.vercel/project.json` points to `memorimap-app` and the expected `projectId`.
 - If a worktree is used for release verification, link that worktree to the same Vercel project before deployment.
@@ -417,6 +421,7 @@ CLAUDE.md 규칙 준수하여 구현.
 - `git push origin main` does not mean production is deployed. It only updates the repository state.
 - Production release must be executed explicitly with `vercel --prod --yes` from the linked `memorimap-app` project.
 - After deployment, always verify the alias with `vercel inspect https://memorimap.kr`.
+- Production deployment is not complete until the `memorimap.kr` alias is confirmed to have moved to the newly created production deployment.
 - After deployment, run live checks on `https://memorimap.kr`, `https://memorimap.kr/assets/index.js.map`, and `https://memorimap.kr/ai-test.html`.
 - Production deployment is not complete until the live checks confirm:
   - `memorimap.kr` points to the intended new deployment

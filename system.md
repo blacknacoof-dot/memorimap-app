@@ -206,7 +206,11 @@ git reset --hard HEAD
 - Automatic Vercel production deployment is prohibited unless explicitly re-approved and documented.
 - `git push origin main` does not mean production is deployed. It only updates the repository state.
 - Production release must be executed explicitly with `vercel --prod --yes` from the linked `memorimap-app` project.
+- Production deployment must run only from the original repository workspace, not from any worktree.
+- Production deployment is allowed only when the original repository workspace is clean.
+- Before deployment, confirm `.vercel/project.json` points to `memorimap-app`.
 - After deployment, always verify the alias with `vercel inspect https://memorimap.kr`.
+- Production deployment is not complete until the `memorimap.kr` alias is confirmed to have moved to the newly created production deployment.
 - After deployment, run live checks on `https://memorimap.kr`, `https://memorimap.kr/assets/index.js.map`, and `https://memorimap.kr/ai-test.html`.
 - Production deployment is not complete until the live checks confirm:
   - `memorimap.kr` points to the intended new deployment
