@@ -136,8 +136,13 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
   const resizeTimerIds = useRef<number[]>([]);
   // ✅ [1-2b] ResizeObserver 저장용 ref
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
-  // ✅ [1-2c] 마커 클릭 리스너 핸들 저장용 ref
-  const markerListenersRef = useRef<unknown[]>([]);
+  // ✅ [1-2c] 마커 클릭 리스너 핸들 저장용 ref (per-marker Map)
+  const markerListenerMapRef = useRef<Map<string, unknown>>(new Map());
+  // ✅ 아이콘 캐시 (카테고리별 — getMarkerHtml 반복 호출 방지)
+  const iconCacheRef = useRef<Map<string, Record<string, unknown>>>(new Map());
+  // ✅ onFacilitySelect 최신 참조 유지 (리스너 재등록 최소화)
+  const onFacilitySelectRef = useRef(onFacilitySelect);
+  useEffect(() => { onFacilitySelectRef.current = onFacilitySelect; }, [onFacilitySelect]);
 
   // facilities prop은 useFacilityData에서 이미 카테고리/검색 필터링 완료
   const filteredFacilities = facilities;
@@ -317,30 +322,37 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
     const newIds = new Set(validFacilities.map(f => f.id));
     const prevMap = prevMarkerMapRef.current;
     const prevStateMap = prevMarkerStateRef.current;
-    const createMarkerIcon = (category: string) => ({
-      content: getMarkerHtml(category, false),
-      size: new window.naver.maps.Size(24, 24),
-      anchor: new window.naver.maps.Point(12, 12)
-    });
 
-    // ✅ [5-4] 1단계: 삭제 — 이전에 있었으나 새 목록에 없는 마커
+    // ✅ 아이콘 캐시: 카테고리별 1회만 생성 (7종 캐시 vs ~2000회 반복 생성 제거)
+    const getOrCreateIcon = (category: string) => {
+      const cached = iconCacheRef.current.get(category);
+      if (cached) return cached;
+      const icon = {
+        content: getMarkerHtml(category, false),
+        size: new window.naver.maps.Size(24, 24),
+        anchor: new window.naver.maps.Point(12, 12),
+      };
+      iconCacheRef.current.set(category, icon);
+      return icon;
+    };
+
+    // ✅ 1단계: 삭제 — 이전에 있었으나 새 목록에 없는 마커 + 해당 리스너만 제거
+    let markersChanged = false;
     for (const [id, marker] of prevMap) {
       if (!newIds.has(id)) {
         marker.setMap(null);
         prevMap.delete(id);
         prevStateMap.delete(id);
+        const listener = markerListenerMapRef.current.get(id);
+        if (listener && window.naver?.maps?.Event) {
+          window.naver.maps.Event.removeListener(listener);
+        }
+        markerListenerMapRef.current.delete(id);
+        markersChanged = true;
       }
     }
 
-    // ✅ [5-4] 이전 리스너 정리 (클러스터 재적용 전)
-    markerListenersRef.current.forEach(l => {
-      if (window.naver?.maps?.Event) {
-        window.naver.maps.Event.removeListener(l);
-      }
-    });
-    markerListenersRef.current = [];
-
-    // ✅ [5-4] 2단계: 추가 — 새 목록에만 있는 시설에 마커 생성
+    // ✅ 2단계: 추가/업데이트 — 새 마커만 생성, 기존 마커는 위치/아이콘만 갱신
     for (const facility of validFacilities) {
       const nextLat = facility.lat!;
       const nextLng = facility.lng!;
@@ -350,26 +362,36 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
       let marker = prevMap.get(facility.id);
 
       if (!marker) {
+        // 새 마커 생성 + 리스너 즉시 등록 (ref 패턴으로 최신 콜백 보장)
         marker = new window.naver.maps.Marker({
           position: markerPosition,
           map: useCluster ? null : mapInstance.current,
           title: facility.name,
-          icon: createMarkerIcon(nextIconCategory)
+          icon: getOrCreateIcon(nextIconCategory)
         });
         prevMap.set(facility.id, marker);
         prevStateMap.set(facility.id, nextMarkerState);
+        const fid = facility.id;
+        const listener = window.naver.maps.Event.addListener(marker, 'click', () => {
+          const latest = filteredFacilities.find(f => f.id === fid);
+          onFacilitySelectRef.current(latest || facility);
+        });
+        markerListenerMapRef.current.set(fid, listener);
+        markersChanged = true;
         continue;
       }
 
+      // 기존 마커: 위치/아이콘 변경분만 갱신 (리스너 유지)
       const prevState = prevStateMap.get(facility.id);
       const isPositionChanged = !prevState || prevState.lat !== nextLat || prevState.lng !== nextLng;
       if (isPositionChanged) {
         marker.setPosition(markerPosition);
+        markersChanged = true;
       }
 
       const isIconChanged = !prevState || prevState.iconCategory !== nextIconCategory;
       if (isIconChanged) {
-        const nextIcon = createMarkerIcon(nextIconCategory);
+        const nextIcon = getOrCreateIcon(nextIconCategory);
         if (typeof marker.setIcon === 'function') {
           marker.setIcon(nextIcon);
         } else {
@@ -381,6 +403,17 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
             icon: nextIcon
           });
           prevMap.set(facility.id, marker);
+          // 마커 재생성 시 리스너도 재등록
+          const oldListener = markerListenerMapRef.current.get(facility.id);
+          if (oldListener && window.naver?.maps?.Event) {
+            window.naver.maps.Event.removeListener(oldListener);
+          }
+          const fid = facility.id;
+          const listener = window.naver.maps.Event.addListener(marker, 'click', () => {
+            const latest = filteredFacilities.find(f => f.id === fid);
+            onFacilitySelectRef.current(latest || facility);
+          });
+          markerListenerMapRef.current.set(fid, listener);
         }
       }
 
@@ -388,72 +421,61 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
       prevStateMap.set(facility.id, nextMarkerState);
     }
 
-    // ✅ [5-4] 3단계: 리스너 재등록 (모든 현재 마커에 대해)
-    for (const facility of validFacilities) {
-      const marker = prevMap.get(facility.id);
-      if (marker) {
-        const listener = window.naver.maps.Event.addListener(marker, 'click', () => {
-          onFacilitySelect(facility);
+    // ✅ 3단계: 클러스터 — 마커 변경 시에만 재구성 (변경 없으면 skip)
+    markersRef.current = Array.from(prevMap.values());
+
+    if (markersChanged || !clusterRef.current) {
+      // 기존 클러스터 해제
+      if (clusterRef.current) {
+        clusterRef.current.setMap(null);
+        clusterRef.current = null;
+      }
+
+      if (useCluster && markersRef.current.length > 0) {
+        const clusterIconHtml = (bg: string, size: number) => ({
+          content: `<div style="cursor:pointer;width:${size}px;height:${size}px;line-height:${size}px;font-size:11px;color:white;text-align:center;font-weight:bold;background:${bg};border-radius:50%;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
+          size: new window.naver.maps.Size(size, size),
+          anchor: new window.naver.maps.Point(size / 2, size / 2),
         });
-        markerListenersRef.current.push(listener);
+
+        markersRef.current.forEach(m => m.setMap(null));
+
+        clusterRef.current = new window.MarkerClustering({
+          minClusterSize: 2,
+          maxZoom: 14,
+          map: mapInstance.current,
+          markers: markersRef.current,
+          disableClickZoom: false,
+          gridSize: 120,
+          icons: [
+            clusterIconHtml('#3B82F6', 36),
+            clusterIconHtml('#2563EB', 42),
+            clusterIconHtml('#1D4ED8', 50),
+            clusterIconHtml('#1E40AF', 58),
+          ],
+          indexGenerator: [10, 50, 100, 500],
+          averageCenter: true,
+          stylingFunction: (clusterMarker: NaverMarker, count: number) => {
+            const el = clusterMarker.getElement();
+            if (el) {
+              const div = el.querySelector('div');
+              if (div) div.textContent = String(count);
+            }
+          },
+        });
+      } else {
+        markersRef.current.forEach(m => m.setMap(mapInstance.current));
       }
     }
 
-    // ✅ [5-4] 전체 마커 배열 재구성 (클러스터용)
-    markersRef.current = Array.from(prevMap.values());
-
-    // Clear existing cluster
-    if (clusterRef.current) {
-      clusterRef.current.setMap(null);
-      clusterRef.current = null;
-    }
-
-    if (useCluster && markersRef.current.length > 0) {
-      const clusterIconHtml = (bg: string, size: number) => ({
-        content: `<div style="cursor:pointer;width:${size}px;height:${size}px;line-height:${size}px;font-size:11px;color:white;text-align:center;font-weight:bold;background:${bg};border-radius:50%;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
-        size: new window.naver.maps.Size(size, size),
-        anchor: new window.naver.maps.Point(size / 2, size / 2),
-      });
-
-      // 클러스터링 시 개별 마커의 map을 null로 설정
-      markersRef.current.forEach(m => m.setMap(null));
-
-      clusterRef.current = new window.MarkerClustering({
-        minClusterSize: 2,
-        maxZoom: 14,
-        map: mapInstance.current,
-        markers: markersRef.current,
-        disableClickZoom: false,
-        gridSize: 120,
-        icons: [
-          clusterIconHtml('#3B82F6', 36),
-          clusterIconHtml('#2563EB', 42),
-          clusterIconHtml('#1D4ED8', 50),
-          clusterIconHtml('#1E40AF', 58),
-        ],
-        indexGenerator: [10, 50, 100, 500],
-        averageCenter: true,
-        stylingFunction: (clusterMarker: NaverMarker, count: number) => {
-          const el = clusterMarker.getElement();
-          if (el) {
-            const div = el.querySelector('div');
-            if (div) div.textContent = String(count);
-          }
-        },
-      });
-    } else {
-      // 클러스터 비활성 상태에서는 개별 마커를 지도에 재부착
-      markersRef.current.forEach(m => m.setMap(mapInstance.current));
-    }
-
-    // ✅ [1-2c] 마커 리스너 cleanup
+    // ✅ 마커 리스너 cleanup (per-marker Map 기반)
     return () => {
-      markerListenersRef.current.forEach(l => {
+      for (const [, listener] of markerListenerMapRef.current) {
         if (window.naver?.maps?.Event) {
-          window.naver.maps.Event.removeListener(l);
+          window.naver.maps.Event.removeListener(listener);
         }
-      });
-      markerListenersRef.current = [];
+      }
+      markerListenerMapRef.current.clear();
     };
   }, [filteredFacilities, isMapReady, isClusterReady]);
 
