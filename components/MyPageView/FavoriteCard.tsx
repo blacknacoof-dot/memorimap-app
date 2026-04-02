@@ -1,14 +1,7 @@
 import React from 'react';
 import { Heart, Star } from 'lucide-react';
 import { Facility } from '../../types';
-
-const TYPE_LABELS: Record<string, string> = {
-  charnel: '봉안시설',
-  natural: '자연장',
-  funeral: '장례식장',
-  sea: '해양장',
-  pet: '동물장',
-};
+import { getCategoryLabel } from '../../utils/facilityNormalizer';
 
 interface Props {
   facility: Facility;
@@ -42,7 +35,7 @@ export const FavoriteCard: React.FC<Props> = ({ facility, onSelect, onRemove }) 
         <p className="text-xs text-gray-500 mt-1 truncate">{facility.address}</p>
         <div className="flex items-center gap-2 mt-2">
           <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px] font-medium">
-            {TYPE_LABELS[facility.type || ''] || '공원묘지'}
+            {getCategoryLabel(facility.type || '') || facility.category}
           </span>
           <div className="flex items-center text-xs text-yellow-500 font-bold">
             <Star size={12} fill="currentColor" />

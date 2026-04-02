@@ -3,6 +3,7 @@ import { X, Check, Scale, Bot, Award, Crown, ShieldCheck, Share2 } from 'lucide-
 import { Facility, Reservation } from '../../types';
 import { toast } from 'sonner';
 import { analytics } from '../../lib/analytics';
+import { getCategoryLabel } from '../../utils/facilityNormalizer';
 import { useFacilitySheet } from './useFacilitySheet';
 import { Lightbox } from './Lightbox';
 import { InfoTab } from './InfoTab';
@@ -96,8 +97,8 @@ export const FacilitySheet: React.FC<Props> = ({
           </div>
           <div className="absolute bottom-4 left-4 text-white">
             <div className="flex items-center gap-1.5 mb-1">
-              <div className="bg-accent px-2 py-0.5 text-xs font-bold rounded inline-block uppercase tracking-wider">
-                {facility.type || facility.category}
+              <div className="bg-accent px-2 py-0.5 text-xs font-bold rounded inline-block tracking-wider">
+                {getCategoryLabel(facility.type || '') || facility.category}
               </div>
               {facility.isVerified && (
                 <div className="flex items-center gap-1 bg-blue-500 text-white px-2 py-0.5 rounded-full shadow-lg border border-blue-400" title="업체 인증 완료">
