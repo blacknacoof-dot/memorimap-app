@@ -25,6 +25,20 @@ function isOnlyMissing(url: string): boolean {
   return MISSING_ONLY_PATTERNS.some(p => url.toLowerCase().includes(p));
 }
 
+// ── 공용/기본 이미지 판별 (목록 썸네일에서 반복 실사 착각 방지) ──
+// DB에 대량 배정된 공용 이미지 경로 패턴 (시설별 고유 사진이 아님)
+const SHARED_IMAGE_PATTERNS = [
+  '/images/defaults/',           // 로컬 기본 이미지 (funeral_1~8.webp 등)
+  'funeral_real/funeral_real_',  // 대량 배정된 장례식장 공용 사진 (8종, 각 64~83건)
+  'optimized-park/Image_fx',    // AI 생성 공원묘지 공용 사진 (6종, 각 45~117건)
+];
+
+/** 대량 배정된 공용/기본 이미지인지 판별. 목록 썸네일에서만 사용. */
+export function isSharedDefaultImage(url: string): boolean {
+  if (!url) return true;
+  return SHARED_IMAGE_PATTERNS.some(pattern => url.includes(pattern));
+}
+
 // ── Sangjo Detection ──
 const SANGJO_KEYWORDS = ['프리드라이프', '대명스테이션', '보람상조', '교원라이프', '상조', '라이프'];
 
