@@ -35,19 +35,24 @@ const App: React.FC = () => {
   const openChat = useChatStore(s => s.openChat);
 
   const mapRef = React.useRef<MapRef>(null);
-  // Bootstrap refs: start on MAP once, then switch to LIST after the first viewport payload.
+  // Bootstrap refs: keep the map warmed from first mobile render and allow only one automatic list handoff.
   const startedFromBootstrapMapRef = React.useRef(false);
   const hasInitialViewportDataRef = React.useRef(false);
   const hasAutoSwitchedToListRef = React.useRef(false);
   const userInteractedWithViewToggleRef = React.useRef(false);
   const { location: userLocation, getCurrentPosition } = useLocation();
+  const [shouldKeepMapMounted] = useState(() =>
+    FEATURE_FLAGS.mobileListDefault && isMobileViewport()
+  );
   const [viewState, setViewState] = useState<ViewState>(() => {
-    if (FEATURE_FLAGS.mobileListDefault && isMobileViewport()) {
-      startedFromBootstrapMapRef.current = true;
-      return ViewState.MAP;
-    }
     if (FEATURE_FLAGS.mobileListDefault) {
+      if (shouldKeepMapMounted) {
+        startedFromBootstrapMapRef.current = true;
+      }
       return ViewState.LIST;
+    }
+    if (isMobileViewport()) {
+      startedFromBootstrapMapRef.current = true;
     }
     return ViewState.MAP; // 기존 로직 보존 (fallback)
   });
@@ -275,6 +280,7 @@ const App: React.FC = () => {
   const contentRouterProps: ContentRouterProps = {
     viewState,
     setViewState: handleChangeView,
+    keepMapMounted: shouldKeepMapMounted,
     mapRef,
     filteredFacilities,
     handleFacilitySelect,

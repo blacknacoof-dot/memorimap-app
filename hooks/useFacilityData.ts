@@ -24,14 +24,37 @@ const BALANCE_PER_CATEGORY = 3;
 /** 상위 18건을 6카테고리×3건 라운드로빈으로 배치, 나머지는 원본 순서 유지 */
 function balanceFirstScreen(facilities: Facility[]): Facility[] {
   // 1. 카테고리별 버킷 (앞에서부터 최대 3건씩)
-  const buckets = new Map<string, Facility[]>();
-  for (const cat of BALANCE_CATEGORIES) buckets.set(cat, []);
+  const normalizeImageKey = (imageUrl?: string | null) => {
+    const trimmed = imageUrl?.trim();
+    return trimmed ? trimmed : null;
+  };
 
-  for (const f of facilities) {
-    const bucket = buckets.get(f.type || '');
-    if (bucket && bucket.length < BALANCE_PER_CATEGORY) {
-      bucket.push(f);
+  const buckets = new Map<string, Facility[]>();
+  const usedImageUrls = new Set<string>();
+
+  for (const cat of BALANCE_CATEGORIES) {
+    const categoryCandidates = facilities.filter(f => f.type === cat);
+    const bucket: Facility[] = [];
+    const deferred: Facility[] = [];
+
+    for (const facility of categoryCandidates) {
+      if (bucket.length >= BALANCE_PER_CATEGORY) break;
+
+      const imageKey = normalizeImageKey(facility.imageUrl);
+      if (!imageKey || !usedImageUrls.has(imageKey)) {
+        bucket.push(facility);
+        if (imageKey) usedImageUrls.add(imageKey);
+      } else {
+        deferred.push(facility);
+      }
     }
+
+    for (const facility of deferred) {
+      if (bucket.length >= BALANCE_PER_CATEGORY) break;
+      bucket.push(facility);
+    }
+
+    buckets.set(cat, bucket);
   }
 
   // 2. 라운드로빈: cat[0], cat[0], ... cat[1], cat[1], ...
@@ -376,4 +399,3 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
     viewportFetchedRef,
   };
 }
-

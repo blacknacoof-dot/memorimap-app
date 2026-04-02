@@ -41,6 +41,7 @@ type ToastType = 'success' | 'error' | 'info';
 export interface ContentRouterProps {
   viewState: ViewState;
   setViewState: (v: ViewState) => void;
+  keepMapMounted?: boolean;
 
   // Map
   mapRef: React.RefObject<MapRef>;
@@ -95,7 +96,7 @@ export interface ContentRouterProps {
 
 export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
   const {
-    viewState, setViewState,
+    viewState, setViewState, keepMapMounted = false,
     mapRef, filteredFacilities, handleFacilitySelect, handleMapBoundsChange,
     targetMapCenter, targetMapZoom, userLocation,
     compareList, setShowComparison, toggleCompare,
@@ -111,6 +112,89 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
   } = props;
 
   const { session } = useSession();
+  const shouldKeepWarmMapMounted =
+    keepMapMounted && (viewState === ViewState.MAP || viewState === ViewState.LIST);
+
+  const mapView = (isVisible: boolean) => (
+    <>
+      <MapComponent
+        ref={mapRef}
+        facilities={filteredFacilities}
+        onFacilitySelect={handleFacilitySelect}
+        onBoundsChange={handleMapBoundsChange}
+        initialCenter={targetMapCenter || [userLocation.lat, userLocation.lng]}
+        initialZoom={targetMapZoom || (userLocation.type === 'gps' ? 14 : undefined)}
+      />
+      {isVisible && (
+        <div className="absolute bottom-24 left-4 z-30 flex flex-col gap-3 pointer-events-none">
+          <div className="flex flex-col gap-3 pointer-events-auto">
+            {compareList.length > 0 && (
+              <button
+                onClick={() => setShowComparison(true)}
+                className="bg-white text-gray-800 p-3 rounded-full shadow-lg border-2 border-primary animate-in slide-in-from-bottom-2 flex items-center justify-center relative active:scale-95 transition-transform"
+              >
+                <Scale size={22} className="text-primary" />
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">
+                  {compareList.length}
+                </span>
+              </button>
+            )}
+            <button
+              className="bg-white p-3 rounded-xl shadow-lg text-gray-700 active:scale-95 transition-transform"
+              onClick={() => mapRef.current?.flyToLocation()}
+            >
+              <Crosshair size={22} />
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+
+  const listView = () => (
+    <div className="h-full relative">
+      <div className="h-full flex flex-col pt-24 pb-20 bg-gray-50">
+        <div className="px-4 shrink-0">
+          {showPromo && <div className="h-12"></div>}
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="font-bold text-lg">추천 시설 목록</h2>
+            {isDataLoading && (
+              <div className="text-xs text-primary flex items-center gap-1">
+                <Database size={12} className="animate-pulse" /> 로딩중...
+              </div>
+            )}
+          </div>
+          <p className="text-xs text-gray-500 mb-2 md:hidden">내 주변 맞춤 추모 시설을 찾고 비교하세요</p>
+        </div>
+        <div className="flex-1 px-4 min-h-0">
+          <FacilityList
+            facilities={filteredFacilities}
+            onSelect={(facility) => {
+              if (FEATURE_FLAGS.analytics) {
+                analytics.firstInteraction('card');
+              }
+              handleFacilitySelect(facility);
+            }}
+            compareList={compareList}
+            onToggleCompare={toggleCompare}
+          />
+        </div>
+      </div>
+      <div className="absolute bottom-20 right-0 left-0 px-4 pointer-events-none z-30 flex justify-center items-end">
+        {compareList.length > 0 && (
+          <button
+            onClick={() => setShowComparison(true)}
+            className="pointer-events-auto absolute right-4 bottom-0 bg-white text-gray-800 p-3 rounded-full shadow-lg border-2 border-primary flex items-center justify-center mb-1 active:scale-95 transition-transform"
+          >
+            <Scale size={22} className="text-primary" />
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">
+              {compareList.length}
+            </span>
+          </button>
+        )}
+      </div>
+    </div>
+  );
 
   // ADMIN - separate full-page layout (with role guard)
   if (viewState === ViewState.ADMIN) {
@@ -150,41 +234,29 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
     );
   }
 
+  if (shouldKeepWarmMapMounted) {
+    const mapVisible = viewState === ViewState.MAP;
+
+    return (
+      <div className="h-full relative bg-gray-50">
+        <div
+          className={`absolute inset-0 ${mapVisible ? 'z-10 opacity-100 pointer-events-auto' : 'z-0 opacity-0 pointer-events-none'} transition-opacity duration-200`}
+          aria-hidden={!mapVisible}
+        >
+          {mapView(mapVisible)}
+        </div>
+        {!mapVisible && (
+          <div className="absolute inset-0 z-20 bg-gray-50">
+            {listView()}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   switch (viewState) {
     case ViewState.MAP:
-      return (
-        <>
-          <MapComponent
-            ref={mapRef}
-            facilities={filteredFacilities}
-            onFacilitySelect={handleFacilitySelect}
-            onBoundsChange={handleMapBoundsChange}
-            initialCenter={targetMapCenter || [userLocation.lat, userLocation.lng]}
-            initialZoom={targetMapZoom || (userLocation.type === 'gps' ? 14 : undefined)}
-          />
-          <div className="absolute bottom-24 left-4 z-30 flex flex-col gap-3 pointer-events-none">
-            <div className="flex flex-col gap-3 pointer-events-auto">
-              {compareList.length > 0 && (
-                <button
-                  onClick={() => setShowComparison(true)}
-                  className="bg-white text-gray-800 p-3 rounded-full shadow-lg border-2 border-primary animate-in slide-in-from-bottom-2 flex items-center justify-center relative active:scale-95 transition-transform"
-                >
-                  <Scale size={22} className="text-primary" />
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">
-                    {compareList.length}
-                  </span>
-                </button>
-              )}
-              <button
-                className="bg-white p-3 rounded-xl shadow-lg text-gray-700 active:scale-95 transition-transform"
-                onClick={() => mapRef.current?.flyToLocation()}
-              >
-                <Crosshair size={22} />
-              </button>
-            </div>
-          </div>
-        </>
-      );
+      return mapView(true);
 
     case ViewState.LIST:
       return (
