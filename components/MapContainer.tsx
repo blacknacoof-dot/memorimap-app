@@ -532,6 +532,13 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
   return (
     <div className="w-full h-full relative z-0">
       <div ref={mapElement} style={{ width: '100%', height: '100%' }} />
+      {/* SDK 로드 + 지도 초기화 완료 전 로딩 오버레이 */}
+      {!isMapReady && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 z-10">
+          <div className="w-10 h-10 border-4 border-gray-200 border-t-primary rounded-full animate-spin" />
+          <p className="mt-3 text-sm text-gray-500">지도를 불러오는 중...</p>
+        </div>
+      )}
     </div>
   );
 });
