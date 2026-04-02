@@ -4,6 +4,9 @@ import { Facility } from '../types';
 import { OptimizedImage } from './ui/OptimizedImage';
 import { getCategoryLabel } from '../utils/facilityNormalizer';
 
+/** 이미지 디버그 로그 플래그 — 필요 시 true로 변경 */
+const IMAGE_DEBUG = import.meta.env.DEV && false;
+
 const DEBUG_IMAGE_SAMPLE_NAMES = new Set([
     '일산백장례서비스',
     '하늘문 봉안당',
@@ -50,7 +53,7 @@ interface FacilityItemProps {
 }
 
 export const FacilityItem = React.memo(({ facility, onClick, isCompared, onToggleCompare, style }: FacilityItemProps) => {
-    if (import.meta.env.DEV && DEBUG_IMAGE_SAMPLE_NAMES.has(facility.name)) {
+    if (IMAGE_DEBUG && DEBUG_IMAGE_SAMPLE_NAMES.has(facility.name)) {
         console.info('[image-debug:FacilityItem:render]', {
             name: facility.name,
             type: facility.type,
