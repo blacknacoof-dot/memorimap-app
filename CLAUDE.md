@@ -412,5 +412,96 @@ CLAUDE.md 규칙 준수하여 구현.
 - If a worktree is used for release verification, link that worktree to the same Vercel project before deployment.
 - Production deploy is allowed only from `main` or an explicitly approved release branch.
 - Never deploy from a dirty workspace.
+- Vercel production uses manual deployment only. Do not rely on Git push, branch sync, or GitHub integration to ship production.
+- Automatic Vercel production deployment is prohibited unless explicitly re-approved and documented.
+- `git push origin main` does not mean production is deployed. It only updates the repository state.
+- Production release must be executed explicitly with `vercel --prod --yes` from the linked `memorimap-app` project.
 - After deployment, always verify the alias with `vercel inspect https://memorimap.kr`.
+- After deployment, run live checks on `https://memorimap.kr`, `https://memorimap.kr/assets/index.js.map`, and `https://memorimap.kr/ai-test.html`.
+- Production deployment is not complete until the live checks confirm:
+  - `memorimap.kr` points to the intended new deployment
+  - CSP no longer includes `unsafe-eval`
+  - sourcemap routes return `404`
+  - `ai-test.html` returns `404`
 - Deployment is not complete until `memorimap.kr` points to the intended new production deployment.
+
+## Work State Classification Rule
+- Never use `반영` alone. Always specify `main 반영` or `운영 반영`.
+- Treat code status, branch status, and deployment status as separate axes.
+- Every change must be described with all three axes below:
+  - code status: `미커밋` or `커밋됨`
+  - branch status: `현재 브랜치만 반영` or `main 반영`
+  - deployment status: `미배포` or `프로덕션 배포됨`
+- `git push origin main` means repository state changed. It does not mean production deployment completed.
+- A live site working normally does not prove the latest local commit is deployed.
+
+## Work Terminology Rule
+- `작업됨`: a file was modified, but commit state is not implied.
+- `미커밋`: change exists only in the working tree or index.
+- `커밋됨`: change exists in git history.
+- `main 반영`: the intended commit exists in `main`.
+- `배포됨` and `운영 반영`: reserved only for confirmed production deployment.
+- If deployment is not verified, write `배포 미확인` instead of guessing.
+
+## Work Reporting Rule
+- For any status summary, always report in this format:
+
+```text
+상태 요약
+- 미커밋: 있음/없음
+- 최근 커밋: <sha> <message>
+- main 반영: 예/아니오
+- 프로덕션 배포: 예/아니오
+- 운영 URL 기준 최신 배포 시각: <timestamp or 미확인>
+```
+
+- For any individual task or fix, always report in this format:
+
+```text
+[항목명]
+- 코드 상태: 미커밋 / 커밋됨
+- 브랜치 상태: 현재 브랜치만 반영 / main 반영
+- 배포 상태: 미배포 / 프로덕션 배포됨 / 배포 미확인
+- 근거: git status / git log / git reflog / vercel inspect
+```
+
+## Work Procedure Rule
+- Follow this order for any change:
+  1. edit files locally
+  2. verify `git status`
+  3. commit by purpose
+  4. verify whether the commit is in `main`
+  5. explicitly decide whether that commit is a deployment target
+  6. run production deployment manually if approved
+  7. verify production deployment with `vercel inspect https://memorimap.kr`
+- Do not describe a change as complete until the required state for that task is explicitly confirmed.
+
+## Rollback Rule
+- Any approved fix must include rollback criteria before implementation starts.
+- Rollback criteria must be specific, observable, and tied to user-visible behavior, not vague risk language.
+- If a change can fail independently, split it into separate commits so partial rollback is possible.
+- Do not bundle unrelated fixes into one rollback unit.
+
+## Rollback Reporting Rule
+- For every non-trivial fix, report these fields:
+
+```text
+[항목명]
+- 검증:
+- 롤백 기준:
+- 롤백 필요 여부:
+- 근거:
+```
+
+- `롤백 필요 여부` is allowed only as:
+  - `없음`
+  - `있음`
+  - `판단 유보`
+- If rollback is not needed, state why the rollback criteria were not triggered.
+- If rollback is needed or judgment is deferred, identify the exact commit or uncommitted scope to revert.
+
+## Rollback Procedure Rule
+- Define rollback criteria before editing files.
+- After each fix, run the intended verification before moving to the next fix.
+- If verification fails, stop expansion of scope and evaluate rollback immediately.
+- Keep fix units small enough that `git revert` or selective discard can remove only the affected change.
