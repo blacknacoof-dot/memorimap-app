@@ -17,6 +17,41 @@ import { getFacilitySubscription } from '../lib/queries';
 import { useFilterStore } from '../stores/useFilterStore';
 import { logger } from '../utils/logger';
 
+// ── 첫 화면 카테고리 균형 노출 (대안 3) ──
+const BALANCE_CATEGORIES = ['funeral', 'charnel', 'park', 'natural', 'pet', 'sea'] as const;
+const BALANCE_PER_CATEGORY = 3;
+
+/** 상위 18건을 6카테고리×3건 라운드로빈으로 배치, 나머지는 원본 순서 유지 */
+function balanceFirstScreen(facilities: Facility[]): Facility[] {
+  // 1. 카테고리별 버킷 (앞에서부터 최대 3건씩)
+  const buckets = new Map<string, Facility[]>();
+  for (const cat of BALANCE_CATEGORIES) buckets.set(cat, []);
+
+  for (const f of facilities) {
+    const bucket = buckets.get(f.type || '');
+    if (bucket && bucket.length < BALANCE_PER_CATEGORY) {
+      bucket.push(f);
+    }
+  }
+
+  // 2. 라운드로빈: cat[0], cat[0], ... cat[1], cat[1], ...
+  const head: Facility[] = [];
+  for (let round = 0; round < BALANCE_PER_CATEGORY; round++) {
+    for (const cat of BALANCE_CATEGORIES) {
+      const bucket = buckets.get(cat)!;
+      if (round < bucket.length) {
+        head.push(bucket[round]);
+      }
+    }
+  }
+
+  // 3. tail: head에 사용된 ID 제외, 원본 순서 유지
+  const headIds = new Set(head.map(f => f.id));
+  const tail = facilities.filter(f => !headIds.has(f.id));
+
+  return [...head, ...tail];
+}
+
 interface UseFacilityDataParams {
   viewState: ViewState;
   showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
@@ -112,7 +147,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
               products: Array.isArray(item.packages) ? item.packages : []
             };
           });
-          setFacilities(mappedFacilities);
+          setFacilities(balanceFirstScreen(mappedFacilities));
         } else {
           // DB empty or RPC error
         }
