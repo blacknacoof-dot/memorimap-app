@@ -4,6 +4,43 @@ import { Facility } from '../types';
 import { OptimizedImage } from './ui/OptimizedImage';
 import { getCategoryLabel } from '../utils/facilityNormalizer';
 
+const DEBUG_IMAGE_SAMPLE_NAMES = new Set([
+    '일산백장례서비스',
+    '하늘문 봉안당',
+    '팔공산도림사추모공원',
+    '청솔공원 자연장지',
+    '강릉펫사랑',
+]);
+
+function getFallbackByType(type?: string) {
+    switch (type) {
+        case 'charnel':
+        case 'columbarium':
+        case 'charnel_house':
+        case 'memorial':
+            return '/images/defaults/cemetery/cemetery_1.webp';
+        case 'park':
+        case 'cemetery':
+        case 'park_cemetery':
+        case 'complex':
+            return '/images/defaults/cemetery/cemetery_1.webp';
+        case 'natural':
+        case 'natural_burial':
+        case 'tree_burial':
+            return '/images/defaults/natural/natural_1.webp';
+        case 'pet':
+        case 'pet_funeral':
+        case 'pet_memorial':
+        case 'sea':
+        case 'sea_burial':
+        case 'funeral':
+        case 'funeral_home':
+        case 'funeral_hall':
+        default:
+            return '/images/defaults/funeral/funeral_1.webp';
+    }
+}
+
 interface FacilityItemProps {
     facility: Facility;
     onClick: (facility: Facility) => void;
@@ -13,6 +50,15 @@ interface FacilityItemProps {
 }
 
 export const FacilityItem = React.memo(({ facility, onClick, isCompared, onToggleCompare, style }: FacilityItemProps) => {
+    if (import.meta.env.DEV && DEBUG_IMAGE_SAMPLE_NAMES.has(facility.name)) {
+        console.info('[image-debug:FacilityItem:render]', {
+            name: facility.name,
+            type: facility.type,
+            imageUrl: facility.imageUrl,
+            galleryImages: facility.galleryImages,
+        });
+    }
+
     return (
         <div style={style} className="px-1 py-2"> {/* Wrapper for style prop and padding */}
             <div
@@ -29,7 +75,7 @@ export const FacilityItem = React.memo(({ facility, onClick, isCompared, onToggl
                         className="rounded-lg shrink-0"
                         objectFit="cover"
                         loading="lazy"
-                        fallbackSrc="/images/defaults/funeral/funeral_1.webp"
+                        fallbackSrc={getFallbackByType(facility.type)}
                     />
                 ) : (
                     <div className="w-20 h-20 rounded-lg bg-gray-100 shrink-0 flex items-center justify-center text-gray-400 text-[10px] text-center px-1">

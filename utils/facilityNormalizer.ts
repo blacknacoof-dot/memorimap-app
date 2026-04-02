@@ -97,11 +97,11 @@ export function getCategoryLabel(type: string): FacilityCategoryType {
 // ── Default Image Map ──
 // fetchFacilities & handleMapBoundsChange 에서 사용 (로컬 경로 기반)
 const DEFAULT_IMAGE_MAP_LOCAL: Record<string, string[]> = {
-  'funeral': Array.from({ length: 8 }, (_, i) => `/images/defaults/funeral/funeral_${i + 1}.jpg`),
-  'charnel': Array.from({ length: 13 }, (_, i) => `/images/defaults/columbarium/columbarium_${i + 1}.jpg`),
-  'natural': Array.from({ length: 8 }, (_, i) => `/images/defaults/natural/natural_${i + 1}.png`),
-  'park': Array.from({ length: 11 }, (_, i) => `/images/defaults/cemetery/cemetery_${i + 1}.png`),
-  'cemetery': Array.from({ length: 11 }, (_, i) => `/images/defaults/cemetery/cemetery_${i + 1}.png`),
+  'funeral': Array.from({ length: 8 }, (_, i) => `/images/defaults/funeral/funeral_${i + 1}.webp`),
+  'charnel': Array.from({ length: 11 }, (_, i) => `/images/defaults/cemetery/cemetery_${i + 1}.webp`),
+  'natural': Array.from({ length: 8 }, (_, i) => `/images/defaults/natural/natural_${i + 1}.webp`),
+  'park': Array.from({ length: 11 }, (_, i) => `/images/defaults/cemetery/cemetery_${i + 1}.webp`),
+  'cemetery': Array.from({ length: 11 }, (_, i) => `/images/defaults/cemetery/cemetery_${i + 1}.webp`),
   'sangjo': [
     'https://xvmpvzldezpoxxsarizm.supabase.co/storage/v1/object/public/facility-images/defaults/funeral.jpg',
     'https://images.unsplash.com/photo-1595852504369-0268ec35c678?q=80&w=800',
