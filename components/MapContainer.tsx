@@ -152,7 +152,6 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
     if (!mapElement.current) return;
 
     let isMounted = true;
-    let checkInterval: NodeJS.Timeout | null = null;
     const registerTimeout = (callback: () => void, delay: number): number => {
       const timeoutId = window.setTimeout(callback, delay);
       resizeTimerIds.current.push(timeoutId);
@@ -164,39 +163,14 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
     };
 
     // SDK 로드 대기 (index.html에서 미리 로드됨)
-    const loadAndInitMap = () => {
-      let sdkLoadFailed = false;
-
-      loadNaverMapSdk().catch(() => {
-        sdkLoadFailed = true;
-        toast.error('지도 SDK를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
-      });
-
-      if (window.naver && window.naver.maps && window.naver.maps.Map) {
+    const loadAndInitMap = async () => {
+      try {
+        await loadNaverMapSdk();
+        if (!isMounted) return;
         initMap();
-        return;
+      } catch {
+        toast.error('지도 SDK를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
       }
-
-      checkInterval = setInterval(() => {
-        if (sdkLoadFailed) {
-          if (checkInterval) clearInterval(checkInterval);
-          return;
-        }
-        if (window.naver && window.naver.maps && window.naver.maps.Map) {
-          if (checkInterval) clearInterval(checkInterval);
-          if (isMounted) {
-            initMap();
-          }
-        }
-      }, 200);
-
-      // 15초 후 타임아웃
-      // ✅ [5-2] SDK 폴링 타이머도 resizeTimerIds에 저장하여 cleanup 보장
-      registerTimeout(() => {
-        if (checkInterval) {
-          clearInterval(checkInterval);
-        }
-      }, 15000);
     };
 
     function initMap() {
@@ -241,7 +215,6 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
         });
 
         setIsMapReady(true);
-        // Naver Map Initialized successfully
 
         // Fix: 초기 로드 시 지도 빈 화면 방지 - 여러 타이밍에 리사이즈 트리거
         const triggerResize = () => {
@@ -266,12 +239,10 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
           registerTimeout(() => resizeObserverRef.current?.disconnect(), 3000);
         }
 
-        // Load MarkerClustering script
         if (!window.MarkerClustering) {
           const clusterScript = document.createElement('script');
           clusterScript.src = '/MarkerClustering.js';
           clusterScript.onload = () => {
-            // MarkerClustering loaded
             if (isMounted) setIsClusterReady(true);
           };
           clusterScript.onerror = () => {
@@ -291,7 +262,6 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
 
     return () => {
       isMounted = false;
-      if (checkInterval) clearInterval(checkInterval);
       // ✅ [1-2b] setTimeout 전부 해제
       clearRegisteredTimeouts();
       // ✅ [1-2b] ResizeObserver 해제

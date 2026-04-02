@@ -35,8 +35,17 @@ const App: React.FC = () => {
   const openChat = useChatStore(s => s.openChat);
 
   const mapRef = React.useRef<MapRef>(null);
+  // Bootstrap refs: start on MAP once, then switch to LIST after the first viewport payload.
+  const startedFromBootstrapMapRef = React.useRef(false);
+  const hasInitialViewportDataRef = React.useRef(false);
+  const hasAutoSwitchedToListRef = React.useRef(false);
+  const userInteractedWithViewToggleRef = React.useRef(false);
   const { location: userLocation, getCurrentPosition } = useLocation();
   const [viewState, setViewState] = useState<ViewState>(() => {
+    if (FEATURE_FLAGS.mobileListDefault && isMobileViewport()) {
+      startedFromBootstrapMapRef.current = true;
+      return ViewState.MAP;
+    }
     if (FEATURE_FLAGS.mobileListDefault) {
       return ViewState.LIST;
     }
@@ -93,11 +102,29 @@ const App: React.FC = () => {
 
   const [initialChatIntent, setInitialChatIntent] = useState<'funeral_home' | 'memorial_facility' | 'pet_funeral' | null>(null);
   const [handoverContext, setHandoverContext] = useState<Record<string, unknown> | string | null>(null);
+  // User-driven view changes opt out of the one-time bootstrap auto-switch.
+  const handleChangeView = React.useCallback((nextView: ViewState) => {
+    userInteractedWithViewToggleRef.current = true;
+    setViewState(nextView);
+  }, []);
 
   // Map Viewport Hook — 뷰포트 fetch 시 viewportFetchedRef 플래그 설정
   const setFacilitiesFromViewport = React.useCallback((data: Facility[] | ((prev: Facility[]) => Facility[])) => {
     viewportFetchedRef.current = true;
     setFacilities(data);
+    if (!Array.isArray(data) || data.length === 0) return;
+
+    // First successful viewport payload completes the bootstrap flow.
+    hasInitialViewportDataRef.current = true;
+
+    if (
+      startedFromBootstrapMapRef.current &&
+      !hasAutoSwitchedToListRef.current &&
+      !userInteractedWithViewToggleRef.current
+    ) {
+      hasAutoSwitchedToListRef.current = true;
+      setViewState(ViewState.LIST);
+    }
   }, [setFacilities, viewportFetchedRef]);
   const {
     targetMapCenter, setTargetMapCenter,
@@ -210,7 +237,7 @@ const App: React.FC = () => {
       return;
       showToast('로그?�웃 처리 �??�류가 발생?�습?�다.', 'error');
     } finally {
-      setViewState(ViewState.MAP);
+      handleChangeView(ViewState.MAP);
     }
   };
   const handleBottomNavChange = (view: ViewState) => {
@@ -232,7 +259,7 @@ const App: React.FC = () => {
     setIsMenuOpen(false);
     setShowLoginModal(false);
     setShowSignUpModal(false);
-    setViewState(view);
+    handleChangeView(view);
   };
   const handleViewOnMap = () => {
     if (selectedFacility) {
@@ -240,14 +267,14 @@ const App: React.FC = () => {
       setTargetMapZoom(16);
       setSelectedFacility(null);
     }
-    setViewState(ViewState.MAP);
+    handleChangeView(ViewState.MAP);
   };
 
   const isInApp = isInAppBrowser();
 
   const contentRouterProps: ContentRouterProps = {
     viewState,
-    setViewState,
+    setViewState: handleChangeView,
     mapRef,
     filteredFacilities,
     handleFacilitySelect,
@@ -286,7 +313,7 @@ const App: React.FC = () => {
 
   const modalContainerProps: ModalContainerProps = {
     viewState,
-    setViewState,
+    setViewState: handleChangeView,
     facilities,
     isSignedIn,
     userInfo,
@@ -346,7 +373,7 @@ const App: React.FC = () => {
     <>
       <AppMainLayout
         viewState={viewState}
-        setViewState={setViewState}
+        setViewState={handleChangeView}
         isMenuOpen={isMenuOpen}
         setIsMenuOpen={(open) => { if (open) setSelectedFacility(null); setIsMenuOpen(open); }}
         showPromo={showPromo}
@@ -365,8 +392,8 @@ const App: React.FC = () => {
       />
       {showWelcome && (
         <WelcomeSheet
-          onNavigateList={() => { setShowWelcome(false); setViewState(ViewState.LIST); }}
-          onNavigateSangjo={() => { setShowWelcome(false); setViewState(ViewState.FUNERAL_COMPANIES); }}
+          onNavigateList={() => { setShowWelcome(false); handleChangeView(ViewState.LIST); }}
+          onNavigateSangjo={() => { setShowWelcome(false); handleChangeView(ViewState.FUNERAL_COMPANIES); }}
           onNavigateSOS={() => { setShowWelcome(false); setShowSOS(true); openChat('funeral_home'); }}
           onClose={() => setShowWelcome(false)}
         />
