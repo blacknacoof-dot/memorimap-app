@@ -2,6 +2,7 @@ import React from 'react';
 import { Check, Scale, Award, Bot, BadgeCheck } from 'lucide-react';
 import { Facility } from '../types';
 import { OptimizedImage } from './ui/OptimizedImage';
+import { getCategoryLabel } from '../utils/facilityNormalizer';
 
 interface FacilityItemProps {
     facility: Facility;
@@ -38,7 +39,7 @@ export const FacilityItem = React.memo(({ facility, onClick, isCompared, onToggl
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                         <div className="text-xs text-primary font-bold shrink-0">
-                            {facility.type || facility.category}
+                            {getCategoryLabel(facility.type || '') || facility.category}
                         </div>
                         {facility.subscription?.plan?.name_en === 'premium' && (
                             <div className="bg-gradient-to-r from-gray-300 to-gray-400 text-white p-0.5 rounded-full shadow-sm" title="프리미엄 실버">
