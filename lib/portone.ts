@@ -173,8 +173,15 @@ export const verifyPayment = async (params: {
 };
 
 /**
- * 환불 요청 (서버사이드 Edge Function 필요)
- * 현재는 DB에 환불 요청 플래그만 기록 (수동 처리)
+ * 환불 요청 플래그 기록 (DB만 — 실 환불 아님)
+ *
+ * 예약 거절 등에서 호출하여 refund_status='requested'로 마킹.
+ * 실제 PortOne 취소 API 호출은 processRefund()에서 수행.
+ *
+ * 자동 연결 보류 사유:
+ *   환불은 실금전 이동이므로, 예약 거절 시 즉시 자동 환불로 연결하면
+ *   오거절 시 복구 불가. 현재는 플래그만 기록하고, 관리자가 process-refund
+ *   Edge Function을 통해 명시적으로 실행하는 구조.
  */
 export const requestRefund = async (params: {
     paymentId: string;
@@ -182,7 +189,6 @@ export const requestRefund = async (params: {
     reservationId: string;
     client: import('@supabase/supabase-js').SupabaseClient;
 }): Promise<{ success: boolean; error?: string }> => {
-    // Edge Function 배포 전에는 DB 플래그만 기록
     try {
         const { error } = await params.client.from('reservations').update({
             refund_status: 'requested',
@@ -197,6 +203,59 @@ export const requestRefund = async (params: {
         return { success: true };
     } catch (error: unknown) {
         const msg = error instanceof Error ? error.message : '환불 요청 실패';
+        return { success: false, error: msg };
+    }
+};
+
+/**
+ * 실제 환불 실행 (process-refund Edge Function 호출)
+ *
+ * 서버에서 PortOne 취소 API를 호출하고 DB 상태를 갱신.
+ * 인증 + 소유권 + 상태 + 중복 취소 방지 검증은 Edge Function 내부에서 수행.
+ */
+export const processRefund = async (params: {
+    paymentId: string;
+    reason: string;
+    reservationId: string;
+}): Promise<{ success: boolean; error?: string }> => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl) {
+        return { success: false, error: 'Supabase URL not configured' };
+    }
+
+    try {
+        const { getCurrentAccessToken } = await import('./supabaseClient');
+        const userToken = await getCurrentAccessToken();
+        if (!userToken) {
+            return { success: false, error: '인증 토큰이 없습니다. 로그인 후 다시 시도해주세요.' };
+        }
+
+        const response = await fetch(`${supabaseUrl}/functions/v1/process-refund`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': supabaseKey,
+                'Authorization': `Bearer ${userToken}`,
+            },
+            body: JSON.stringify({
+                paymentId: params.paymentId,
+                reason: params.reason,
+                reservationId: params.reservationId,
+            }),
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+            return {
+                success: false,
+                error: result?.error || `환불 처리 실패 (${response.status})`,
+            };
+        }
+        return { success: true };
+    } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : '환불 처리 실패';
         return { success: false, error: msg };
     }
 };
