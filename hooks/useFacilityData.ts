@@ -257,7 +257,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
 
         const [subscriptionResult, rawReviewsResult, resolvedImagesResult] = await Promise.allSettled([
           getFacilitySubscription(realUuid, supabase),
-          import('../lib/queries').then(m => m.getReviewsBySpace(realUuid)),
+          import('../lib/queries/reviews').then(m => m.getReviewsBySpace(realUuid)),
           resolveFacilityDetailImages(data, {
             signImage: (value) => createSignedStorageImageUrl(
               supabase,
