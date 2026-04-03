@@ -18,10 +18,8 @@ const DEV_ORIGINS = [
     'http://127.0.0.1:5173',
 ];
 
-const isDevMode = Deno.env.get('ENVIRONMENT') === 'development';
-const ALLOWED_ORIGINS = isDevMode
-    ? [...PRODUCTION_ORIGINS, ...DEV_ORIGINS]
-    : PRODUCTION_ORIGINS;
+// Local frontend validation should work regardless of the deployed ENVIRONMENT value.
+const ALLOWED_ORIGINS = [...PRODUCTION_ORIGINS, ...DEV_ORIGINS];
 
 const getCorsHeaders = (req: Request) => {
     const origin = req.headers.get('origin');
@@ -66,6 +64,15 @@ async function verifyJWT(token: string): Promise<{ userId: string | null; error:
 const PORTONE_API_URL = 'https://api.portone.io';
 
 type SupabaseAdmin = ReturnType<typeof createClient>;
+type PaymentIntentRow = {
+    payment_id: string;
+    payment_context: 'facility_subscription' | 'personal_subscription';
+    user_id: string;
+    facility_id: string | null;
+    plan_id: string;
+    expected_amount: number;
+    status: 'pending' | 'paid' | 'failed' | 'cancelled';
+};
 
 async function verifySubscriptionPlanExists(
     supabaseAdmin: SupabaseAdmin,
@@ -120,6 +127,37 @@ function normalizePlanId(planId: string, _context: string): string {
     return planId.trim().replace(/[\s-]+/g, '_').toUpperCase();
 }
 
+async function getPaymentIntent(
+    db: SupabaseAdmin,
+    paymentId: string,
+): Promise<PaymentIntentRow | null> {
+    const { data, error } = await db
+        .from('payment_intents')
+        .select('payment_id, payment_context, user_id, facility_id, plan_id, expected_amount, status')
+        .eq('payment_id', paymentId)
+        .limit(1)
+        .maybeSingle();
+
+    return error ? null : (data as PaymentIntentRow | null);
+}
+
+async function updatePaymentIntentStatus(
+    db: SupabaseAdmin,
+    paymentId: string,
+    status: 'paid' | 'failed' | 'cancelled',
+    portoneStatus: string,
+): Promise<void> {
+    await db
+        .from('payment_intents')
+        .update({
+            status,
+            portone_status: portoneStatus,
+            resolved_at: new Date().toISOString(),
+        })
+        .eq('payment_id', paymentId)
+        .neq('status', status);
+}
+
 async function persistFacilitySubscription(
     db: SupabaseAdmin,
     facilityId: string,
@@ -134,6 +172,17 @@ async function persistFacilitySubscription(
     nextBilling.setMonth(nextBilling.getMonth() + 1);
 
     try {
+        const { data: existingPayment } = await db
+            .from('subscription_payments')
+            .select('id, subscription_id')
+            .eq('portone_payment_id', portonePaymentId)
+            .limit(1)
+            .maybeSingle();
+
+        if (existingPayment) {
+            return { persisted: true, subscriptionId: existingPayment.subscription_id ?? undefined };
+        }
+
         // 1. 기존 구독 조회 + 이전 상태 캡처 (롤백용)
         const filterCol = isUUID ? 'facility_id_uuid' : 'facility_id_bigint';
         const filterVal = isUUID ? facilityId : Number(facilityId);
@@ -243,6 +292,17 @@ async function persistPersonalSubscription(
     expiresAt.setMonth(expiresAt.getMonth() + 1);
 
     try {
+        const { data: existingPayment } = await db
+            .from('subscription_payments')
+            .select('id')
+            .eq('portone_payment_id', portonePaymentId)
+            .limit(1)
+            .maybeSingle();
+
+        if (existingPayment) {
+            return { persisted: true };
+        }
+
         // 1. 기존 구독 조회 + 이전 상태 캡처 (롤백용)
         const { data: existing } = await db
             .from('user_subscriptions')
@@ -510,7 +570,16 @@ serve(async (req: Request) => {
         }
         // ============================================================
 
-        if (!paymentId || !expectedAmount) {
+        const paymentIntent = paymentId && (
+            paymentContext === 'facility_subscription'
+            || paymentContext === 'personal_subscription'
+        )
+            ? await getPaymentIntent(supabaseAdmin, paymentId)
+            : null;
+
+        const resolvedExpectedAmount = paymentIntent?.expected_amount ?? expectedAmount;
+
+        if (!paymentId || typeof resolvedExpectedAmount !== 'number') {
             return new Response(JSON.stringify({ error: 'paymentId and expectedAmount are required' }), {
                 status: 400,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -550,16 +619,24 @@ serve(async (req: Request) => {
         const paymentData = await portoneResponse.json();
 
         // 결제 금액 및 상태 검증
-        const isAmountValid = paymentData.amount?.total === expectedAmount;
+        const isAmountValid = paymentData.amount?.total === resolvedExpectedAmount;
         const isStatusValid = paymentData.status === 'PAID';
 
         if (!isAmountValid || !isStatusValid) {
+            if (paymentIntent && (paymentData.status === 'FAILED' || paymentData.status === 'CANCELLED')) {
+                await updatePaymentIntentStatus(
+                    supabaseAdmin,
+                    paymentId,
+                    paymentData.status === 'FAILED' ? 'failed' : 'cancelled',
+                    paymentData.status,
+                );
+            }
             // 위변조 감지 → DB에 기록
             await supabaseAdmin.from('system_logs').insert({
                 level: 'ERROR',
                 message: `결제 위변조 감지: paymentId=${paymentId}`,
                 meta: {
-                    expectedAmount,
+                    expectedAmount: resolvedExpectedAmount,
                     actualAmount: paymentData.amount?.total,
                     status: paymentData.status,
                     orderId,
@@ -571,7 +648,7 @@ serve(async (req: Request) => {
             return new Response(JSON.stringify({
                 verified: false,
                 error: '결제 금액 또는 상태가 일치하지 않습니다.',
-                expected: expectedAmount,
+                expected: resolvedExpectedAmount,
                 actual: paymentData.amount?.total,
                 paymentStatus: paymentData.status,
             }), {
@@ -632,7 +709,7 @@ serve(async (req: Request) => {
             }
 
             // 3. 금액 이중 검증 — DB 예약 금액과 요청 금액 일치 여부
-            if (reservation.payment_amount != null && reservation.payment_amount !== expectedAmount) {
+            if (reservation.payment_amount != null && reservation.payment_amount !== resolvedExpectedAmount) {
                 await supabaseAdmin.from('system_logs').insert({
                     level: 'ERROR',
                     message: `결제 금액 불일치: DB=${reservation.payment_amount}, 요청=${expectedAmount}`,
@@ -640,7 +717,7 @@ serve(async (req: Request) => {
                         paymentId,
                         orderId,
                         dbAmount: reservation.payment_amount,
-                        requestedAmount: expectedAmount,
+                        requestedAmount: resolvedExpectedAmount,
                         requestedBy: verifiedUserId,
                     },
                     source: 'edge-function:verify-payment'
@@ -667,7 +744,10 @@ serve(async (req: Request) => {
         // 구독 결제: 검증 + DB 영속화 (service_role)
         // ============================================================
         if (paymentContext === 'facility_subscription') {
-            if (!facilityId || !planId) {
+            const resolvedFacilityId = paymentIntent?.facility_id ?? facilityId;
+            const resolvedPlanId = paymentIntent?.plan_id ?? planId;
+
+            if (!resolvedFacilityId || !resolvedPlanId) {
                 return new Response(JSON.stringify({
                     verified: false,
                     error: 'facilityId and planId are required for facility subscription verification.',
@@ -678,8 +758,8 @@ serve(async (req: Request) => {
             }
 
             const [planExists, facilityOwned] = await Promise.all([
-                verifySubscriptionPlanExists(supabaseAdmin, planId),
-                verifyFacilityOwnership(supabaseAdmin, facilityId, verifiedUserId),
+                verifySubscriptionPlanExists(supabaseAdmin, resolvedPlanId),
+                verifyFacilityOwnership(supabaseAdmin, resolvedFacilityId, verifiedUserId),
             ]);
 
             if (!planExists || !facilityOwned) {
@@ -688,8 +768,8 @@ serve(async (req: Request) => {
                     message: 'Facility subscription verification rejected',
                     meta: {
                         paymentId,
-                        facilityId,
-                        planId,
+                        facilityId: resolvedFacilityId,
+                        planId: resolvedPlanId,
                         requestedBy: verifiedUserId,
                         planExists,
                         facilityOwned,
@@ -708,14 +788,14 @@ serve(async (req: Request) => {
 
             // 검증 통과 → DB 영속화
             const persistResult = await persistFacilitySubscription(
-                supabaseAdmin, facilityId, planId, paymentId, expectedAmount
+                supabaseAdmin, resolvedFacilityId, resolvedPlanId, paymentId, resolvedExpectedAmount
             );
 
             if (!persistResult.persisted) {
                 await supabaseAdmin.from('system_logs').insert({
                     level: 'ERROR',
                     message: `Facility subscription persistence failed: ${persistResult.error}`,
-                    meta: { paymentId, facilityId, planId, requestedBy: verifiedUserId },
+                    meta: { paymentId, facilityId: resolvedFacilityId, planId: resolvedPlanId, requestedBy: verifiedUserId },
                     source: 'edge-function:verify-payment'
                 });
 
@@ -727,6 +807,10 @@ serve(async (req: Request) => {
                     status: 200,
                     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                 });
+            }
+
+            if (paymentIntent) {
+                await updatePaymentIntentStatus(supabaseAdmin, paymentId, 'paid', paymentData.status);
             }
 
             return new Response(JSON.stringify({
@@ -743,7 +827,10 @@ serve(async (req: Request) => {
         }
 
         if (paymentContext === 'personal_subscription') {
-            if (!targetUserId || !planId) {
+            const resolvedTargetUserId = paymentIntent?.user_id ?? targetUserId;
+            const resolvedPlanId = paymentIntent?.plan_id ?? planId;
+
+            if (!resolvedTargetUserId || !resolvedPlanId) {
                 return new Response(JSON.stringify({
                     verified: false,
                     error: 'targetUserId and planId are required for personal subscription verification.',
@@ -753,8 +840,8 @@ serve(async (req: Request) => {
                 });
             }
 
-            const planExists = await verifySubscriptionPlanExists(supabaseAdmin, planId);
-            const isOwner = targetUserId === verifiedUserId;
+            const planExists = await verifySubscriptionPlanExists(supabaseAdmin, resolvedPlanId);
+            const isOwner = resolvedTargetUserId === verifiedUserId;
 
             if (!planExists || !isOwner) {
                 await supabaseAdmin.from('system_logs').insert({
@@ -762,8 +849,8 @@ serve(async (req: Request) => {
                     message: 'Personal subscription verification rejected',
                     meta: {
                         paymentId,
-                        planId,
-                        targetUserId,
+                        planId: resolvedPlanId,
+                        targetUserId: resolvedTargetUserId,
                         requestedBy: verifiedUserId,
                         planExists,
                         isOwner,
@@ -782,14 +869,14 @@ serve(async (req: Request) => {
 
             // 검증 통과 → DB 영속화
             const persistResult = await persistPersonalSubscription(
-                supabaseAdmin, verifiedUserId, planId, paymentId, expectedAmount
+                supabaseAdmin, verifiedUserId, resolvedPlanId, paymentId, resolvedExpectedAmount
             );
 
             if (!persistResult.persisted) {
                 await supabaseAdmin.from('system_logs').insert({
                     level: 'ERROR',
                     message: `Personal subscription persistence failed: ${persistResult.error}`,
-                    meta: { paymentId, planId, targetUserId: verifiedUserId },
+                    meta: { paymentId, planId: resolvedPlanId, targetUserId: verifiedUserId },
                     source: 'edge-function:verify-payment'
                 });
 
@@ -801,6 +888,10 @@ serve(async (req: Request) => {
                     status: 200,
                     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                 });
+            }
+
+            if (paymentIntent) {
+                await updatePaymentIntentStatus(supabaseAdmin, paymentId, 'paid', paymentData.status);
             }
 
             return new Response(JSON.stringify({

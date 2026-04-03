@@ -1,524 +1,689 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// ============================================================
-// PortOne V2 Webhook Handler
-//
-// 역할: 브라우저 종료/네트워크 이슈로 verify-payment 콜백이
-// 누락된 결제를 웹훅으로 후속 동기화.
-//
-// 설계 원칙:
-//   1. 웹훅 payload를 신뢰하지 않음 → PortOne API 재조회
-//   2. 멱등 처리 → 이미 반영된 결제는 스킵
-//   3. fail-closed → 시그니처 검증 실패 시 운영에서 거부
-//
-// 리팩터링 메모:
-//   verify-payment와 공유하는 로직(PortOne API 조회, 구독 영속화)이
-//   있으나, 현 단계에서는 안전을 위해 중복 구현.
-//   후속 작업으로 _shared/ 분리 검토.
-// ============================================================
-
-const PORTONE_API_URL = 'https://api.portone.io';
+const PORTONE_API_URL = "https://api.portone.io";
 
 type SupabaseAdmin = ReturnType<typeof createClient>;
-
-// ============================================================
-// Standard Webhooks 시그니처 검증 (HMAC-SHA256)
-// ============================================================
+type PaymentIntentRow = {
+  payment_id: string;
+  payment_context: "facility_subscription" | "personal_subscription";
+  user_id: string;
+  facility_id: string | null;
+  plan_id: string;
+  expected_amount: number;
+  status: "pending" | "paid" | "failed" | "cancelled";
+};
 
 async function verifyWebhookSignature(
-    body: string,
-    headers: Headers,
-    secret: string,
+  body: string,
+  headers: Headers,
+  secret: string,
 ): Promise<boolean> {
-    const webhookId = headers.get('webhook-id');
-    const webhookTimestamp = headers.get('webhook-timestamp');
-    const webhookSignature = headers.get('webhook-signature');
+  const webhookId = headers.get("webhook-id");
+  const webhookTimestamp = headers.get("webhook-timestamp");
+  const webhookSignature = headers.get("webhook-signature");
 
-    if (!webhookId || !webhookTimestamp || !webhookSignature) {
-        return false;
-    }
-
-    // 타임스탬프 검증 (±5분)
-    const ts = parseInt(webhookTimestamp, 10);
-    const now = Math.floor(Date.now() / 1000);
-    if (Math.abs(now - ts) > 300) {
-        return false;
-    }
-
-    // Standard Webhooks: secret은 "whsec_" prefix 후 base64
-    const secretBytes = Uint8Array.from(
-        atob(secret.startsWith('whsec_') ? secret.slice(6) : secret),
-        c => c.charCodeAt(0),
-    );
-
-    const signedContent = `${webhookId}.${webhookTimestamp}.${body}`;
-    const encoder = new TextEncoder();
-
-    const key = await crypto.subtle.importKey(
-        'raw',
-        secretBytes,
-        { name: 'HMAC', hash: 'SHA-256' },
-        false,
-        ['sign'],
-    );
-
-    const signature = await crypto.subtle.sign(
-        'HMAC',
-        key,
-        encoder.encode(signedContent),
-    );
-
-    const expectedSig = btoa(String.fromCharCode(...new Uint8Array(signature)));
-
-    // webhook-signature 헤더는 "v1,<base64>" 형식 (복수 가능, 공백 구분)
-    const signatures = webhookSignature.split(' ');
-    for (const sig of signatures) {
-        const parts = sig.split(',');
-        if (parts.length === 2 && parts[0] === 'v1' && parts[1] === expectedSig) {
-            return true;
-        }
-    }
-
+  if (!webhookId || !webhookTimestamp || !webhookSignature) {
     return false;
+  }
+
+  const ts = parseInt(webhookTimestamp, 10);
+  const now = Math.floor(Date.now() / 1000);
+  if (Math.abs(now - ts) > 300) {
+    return false;
+  }
+
+  const secretBytes = Uint8Array.from(
+    atob(secret.startsWith("whsec_") ? secret.slice(6) : secret),
+    (c) => c.charCodeAt(0),
+  );
+  const signedContent = `${webhookId}.${webhookTimestamp}.${body}`;
+  const encoder = new TextEncoder();
+
+  const key = await crypto.subtle.importKey(
+    "raw",
+    secretBytes,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(signedContent));
+  const expectedSig = btoa(String.fromCharCode(...new Uint8Array(signature)));
+
+  return webhookSignature
+    .split(" ")
+    .some((sig) => {
+      const parts = sig.split(",");
+      return parts.length === 2 && parts[0] === "v1" && parts[1] === expectedSig;
+    });
 }
 
-// ============================================================
-// PortOne API 결제 조회
-// ============================================================
-
 interface PortOnePayment {
-    id: string;
-    status: string; // PAID, CANCELLED, FAILED, READY, etc.
-    amount?: { total?: number };
-    orderName?: string;
-    customData?: string;
-    cancellations?: Array<{ id: string; totalAmount: number; reason?: string }>;
+  id: string;
+  status: string;
+  amount?: { total?: number };
+  orderName?: string;
 }
 
 async function fetchPortOnePayment(
-    paymentId: string,
-    apiSecret: string,
+  paymentId: string,
+  apiSecret: string,
 ): Promise<{ payment: PortOnePayment | null; error: string | null }> {
-    try {
-        const res = await fetch(`${PORTONE_API_URL}/payments/${paymentId}`, {
-            headers: {
-                'Authorization': `PortOne ${apiSecret}`,
-                'Content-Type': 'application/json',
-            },
-        });
-        if (!res.ok) {
-            return { payment: null, error: `PortOne API ${res.status}: ${await res.text()}` };
-        }
-        const data = await res.json();
-        return { payment: data as PortOnePayment, error: null };
-    } catch (e) {
-        return { payment: null, error: e instanceof Error ? e.message : 'fetch failed' };
+  try {
+    const res = await fetch(`${PORTONE_API_URL}/payments/${paymentId}`, {
+      headers: {
+        Authorization: `PortOne ${apiSecret}`,
+        "Content-Type": "application/json",
+      },
+    });
+    if (!res.ok) {
+      return { payment: null, error: `PortOne API ${res.status}: ${await res.text()}` };
     }
+    return { payment: await res.json() as PortOnePayment, error: null };
+  } catch (error) {
+    return { payment: null, error: error instanceof Error ? error.message : "fetch failed" };
+  }
 }
-
-// ============================================================
-// 로깅 헬퍼
-// ============================================================
 
 async function log(
-    db: SupabaseAdmin,
-    level: 'INFO' | 'WARN' | 'ERROR',
-    message: string,
-    meta: Record<string, unknown>,
+  db: SupabaseAdmin,
+  level: "INFO" | "WARN" | "ERROR",
+  message: string,
+  meta: Record<string, unknown>,
 ): Promise<void> {
-    await db.from('system_logs').insert({
-        level,
-        message,
-        meta,
-        source: 'edge-function:payment-webhook',
-    });
+  await db.from("system_logs").insert({
+    level,
+    message,
+    meta,
+    source: "edge-function:payment-webhook",
+  });
 }
 
-// ============================================================
-// 멱등 처리: 구독 결제 (PAID)
-// ============================================================
+function normalizePlanId(planId: string): string {
+  return planId.trim().replace(/[\s-]+/g, "_").toUpperCase();
+}
 
-async function handleSubscriptionPaid(
-    db: SupabaseAdmin,
-    payment: PortOnePayment,
-): Promise<{ action: string }> {
-    const paymentId = payment.id;
-    const amount = payment.amount?.total ?? 0;
+async function getPaymentIntent(
+  db: SupabaseAdmin,
+  paymentId: string,
+): Promise<PaymentIntentRow | null> {
+  const { data, error } = await db
+    .from("payment_intents")
+    .select("payment_id, payment_context, user_id, facility_id, plan_id, expected_amount, status")
+    .eq("payment_id", paymentId)
+    .limit(1)
+    .maybeSingle();
 
-    // 1. subscription_payments에 이미 존재하면 스킵
+  return error ? null : (data as PaymentIntentRow | null);
+}
+
+async function updatePaymentIntentStatus(
+  db: SupabaseAdmin,
+  paymentId: string,
+  status: "paid" | "failed" | "cancelled",
+  portoneStatus: string,
+): Promise<void> {
+  await db
+    .from("payment_intents")
+    .update({
+      status,
+      portone_status: portoneStatus,
+      resolved_at: new Date().toISOString(),
+    })
+    .eq("payment_id", paymentId)
+    .neq("status", status);
+}
+
+async function persistFacilitySubscription(
+  db: SupabaseAdmin,
+  facilityId: string,
+  planId: string,
+  portonePaymentId: string,
+  amount: number,
+): Promise<{ persisted: boolean; error?: string; subscriptionId?: string }> {
+  const normalizedPlanId = normalizePlanId(planId);
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
+  const now = new Date();
+  const nextBilling = new Date(now);
+  nextBilling.setMonth(nextBilling.getMonth() + 1);
+
+  try {
     const { data: existingPayment } = await db
-        .from('subscription_payments')
-        .select('id, status')
-        .eq('portone_payment_id', paymentId)
-        .limit(1)
-        .maybeSingle();
+      .from("subscription_payments")
+      .select("id, subscription_id")
+      .eq("portone_payment_id", portonePaymentId)
+      .limit(1)
+      .maybeSingle();
 
     if (existingPayment) {
-        return { action: 'skipped:already_exists' };
+      return { persisted: true, subscriptionId: existingPayment.subscription_id ?? undefined };
     }
 
-    // 2. paymentId prefix로 결제 유형 판별
-    //    sub_ → facility, psub_ → personal
-    const isFacility = paymentId.startsWith('sub_');
-    const isPersonal = paymentId.startsWith('psub_');
+    const filterCol = isUUID ? "facility_id_uuid" : "facility_id_bigint";
+    const filterVal = isUUID ? facilityId : Number(facilityId);
 
-    if (!isFacility && !isPersonal) {
-        // 구독이 아닌 결제 (예약금 등) — 별도 처리
-        return { action: 'not_subscription' };
+    const { data: existing } = await db
+      .from("facility_subscriptions")
+      .select("id, plan_id, status, next_billing_date, billing_cycle")
+      .eq(filterCol, filterVal)
+      .limit(1)
+      .maybeSingle();
+
+    const previousState = existing
+      ? {
+        plan_id: existing.plan_id,
+        status: existing.status,
+        next_billing_date: existing.next_billing_date,
+        billing_cycle: existing.billing_cycle,
+      }
+      : null;
+
+    const subscriptionData: Record<string, unknown> = {
+      plan_id: normalizedPlanId,
+      status: "active",
+      next_billing_date: nextBilling.toISOString(),
+      updated_at: now.toISOString(),
+      billing_cycle: "monthly",
+    };
+
+    let subId: string | null = null;
+    const wasInsert = !existing;
+
+    if (existing) {
+      const { data, error } = await db
+        .from("facility_subscriptions")
+        .update(subscriptionData)
+        .eq("id", existing.id)
+        .select("id")
+        .single();
+      if (error) return { persisted: false, error: `facility_subscriptions UPDATE: ${error.message}` };
+      subId = data?.id;
+    } else {
+      if (isUUID) {
+        subscriptionData.facility_id_uuid = facilityId;
+      } else {
+        subscriptionData.facility_id_bigint = Number(facilityId);
+        subscriptionData.facility_id = Number(facilityId);
+      }
+      const { data, error } = await db
+        .from("facility_subscriptions")
+        .insert(subscriptionData)
+        .select("id")
+        .single();
+      if (error) return { persisted: false, error: `facility_subscriptions INSERT: ${error.message}` };
+      subId = data?.id;
     }
 
-    // 웹훅만으로는 facilityId/planId/userId를 알 수 없음
-    // verify-payment가 이미 처리했어야 하는 결제가 누락된 경우에만 도달
-    // → 최소한 system_logs에 미처리 결제를 기록하여 수동 복구 가능하게 함
-    await log(db, 'WARN', `웹훅 수신: 미처리 구독 결제 감지 (verify-payment 누락 가능)`, {
-        paymentId,
-        amount,
-        orderName: payment.orderName,
-        type: isFacility ? 'facility' : 'personal',
-        recommendation: '관리자가 PortOne 대시보드에서 결제 확인 후 수동 반영 필요',
-    });
+    if (subId && amount > 0) {
+      const periodEnd = new Date(now);
+      periodEnd.setMonth(periodEnd.getMonth() + 1);
 
-    return { action: 'logged:needs_manual_review' };
+      const { error: payError } = await db
+        .from("subscription_payments")
+        .insert({
+          subscription_id: subId,
+          payment_context: "facility",
+          portone_payment_id: portonePaymentId,
+          amount,
+          final_amount: amount,
+          status: "completed",
+          payment_method: "card",
+          paid_at: now.toISOString(),
+          billing_period_start: now.toISOString().split("T")[0],
+          billing_period_end: periodEnd.toISOString().split("T")[0],
+        });
+
+      if (payError) {
+        if (wasInsert) {
+          await db.from("facility_subscriptions").delete().eq("id", subId);
+        } else if (previousState) {
+          await db.from("facility_subscriptions").update({
+            plan_id: previousState.plan_id,
+            status: previousState.status,
+            next_billing_date: previousState.next_billing_date,
+            billing_cycle: previousState.billing_cycle,
+            updated_at: now.toISOString(),
+          }).eq("id", subId);
+        }
+        return { persisted: false, error: `subscription_payments INSERT rollback: ${payError.message}` };
+      }
+    }
+
+    return { persisted: true, subscriptionId: subId ?? undefined };
+  } catch (error) {
+    return { persisted: false, error: error instanceof Error ? error.message : "Unknown persistence error" };
+  }
 }
 
-// ============================================================
-// 멱등 처리: 예약금 결제 (PAID)
-// ============================================================
+async function persistPersonalSubscription(
+  db: SupabaseAdmin,
+  userId: string,
+  planId: string,
+  portonePaymentId: string,
+  amount: number,
+): Promise<{ persisted: boolean; error?: string }> {
+  const now = new Date();
+  const expiresAt = new Date(now);
+  expiresAt.setMonth(expiresAt.getMonth() + 1);
+
+  try {
+    const { data: existingPayment } = await db
+      .from("subscription_payments")
+      .select("id")
+      .eq("portone_payment_id", portonePaymentId)
+      .limit(1)
+      .maybeSingle();
+
+    if (existingPayment) {
+      return { persisted: true };
+    }
+
+    const { data: existing } = await db
+      .from("user_subscriptions")
+      .select("id, plan_id, plan_name, status, started_at, expires_at, billing_cycle")
+      .eq("user_id", userId)
+      .limit(1)
+      .maybeSingle();
+
+    const previousState = existing
+      ? {
+        plan_id: existing.plan_id,
+        plan_name: existing.plan_name,
+        status: existing.status,
+        started_at: existing.started_at,
+        expires_at: existing.expires_at,
+        billing_cycle: existing.billing_cycle,
+      }
+      : null;
+
+    const subscriptionData: Record<string, unknown> = {
+      plan_id: planId,
+      plan_name: planId,
+      status: "active",
+      started_at: now.toISOString(),
+      expires_at: expiresAt.toISOString(),
+      billing_cycle: "monthly",
+    };
+
+    const wasInsert = !existing;
+    const existingId = existing?.id;
+
+    if (existing) {
+      const { error } = await db
+        .from("user_subscriptions")
+        .update(subscriptionData)
+        .eq("id", existing.id);
+      if (error) return { persisted: false, error: `user_subscriptions UPDATE: ${error.message}` };
+    } else {
+      subscriptionData.user_id = userId;
+      const { error } = await db
+        .from("user_subscriptions")
+        .insert(subscriptionData);
+      if (error) return { persisted: false, error: `user_subscriptions INSERT: ${error.message}` };
+    }
+
+    if (amount > 0) {
+      const periodEnd = new Date(now);
+      periodEnd.setMonth(periodEnd.getMonth() + 1);
+
+      const { error: payError } = await db
+        .from("subscription_payments")
+        .insert({
+          user_id: userId,
+          payment_context: "personal",
+          portone_payment_id: portonePaymentId,
+          amount,
+          final_amount: amount,
+          status: "completed",
+          payment_method: "card",
+          paid_at: now.toISOString(),
+          billing_period_start: now.toISOString().split("T")[0],
+          billing_period_end: periodEnd.toISOString().split("T")[0],
+        });
+
+      if (payError) {
+        if (wasInsert) {
+          await db.from("user_subscriptions").delete().eq("user_id", userId);
+        } else if (previousState && existingId) {
+          await db.from("user_subscriptions").update({
+            plan_id: previousState.plan_id,
+            plan_name: previousState.plan_name,
+            status: previousState.status,
+            started_at: previousState.started_at,
+            expires_at: previousState.expires_at,
+            billing_cycle: previousState.billing_cycle,
+          }).eq("id", existingId);
+        }
+        return { persisted: false, error: `subscription_payments INSERT rollback: ${payError.message}` };
+      }
+    }
+
+    return { persisted: true };
+  } catch (error) {
+    return { persisted: false, error: error instanceof Error ? error.message : "Unknown persistence error" };
+  }
+}
+
+async function handleSubscriptionPaid(
+  db: SupabaseAdmin,
+  payment: PortOnePayment,
+): Promise<{ action: string }> {
+  const paymentId = payment.id;
+  const amount = payment.amount?.total ?? 0;
+  const intent = await getPaymentIntent(db, paymentId);
+
+  if (!intent) {
+    await log(db, "WARN", "Webhook received subscription payment without payment_intents", {
+      paymentId,
+      amount,
+      orderName: payment.orderName,
+    });
+    return { action: "logged:intent_not_found" };
+  }
+
+  if (intent.status === "paid") {
+    return { action: "skipped:intent_already_paid" };
+  }
+
+  if (intent.payment_context === "facility_subscription") {
+    if (!intent.facility_id) {
+      await log(db, "ERROR", "Facility payment intent missing facility_id", { paymentId });
+      return { action: "error:facility_metadata_missing" };
+    }
+
+    const persistResult = await persistFacilitySubscription(
+      db,
+      intent.facility_id,
+      intent.plan_id,
+      paymentId,
+      amount || intent.expected_amount,
+    );
+
+    if (!persistResult.persisted) {
+      await log(db, "ERROR", "Facility subscription persistence failed in webhook", {
+        paymentId,
+        error: persistResult.error,
+      });
+      return { action: "error:facility_persist_failed" };
+    }
+  } else {
+    const persistResult = await persistPersonalSubscription(
+      db,
+      intent.user_id,
+      intent.plan_id,
+      paymentId,
+      amount || intent.expected_amount,
+    );
+
+    if (!persistResult.persisted) {
+      await log(db, "ERROR", "Personal subscription persistence failed in webhook", {
+        paymentId,
+        error: persistResult.error,
+      });
+      return { action: "error:personal_persist_failed" };
+    }
+  }
+
+  await updatePaymentIntentStatus(db, paymentId, "paid", payment.status);
+  return { action: `synced:${intent.payment_context}` };
+}
 
 async function handleReservationPaid(
-    db: SupabaseAdmin,
-    payment: PortOnePayment,
+  db: SupabaseAdmin,
+  payment: PortOnePayment,
 ): Promise<{ action: string }> {
-    const paymentId = payment.id;
+  const paymentId = payment.id;
+  const { data: reservation } = await db
+    .from("reservations")
+    .select("id, payment_verified")
+    .eq("payment_id", paymentId)
+    .limit(1)
+    .maybeSingle();
 
-    // reservations.payment_id로 매칭
-    const { data: reservation } = await db
-        .from('reservations')
-        .select('id, payment_verified')
-        .eq('payment_id', paymentId)
-        .limit(1)
-        .maybeSingle();
+  if (!reservation) {
+    await log(db, "WARN", "Webhook received reservation payment without reservation match", {
+      paymentId,
+      amount: payment.amount?.total,
+    });
+    return { action: "logged:reservation_not_found" };
+  }
 
-    if (!reservation) {
-        // 아직 예약이 생성되지 않았거나 매칭 불가
-        // (클라이언트가 결제 후 예약 생성 전에 브라우저 닫힌 경우)
-        await log(db, 'WARN', `웹훅: 예약 매칭 불가한 예약금 결제`, {
-            paymentId,
-            amount: payment.amount?.total,
-            recommendation: 'PortOne 대시보드에서 결제 확인, 필요 시 수동 환불',
-        });
-        return { action: 'logged:reservation_not_found' };
-    }
+  if (reservation.payment_verified === true) {
+    return { action: "skipped:already_verified" };
+  }
 
-    if (reservation.payment_verified === true) {
-        return { action: 'skipped:already_verified' };
-    }
+  const { error } = await db
+    .from("reservations")
+    .update({
+      payment_verified: true,
+      paid_at: new Date().toISOString(),
+    })
+    .eq("id", reservation.id)
+    .eq("payment_verified", false);
 
-    // 멱등 업데이트
-    const { error } = await db
-        .from('reservations')
-        .update({
-            payment_verified: true,
-            paid_at: new Date().toISOString(),
-        })
-        .eq('id', reservation.id)
-        .eq('payment_verified', false); // 낙관적 락
+  if (error) {
+    await log(db, "ERROR", "Reservation payment sync failed", {
+      paymentId,
+      reservationId: reservation.id,
+      error: error.message,
+    });
+    return { action: "error:update_failed" };
+  }
 
-    if (error) {
-        await log(db, 'ERROR', `웹훅: 예약 결제 반영 실패`, {
-            paymentId,
-            reservationId: reservation.id,
-            error: error.message,
-        });
-        return { action: 'error:update_failed' };
-    }
-
-    return { action: 'synced:reservation_verified' };
+  return { action: "synced:reservation_verified" };
 }
-
-// ============================================================
-// CANCELLED 처리
-// ============================================================
 
 async function handleCancelled(
-    db: SupabaseAdmin,
-    payment: PortOnePayment,
+  db: SupabaseAdmin,
+  payment: PortOnePayment,
 ): Promise<{ action: string }> {
-    const paymentId = payment.id;
-    const actions: string[] = [];
+  const paymentId = payment.id;
+  const actions: string[] = [];
 
-    // 1. subscription_payments 상태 갱신
-    const { data: subPayment } = await db
-        .from('subscription_payments')
-        .select('id, status, subscription_id, payment_context, user_id')
-        .eq('portone_payment_id', paymentId)
-        .limit(1)
-        .maybeSingle();
+  const { data: subPayment } = await db
+    .from("subscription_payments")
+    .select("id, status, subscription_id, payment_context, user_id")
+    .eq("portone_payment_id", paymentId)
+    .limit(1)
+    .maybeSingle();
 
-    if (subPayment) {
-        if (subPayment.status === 'refunded' || subPayment.status === 'cancelled') {
-            actions.push('subscription_payment:skipped:already_cancelled');
-        } else {
-            // subscription_payments.status → 'refunded'
-            await db
-                .from('subscription_payments')
-                .update({ status: 'refunded' })
-                .eq('id', subPayment.id)
-                .neq('status', 'refunded'); // 낙관적 락
+  if (subPayment) {
+    if (subPayment.status === "refunded" || subPayment.status === "cancelled") {
+      actions.push("subscription_payment:skipped");
+    } else {
+      await db
+        .from("subscription_payments")
+        .update({ status: "refunded" })
+        .eq("id", subPayment.id)
+        .neq("status", "refunded");
+      actions.push("subscription_payment:refunded");
 
-            actions.push('subscription_payment:updated:refunded');
+      if (subPayment.payment_context === "facility" && subPayment.subscription_id) {
+        await db
+          .from("facility_subscriptions")
+          .update({ status: "cancelled", updated_at: new Date().toISOString() })
+          .eq("id", subPayment.subscription_id)
+          .neq("status", "cancelled");
+        actions.push("facility_subscription:cancelled");
+      }
 
-            // 2. 연관 구독 테이블 status 갱신
-            if (subPayment.payment_context === 'facility' && subPayment.subscription_id) {
-                const { data: facSub } = await db
-                    .from('facility_subscriptions')
-                    .select('id, status')
-                    .eq('id', subPayment.subscription_id)
-                    .limit(1)
-                    .maybeSingle();
-
-                if (facSub && facSub.status !== 'cancelled') {
-                    await db
-                        .from('facility_subscriptions')
-                        .update({ status: 'cancelled', updated_at: new Date().toISOString() })
-                        .eq('id', facSub.id)
-                        .neq('status', 'cancelled');
-                    actions.push('facility_subscription:updated:cancelled');
-                } else {
-                    actions.push('facility_subscription:skipped:already_cancelled_or_missing');
-                }
-            }
-
-            if (subPayment.payment_context === 'personal' && subPayment.user_id) {
-                const { data: userSub } = await db
-                    .from('user_subscriptions')
-                    .select('id, status')
-                    .eq('user_id', subPayment.user_id)
-                    .limit(1)
-                    .maybeSingle();
-
-                if (userSub && userSub.status !== 'cancelled') {
-                    await db
-                        .from('user_subscriptions')
-                        .update({ status: 'cancelled' })
-                        .eq('id', userSub.id)
-                        .neq('status', 'cancelled');
-                    actions.push('user_subscription:updated:cancelled');
-                } else {
-                    actions.push('user_subscription:skipped:already_cancelled_or_missing');
-                }
-            }
-        }
+      if (subPayment.payment_context === "personal" && subPayment.user_id) {
+        await db
+          .from("user_subscriptions")
+          .update({ status: "cancelled" })
+          .eq("user_id", subPayment.user_id)
+          .neq("status", "cancelled");
+        actions.push("user_subscription:cancelled");
+      }
     }
+  }
 
-    // 3. 예약금 결제 취소 처리
-    const { data: reservation } = await db
-        .from('reservations')
-        .select('id, refund_status')
-        .eq('payment_id', paymentId)
-        .limit(1)
-        .maybeSingle();
+  const { data: reservation } = await db
+    .from("reservations")
+    .select("id, refund_status")
+    .eq("payment_id", paymentId)
+    .limit(1)
+    .maybeSingle();
 
-    if (reservation) {
-        if (reservation.refund_status === 'completed') {
-            actions.push('reservation:skipped:already_refunded');
-        } else {
-            await db
-                .from('reservations')
-                .update({ refund_status: 'completed' })
-                .eq('id', reservation.id)
-                .neq('refund_status', 'completed');
-            actions.push('reservation:updated:refund_completed');
-        }
-    }
+  if (reservation) {
+    await db
+      .from("reservations")
+      .update({ refund_status: "completed" })
+      .eq("id", reservation.id)
+      .neq("refund_status", "completed");
+    actions.push("reservation:refund_completed");
+  }
 
-    if (actions.length === 0) {
-        actions.push('no_matching_records');
-    }
+  const intent = await getPaymentIntent(db, paymentId);
+  if (intent) {
+    await updatePaymentIntentStatus(db, paymentId, "cancelled", payment.status);
+    actions.push("payment_intent:cancelled");
+  }
 
-    return { action: actions.join(', ') };
+  if (actions.length === 0) {
+    actions.push("no_matching_records");
+  }
+
+  return { action: actions.join(",") };
 }
-
-// ============================================================
-// FAILED 처리
-// ============================================================
 
 async function handleFailed(
-    db: SupabaseAdmin,
-    payment: PortOnePayment,
+  db: SupabaseAdmin,
+  payment: PortOnePayment,
 ): Promise<{ action: string }> {
-    // FAILED 결제는 verify-payment에서 DB에 반영하지 않으므로
-    // 정리할 중간 상태가 없음. 로깅만 수행.
-    await log(db, 'INFO', `웹훅: 결제 실패 수신`, {
-        paymentId: payment.id,
-        amount: payment.amount?.total,
-        orderName: payment.orderName,
-    });
+  const intent = await getPaymentIntent(db, payment.id);
+  if (intent) {
+    await updatePaymentIntentStatus(db, payment.id, "failed", payment.status);
+  }
 
-    return { action: 'logged:payment_failed' };
+  await log(db, "INFO", "Webhook received failed payment", {
+    paymentId: payment.id,
+    amount: payment.amount?.total,
+    orderName: payment.orderName,
+  });
+
+  return { action: "logged:payment_failed" };
 }
 
-// ============================================================
-// Main handler
-// ============================================================
-
 serve(async (req: Request) => {
-    // CORS — 웹훅은 PortOne 서버에서 호출하므로 브라우저 CORS 불필요
-    // 하지만 preflight 대응은 유지
-    if (req.method === 'OPTIONS') {
-        return new Response(null, { status: 204 });
-    }
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204 });
+  }
 
-    if (req.method !== 'POST') {
-        return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-            status: 405,
-            headers: { 'Content-Type': 'application/json' },
-        });
-    }
-
-    const portoneApiSecret = Deno.env.get('PORTONE_API_SECRET');
-    if (!portoneApiSecret) {
-        return new Response(JSON.stringify({ error: 'Server configuration error' }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' },
-        });
-    }
-
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    if (!supabaseUrl || !serviceRoleKey) {
-        return new Response(JSON.stringify({ error: 'Server configuration error' }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' },
-        });
-    }
-
-    const db = createClient(supabaseUrl, serviceRoleKey, {
-        auth: { persistSession: false, autoRefreshToken: false },
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { "Content-Type": "application/json" },
     });
+  }
 
-    // ============================================================
-    // 시그니처 검증 — 운영에서 필수, 테스트에서만 완화
-    // ============================================================
-    const body = await req.text();
-    const webhookSecret = Deno.env.get('PORTONE_WEBHOOK_SECRET');
-    const isDevMode = Deno.env.get('ENVIRONMENT') === 'development';
+  const portoneApiSecret = Deno.env.get("PORTONE_API_SECRET");
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    if (!webhookSecret) {
-        if (!isDevMode) {
-            // 운영: 시크릿 미설정이면 거부 (fail-closed)
-            await log(db, 'ERROR', '웹훅 시크릿 미설정 — 운영 환경에서 웹훅 거부', {});
-            return new Response(JSON.stringify({ error: 'Webhook secret not configured' }), {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
-        // 개발: 시크릿 없으면 검증 스킵 (경고 로깅)
-        await log(db, 'WARN', '웹훅 시그니처 검증 스킵 (개발 환경, 시크릿 미설정)', {});
-    } else {
-        const valid = await verifyWebhookSignature(body, req.headers, webhookSecret);
-        if (!valid) {
-            await log(db, 'ERROR', '웹훅 시그니처 검증 실패', {
-                webhookId: req.headers.get('webhook-id'),
-            });
-            return new Response(JSON.stringify({ error: 'Invalid signature' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
+  if (!portoneApiSecret || !supabaseUrl || !serviceRoleKey) {
+    return new Response(JSON.stringify({ error: "Server configuration error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const db = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+
+  const body = await req.text();
+  const webhookSecret = Deno.env.get("PORTONE_WEBHOOK_SECRET");
+  const isDevMode = Deno.env.get("ENVIRONMENT") === "development";
+
+  if (!webhookSecret) {
+    if (!isDevMode) {
+      await log(db, "ERROR", "Webhook secret missing in production", {});
+      return new Response(JSON.stringify({ error: "Webhook secret not configured" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
-
-    // ============================================================
-    // Payload 파싱
-    // ============================================================
-    let webhookData: { type?: string; data?: { paymentId?: string } };
-    try {
-        webhookData = JSON.parse(body);
-    } catch {
-        return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
-            status: 400,
-            headers: { 'Content-Type': 'application/json' },
-        });
+    await log(db, "WARN", "Skipping webhook signature verification in development", {});
+  } else {
+    const valid = await verifyWebhookSignature(body, req.headers, webhookSecret);
+    if (!valid) {
+      await log(db, "ERROR", "Webhook signature verification failed", {
+        webhookId: req.headers.get("webhook-id"),
+      });
+      return new Response(JSON.stringify({ error: "Invalid signature" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
     }
+  }
 
-    const eventType = webhookData.type;
-    const paymentId = webhookData.data?.paymentId;
+  let webhookData: { type?: string; data?: { paymentId?: string } };
+  try {
+    webhookData = JSON.parse(body);
+  } catch {
+    return new Response(JSON.stringify({ error: "Invalid JSON" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
-    if (!paymentId) {
-        // paymentId가 없는 이벤트 (BillingKey.Issued 등) — 현재 미처리
-        await log(db, 'INFO', `웹훅: paymentId 없는 이벤트 수신 (무시)`, {
-            type: eventType,
-        });
-        return new Response(JSON.stringify({ ok: true }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-        });
-    }
+  const eventType = webhookData.type;
+  const paymentId = webhookData.data?.paymentId;
 
-    // ============================================================
-    // PortOne API 재조회 (웹훅 payload 불신)
-    // ============================================================
-    const { payment, error: fetchError } = await fetchPortOnePayment(paymentId, portoneApiSecret);
+  if (!paymentId) {
+    await log(db, "INFO", "Ignoring webhook without paymentId", { eventType });
+    return new Response(JSON.stringify({ ok: true }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
-    if (fetchError || !payment) {
-        await log(db, 'ERROR', `웹훅: PortOne API 재조회 실패`, {
-            paymentId,
-            eventType,
-            error: fetchError,
-        });
-        // 재시도 유도를 위해 5xx 반환
-        return new Response(JSON.stringify({ error: 'PortOne API unavailable' }), {
-            status: 502,
-            headers: { 'Content-Type': 'application/json' },
-        });
-    }
+  const { payment, error: fetchError } = await fetchPortOnePayment(paymentId, portoneApiSecret);
+  if (fetchError || !payment) {
+    await log(db, "ERROR", "PortOne API fetch failed during webhook", {
+      paymentId,
+      eventType,
+      error: fetchError,
+    });
+    return new Response(JSON.stringify({ error: "PortOne API unavailable" }), {
+      status: 502,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
-    // ============================================================
-    // 상태별 분기
-    // ============================================================
-    let result: { action: string };
+  let result: { action: string };
 
-    switch (payment.status) {
-        case 'PAID': {
-            // paymentId prefix로 예약금 vs 구독 구분
-            if (paymentId.startsWith('pay_')) {
-                result = await handleReservationPaid(db, payment);
-            } else {
-                result = await handleSubscriptionPaid(db, payment);
-            }
-            break;
-        }
-        case 'CANCELLED': {
-            result = await handleCancelled(db, payment);
-            break;
-        }
-        case 'FAILED': {
-            result = await handleFailed(db, payment);
-            break;
-        }
-        default: {
-            // READY, PARTIAL_CANCELLED 등 — 현재 미처리
-            await log(db, 'INFO', `웹훅: 미처리 상태 수신`, {
-                paymentId,
-                status: payment.status,
-                eventType,
-            });
-            result = { action: `ignored:status_${payment.status}` };
-        }
-    }
-
-    await log(db, 'INFO', `웹훅 처리 완료`, {
+  switch (payment.status) {
+    case "PAID":
+      result = paymentId.startsWith("pay_")
+        ? await handleReservationPaid(db, payment)
+        : await handleSubscriptionPaid(db, payment);
+      break;
+    case "CANCELLED":
+      result = await handleCancelled(db, payment);
+      break;
+    case "FAILED":
+      result = await handleFailed(db, payment);
+      break;
+    default:
+      await log(db, "INFO", "Ignoring unsupported payment status from webhook", {
         paymentId,
-        portonStatus: payment.status,
+        status: payment.status,
         eventType,
-        action: result.action,
-    });
+      });
+      result = { action: `ignored:status_${payment.status}` };
+  }
 
-    // 항상 200 반환 (PortOne이 재시도하지 않도록)
-    // 단, PortOne API 조회 실패 시에만 5xx (위에서 이미 반환)
-    return new Response(JSON.stringify({ ok: true, action: result.action }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-    });
+  await log(db, "INFO", "Webhook processed", {
+    paymentId,
+    portoneStatus: payment.status,
+    eventType,
+    action: result.action,
+  });
+
+  return new Response(JSON.stringify({ ok: true, action: result.action }), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
 });

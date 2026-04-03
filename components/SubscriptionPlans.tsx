@@ -1,7 +1,7 @@
 ﻿import React, { useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Check, X, Sparkles, Crown, Zap, ChevronDown, ChevronUp, MessageCircle, ShieldCheck, ArrowLeft } from 'lucide-react';
-import { requestPayment, verifyPayment, PORTONE_CONFIG, getChannelKey, generatePaymentId } from '../lib/portone';
+import { requestPayment, verifyPayment, registerPaymentIntent, PORTONE_CONFIG, getChannelKey, generatePaymentId } from '../lib/portone';
 import { toast } from 'sonner';
 import { useUser, useSession } from '../lib/auth';
 import { getAuthClient } from '../lib/supabaseClient';
@@ -222,6 +222,19 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
         setIsPaymentOpen(true);
         try {
             const paymentId = generatePaymentId('sub');
+            const intentRegistration = await registerPaymentIntent({
+                paymentId,
+                expectedAmount: plan.price,
+                paymentContext: 'facility_subscription',
+                facilityId,
+                planId: plan.nameEn,
+                orderName: `[추모맵] ${plan.name} 플랜`,
+            });
+            if (!intentRegistration.success) {
+                toast.error(intentRegistration.error || '결제 준비에 실패했습니다.');
+                return;
+            }
+
             const response = await requestPayment({
                 storeId: PORTONE_CONFIG.STORE_ID,
                 channelKey: getChannelKey('general'),  // Phase C 전까지 일반결제 채널 사용

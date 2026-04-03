@@ -172,6 +172,57 @@ export const verifyPayment = async (params: {
     }
 };
 
+export const registerPaymentIntent = async (params: {
+    paymentId: string;
+    expectedAmount: number;
+    paymentContext: 'facility_subscription' | 'personal_subscription';
+    planId: string;
+    facilityId?: string;
+    targetUserId?: string;
+    orderName?: string;
+}): Promise<{ success: boolean; error?: string; alreadyExists?: boolean }> => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl) {
+        return { success: false, error: 'Supabase URL not configured' };
+    }
+
+    try {
+        const { getCurrentAccessToken } = await import('./supabaseClient');
+        const userToken = await getCurrentAccessToken();
+        if (!userToken) {
+            return { success: false, error: '인증 토큰이 없습니다. 로그인 후 다시 시도해 주세요.' };
+        }
+
+        const response = await fetch(`${supabaseUrl}/functions/v1/register-payment-intent`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': supabaseKey,
+                'Authorization': `Bearer ${userToken}`,
+            },
+            body: JSON.stringify(params),
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+            return {
+                success: false,
+                error: result?.error || `register-payment-intent failed (${response.status})`,
+            };
+        }
+
+        return {
+            success: true,
+            alreadyExists: result?.alreadyExists === true,
+        };
+    } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : '결제 준비 중 오류가 발생했습니다.';
+        return { success: false, error: msg };
+    }
+};
+
 /**
  * 환불 요청 플래그 기록 (DB만 — 실 환불 아님)
  *
