@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FuneralCompany, Review } from '../../../types';
 import { getAuthClient } from '../../../lib/supabaseClient';
 import { useSession } from '../../../lib/auth';
-import { createReview } from '../../../lib/queries/reviewWrites';
+import { createReview, deleteReview } from '../../../lib/queries/reviewWrites';
 import { Star, X, MessageCircleQuestion } from 'lucide-react';
 import { ReviewCard } from '../../ReviewCard';
 import { toast } from 'sonner';
@@ -84,7 +84,6 @@ export const ReviewTab: React.FC<ReviewTabProps> = ({
     const handleDeleteReview = async (reviewId: string) => {
         try {
             const delClient = await getAuthClient(session, { strict: true });
-            const { deleteReview } = await import('../../../lib/queries');
             await deleteReview(reviewId, delClient);
 
             toast.success('리뷰가 삭제되었습니다.');

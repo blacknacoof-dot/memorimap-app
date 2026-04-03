@@ -112,3 +112,16 @@ export const createReview = async (
     if (error) throw error;
     return data;
 };
+
+export const deleteReview = async (reviewId: string, client: SupabaseClient) => {
+    const { error } = await client
+        .from('facility_reviews')
+        .update({
+            is_active: false,
+            deleted_at: new Date().toISOString(),
+        })
+        .eq('id', reviewId);
+
+    if (error) throw error;
+    return true;
+};

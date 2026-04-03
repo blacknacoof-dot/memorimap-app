@@ -1,7 +1,7 @@
 ﻿import React, { useCallback, useEffect, useState } from 'react';
 import { ReviewCard } from './ReviewCard';
-import { deleteReview } from '../lib/queries';
 import { getReviewsBySpace } from '../lib/queries/reviews';
+import { deleteReview } from '../lib/queries/reviewWrites';
 import { Review } from '../types';
 import { Loader2 } from 'lucide-react';
 import { useUser, useSession } from '../lib/auth';
