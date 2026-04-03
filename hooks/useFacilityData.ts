@@ -13,7 +13,7 @@ interface LatLngBounds {
 import { FACILITIES } from '../constants';
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 import { normalizeType, getCategoryDb, selectFacilityImage, formatPriceRange } from '../utils/facilityNormalizer';
-import { getFacilitySubscription } from '../lib/queries';
+import { getFacilitySubscription } from '../lib/queries/subscriptions';
 import { useFilterStore } from '../stores/useFilterStore';
 import { logger } from '../utils/logger';
 import { createSignedStorageImageUrl } from '../lib/security/storageImage';

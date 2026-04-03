@@ -174,7 +174,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
             if (facilityId) {
                 try {
                     const authClient = await getAuthClient(session);
-                    const { getFacilitySubscription } = await import('../lib/queries');
+                    const { getFacilitySubscription } = await import('../lib/queries/subscriptions');
                     const sub = await getFacilitySubscription(facilityId, authClient);
                     if (sub && sub.plan_id) {
                         setSelectedPlan(normalizeSubscriptionPlanId(sub.plan_id) || sub.plan_id);

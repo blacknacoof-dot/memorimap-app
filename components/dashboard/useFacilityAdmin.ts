@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useSession } from '../../lib/auth';
 import { Reservation, Facility } from '../../types';
-import { approveReservation, rejectReservation, getFacilitySubscription, Consultation } from '../../lib/queries';
+import { approveReservation, rejectReservation, Consultation } from '../../lib/queries';
+import { getFacilitySubscription } from '../../lib/queries/subscriptions';
 import { getAuthClient } from '../../lib/supabaseClient';
 import { confirmAsync, promptAsync } from '../../src/components/common/ConfirmModal';
 import { toast } from 'sonner';
