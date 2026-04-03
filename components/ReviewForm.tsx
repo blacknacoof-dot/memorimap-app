@@ -1,6 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Star, Send, Loader2, Image as ImageIcon, X } from 'lucide-react';
-import { createReview } from '../lib/queries';
+import {
+    checkConfirmedReservationForReview,
+    checkExistingReview,
+    createReview,
+    uploadReviewImage,
+} from '../lib/queries/reviewWrites';
 import { useUser, useSession } from '../lib/auth';
 import { getAuthClient } from '../lib/supabaseClient';
 import { toast } from 'sonner';
@@ -42,7 +47,6 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
             setIsChecking(true);
             try {
                 const client = await getAuthClient(session);
-                const { checkExistingReview, checkConfirmedReservationForReview } = await import('../lib/queries');
                 const [confirmedReservationExists, existingReview] = await Promise.all([
                     checkConfirmedReservationForReview(userId, spaceId, client),
                     checkExistingReview(userId, spaceId, client),
@@ -124,7 +128,6 @@ export const ReviewForm: React.FC<Props> = ({ spaceId, onSuccess, onLoginRequire
             const authClient = await getAuthClient(session);
             const imageUrls: string[] = [];
             if (images.length > 0) {
-                const { uploadReviewImage } = await import('../lib/queries');
                 for (const file of images) {
                     const url = await uploadReviewImage(user!.id, file, authClient);
                     imageUrls.push(url);

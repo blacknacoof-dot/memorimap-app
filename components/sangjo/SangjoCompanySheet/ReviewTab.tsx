@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FuneralCompany, Review } from '../../../types';
 import { getAuthClient } from '../../../lib/supabaseClient';
 import { useSession } from '../../../lib/auth';
+import { createReview } from '../../../lib/queries/reviewWrites';
 import { Star, X, MessageCircleQuestion } from 'lucide-react';
 import { ReviewCard } from '../../ReviewCard';
 import { toast } from 'sonner';
@@ -47,8 +48,6 @@ export const ReviewTab: React.FC<ReviewTabProps> = ({
         setIsSubmittingReview(true);
         try {
             const authClient = await getAuthClient(session, { strict: true });
-            const { createReview } = await import('../../../lib/queries');
-
             const newReview = await createReview(
                 company.id,
                 currentUser.id,
