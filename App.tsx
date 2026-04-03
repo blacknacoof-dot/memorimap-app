@@ -307,6 +307,7 @@ const App: React.FC = () => {
     keepMapMounted: shouldKeepMapMounted,
     mapRef,
     filteredFacilities,
+    selectedFacilityId: selectedFacility?.id,
     handleFacilitySelect,
     handleMapBoundsChange,
     targetMapCenter,

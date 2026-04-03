@@ -103,6 +103,7 @@ interface MapProps {
   onBoundsChange?: (bounds: LeafletCompatibleBounds) => void;
   initialCenter?: [number, number];
   initialZoom?: number;
+  selectedFacilityId?: string;
 }
 
 export interface MapRef {
@@ -120,7 +121,7 @@ const isValidCoord = (lat: number | undefined | null, lng: number | undefined | 
   return true;
 };
 
-const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelect, onBoundsChange, initialCenter, initialZoom }, ref) => {
+const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelect, onBoundsChange, initialCenter, initialZoom, selectedFacilityId }, ref) => {
   const mapElement = useRef<HTMLDivElement | null>(null);
   const mapInstance = useRef<NaverMapInstance | null>(null);
   const markersRef = useRef<NaverMarker[]>([]);
@@ -306,10 +307,10 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
       return icon;
     };
 
-    // ✅ 1단계: 삭제 — 이전에 있었으나 새 목록에 없는 마커 + 해당 리스너만 제거
+    // ✅ 1단계: 삭제 — 이전에 있었으나 새 목록에 없는 마커 제거 (선택 마커는 예외)
     let markersChanged = false;
     for (const [id, marker] of prevMap) {
-      if (!newIds.has(id)) {
+      if (!newIds.has(id) && id !== selectedFacilityId) {
         marker.setMap(null);
         prevMap.delete(id);
         prevStateMap.delete(id);
@@ -447,7 +448,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
       }
       markerListenerMapRef.current.clear();
     };
-  }, [filteredFacilities, isMapReady, isClusterReady]);
+  }, [filteredFacilities, isMapReady, isClusterReady, selectedFacilityId]);
 
   // 3. Sync Center (Removed to prevent snapping back when user moves map)
   // The map is initialized with initialCenter, and manual movement should be preserved.

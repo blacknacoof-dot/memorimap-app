@@ -46,6 +46,7 @@ export interface ContentRouterProps {
   // Map
   mapRef: React.RefObject<MapRef>;
   filteredFacilities: Facility[];
+  selectedFacilityId?: string;
   handleFacilitySelect: (f: Facility) => void;
   handleMapBoundsChange: (bounds: { getSouthWest: () => { lat: number; lng: number }; getNorthEast: () => { lat: number; lng: number } }) => void;
   targetMapCenter?: [number, number];
@@ -97,7 +98,7 @@ export interface ContentRouterProps {
 export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
   const {
     viewState, setViewState, keepMapMounted = false,
-    mapRef, filteredFacilities, handleFacilitySelect, handleMapBoundsChange,
+    mapRef, filteredFacilities, selectedFacilityId, handleFacilitySelect, handleMapBoundsChange,
     targetMapCenter, targetMapZoom, userLocation,
     compareList, setShowComparison, toggleCompare,
     sangjoCompareList, toggleSangjoCompare, setShowSangjoComparison,
@@ -120,6 +121,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
       <MapComponent
         ref={mapRef}
         facilities={filteredFacilities}
+        selectedFacilityId={selectedFacilityId}
         onFacilitySelect={handleFacilitySelect}
         onBoundsChange={handleMapBoundsChange}
         initialCenter={targetMapCenter || [userLocation.lat, userLocation.lng]}

@@ -87,10 +87,10 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
           <h2 className="text-lg font-bold text-gray-900 mb-3">시설 정보</h2>
           <div className="bg-white rounded-xl p-4 md:p-5 border shadow-sm">
             <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <Building2 size={18} className="text-primary" />
-                  <h3 className="font-bold text-gray-900">{myFacility.name}</h3>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-2 min-w-0">
+                  <Building2 size={18} className="text-primary shrink-0" />
+                  <h3 className="font-bold text-gray-900 truncate">{myFacility.name}</h3>
                   {(subscription?.plan_name || '').toLowerCase() === 'premium' && (
                     <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold border border-purple-200">PREMIUM</span>
                   )}
@@ -98,9 +98,9 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                     <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold border border-amber-200">ENTERPRISE</span>
                   )}
                 </div>
-                <div className="space-y-1 text-sm text-gray-600">
-                  <div className="flex items-center gap-2"><MapPin size={14} /><span>{myFacility.address}</span></div>
-                  <div className="flex items-center gap-2"><Phone size={14} /><span>{myFacility.phone || '전화번호 미등록'}</span></div>
+                <div className="space-y-1 text-sm text-gray-600 min-w-0">
+                  <div className="flex items-start gap-2"><MapPin size={14} className="shrink-0 mt-0.5" /><span className="break-words">{myFacility.address}</span></div>
+                  <div className="flex items-center gap-2"><Phone size={14} className="shrink-0" /><span>{myFacility.phone || '전화번호 미등록'}</span></div>
                   {subscription?.next_billing_date && (
                     <div className="flex items-center gap-2 text-primary font-medium mt-1">
                       <Calendar size={14} />

@@ -57,13 +57,13 @@ export const LegalModal: React.FC<Props> = ({ onClose, initialTab = 'privacy' })
           </button>
         </div>
 
-        <div className="border-b bg-white px-3 py-3 overflow-x-auto">
-          <div className="flex gap-2 min-w-max">
+        <div className="border-b bg-white px-3 py-2 md:py-3 overflow-x-auto">
+          <div className="flex gap-1.5 md:gap-2">
             {(Object.keys(TAB_LABELS) as LegalTab[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                className={`px-2.5 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-medium transition-colors whitespace-nowrap ${
                   activeTab === tab ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
