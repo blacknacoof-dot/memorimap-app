@@ -68,21 +68,3 @@ export async function sanitizeImageFile(file: File, extension?: string): Promise
         return file;
     }
 }
-
-export async function sanitizeImageBufferWithSharp(buffer: Uint8Array, extension?: string): Promise<Uint8Array> {
-    const sharpModule = await import('sharp');
-    const sharp = sharpModule.default;
-    const targetExtension = extension?.toLowerCase() || 'jpg';
-
-    let pipeline = sharp(buffer, { failOn: 'error' }).rotate();
-
-    if (targetExtension === 'png') {
-        pipeline = pipeline.png();
-    } else if (targetExtension === 'webp') {
-        pipeline = pipeline.webp({ quality: 90 });
-    } else {
-        pipeline = pipeline.jpeg({ quality: 90, mozjpeg: true });
-    }
-
-    return new Uint8Array(await pipeline.toBuffer());
-}

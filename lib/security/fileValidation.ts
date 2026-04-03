@@ -107,15 +107,11 @@ async function canDecodeImage(file: File): Promise<boolean> {
             bitmap.close();
             return true;
         }
-
-        const sharpModule = await import('sharp');
-        const sharp = sharpModule.default;
-        const buffer = new Uint8Array(await file.arrayBuffer());
-        const metadata = await sharp(buffer, { failOn: 'error' }).metadata();
-        return Boolean(metadata.width && metadata.height);
     } catch {
         return false;
     }
+
+    return false;
 }
 
 export async function validateFile(file: File, rule: FileValidationRule): Promise<FileValidationResult> {

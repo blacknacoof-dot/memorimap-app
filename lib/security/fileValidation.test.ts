@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
     FILE_SIZE_LIMITS,
@@ -16,9 +16,14 @@ function base64ToUint8Array(value: string): Uint8Array {
 }
 
 describe('fileValidation', () => {
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
     it('accepts a valid png facility image', async () => {
         const pngBytes = base64ToUint8Array('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a7FoAAAAASUVORK5CYII=');
         const file = createFile([pngBytes], 'facility-photo.PNG', 'image/png');
+        vi.stubGlobal('createImageBitmap', vi.fn(async () => ({ close: vi.fn() })));
 
         const result = await validateFacilityImageFile(file);
 
@@ -26,6 +31,16 @@ describe('fileValidation', () => {
             valid: true,
             sanitizedExtension: 'png',
         });
+    });
+
+    it('fails safely when browser image decode support is unavailable', async () => {
+        const pngBytes = base64ToUint8Array('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a7FoAAAAASUVORK5CYII=');
+        const file = createFile([pngBytes], 'facility-photo.png', 'image/png');
+
+        const result = await validateFacilityImageFile(file);
+
+        expect(result.valid).toBe(false);
+        expect(result.error).toContain('디코드');
     });
 
     it('rejects a spoofed partner document when signature does not match', async () => {

@@ -1,8 +1,7 @@
-import { describe, expect, it, vi } from 'vitest';
-import sharp from 'sharp';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { validateFacilityImageFile } from '../../lib/security/fileValidation';
-import { sanitizeImageBufferWithSharp } from '../../lib/security/imageSanitize';
+import { sanitizeImageFile } from '../../lib/security/imageSanitize';
 import { createSignedStorageImageUrl, normalizeStorageObjectPath, SIGNED_IMAGE_URL_TTL_SECONDS } from '../../lib/security/storageImage';
 
 function createFile(parts: BlobPart[], name: string, type: string): File {
@@ -10,25 +9,15 @@ function createFile(parts: BlobPart[], name: string, type: string): File {
 }
 
 describe('upload security hardening', () => {
-    it('removes image metadata during server-side sanitize', async () => {
-        const originalBuffer = await sharp({
-            create: {
-                width: 2,
-                height: 2,
-                channels: 3,
-                background: { r: 120, g: 80, b: 40 },
-            },
-        })
-            .jpeg()
-            .withMetadata({ orientation: 6 })
-            .toBuffer();
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
 
-        const originalMetadata = await sharp(originalBuffer).metadata();
-        const sanitizedBuffer = await sanitizeImageBufferWithSharp(originalBuffer, 'jpg');
-        const sanitizedMetadata = await sharp(sanitizedBuffer).metadata();
+    it('keeps the original image when browser sanitize support is unavailable', async () => {
+        const originalFile = createFile([new Uint8Array([1, 2, 3])], 'review.jpg', 'image/jpeg');
+        const sanitizedFile = await sanitizeImageFile(originalFile, 'jpg');
 
-        expect(originalMetadata.orientation).toBe(6);
-        expect(sanitizedMetadata.orientation).toBeUndefined();
+        expect(sanitizedFile).toBe(originalFile);
     });
 
     it('rejects image files that match the header but cannot be decoded', async () => {
