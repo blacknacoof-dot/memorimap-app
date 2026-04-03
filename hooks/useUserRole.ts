@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { ViewState } from '../types';
 import { APP_ROLE, getRoleEntryView, isSangjoRole, shouldRedirectAfterLogin, syncHashForView } from '../lib/rolePolicy';
+import { getAuthClient, supabase } from '../lib/supabaseClient';
 
 interface UserInfo {
   id: string;
@@ -34,7 +35,6 @@ export function useUserRole({ isSignedIn, userInfo, viewState, setViewState, sho
       if (isSignedIn && userInfo) {
         setIsLoadingRole(true);
         try {
-          const { supabase, getAuthClient } = await import('../lib/supabaseClient');
           const { data: { session } } = await supabase.auth.getSession();
           if (!mounted) return;
           const authClient = await getAuthClient(session);

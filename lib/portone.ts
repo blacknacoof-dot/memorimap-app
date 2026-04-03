@@ -1,3 +1,5 @@
+﻿import { getCurrentAccessToken } from './supabaseClient';
+
 export interface PaymentRequest {
     storeId: string;
     channelKey: string;
@@ -30,20 +32,20 @@ export interface PaymentResponse {
     txId?: string;
 }
 
-// 🎯 PortOne 결제 요청
+// ?렞 PortOne 寃곗젣 ?붿껌
 export const requestPayment = async (params: PaymentRequest): Promise<PaymentResponse> => {
     if (!window.PortOne) {
-        throw new Error('PortOne SDK가 로드되지 않았습니다. 페이지를 새로고침해주세요.');
+        throw new Error('PortOne SDK媛 濡쒕뱶?섏? ?딆븯?듬땲?? ?섏씠吏瑜??덈줈怨좎묠?댁＜?몄슂.');
     }
 
-    // PortOne은 빈 문자열을 거부 (NON_EMPTY_STRING) → 빈 필드 제거
+    // PortOne? 鍮?臾몄옄?댁쓣 嫄곕? (NON_EMPTY_STRING) ??鍮??꾨뱶 ?쒓굅
     const customer: Record<string, string> = {};
     if (params.customer.fullName) customer.fullName = params.customer.fullName;
     if (params.customer.phoneNumber) customer.phoneNumber = params.customer.phoneNumber;
     if (params.customer.email) customer.email = params.customer.email;
 
     try {
-        // 최소 요청 — KCP v2 공식 예제 기반 (windowType/bypass 제거, currency: CURRENCY_KRW)
+        // 理쒖냼 ?붿껌 ??KCP v2 怨듭떇 ?덉젣 湲곕컲 (windowType/bypass ?쒓굅, currency: CURRENCY_KRW)
         const requestBody: PortOneRequestPaymentParams = {
             storeId: params.storeId,
             channelKey: params.channelKey,
@@ -54,7 +56,7 @@ export const requestPayment = async (params: PaymentRequest): Promise<PaymentRes
             payMethod: params.payMethod,
         };
 
-        // customer (KCP 필수: fullName)
+        // customer (KCP ?꾩닔: fullName)
         if (Object.keys(customer).length > 0) {
             requestBody.customer = customer;
         }
@@ -66,31 +68,31 @@ export const requestPayment = async (params: PaymentRequest): Promise<PaymentRes
     } catch (error: unknown) {
         const errMsg = error instanceof Error ? error.message : '';
 
-        // 사용자 친화적 에러 메시지
+        // ?ъ슜??移쒗솕???먮윭 硫붿떆吏
         if (errMsg.includes('User closed') || errMsg.includes('cancel')) {
-            throw new Error('결제가 취소되었습니다.');
+            throw new Error('寃곗젣媛 痍⑥냼?섏뿀?듬땲??');
         }
 
         if (errMsg.includes('popup') || errMsg.includes('blocked')) {
-            throw new Error('팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.');
+            throw new Error('?앹뾽??李⑤떒?섏뿀?듬땲?? 釉뚮씪?곗? ?ㅼ젙?먯꽌 ?앹뾽???덉슜?댁＜?몄슂.');
         }
 
-        throw new Error(errMsg || '결제 처리 중 오류가 발생했습니다.');
+        throw new Error(errMsg || '寃곗젣 泥섎━ 以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.');
     }
 };
 
 /**
- * PortOne 채널 역할 분리 구조
- * - general: 일반결제 (단건, 예약금 등)
- * - billing: 정기결제 (월 구독)
+ * PortOne 梨꾨꼸 ??븷 遺꾨━ 援ъ“
+ * - general: ?쇰컲寃곗젣 (?④굔, ?덉빟湲???
+ * - billing: ?뺢린寃곗젣 (??援щ룆)
  *
- * 현재 NHN KCP 우선. 채널이 같을 경우 동일 env 값 사용.
- * KG이니시스 확장 시 별도 env 추가만 하면 됨.
+ * ?꾩옱 NHN KCP ?곗꽑. 梨꾨꼸??媛숈쓣 寃쎌슦 ?숈씪 env 媛??ъ슜.
+ * KG?대땲?쒖뒪 ?뺤옣 ??蹂꾨룄 env 異붽?留??섎㈃ ??
  *
- * env 변수:
- *   VITE_PORTONE_STORE_ID          — 상점 ID (PG 무관, 1개)
- *   VITE_PORTONE_CHANNEL_KEY       — 일반결제 채널 (fallback 겸용)
- *   VITE_PORTONE_BILLING_CHANNEL_KEY — 정기결제 채널 (없으면 general과 동일)
+ * env 蹂??
+ *   VITE_PORTONE_STORE_ID          ???곸젏 ID (PG 臾닿?, 1媛?
+ *   VITE_PORTONE_CHANNEL_KEY       ???쇰컲寃곗젣 梨꾨꼸 (fallback 寃몄슜)
+ *   VITE_PORTONE_BILLING_CHANNEL_KEY ???뺢린寃곗젣 梨꾨꼸 (?놁쑝硫?general怨??숈씪)
  */
 export type PaymentRole = 'general' | 'billing';
 
@@ -102,26 +104,26 @@ export const PORTONE_CONFIG = {
             || import.meta.env.VITE_PORTONE_CHANNEL_KEY
             || '',
     },
-    /** @deprecated CHANNEL_KEY 직접 사용 대신 getChannelKey() 사용 */
+    /** @deprecated CHANNEL_KEY 吏곸젒 ?ъ슜 ???getChannelKey() ?ъ슜 */
     get CHANNEL_KEY() { return this.CHANNELS.general; },
 } as const;
 
-/** 역할별 채널 키 조회 */
+/** ??븷蹂?梨꾨꼸 ??議고쉶 */
 export function getChannelKey(role: PaymentRole = 'general'): string {
     const key = PORTONE_CONFIG.CHANNELS[role];
     if (!key) {
-        throw new Error(`PortOne ${role} 채널 키가 설정되지 않았습니다.`);
+        throw new Error(`PortOne ${role} 梨꾨꼸 ?ㅺ? ?ㅼ젙?섏? ?딆븯?듬땲??`);
     }
     return key;
 }
 
 if (!PORTONE_CONFIG.STORE_ID || !PORTONE_CONFIG.CHANNELS.general) {
-    // PortOne 설정 누락 — 결제 기능 사용 시 런타임 에러로 처리
+    // PortOne ?ㅼ젙 ?꾨씫 ??寃곗젣 湲곕뒫 ?ъ슜 ???고????먮윭濡?泥섎━
 }
 
 /**
- * 서버사이드 결제 검증 (Edge Function 호출)
- * 클라이언트에서 결제 완료 후 반드시 호출하여 금액/상태 위변조 검증
+ * ?쒕쾭?ъ씠??寃곗젣 寃利?(Edge Function ?몄텧)
+ * ?대씪?댁뼵?몄뿉??寃곗젣 ?꾨즺 ??諛섎뱶???몄텧?섏뿬 湲덉븸/?곹깭 ?꾨?議?寃利?
  */
 export const verifyPayment = async (params: {
     paymentId?: string;
@@ -140,12 +142,11 @@ export const verifyPayment = async (params: {
     }
 
     try {
-        // [AUTH-14 FIX] 사용자 JWT를 Authorization 헤더로 전송
-        // Edge Function이 인증된 사용자 + 예약 소유권을 검증하도록 변경됨
-        const { getCurrentAccessToken } = await import('./supabaseClient');
+        // [AUTH-14 FIX] ?ъ슜??JWT瑜?Authorization ?ㅻ뜑濡??꾩넚
+        // Edge Function???몄쬆???ъ슜??+ ?덉빟 ?뚯쑀沅뚯쓣 寃利앺븯?꾨줉 蹂寃쎈맖
         const userToken = await getCurrentAccessToken();
         if (!userToken) {
-            return { verified: false, error: '인증 토큰이 없습니다. 로그인 후 다시 시도해주세요.' };
+            return { verified: false, error: '?몄쬆 ?좏겙???놁뒿?덈떎. 濡쒓렇?????ㅼ떆 ?쒕룄?댁＜?몄슂.' };
         }
 
         const response = await fetch(`${supabaseUrl}/functions/v1/verify-payment`, {
@@ -167,7 +168,7 @@ export const verifyPayment = async (params: {
         }
         return result;
     } catch (error: unknown) {
-        const msg = error instanceof Error ? error.message : '결제 검증 실패';
+        const msg = error instanceof Error ? error.message : '寃곗젣 寃利??ㅽ뙣';
         return { verified: false, error: msg };
     }
 };
@@ -189,10 +190,9 @@ export const registerPaymentIntent = async (params: {
     }
 
     try {
-        const { getCurrentAccessToken } = await import('./supabaseClient');
         const userToken = await getCurrentAccessToken();
         if (!userToken) {
-            return { success: false, error: '인증 토큰이 없습니다. 로그인 후 다시 시도해 주세요.' };
+            return { success: false, error: '?몄쬆 ?좏겙???놁뒿?덈떎. 濡쒓렇?????ㅼ떆 ?쒕룄??二쇱꽭??' };
         }
 
         const response = await fetch(`${supabaseUrl}/functions/v1/register-payment-intent`, {
@@ -218,21 +218,21 @@ export const registerPaymentIntent = async (params: {
             alreadyExists: result?.alreadyExists === true,
         };
     } catch (error: unknown) {
-        const msg = error instanceof Error ? error.message : '결제 준비 중 오류가 발생했습니다.';
+        const msg = error instanceof Error ? error.message : '寃곗젣 以鍮?以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.';
         return { success: false, error: msg };
     }
 };
 
 /**
- * 환불 요청 플래그 기록 (DB만 — 실 환불 아님)
+ * ?섎텋 ?붿껌 ?뚮옒洹?湲곕줉 (DB留??????섎텋 ?꾨떂)
  *
- * 예약 거절 등에서 호출하여 refund_status='requested'로 마킹.
- * 실제 PortOne 취소 API 호출은 processRefund()에서 수행.
+ * ?덉빟 嫄곗젅 ?깆뿉???몄텧?섏뿬 refund_status='requested'濡?留덊궧.
+ * ?ㅼ젣 PortOne 痍⑥냼 API ?몄텧? processRefund()?먯꽌 ?섑뻾.
  *
- * 자동 연결 보류 사유:
- *   환불은 실금전 이동이므로, 예약 거절 시 즉시 자동 환불로 연결하면
- *   오거절 시 복구 불가. 현재는 플래그만 기록하고, 관리자가 process-refund
- *   Edge Function을 통해 명시적으로 실행하는 구조.
+ * ?먮룞 ?곌껐 蹂대쪟 ?ъ쑀:
+ *   ?섎텋? ?ㅺ툑???대룞?대?濡? ?덉빟 嫄곗젅 ??利됱떆 ?먮룞 ?섎텋濡??곌껐?섎㈃
+ *   ?ㅺ굅????蹂듦뎄 遺덇?. ?꾩옱???뚮옒洹몃쭔 湲곕줉?섍퀬, 愿由ъ옄媛 process-refund
+ *   Edge Function???듯빐 紐낆떆?곸쑝濡??ㅽ뻾?섎뒗 援ъ“.
  */
 export const requestRefund = async (params: {
     paymentId: string;
@@ -248,21 +248,21 @@ export const requestRefund = async (params: {
         }).eq('id', params.reservationId);
 
         if (error) {
-            return { success: false, error: error.message || '환불 요청 실패' };
+            return { success: false, error: error.message || '?섎텋 ?붿껌 ?ㅽ뙣' };
         }
 
         return { success: true };
     } catch (error: unknown) {
-        const msg = error instanceof Error ? error.message : '환불 요청 실패';
+        const msg = error instanceof Error ? error.message : '?섎텋 ?붿껌 ?ㅽ뙣';
         return { success: false, error: msg };
     }
 };
 
 /**
- * 실제 환불 실행 (process-refund Edge Function 호출)
+ * ?ㅼ젣 ?섎텋 ?ㅽ뻾 (process-refund Edge Function ?몄텧)
  *
- * 서버에서 PortOne 취소 API를 호출하고 DB 상태를 갱신.
- * 인증 + 소유권 + 상태 + 중복 취소 방지 검증은 Edge Function 내부에서 수행.
+ * ?쒕쾭?먯꽌 PortOne 痍⑥냼 API瑜??몄텧?섍퀬 DB ?곹깭瑜?媛깆떊.
+ * ?몄쬆 + ?뚯쑀沅?+ ?곹깭 + 以묐났 痍⑥냼 諛⑹? 寃利앹? Edge Function ?대??먯꽌 ?섑뻾.
  */
 export const processRefund = async (params: {
     paymentId: string;
@@ -277,10 +277,9 @@ export const processRefund = async (params: {
     }
 
     try {
-        const { getCurrentAccessToken } = await import('./supabaseClient');
         const userToken = await getCurrentAccessToken();
         if (!userToken) {
-            return { success: false, error: '인증 토큰이 없습니다. 로그인 후 다시 시도해주세요.' };
+            return { success: false, error: '?몄쬆 ?좏겙???놁뒿?덈떎. 濡쒓렇?????ㅼ떆 ?쒕룄?댁＜?몄슂.' };
         }
 
         const response = await fetch(`${supabaseUrl}/functions/v1/process-refund`, {
@@ -301,12 +300,12 @@ export const processRefund = async (params: {
         if (!response.ok) {
             return {
                 success: false,
-                error: result?.error || `환불 처리 실패 (${response.status})`,
+                error: result?.error || `?섎텋 泥섎━ ?ㅽ뙣 (${response.status})`,
             };
         }
         return { success: true };
     } catch (error: unknown) {
-        const msg = error instanceof Error ? error.message : '환불 처리 실패';
+        const msg = error instanceof Error ? error.message : '?섎텋 泥섎━ ?ㅽ뙣';
         return { success: false, error: msg };
     }
 };
@@ -359,8 +358,8 @@ declare global {
 }
 
 /**
- * 빌링키 발급 요청 (카드 등록만, 결제 X)
- * KCP 빌링키 사전계약 완료 후 사용 가능
+ * 鍮뚮쭅??諛쒓툒 ?붿껌 (移대뱶 ?깅줉留? 寃곗젣 X)
+ * KCP 鍮뚮쭅???ъ쟾怨꾩빟 ?꾨즺 ???ъ슜 媛??
  */
 export const requestIssueBillingKey = async (params: {
     channelKey?: string;
@@ -370,7 +369,7 @@ export const requestIssueBillingKey = async (params: {
     customerEmail?: string;
 }): Promise<BillingKeyResponse> => {
     if (!window.PortOne?.requestIssueBillingKey) {
-        throw new Error('PortOne SDK 빌링키 발급 기능이 로드되지 않았습니다.');
+        throw new Error('PortOne SDK 鍮뚮쭅??諛쒓툒 湲곕뒫??濡쒕뱶?섏? ?딆븯?듬땲??');
     }
 
     const customer: Record<string, string> = {};
@@ -392,16 +391,17 @@ export const requestIssueBillingKey = async (params: {
     return response;
 };
 
-/** paymentId 생성 유틸 — KCP 최대 40자, 영문+숫자+_- 만 */
+/** paymentId ?앹꽦 ?좏떥 ??KCP 理쒕? 40?? ?곷Ц+?レ옄+_- 留?*/
 export function generatePaymentId(prefix: string): string {
     const ts = Date.now().toString(36);
     const rand = Math.random().toString(36).slice(2, 8);
     return `${prefix}_${ts}_${rand}`.slice(0, 40);
 }
 
-/** 빌링키 발급 issueId 생성 — paymentId와 구분 */
+/** 鍮뚮쭅??諛쒓툒 issueId ?앹꽦 ??paymentId? 援щ텇 */
 export function generateIssueId(prefix: string = 'bk'): string {
     const ts = Date.now().toString(36);
     const rand = Math.random().toString(36).slice(2, 8);
     return `${prefix}_${ts}_${rand}`.slice(0, 40);
 }
+

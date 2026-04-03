@@ -1,6 +1,7 @@
 import { Message } from "../types/consultation";
 import { Facility } from "../types";
 import { getMockAIResponse } from "./mockAI";
+import { getCurrentAccessToken } from './supabaseClient';
 
 // Gemini API는 Edge Function (gemini-proxy)을 통해 호출
 // 클라이언트에 API 키를 노출하지 않음
@@ -198,7 +199,6 @@ ${faqs.map((f, i) => `${i + 1}. Q: ${f.question}\n   A: ${f.answer}`).join('\n')
     try {
         // [AUTH-13 FIX] 사용자 JWT를 Authorization 헤더로 전송
         // Edge Function이 인증된 사용자만 허용하도록 변경됨
-        const { getCurrentAccessToken } = await import('./supabaseClient');
         const userToken = await getCurrentAccessToken();
         if (!userToken) {
             throw new Error('인증 토큰이 없습니다. 로그인 후 다시 시도해주세요.');
