@@ -56,7 +56,7 @@ export const SystemSettings = () => {
                         <p className="text-[10px] text-red-600 mt-0.5">활성화 시 일반 사용자의 접속이 차단됩니다.</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" className="sr-only peer" checked={maintenanceMode} onChange={async (e) => {
+                        <input data-testid="system-settings-maintenance-toggle" type="checkbox" className="sr-only peer" checked={maintenanceMode} onChange={async (e) => {
                             const checked = e.target.checked;
                             const label = checked ? '활성화' : '비활성화';
                             if (!await confirmAsync(`점검 모드를 ${label}하시겠습니까?\n${checked ? '일반 사용자의 접속이 차단됩니다.' : ''}`)) {
@@ -86,6 +86,7 @@ export const SystemSettings = () => {
                         <label className="block text-xs font-medium text-slate-500 mb-1">기본 중개 수수료율 (%)</label>
                         <div className="relative">
                             <input
+                                data-testid="system-settings-commission-input"
                                 id="commission-rate"
                                 name="commission-rate"
                                 type="number"
@@ -98,6 +99,7 @@ export const SystemSettings = () => {
                         <p className="text-[10px] text-slate-400 mt-1">모든 예약 및 결제 건에 적용되는 기본 수수료입니다.</p>
                     </div>
                     <button
+                        data-testid="system-settings-commission-save"
                         onClick={async () => {
                             if (!await confirmAsync(`수수료율을 ${commission}%로 변경하시겠습니까?`)) return;
                             handleSaveSystemSettings();

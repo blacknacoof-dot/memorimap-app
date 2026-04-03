@@ -26,6 +26,7 @@ export const UserManagement: React.FC = () => {
                 <div className="flex flex-1 items-center gap-2 rounded-lg border bg-gray-50 px-3 py-2">
                     <Search className="text-gray-400" size={18} />
                     <input
+                        data-testid="user-management-search-input"
                         id="user-search"
                         name="user-search"
                         type="text"
@@ -37,6 +38,7 @@ export const UserManagement: React.FC = () => {
                 </div>
 
                 <select
+                    data-testid="user-management-role-filter"
                     value={roleFilter}
                     onChange={(e) => setRoleFilter(e.target.value)}
                     className="rounded-lg border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20"
@@ -50,6 +52,7 @@ export const UserManagement: React.FC = () => {
 
                 <label className="flex items-center gap-2 whitespace-nowrap text-xs text-gray-600">
                     <input
+                        data-testid="user-management-include-test-users"
                         type="checkbox"
                         checked={includeTestUsers}
                         onChange={(e) => setIncludeTestUsers(e.target.checked)}
@@ -89,7 +92,11 @@ export const UserManagement: React.FC = () => {
                                 </tr>
                             ) : (
                                 filteredUsers.map((user) => (
-                                    <tr key={user.id} className="border-b bg-white transition-colors hover:bg-gray-50">
+                                    <tr
+                                        key={user.id}
+                                        data-testid={`user-management-row-${user.id}`}
+                                        className="border-b bg-white transition-colors hover:bg-gray-50"
+                                    >
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-400">
@@ -122,6 +129,7 @@ export const UserManagement: React.FC = () => {
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2">
                                                 <select
+                                                    data-testid={`user-management-role-select-${user.id}`}
                                                     value={user.role}
                                                     onChange={async (e) => {
                                                         const newRole = e.target.value;

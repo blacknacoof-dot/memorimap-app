@@ -36,6 +36,12 @@ const SideMenuDrawer = ({ isOpen, onClose, onNavigate }: { isOpen: boolean; onCl
         onNavigate(tab);
         onClose();
     };
+    const resolveTabSearch = () => {
+        if (location.search) return location.search;
+        if (typeof window === 'undefined') return '';
+        const hashQueryIndex = window.location.hash.indexOf('?');
+        return hashQueryIndex >= 0 ? window.location.hash.slice(hashQueryIndex) : '';
+    };
 
     return (
         <div className="fixed inset-0 z-[150] flex">
@@ -68,11 +74,12 @@ const SideMenuDrawer = ({ isOpen, onClose, onNavigate }: { isOpen: boolean; onCl
                             { icon: History, label: '시스템 활동 로그', id: 'logs' },
                             { icon: MessageSquare, label: '소통 센터', id: 'communication' },
                         ].map((item) => (
-                            <button
-                                key={item.id}
-                                onClick={() => handleNavigation(item.id)}
-                                className="w-full flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg transition-colors"
-                            >
+                        <button
+                            key={item.id}
+                            data-testid={`super-admin-menu-${item.id}`}
+                            onClick={() => handleNavigation(item.id)}
+                            className="w-full flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg transition-colors"
+                        >
                                 <item.icon className="w-5 h-5" />
                                 {item.label}
                             </button>
@@ -82,6 +89,7 @@ const SideMenuDrawer = ({ isOpen, onClose, onNavigate }: { isOpen: boolean; onCl
                     <div className="px-4 mt-6 mb-2 text-xs font-semibold text-slate-400 uppercase">시스템</div>
                     <nav className="space-y-1 px-2">
                         <button
+                            data-testid="super-admin-menu-admin_settings"
                             onClick={() => handleNavigation('admin_settings')}
                             className="w-full flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg transition-colors"
                         >
@@ -89,6 +97,7 @@ const SideMenuDrawer = ({ isOpen, onClose, onNavigate }: { isOpen: boolean; onCl
                             <span>관리자 설정</span>
                         </button>
                         <button
+                            data-testid="super-admin-menu-system_settings"
                             onClick={() => handleNavigation('system_settings')}
                             className="w-full flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg transition-colors"
                         >
@@ -154,7 +163,14 @@ function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
     // This eliminates the need for useEffect+setState (react-hooks/set-state-in-effect)
     // and avoids ref access during render (react-hooks/refs).
     // Tab switching updates the URL via navigate(), which triggers a re-render automatically.
-    const activeTab: TabId = parseTabFromSearch(location.search) ?? 'monitoring';
+    const resolveTabSearch = () => {
+        if (location.search) return location.search;
+        if (typeof window === 'undefined') return '';
+        const hashQueryIndex = window.location.hash.indexOf('?');
+        return hashQueryIndex >= 0 ? window.location.hash.slice(hashQueryIndex) : '';
+    };
+    const resolvedTabSearch = resolveTabSearch();
+    const activeTab: TabId = parseTabFromSearch(resolvedTabSearch) ?? 'monitoring';
 
     /** Switch the active tab by updating the URL search param (replace in history). */
     const switchTab = (tab: TabId) => {
@@ -187,6 +203,7 @@ function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
                     <div className="flex items-center gap-2 md:gap-3">
                         {/* Menu Button (Trigger Drawer) */}
                         <button
+                            data-testid="super-admin-open-menu"
                             onClick={() => setIsMenuOpen(true)}
                             className="p-1.5 md:p-2 -ml-1 md:-ml-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
                         >

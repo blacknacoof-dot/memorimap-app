@@ -220,6 +220,7 @@ export const PersonalSubscriptionManager: React.FC = () => {
                         <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border rounded-lg">
                             <Search className="w-3.5 h-3.5 text-slate-400" />
                             <input
+                                data-testid="personal-subs-search-input"
                                 id="personal-subs-search"
                                 name="personal-subs-search"
                                 type="text"
@@ -236,6 +237,7 @@ export const PersonalSubscriptionManager: React.FC = () => {
                             <button
                                 key={userRow.user_id}
                                 type="button"
+                                data-testid={`personal-subs-user-row-${userRow.user_id}`}
                                 onClick={() => handleSelectUser(userRow.user_id)}
                                 className={`w-full p-4 flex items-center justify-between text-left transition-colors hover:bg-slate-50 ${
                                     selectedUserId === userRow.user_id ? 'bg-blue-50 ring-1 ring-inset ring-blue-200' : ''
@@ -292,7 +294,7 @@ export const PersonalSubscriptionManager: React.FC = () => {
                                 {premiumLoading ? (
                                     <div className="text-sm text-slate-400">불러오는 중...</div>
                                 ) : selectedPremium?.activeGrant ? (
-                                    <div className="space-y-1 text-sm">
+                                    <div data-testid="personal-premium-active-status" className="space-y-1 text-sm">
                                         <div className="font-bold text-green-700">Active override</div>
                                         <div className="text-slate-600">Source: {selectedPremium.activeGrant.premium_source}</div>
                                         <div className="text-slate-600">만료일: {formatDateTime(selectedPremium.activeGrant.premium_expires_at)}</div>
@@ -305,6 +307,7 @@ export const PersonalSubscriptionManager: React.FC = () => {
                             <div className="rounded-xl border border-slate-200 p-4 space-y-3">
                                 <div className="text-sm font-bold text-slate-800">베타 프리미엄 부여</div>
                                 <select
+                                    data-testid="personal-premium-grant-source"
                                     value={grantSource}
                                     onChange={(e) => setGrantSource(e.target.value as PremiumSourceValue)}
                                     className="w-full rounded-lg border px-3 py-2 text-sm"
@@ -315,6 +318,7 @@ export const PersonalSubscriptionManager: React.FC = () => {
                                 </select>
                                 <button
                                     type="button"
+                                    data-testid="personal-premium-grant-button"
                                     onClick={handleGrant}
                                     disabled={premiumLoading || !!selectedPremium?.activeGrant}
                                     className="w-full rounded-lg bg-blue-600 text-white py-2 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-50"
@@ -328,6 +332,7 @@ export const PersonalSubscriptionManager: React.FC = () => {
                                 <div className="grid grid-cols-2 gap-2">
                                     <button
                                         type="button"
+                                        data-testid="personal-premium-extend-7"
                                         onClick={() => handleExtend(7)}
                                         disabled={premiumLoading || !selectedPremium?.activeGrant}
                                         className="rounded-lg bg-amber-500 text-white py-2 text-sm font-bold disabled:opacity-50"
@@ -336,6 +341,7 @@ export const PersonalSubscriptionManager: React.FC = () => {
                                     </button>
                                     <button
                                         type="button"
+                                        data-testid="personal-premium-extend-30"
                                         onClick={() => handleExtend(30)}
                                         disabled={premiumLoading || !selectedPremium?.activeGrant}
                                         className="rounded-lg bg-amber-600 text-white py-2 text-sm font-bold disabled:opacity-50"
@@ -348,6 +354,7 @@ export const PersonalSubscriptionManager: React.FC = () => {
                             <div className="rounded-xl border border-red-200 p-4 space-y-3">
                                 <div className="text-sm font-bold text-red-700">회수</div>
                                 <textarea
+                                    data-testid="personal-premium-revoke-reason"
                                     value={revokeReason}
                                     onChange={(e) => setRevokeReason(e.target.value)}
                                     rows={2}
@@ -356,6 +363,7 @@ export const PersonalSubscriptionManager: React.FC = () => {
                                 />
                                 <button
                                     type="button"
+                                    data-testid="personal-premium-revoke-button"
                                     onClick={handleRevoke}
                                     disabled={premiumLoading || !selectedPremium?.activeGrant}
                                     className="w-full rounded-lg bg-red-600 text-white py-2 text-sm font-bold disabled:opacity-50"
@@ -366,7 +374,7 @@ export const PersonalSubscriptionManager: React.FC = () => {
 
                             <div className="rounded-xl border border-slate-200 p-4">
                                 <div className="text-sm font-bold text-slate-800 mb-3">이력</div>
-                                <div className="space-y-2 max-h-60 overflow-y-auto">
+                                <div data-testid="personal-premium-history" className="space-y-2 max-h-60 overflow-y-auto">
                                     {selectedPremium?.history.length ? selectedPremium.history.map((row) => (
                                         <div key={row.id} className="rounded-lg border border-slate-100 p-3 text-xs space-y-1">
                                             <div className="flex items-center justify-between gap-2">

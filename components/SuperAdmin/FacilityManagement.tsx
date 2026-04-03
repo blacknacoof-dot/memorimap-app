@@ -51,6 +51,7 @@ export function FacilityManagement({ initialSearch, onClearSearch }: { initialSe
                 <div className="flex-1 flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border">
                     <Search className="text-gray-400" size={18} />
                     <input
+                        data-testid="facility-management-search-input"
                         id="facility-search"
                         name="facility-search"
                         type="text"
@@ -109,7 +110,11 @@ export function FacilityManagement({ initialSearch, onClearSearch }: { initialSe
                     <div className="col-span-2 text-center py-10">결과가 없습니다.</div>
                 ) : (
                     filteredFacilities.map((f: AdminFacility) => (
-                        <div key={f.id} className="bg-white p-4 md:p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all group">
+                        <div
+                            key={f.id}
+                            data-testid={`admin-facility-card-${f.id}`}
+                            className="bg-white p-4 md:p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all group"
+                        >
                             <div className="flex justify-between items-start mb-3">
                                 <div className="flex-1 min-w-0">
                                     <h3 className="font-bold text-gray-900 flex items-center gap-2 truncate" title={f.name}>
@@ -156,6 +161,7 @@ export function FacilityManagement({ initialSearch, onClearSearch }: { initialSe
                                 {editingId === f.id ? (
                                     <div className="flex gap-2">
                                         <select
+                                            data-testid={`admin-facility-manager-select-${f.id}`}
                                             value={tempManagerId}
                                             onChange={(e) => setTempManagerId(e.target.value)}
                                             className="flex-1 text-sm border rounded px-2 py-1"
@@ -168,6 +174,7 @@ export function FacilityManagement({ initialSearch, onClearSearch }: { initialSe
                                             ))}
                                         </select>
                                         <button
+                                            data-testid={`admin-facility-manager-save-${f.id}`}
                                             onClick={() => handleSave(f.id)}
                                             className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
                                         >
@@ -195,6 +202,7 @@ export function FacilityManagement({ initialSearch, onClearSearch }: { initialSe
                                         </div>
                                         <button
                                             onClick={() => handleStartEdit(f)}
+                                            data-testid={`admin-facility-edit-${f.id}`}
                                             className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-300 hover:text-primary transition-colors"
                                             title="관리자 변경"
                                         >

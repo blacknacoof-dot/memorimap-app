@@ -42,6 +42,7 @@ export const AdminLogsView: React.FC = () => {
                     관리 시스템 로그
                 </h3>
                 <button
+                    data-testid="admin-logs-refresh"
                     onClick={loadLogs}
                     className="text-xs text-blue-600 hover:underline min-w-[44px] min-h-[44px] flex items-center justify-center"
                 >
@@ -57,7 +58,7 @@ export const AdminLogsView: React.FC = () => {
                 ) : (
                     <div className="divide-y divide-gray-100 max-h-[60vh] md:max-h-[600px] overflow-y-auto">
                         {logs.map((log) => (
-                            <div key={log.id} className="p-4 hover:bg-gray-50 transition-colors">
+                            <div data-testid={`admin-log-row-${log.id}`} key={log.id} className="p-4 hover:bg-gray-50 transition-colors">
                                 <div className="flex justify-between items-start mb-1">
                                     <div className="flex items-center gap-2">
                                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${log.action.includes('APPROVE') ? 'bg-green-100 text-green-700' :

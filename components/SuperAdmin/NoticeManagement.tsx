@@ -100,6 +100,7 @@ export const NoticeManagement: React.FC = () => {
                     <p className="text-xs text-slate-400 font-medium">상조 파트너사에 전달되는 공식 공지사항을 관리합니다.</p>
                 </div>
                 <button
+                    data-testid="notice-create-button"
                     onClick={handleCreate}
                     className="bg-slate-800 text-white px-5 py-2.5 rounded-2xl text-sm font-bold shadow-lg hover:bg-slate-900 transition-all flex items-center gap-2"
                 >
@@ -113,6 +114,7 @@ export const NoticeManagement: React.FC = () => {
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-white border rounded-xl">
                         <Search className="w-3.5 h-3.5 text-slate-400" />
                         <input
+                            data-testid="notice-search-input"
                             id="notice-search"
                             name="notice-search"
                             type="text"
@@ -134,7 +136,7 @@ export const NoticeManagement: React.FC = () => {
                             <p>{searchTerm ? '검색 결과가 없습니다.' : '게시된 공지사항이 없습니다.'}</p>
                         </div>
                     ) : filteredNotices.map((notice) => (
-                        <div key={notice.id} className="p-5 flex items-start gap-4 hover:bg-slate-50 transition-colors group">
+                        <div data-testid={`notice-row-${notice.id}`} key={notice.id} className="p-5 flex items-start gap-4 hover:bg-slate-50 transition-colors group">
                             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${notice.notice_type === 'urgent' ? 'bg-red-100 text-red-600' :
                                     notice.notice_type === 'warning' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'
                                 }`}>
@@ -168,12 +170,14 @@ export const NoticeManagement: React.FC = () => {
 
                             <div className="flex md:flex-col gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0">
                                 <button
+                                    data-testid={`notice-edit-${notice.id}`}
                                     onClick={() => handleEdit(notice)}
                                     className="p-2 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 flex items-center justify-center bg-white border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-200 rounded-xl transition-all"
                                 >
                                     <Edit3 size={16} />
                                 </button>
                                 <button
+                                    data-testid={`notice-delete-${notice.id}`}
                                     onClick={() => handleDelete(notice)}
                                     className="p-2 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 flex items-center justify-center bg-white border border-slate-200 text-slate-400 hover:text-red-600 hover:border-red-200 rounded-xl transition-all"
                                 >
@@ -187,13 +191,13 @@ export const NoticeManagement: React.FC = () => {
 
             {/* Create/Edit Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4">
+                <div data-testid="notice-modal" className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4">
                     <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full">
                         <div className="flex items-center justify-between p-5 border-b">
                             <h3 className="font-bold text-lg text-slate-800">
                                 {editingNotice ? '공지 수정' : '새 공지 작성'}
                             </h3>
-                            <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-lg">
+                            <button data-testid="notice-modal-close" onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-lg">
                                 <X size={20} />
                             </button>
                         </div>
@@ -203,6 +207,7 @@ export const NoticeManagement: React.FC = () => {
                                 <div className="flex gap-2">
                                     {(['info', 'warning', 'urgent'] as const).map(type => (
                                         <button
+                                            data-testid={`notice-type-${type}`}
                                             key={type}
                                             onClick={() => setFormData(prev => ({ ...prev, notice_type: type }))}
                                             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${formData.notice_type === type
@@ -219,6 +224,7 @@ export const NoticeManagement: React.FC = () => {
                             <div>
                                 <label className="block text-xs font-bold text-slate-600 mb-1.5">제목</label>
                                 <input
+                                    data-testid="notice-title-input"
                                     id="notice-title"
                                     name="notice-title"
                                     type="text"
@@ -231,6 +237,7 @@ export const NoticeManagement: React.FC = () => {
                             <div>
                                 <label className="block text-xs font-bold text-slate-600 mb-1.5">내용</label>
                                 <textarea
+                                    data-testid="notice-content-input"
                                     id="notice-content"
                                     name="notice-content"
                                     value={formData.content}
@@ -243,12 +250,14 @@ export const NoticeManagement: React.FC = () => {
                         </div>
                         <div className="flex gap-3 p-5 border-t">
                             <button
+                                data-testid="notice-cancel-button"
                                 onClick={() => setIsModalOpen(false)}
                                 className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all"
                             >
                                 취소
                             </button>
                             <button
+                                data-testid="notice-submit-button"
                                 onClick={handleSubmit}
                                 disabled={isSubmitting}
                                 className={`flex-1 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}

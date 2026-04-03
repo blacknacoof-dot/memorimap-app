@@ -41,13 +41,18 @@ export const AdminSettings = () => {
 
     useEffect(() => {
         if (!user?.id) return;
-        const loadPhone = async () => {
+        const loadProfile = async () => {
             try {
-                const { data } = await client.from('profiles').select('phone_number').eq('clerk_id', user.id).single();
+                const { data } = await client
+                    .from('profiles')
+                    .select('full_name, phone_number')
+                    .eq('clerk_id', user.id)
+                    .single();
+                if (data?.full_name) setFullName(data.full_name);
                 if (data?.phone_number) setPhone(data.phone_number);
             } catch { /* ignore */ }
         };
-        loadPhone();
+        loadProfile();
     }, [user?.id, client]);
 
     const handleSaveProfile = async () => {
@@ -83,6 +88,31 @@ export const AdminSettings = () => {
         }
     };
 
+    const handleSaveProfileWithAuthSync = async () => {
+        if (!user?.id) return;
+        setSaving(true);
+        try {
+            const { error } = await client
+                .from('profiles')
+                .update({ full_name: fullName, phone_number: phone })
+                .eq('clerk_id', user.id);
+            if (error) throw error;
+
+            const { error: authError } = await client.auth.updateUser({
+                data: {
+                    full_name: fullName,
+                    phone,
+                },
+            });
+            if (authError) throw authError;
+            toast.success('?꾨줈???뺣낫媛 ??λ릺?덉뒿?덈떎.');
+        } catch (e: unknown) {
+            toast.error('????ㅽ뙣: ' + (e instanceof Error ? e.message : '?????녿뒗 ?ㅻ쪟'));
+        } finally {
+            setSaving(false);
+        }
+    };
+
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
             {/* Profile Section */}
@@ -95,14 +125,15 @@ export const AdminSettings = () => {
                 <div className="space-y-3">
                     <div>
                         <label className="block text-xs font-medium text-slate-500 mb-1">관리자 이름</label>
-                        <input id="admin-fullname" name="admin-fullname" type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full text-sm p-3 md:p-2 min-h-[44px] md:min-h-0 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500" />
+                        <input data-testid="admin-settings-fullname-input" id="admin-fullname" name="admin-fullname" type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full text-sm p-3 md:p-2 min-h-[44px] md:min-h-0 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-slate-500 mb-1">연락처</label>
-                        <input id="admin-phone" name="admin-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="010-0000-0000" className="w-full text-sm p-3 md:p-2 min-h-[44px] md:min-h-0 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500" />
+                        <input data-testid="admin-settings-phone-input" id="admin-phone" name="admin-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="010-0000-0000" className="w-full text-sm p-3 md:p-2 min-h-[44px] md:min-h-0 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500" />
                     </div>
                     <button
-                        onClick={handleSaveProfile}
+                        data-testid="admin-settings-save-profile"
+                        onClick={handleSaveProfileWithAuthSync}
                         disabled={saving}
                         className="w-full mt-2 bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
                     >
@@ -120,6 +151,7 @@ export const AdminSettings = () => {
                 <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
                     <p className="text-sm text-slate-600">이메일로 비밀번호 재설정 링크를 발송합니다.</p>
                     <button
+                        data-testid="admin-settings-reset-password"
                         onClick={handleChangePassword}
                         className="mt-3 bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-700 transition-colors"
                     >
@@ -147,6 +179,7 @@ export const AdminSettings = () => {
                             </div>
                             <label className={`relative inline-flex items-center ${notifSaving[item.key] ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}>
                                 <input
+                                    data-testid={`admin-settings-toggle-${item.key}`}
                                     type="checkbox"
                                     className="sr-only peer"
                                     checked={isNotifEnabled(item.key)}

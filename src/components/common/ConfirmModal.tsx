@@ -166,7 +166,7 @@ export const PromptModal: React.FC = () => {
     };
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/30 z-[10000] p-4">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/30 z-[10000] p-4" data-testid="prompt-modal">
             <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
                 <h2 className="text-lg font-semibold mb-2">{title}</h2>
                 <p className="text-sm text-gray-600 mb-4">{message}</p>
@@ -178,12 +178,13 @@ export const PromptModal: React.FC = () => {
                     placeholder={placeholder}
                     autoFocus
                     onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit(); }}
+                    data-testid="prompt-modal-input"
                 />
                 <div className="flex justify-end space-x-3 mt-4">
-                    <button type="button" onClick={close} className="px-4 py-2 rounded border hover:bg-gray-50 bg-white text-sm">
+                    <button type="button" onClick={close} className="px-4 py-2 rounded border hover:bg-gray-50 bg-white text-sm" data-testid="prompt-modal-no">
                         취소
                     </button>
-                    <button type="button" onClick={handleSubmit} className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 text-sm">
+                    <button type="button" onClick={handleSubmit} className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 text-sm" data-testid="prompt-modal-yes">
                         확인
                     </button>
                 </div>
