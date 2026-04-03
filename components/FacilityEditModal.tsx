@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, Loader2, Building2, MapPin, Phone, FileText, ImagePlus, Trash2, Plus, Mail, Globe, Clock, Package, Tag, Users } from 'lucide-react';
-import { updateFacility, uploadFacilityImage } from '../lib/queries';
+import { updateFacility } from '../lib/queries';
+import { uploadFacilityImage } from '../lib/queries/uploads';
 import { getAuthClient } from '../lib/supabaseClient';
 import { useSession } from '../lib/auth';
 import { Facility, FacilityPackage, FacilityManager } from '../types';

@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { getAuthClient } from '../../../lib/supabaseClient';
 import { useSession } from '../../../lib/auth';
 import { validateFacilityImageFile } from '../../../lib/security/fileValidation';
-import { uploadFacilityImage } from '../../../lib/queries';
+import { uploadFacilityImage } from '../../../lib/queries/uploads';
 import { confirmAsync } from '../../../src/components/common/ConfirmModal';
 import OptimizedImage from '../../ui/OptimizedImage';
 
