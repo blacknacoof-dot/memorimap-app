@@ -22,6 +22,7 @@ import { buildSafeOrFilter, normalizeSearchInput } from './security/sqlSanitize'
 import { isZodIssueCode } from './validation/commonSchema';
 import { facilityUpdateSchema } from './validation/facilitySchema';
 import { reviewContentSchema } from './validation/reviewSchema';
+import { resolveFacilityDetailImages } from './facilityImageResolver';
 
 function logValidationFailure(scope: string, error: z.ZodError) {
     const firstIssue = error.issues[0];
@@ -770,13 +771,17 @@ export const getFacility = async (id: string) => {
         throw error;
     }
     // Map DB fields to Frontend types (Normalize snake_case to camelCase for UI)
+    const resolvedImages = await resolveFacilityDetailImages(data, {
+        signImage: (value) => signFacilityImageValue(value),
+    });
+
     return {
         ...data,
         lat: data.latitude,
         lng: data.longitude,
-        imageUrl: await signFacilityImageValue(data.image_url),
+        imageUrl: resolvedImages.imageUrl,
         priceRange: data.price_range,
-        galleryImages: await signFacilityImageList(data.images || [])
+        galleryImages: resolvedImages.galleryImages
     };
 };
 

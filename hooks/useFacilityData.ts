@@ -16,6 +16,8 @@ import { normalizeType, getCategoryDb, selectFacilityImage, formatPriceRange } f
 import { getFacilitySubscription } from '../lib/queries';
 import { useFilterStore } from '../stores/useFilterStore';
 import { logger } from '../utils/logger';
+import { createSignedStorageImageUrl } from '../lib/security/storageImage';
+import { resolveFacilityDetailImages } from '../lib/facilityImageResolver';
 
 // ── 첫 화면 카테고리 균형 노출 (대안 3) ──
 const BALANCE_CATEGORIES = ['funeral', 'charnel', 'park', 'natural', 'pet', 'sea'] as const;
@@ -253,10 +255,16 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
       if (data) {
         const realUuid = data.id;
 
-        const [subscriptionResult, rawReviewsResult, imagesResult] = await Promise.allSettled([
+        const [subscriptionResult, rawReviewsResult, resolvedImagesResult] = await Promise.allSettled([
           getFacilitySubscription(realUuid, supabase),
           import('../lib/queries').then(m => m.getReviewsBySpace(realUuid)),
-          import('../lib/queries').then(m => m.getFacilityImages(realUuid))
+          resolveFacilityDetailImages(data, {
+            signImage: (value) => createSignedStorageImageUrl(
+              supabase,
+              'facility-images',
+              value,
+            ),
+          })
         ]);
 
         const subscription = subscriptionResult.status === 'fulfilled'
@@ -280,10 +288,10 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
           showToast('시설 리뷰를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.', 'error');
         }
 
-        if (imagesResult.status === 'rejected') {
+        if (resolvedImagesResult.status === 'rejected') {
           logger.error('Failed to load facility images while fetching detail', {
             facilityId: realUuid,
-            error: imagesResult.reason,
+            error: resolvedImagesResult.reason,
           });
         }
 
@@ -308,12 +316,16 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
           date: r.date || (r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : '')
         }));
 
+        const resolvedImages = resolvedImagesResult.status === 'fulfilled'
+          ? resolvedImagesResult.value
+          : { imageUrl: '', galleryImages: [] };
+
         const resolvedCategory = data.type || data.category || 'charnel';
         const type = normalizeType(resolvedCategory, data.name || '');
         const mappedCategory = getCategoryDb(type);
 
         const selectedImage = selectFacilityImage(
-          data.images || [], data.image_url || '', type, String(data.id || ''), true
+          resolvedImages.galleryImages || [], resolvedImages.imageUrl || '', type, String(data.id || ''), true
         );
 
         const updatedFacility: Facility = {
@@ -333,7 +345,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
           features: data.ai_features || data.features || [],
           phone: data.phone || data.contact || '',
           prices: data.prices || [],
-          galleryImages: data.images || [],
+          galleryImages: resolvedImages.galleryImages || [],
           reviews: reviews.length > 0 ? reviews : [],
           naverBookingUrl: data.naver_booking_url,
           isDetailLoaded: true,
