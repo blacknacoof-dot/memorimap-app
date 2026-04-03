@@ -5,6 +5,7 @@ import { FuneralCompany } from '../../../types';
 import { ConsultationForm } from '../../Consultation/BrandChatHelpers';
 import { Product, BotMessage, ScenarioStep, PRODUCTS, BUDGET_OPTIONS, SCALE_OPTIONS, formatTotalPrice } from './ScenarioData';
 import { ScenarioMessages } from './ScenarioMessages';
+import { generateSangjoContractNumber } from '../../../lib/sangjo/contractNumber';
 
 interface Props {
     company: FuneralCompany;
@@ -110,10 +111,10 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
         setStep('COMPLETE');
         const isUrgent = formMode === 'urgent';
         const isPhone = formMode === 'phone';
-        const contractNumber = `${isUrgent ? 'URG' : 'REQ'}-2026-${Math.floor(Math.random() * 900000 + 100000)}`;
+        const contractNumber = generateSangjoContractNumber(isUrgent);
 
         try {
-            const { saveSangjoContract, resolveSangjoDbId } = await import('../../../lib/sangjoQueries');
+            const { saveSangjoContract, resolveSangjoDbId, addTimelineEvent } = await import('../../../lib/sangjoQueries');
             const { supabase, getAuthClient } = await import('../../../lib/supabaseClient');
             const { data: { session: currentSession } } = await supabase.auth.getSession();
             const client = await getAuthClient(currentSession, { strict: true });
@@ -128,6 +129,14 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
                 preferred_call_time: (formData.time as string) || '', total_price: 0,
                 emergency_level: isUrgent ? 'critical' : 'normal', created_at: new Date().toISOString(),
             }, client);
+            // 타임라인 기록
+            await addTimelineEvent(
+                contractNumber,
+                isUrgent ? '긴급 상담 접수' : '상담 신청',
+                `${customerName} (${serviceType}) - AI 시나리오 경유`,
+                undefined,
+                client
+            ).catch(() => { /* 타임라인 실패는 상담 저장에 영향 없음 */ });
         } catch (_e) {
             toast.error('상담 접수 저장에 실패했습니다.');
             return;

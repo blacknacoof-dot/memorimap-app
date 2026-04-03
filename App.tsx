@@ -167,6 +167,30 @@ const App: React.FC = () => {
 
   useEffect(() => { getCurrentPosition(); }, [getCurrentPosition]);
 
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+
+    const handleOpenConsultationView = (event: Event) => {
+      const detail = (event as CustomEvent<{ facilityId?: string; consultation?: Consultation | null }>).detail;
+      const facilityId = detail?.facilityId;
+      if (!facilityId) return;
+
+      const targetFacility = facilities.find(f => String(f.id) === String(facilityId));
+      if (!targetFacility) return;
+
+      setSelectedFacility(null);
+      setAiChatFacility(null);
+      setSelectedConsultation(detail?.consultation ?? null);
+      setConsultingFacility(targetFacility);
+      setViewState(ViewState.CONSULTATION);
+    };
+
+    window.addEventListener('e2e-open-consultation-view', handleOpenConsultationView as EventListener);
+    return () => {
+      window.removeEventListener('e2e-open-consultation-view', handleOpenConsultationView as EventListener);
+    };
+  }, [facilities]);
+
   // Phase 0: 온보딩 계측 — screenView + bounce
   useEffect(() => {
     if (!FEATURE_FLAGS.analytics) return;

@@ -14,6 +14,7 @@ export interface Consultation {
     facilities?: { id: number; name: string; address?: string; images?: string[]; type?: string } | null;
     topic: string;
     messages: Message[];
+    status?: 'pending' | 'waiting' | 'accepted' | 'cancelled' | 'completed';
     created_at: string;
     updated_at: string;
 }

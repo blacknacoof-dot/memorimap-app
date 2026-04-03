@@ -183,6 +183,7 @@ Output structure must always range "message", "options" (optional), "action_trig
 - 상세설명: ${facility.description}
 - 가격표: ${(facility.prices || []).map(p => `${p.type}: ${p.price}`).join(', ')}
 
+- 현재 상담 주제: ${topic}
 ${faqs.length > 0 ? `
 [자주 묻는 질문(FAQ)]
 ${faqs.map((f, i) => `${i + 1}. Q: ${f.question}\n   A: ${f.answer}`).join('\n')}

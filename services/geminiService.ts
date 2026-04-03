@@ -1,11 +1,40 @@
-// geminiService.ts — AI Mock 서비스 메인 라우터
+/**
+ * geminiService.ts — AI 서비스 메인 라우터
+ *
+ * 사용처: ChatInterface (Flow A), BrandChat (Flow C), PetChat (Flow C)
+ *
+ * ┌──────────────────────────────────────────────────────────────┐
+ * │ MOCK / REAL 분기 현황                                        │
+ * │                                                              │
+ * │ sendMessageToGemini (이 파일)                                │
+ * │   → 현재: 100% MOCK (키워드 매칭 기반)                       │
+ * │   → 전환: VITE_GEMINI_SERVICE_MODE='real' 환경변수로 전환    │
+ * │   → real 모드 시 lib/gemini.ts의 Edge Function proxy 사용    │
+ * │                                                              │
+ * │ streamConsultationMessage (lib/gemini.ts)                    │
+ * │   → 현재: REAL (gemini-proxy Edge Function)                  │
+ * │   → fallback: getMockAIResponse (lib/mockAI.ts)              │
+ * │                                                              │
+ * │ ⚠ 상조 시나리오(BrandScenario)는 sendMessageToGemini를      │
+ * │   사용하지 않고 자체 시나리오 버튼 기반으로 동작              │
+ * └──────────────────────────────────────────────────────────────┘
+ */
 
 import { Facility, FuneralCompany, ActionType } from '../types';
 import type { AIResponse } from './geminiTypes';
 export type { ChatMessage, AIResponse, AIResponseData } from './geminiTypes';
 
 /**
- * 실제 AI 연결 없이, 정해진 키워드에 따라 답변하는 목(Mock) 함수입니다.
+ * Mock/Real 분기 플래그
+ * - 'mock' (기본값): 키워드 매칭 기반 응답
+ * - 'real': lib/gemini.ts의 Edge Function proxy를 통한 실제 AI 호출
+ */
+const SERVICE_MODE: 'mock' | 'real' =
+  (import.meta.env.VITE_GEMINI_SERVICE_MODE as string) === 'real' ? 'real' : 'mock';
+
+/**
+ * AI 메시지 전송 (ChatInterface, BrandChat, PetChat에서 사용)
+ * SERVICE_MODE에 따라 mock 또는 real 경로로 분기
  */
 export const sendMessageToGemini = async (
   message: string,
@@ -14,7 +43,29 @@ export const sendMessageToGemini = async (
   _context?: string
 ): Promise<AIResponse> => {
 
-  // 1. Mock Delay
+  // Real 모드: Edge Function proxy 호출
+  if (SERVICE_MODE === 'real') {
+    try {
+      const { streamConsultationMessage } = await import('../lib/gemini');
+      const facilityData = facility as Facility;
+      const stream = streamConsultationMessage(
+        facilityData,
+        _history.map((h) => h as { role: 'user' | 'model'; text: string; timestamp: Date }),
+        message,
+        '',
+        []
+      );
+      let fullText = '';
+      for await (const chunk of stream) {
+        fullText += chunk;
+      }
+      return { text: fullText, action: 'NONE' };
+    } catch {
+      // Real 실패 시 mock fallback
+    }
+  }
+
+  // Mock 모드: 키워드 매칭 기반 응답
   await new Promise((resolve) => setTimeout(resolve, 1000));
   const userMsg = message.trim();
 

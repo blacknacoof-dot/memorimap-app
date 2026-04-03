@@ -127,8 +127,7 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
                 }
             } catch {
                 toast.error('상조 비교 한도를 확인하지 못했습니다. 다시 시도해 주세요.');
-                return;
-                // fail-open: 쿼터 체크 실패 시 통과
+                return; // fail-closed: 에러 시 차단
             }
             quotaCheckedRef.current = true;
         }

@@ -793,6 +793,7 @@ export const createConsultation = async (
     userName: string,
     userPhone: string,
     notes: string,
+    topic: string | undefined,
     client: SupabaseClient
 ) => {
     const db = client;
@@ -805,6 +806,7 @@ export const createConsultation = async (
                 user_name: userName,
                 user_phone: userPhone,
                 notes,
+                topic: topic ?? null,
                 status: 'pending'
             },
         ])

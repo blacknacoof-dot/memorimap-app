@@ -14,7 +14,7 @@ import { useFilterStore } from '../stores/useFilterStore';
 import { useChatStore } from '../stores/useChatStore';
 import { useSession } from '../lib/auth';
 import { getAuthClient } from '../lib/supabaseClient';
-import { saveSangjoContract, resolveSangjoDbId } from '../lib/sangjoQueries';
+import { saveSangjoContract, resolveSangjoDbId, addTimelineEvent } from '../lib/sangjoQueries';
 import { ConsultationForm } from './sangjo/ConsultationForm';
 import { createLead, createConsultationFromLead } from '../lib/queries';
 
@@ -356,9 +356,10 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
               try {
                 const client = await getAuthClient(session, { strict: true });
                 const sangjoId = await resolveSangjoDbId(String(data.companyId), data.companyName, client);
+                const contractNum = `SC-${Date.now()}`;
                 await saveSangjoContract({
                   id: crypto.randomUUID(),
-                  contract_number: `SC-${Date.now()}`,
+                  contract_number: contractNum,
                   sangjo_id: sangjoId,
                   customer_name: data.name,
                   customer_phone: data.phone,
@@ -368,6 +369,13 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
                   preferred_call_time: data.callTime,
                   created_at: new Date().toISOString(),
                 }, client);
+                await addTimelineEvent(
+                  contractNum,
+                  '상담 신청',
+                  `${data.name} - 계약 모달 경유`,
+                  undefined,
+                  client
+                ).catch(() => { /* 타임라인 실패는 상담 저장에 영향 없음 */ });
                 showToast('상담 신청이 완료되었습니다!');
               } catch (_err) {
                 showToast('상담 신청 중 오류가 발생했습니다.', 'error');

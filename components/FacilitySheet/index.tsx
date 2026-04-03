@@ -230,6 +230,7 @@ export const FacilitySheet: React.FC<Props> = ({
 
           <button
             onClick={() => { analytics.aiChatOpen(facility.id, facility.name); onOpenAiChat?.(); }}
+            data-testid="facility-sheet-ai-chat-button"
             className="flex-1 bg-primary/10 text-primary border border-primary/30 py-3 rounded-xl font-bold active:scale-95 transition-transform flex items-center justify-center gap-1.5 text-sm"
           >
             <Bot size={18} />
