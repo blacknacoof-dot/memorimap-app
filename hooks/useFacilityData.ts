@@ -13,7 +13,8 @@ interface LatLngBounds {
 import { FACILITIES } from '../constants';
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 import { normalizeType, getCategoryDb, selectFacilityImage, formatPriceRange } from '../utils/facilityNormalizer';
-import { getFacilitySubscription } from '../lib/queries/subscriptions';
+import { getFacilitySubscription } from '../lib/queries/index';
+import { getReviewsBySpace } from '../lib/queries/reviews';
 import { useFilterStore } from '../stores/useFilterStore';
 import { logger } from '../utils/logger';
 import { createSignedStorageImageUrl } from '../lib/security/storageImage';
@@ -257,7 +258,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
 
         const [subscriptionResult, rawReviewsResult, resolvedImagesResult] = await Promise.allSettled([
           getFacilitySubscription(realUuid, supabase),
-          import('../lib/queries/reviews').then(m => m.getReviewsBySpace(realUuid)),
+          getReviewsBySpace(realUuid),
           resolveFacilityDetailImages(data, {
             signImage: (value) => createSignedStorageImageUrl(
               supabase,

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useSession } from '../../lib/auth';
 import { Reservation, Facility } from '../../types';
-import { approveReservation, rejectReservation, Consultation } from '../../lib/queries';
-import { getFacilitySubscription } from '../../lib/queries/subscriptions';
+import { approveReservation, rejectReservation, Consultation, getFacility } from '../../lib/queries';
+import { getFacilitySubscription } from '../../lib/queries/index';
 import { getAuthClient } from '../../lib/supabaseClient';
 import { confirmAsync, promptAsync } from '../../src/components/common/ConfirmModal';
 import { toast } from 'sonner';
@@ -49,7 +49,6 @@ export function useFacilityAdmin({ user, facilities }: UseFacilityAdminProps) {
 
       if (facilityId) {
         const foundInProps = facilities.find(f => f.id === facilityId);
-        const { getFacility } = await import('../../lib/queries');
         const freshFacility = await getFacility(facilityId);
         setFetchedFacility(freshFacility ?? foundInProps ?? null);
 

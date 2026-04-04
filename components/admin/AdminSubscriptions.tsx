@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getAllSubscriptions } from '../../lib/queries/subscriptions';
+import { getAllSubscriptions } from '../../lib/queries/index';
 import { Loader2, Crown } from 'lucide-react';
 import { useSuperAdminClient } from '../SuperAdmin/SuperAdminGuard';
 

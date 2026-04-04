@@ -5,6 +5,7 @@ import { requestPayment, verifyPayment, registerPaymentIntent, PORTONE_CONFIG, g
 import { toast } from 'sonner';
 import { useUser, useSession } from '../lib/auth';
 import { getAuthClient } from '../lib/supabaseClient';
+import { getFacilitySubscription } from '../lib/queries/index';
 import { normalizeSubscriptionPlanId } from '../lib/subscriptionPlanIds';
 import { LegalModal } from './LegalModal';
 
@@ -174,7 +175,6 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
             if (facilityId) {
                 try {
                     const authClient = await getAuthClient(session);
-                    const { getFacilitySubscription } = await import('../lib/queries/subscriptions');
                     const sub = await getFacilitySubscription(facilityId, authClient);
                     if (sub && sub.plan_id) {
                         setSelectedPlan(normalizeSubscriptionPlanId(sub.plan_id) || sub.plan_id);

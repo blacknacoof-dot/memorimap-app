@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from '../../lib/auth';
 import { Consultation } from '../../lib/queries';
-import { getFacilitySubscription } from '../../lib/queries/subscriptions';
+import { getFacilitySubscription } from '../../lib/queries/index';
 import { getAuthClient } from '../../lib/supabaseClient';
 import { Reservation } from '../../types';
 import type { SangjoContract } from '../../types/sangjo';
