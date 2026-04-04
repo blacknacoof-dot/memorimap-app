@@ -1,6 +1,7 @@
-import { FUNERAL_COMPANIES } from '../constants';
+﻿import { FUNERAL_COMPANIES } from '../constants';
 import { supabase, setSupabaseAuth } from './supabaseClient';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { requestRefund } from './portone';
 import { normalizeSubscriptionPlanId } from './subscriptionPlanIds';
 import { z } from 'zod';
 import { logger } from '../utils/logger';
@@ -1141,7 +1142,6 @@ export const rejectReservation = async (id: string, reason: string | undefined, 
     // 결제된 예약이 거절되면 환불 요청 플래그 기록
     if (data?.payment_id) {
         try {
-            const { requestRefund } = await import('./portone');
             await requestRefund({
                 paymentId: data.payment_id,
                 reason: reason || '시설 측 예약 거절',
