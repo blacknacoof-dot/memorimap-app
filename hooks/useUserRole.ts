@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { ViewState } from '../types';
 import { APP_ROLE, getRoleEntryView, isSangjoRole, shouldRedirectAfterLogin, syncHashForView } from '../lib/rolePolicy';
 import { getAuthClient, supabase } from '../lib/supabaseClient';
+import { getUserRole } from '../lib/queries';
+import { getSangjoUser } from '../lib/sangjoQueries';
 
 interface UserInfo {
   id: string;
@@ -39,7 +41,6 @@ export function useUserRole({ isSignedIn, userInfo, viewState, setViewState, sho
           if (!mounted) return;
           const authClient = await getAuthClient(session);
 
-          const { getUserRole } = await import('../lib/queries');
           const result = await getUserRole(userInfo.id, authClient);
           if (!mounted) return;
 
@@ -72,7 +73,6 @@ export function useUserRole({ isSignedIn, userInfo, viewState, setViewState, sho
           }
 
           if (isSangjoRole(result.role) || result.role === APP_ROLE.SUPER_ADMIN) {
-            const { getSangjoUser } = await import('../lib/sangjoQueries');
             const sangjoInfo = await getSangjoUser(userInfo.id, authClient);
             if (!mounted) return;
 

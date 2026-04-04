@@ -6,6 +6,8 @@ import { ConsultationForm } from '../../Consultation/BrandChatHelpers';
 import { Product, BotMessage, ScenarioStep, PRODUCTS, BUDGET_OPTIONS, SCALE_OPTIONS, formatTotalPrice } from './ScenarioData';
 import { ScenarioMessages } from './ScenarioMessages';
 import { generateSangjoContractNumber } from '../../../lib/sangjo/contractNumber';
+import { saveSangjoContract, resolveSangjoDbId, addTimelineEvent } from '../../../lib/sangjoQueries';
+import { getAuthClient, supabase } from '../../../lib/supabaseClient';
 
 interface Props {
     company: FuneralCompany;
@@ -114,8 +116,6 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
         const contractNumber = generateSangjoContractNumber(isUrgent);
 
         try {
-            const { saveSangjoContract, resolveSangjoDbId, addTimelineEvent } = await import('../../../lib/sangjoQueries');
-            const { supabase, getAuthClient } = await import('../../../lib/supabaseClient');
             const { data: { session: currentSession } } = await supabase.auth.getSession();
             const client = await getAuthClient(currentSession, { strict: true });
             const serviceType = isUrgent ? '긴급 출동' : (isPhone ? '전화 상담' : ((formData.type as string) || '채팅 상담'));
