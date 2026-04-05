@@ -3,7 +3,7 @@ import { Facility, Reservation, ViewState, FuneralCompany } from '../types';
 import { Consultation } from '../types/consultation';
 import MapComponent, { MapRef } from './MapContainer';
 import { FacilityList } from './FacilityList';
-import { Scale, Crosshair, Database, ArrowLeft, Building2, ShieldAlert, Shield, Loader2 } from 'lucide-react';
+import { Scale, Crosshair, Database, ArrowLeft, Building2, ShieldAlert, Shield, Loader2, Ticket, X } from 'lucide-react';
 import { useSession } from '../lib/auth';
 import { canAccessView } from '../lib/rolePolicy';
 import { FEATURE_FLAGS } from '../config/featureFlags';
@@ -65,6 +65,7 @@ export interface ContentRouterProps {
   facilities: Facility[];
   isDataLoading: boolean;
   showPromo: boolean;
+  setShowPromo: (v: boolean) => void;
 
   // Auth
   isSignedIn: boolean | undefined;
@@ -102,7 +103,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
     targetMapCenter, targetMapZoom, userLocation,
     compareList, setShowComparison, toggleCompare,
     sangjoCompareList, toggleSangjoCompare, setShowSangjoComparison,
-    facilities, isDataLoading, showPromo,
+    facilities, isDataLoading, showPromo, setShowPromo,
     isSignedIn, userInfo, userRole, isLoadingRole,
     reservations, handleUpdateReservation,
     handleReviewDeleted, handleCompanySelect, handleLoginClick,
@@ -153,11 +154,35 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
     </>
   );
 
+  const promoBanner = showPromo ? (
+    <div className="mb-3">
+      <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-amber-400 p-2.5 md:p-3 rounded-xl shadow-xl border border-amber-500/30 flex justify-between items-center">
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="bg-amber-500/20 p-1 md:p-1.5 rounded-lg shrink-0">
+            <Ticket size={16} className="md:hidden" />
+            <Ticket size={18} className="hidden md:block" />
+          </div>
+          <div>
+            <p className="text-[9px] md:text-[10px] text-gray-400 mb-0.5 leading-none">오직 추모맵에서만</p>
+            <p className="text-xs md:text-sm font-bold leading-none">계약 시 5% 할인권 증정 🎁</p>
+          </div>
+        </div>
+        <button
+          onClick={() => setShowPromo(false)}
+          className="text-gray-500 hover:text-white transition-colors p-1"
+        >
+          <X size={14} className="md:hidden" />
+          <X size={16} className="hidden md:block" />
+        </button>
+      </div>
+    </div>
+  ) : null;
+
   const listView = () => (
     <div className="h-full relative">
       <div className="h-full flex flex-col pt-24 pb-20 bg-gray-50">
         <div className="px-4 shrink-0">
-          {showPromo && <div className="h-12"></div>}
+          {promoBanner}
           <div className="flex items-center justify-between mb-1">
             <h2 className="font-bold text-lg">추천 시설 목록</h2>
             {isDataLoading && (
@@ -265,7 +290,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
         <div className="h-full relative">
           <div className="h-full flex flex-col pt-24 pb-20 bg-gray-50">
             <div className="px-4 shrink-0">
-              {showPromo && <div className="h-12"></div>}
+              {promoBanner}
               <div className="flex items-center justify-between mb-1">
                 <h2 className="font-bold text-lg">추천 시설 목록</h2>
                 {isDataLoading && (

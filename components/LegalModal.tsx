@@ -44,10 +44,18 @@ export const LegalModal: React.FC<Props> = ({ onClose, initialTab = 'privacy' })
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [onClose]);
 
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
+
   return (
-    <div className="fixed inset-0 z-[320] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-white w-full max-w-3xl max-h-[85dvh] rounded-2xl shadow-xl flex flex-col overflow-hidden">
-        <div className="p-4 border-b flex justify-between items-center bg-gray-50">
+    <div className="fixed inset-0 z-[320] flex items-end justify-center p-0 md:p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-white w-full max-w-3xl h-[100dvh] md:h-auto md:max-h-[85dvh] rounded-t-2xl md:rounded-2xl shadow-xl flex flex-col overflow-hidden">
+        <div className="sticky top-0 z-20 p-4 border-b flex justify-between items-center bg-gray-50 shrink-0">
           <h2 className="font-bold text-lg text-gray-800">법적 고지 및 사업자 정보</h2>
           <button
             onClick={onClose}
@@ -57,8 +65,8 @@ export const LegalModal: React.FC<Props> = ({ onClose, initialTab = 'privacy' })
           </button>
         </div>
 
-        <div className="border-b bg-white px-3 py-2 md:py-3 overflow-x-auto">
-          <div className="flex gap-1.5 md:gap-2">
+        <div className="sticky top-[77px] md:top-[73px] z-10 border-b bg-white/95 backdrop-blur px-3 py-2 md:py-3 overflow-x-auto shrink-0">
+          <div className="flex gap-1.5 md:gap-2 min-w-max">
             {(Object.keys(TAB_LABELS) as LegalTab[]).map((tab) => (
               <button
                 key={tab}
@@ -73,7 +81,7 @@ export const LegalModal: React.FC<Props> = ({ onClose, initialTab = 'privacy' })
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 text-sm leading-relaxed text-gray-700">
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-6 text-sm leading-relaxed text-gray-700">
           {activeTab === 'terms' && (
             <div className="space-y-4">
               <h3 className="font-bold text-lg text-gray-900">이용약관</h3>
@@ -201,7 +209,7 @@ export const LegalModal: React.FC<Props> = ({ onClose, initialTab = 'privacy' })
           )}
         </div>
 
-        <div className="p-4 bg-gray-50 border-t text-center text-xs text-gray-500">
+        <div className="p-4 bg-gray-50 border-t text-center text-xs text-gray-500 shrink-0">
           <p>{BUSINESS_INFO.operatorName} · 고객센터 {BUSINESS_INFO.supportPhone}</p>
         </div>
       </div>

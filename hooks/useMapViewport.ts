@@ -9,6 +9,7 @@ import { Facility } from '../types';
 interface LatLngBounds {
   getSouthWest(): { lat: number; lng: number };
   getNorthEast(): { lat: number; lng: number };
+  getZoom?(): number | undefined;
 }
 import { fetchFacilitiesInView } from '../lib/queries';
 import { normalizeType, getCategoryDb, selectFacilityImage, formatPriceRange } from '../utils/facilityNormalizer';
@@ -17,6 +18,7 @@ interface UseMapViewportParams {
   setFacilities: React.Dispatch<React.SetStateAction<Facility[]>>;
   setCurrentBounds: React.Dispatch<React.SetStateAction<LatLngBounds | null>>;
   session: { getToken: (opts?: Record<string, unknown>) => Promise<string | null> } | null;
+  onViewportFetchStart?: () => void;
 }
 
 const isAbortRequestError = (error: unknown): boolean => {
@@ -29,7 +31,7 @@ const isAbortRequestError = (error: unknown): boolean => {
   return false;
 };
 
-export function useMapViewport({ setFacilities, setCurrentBounds, session }: UseMapViewportParams) {
+export function useMapViewport({ setFacilities, setCurrentBounds, session, onViewportFetchStart }: UseMapViewportParams) {
   const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
   const [targetMapCenter, setTargetMapCenter] = useState<[number, number] | undefined>(undefined);
   const [targetMapZoom, setTargetMapZoom] = useState<number | undefined>(undefined);
@@ -38,6 +40,59 @@ export function useMapViewport({ setFacilities, setCurrentBounds, session }: Use
   const isMountedRef = useRef(true);
   // ? [5-3] AbortController - stale viewport fetch 规瘤
   const abortControllerRef = useRef<AbortController | null>(null);
+  const previousViewportSignatureRef = useRef<string>('');
+  const previousRequestedBoundsRef = useRef<string>('');
+
+
+  const normalizeFacilities = (items: Facility[]) =>
+    [...items].sort((a, b) => a.id.localeCompare(b.id));
+
+
+  const isSameFacilities = (prev: Facility[], next: Facility[]) => {
+    const normalizedPrev = normalizeFacilities(prev);
+    const normalizedNext = normalizeFacilities(next);
+
+    if (normalizedPrev.length !== normalizedNext.length) return false;
+
+    for (let i = 0; i < normalizedPrev.length; i += 1) {
+      const prevFacility = normalizedPrev[i];
+      const nextFacility = normalizedNext[i];
+
+      if (
+        prevFacility.id !== nextFacility.id ||
+        prevFacility.lat !== nextFacility.lat ||
+        prevFacility.lng !== nextFacility.lng ||
+        prevFacility.category !== nextFacility.category ||
+        prevFacility.type !== nextFacility.type
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const getBoundsSignature = (bounds: LatLngBounds) => {
+    const sw = bounds.getSouthWest();
+    const ne = bounds.getNorthEast();
+    return [sw.lat, sw.lng, ne.lat, ne.lng].join(':');
+  };
+
+  const hasMeaningfulBoundsChange = (prevSignature: string, bounds: LatLngBounds) => {
+    if (!prevSignature) return true;
+
+    const [prevSwLat, prevSwLng, prevNeLat, prevNeLng] = prevSignature.split(':').map(Number);
+    const sw = bounds.getSouthWest();
+    const ne = bounds.getNorthEast();
+
+    const delta =
+      Math.abs(prevSwLat - sw.lat) +
+      Math.abs(prevSwLng - sw.lng) +
+      Math.abs(prevNeLat - ne.lat) +
+      Math.abs(prevNeLng - ne.lng);
+
+    return delta >= 0.002;
+  };
 
   // ? [2-2a] cleanup useEffect
   useEffect(() => {
@@ -51,7 +106,6 @@ export function useMapViewport({ setFacilities, setCurrentBounds, session }: Use
 
   const handleMapBoundsChange = (bounds: LatLngBounds) => {
     setMapBounds(bounds);
-    setCurrentBounds(bounds);
 
     // Server-Side Viewport Fetching (Debounced)
     if (mapDebounceRef.current) {
@@ -59,6 +113,10 @@ export function useMapViewport({ setFacilities, setCurrentBounds, session }: Use
     }
 
     mapDebounceRef.current = setTimeout(async () => {
+      const nextBoundsSignature = getBoundsSignature(bounds);
+      if (!hasMeaningfulBoundsChange(previousRequestedBoundsRef.current, bounds)) return;
+      previousRequestedBoundsRef.current = nextBoundsSignature;
+      onViewportFetchStart?.();
       // ? [5-3] 捞傈 夸没 秒家 + 货 牧飘费矾 积己
       abortControllerRef.current?.abort();
       abortControllerRef.current = new AbortController();
@@ -77,11 +135,13 @@ export function useMapViewport({ setFacilities, setCurrentBounds, session }: Use
 
         if (!isMountedRef.current || signal.aborted) return; // ? [5-3] stale 眉农
 
-        const fetchedData = await fetchFacilitiesInView(bounds, token, signal);
+        const fetchedData = await fetchFacilitiesInView(bounds, token, signal, {
+          zoomLevel: bounds.getZoom?.(),
+        });
 
         if (!isMountedRef.current || signal.aborted) return; // ? [5-3] stale 眉农
 
-        if (fetchedData && fetchedData.length > 0) {
+        if (fetchedData) {
           interface ViewFacilityRow {
             id: string;
             name: string;
@@ -125,7 +185,21 @@ export function useMapViewport({ setFacilities, setCurrentBounds, session }: Use
               images: f.images || []
             };
           });
-          if (isMountedRef.current && !signal.aborted) setFacilities(mappedFacilities); // ? [5-3] stale 眉农
+          const nextSignature = normalizeFacilities(mappedFacilities)
+            .map((facility) => [facility.id, facility.lat, facility.lng, facility.category ?? '', facility.type ?? ''].join(':'))
+            .join('|');
+
+          if (isMountedRef.current && !signal.aborted) {
+            setCurrentBounds(bounds);
+
+            if (previousViewportSignatureRef.current !== nextSignature) {
+              previousViewportSignatureRef.current = nextSignature;
+              setFacilities((prev) => {
+                if (isSameFacilities(prev, mappedFacilities)) return prev;
+                return mappedFacilities;
+              }); // ? [5-3] stale 眉农
+            }
+          }
         }
       } catch (error) {
         if (signal.aborted || isAbortRequestError(error)) return;

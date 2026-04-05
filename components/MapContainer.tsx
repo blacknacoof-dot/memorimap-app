@@ -74,6 +74,7 @@ interface NaverMapInstance {
   getBounds: () => NaverBounds;
   setSize: (size: unknown) => void;
   getCenter: () => NaverLatLng;
+  getZoom: () => number;
   setCenter: (latlng: NaverLatLng) => void;
   setZoom: (zoom: number) => void;
   panTo: (latlng: NaverLatLng, opts?: unknown) => void;
@@ -84,10 +85,13 @@ interface NaverMarker {
   getElement: () => HTMLElement | null;
   setPosition: (latlng: unknown) => void;
   setIcon?: (icon: Record<string, unknown>) => void;
+  setZIndex?: (zIndex: number) => void;
 }
 
 interface MarkerClusteringInstance {
   setMap: (map: NaverMapInstance | null) => void;
+  setMarkers?: (markers: NaverMarker[]) => void;
+  redraw?: () => void;
 }
 
 declare global {
@@ -149,8 +153,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
   const filteredFacilities = facilities;
 
   // 1. Initialize Map
-  useEffect(() => {
-    if (!mapElement.current) return;
+  useEffect(() => {    if (!mapElement.current) return;
 
     let isMounted = true;
     const registerTimeout = (callback: () => void, delay: number): number => {
@@ -210,7 +213,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
             const bounds = map.getBounds();
             const ne = bounds.getNE();
             const sw = bounds.getSW();
-            const fakeBounds = new LeafletCompatibleBounds(sw.lat(), sw.lng(), ne.lat(), ne.lng());
+            const fakeBounds = new LeafletCompatibleBounds(sw.lat(), sw.lng(), ne.lat(), ne.lng(), map.getZoom());
             onBoundsChange(fakeBounds);
           }
         });
@@ -282,12 +285,32 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
   // ✅ [5-4] 이전 마커를 facility.id 기준으로 추적
   const prevMarkerMapRef = useRef<Map<string, NaverMarker>>(new Map());
   const prevMarkerStateRef = useRef<Map<string, { lat: number; lng: number; iconCategory: string }>>(new Map());
+  const prevFacilitySignatureRef = useRef('');
+  const getOrCreateMarkerIcon = (category: string, isSelected: boolean) => {
+    const cacheKey = `${category}:${isSelected ? 'selected' : 'default'}`;
+    const cached = iconCacheRef.current.get(cacheKey);
+    if (cached) return cached;
+    const icon = {
+      content: getMarkerHtml(category, isSelected),
+      size: new window.naver.maps.Size(24, 24),
+      anchor: new window.naver.maps.Point(12, 12),
+    };
+    iconCacheRef.current.set(cacheKey, icon);
+    return icon;
+  };
 
-  useEffect(() => {
-    if (!mapInstance.current || !window.naver || !isMapReady) return;
+  useEffect(() => {    if (!mapInstance.current || !window.naver || !isMapReady) return;
 
     const useCluster = Boolean(isClusterReady && window.MarkerClustering);
+    const nextFacilitySignature = `${useCluster ? 'cluster' : 'plain'}:${filteredFacilities
+      .map((facility) => facility.id)
+      .join(',')}`;
 
+    if (prevFacilitySignatureRef.current === nextFacilitySignature) {
+      return;
+    }
+
+    prevFacilitySignatureRef.current = nextFacilitySignature;
     // ✅ [1-1] isValidCoord로 NaN/범위 밖 좌표 필터링
     const validFacilities = filteredFacilities.filter(f => isValidCoord(f.lat, f.lng));
     const newIds = new Set(validFacilities.map(f => f.id));
@@ -295,18 +318,6 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
     const prevStateMap = prevMarkerStateRef.current;
 
     // ✅ 아이콘 캐시: 카테고리별 1회만 생성 (7종 캐시 vs ~2000회 반복 생성 제거)
-    const getOrCreateIcon = (category: string) => {
-      const cached = iconCacheRef.current.get(category);
-      if (cached) return cached;
-      const icon = {
-        content: getMarkerHtml(category, false),
-        size: new window.naver.maps.Size(24, 24),
-        anchor: new window.naver.maps.Point(12, 12),
-      };
-      iconCacheRef.current.set(category, icon);
-      return icon;
-    };
-
     // ✅ 1단계: 삭제 — 이전에 있었으나 새 목록에 없는 마커 제거 (선택 마커는 예외)
     let markersChanged = false;
     for (const [id, marker] of prevMap) {
@@ -338,7 +349,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
           position: markerPosition,
           map: useCluster ? null : mapInstance.current,
           title: facility.name,
-          icon: getOrCreateIcon(nextIconCategory)
+          icon: getOrCreateMarkerIcon(nextIconCategory, facility.id === selectedFacilityId)
         });
         prevMap.set(facility.id, marker);
         prevStateMap.set(facility.id, nextMarkerState);
@@ -362,7 +373,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
 
       const isIconChanged = !prevState || prevState.iconCategory !== nextIconCategory;
       if (isIconChanged) {
-        const nextIcon = getOrCreateIcon(nextIconCategory);
+        const nextIcon = getOrCreateMarkerIcon(nextIconCategory, facility.id === selectedFacilityId);
         if (typeof marker.setIcon === 'function') {
           marker.setIcon(nextIcon);
         } else {
@@ -395,22 +406,41 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
     // ✅ 3단계: 클러스터 — 마커 변경 시에만 재구성 (변경 없으면 skip)
     markersRef.current = Array.from(prevMap.values());
 
-    if (markersChanged || !clusterRef.current) {
-      // 기존 클러스터 해제
-      if (clusterRef.current) {
-        clusterRef.current.setMap(null);
-        clusterRef.current = null;
-      }
+    const clusterIconHtml = (bg: string, size: number) => ({
+      content: `<div style="cursor:pointer;width:${size}px;height:${size}px;line-height:${size}px;font-size:11px;color:white;text-align:center;font-weight:bold;background:${bg};border-radius:50%;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
+      size: new window.naver.maps.Size(size, size),
+      anchor: new window.naver.maps.Point(size / 2, size / 2),
+    });
 
-      if (useCluster && markersRef.current.length > 0) {
-        const clusterIconHtml = (bg: string, size: number) => ({
-          content: `<div style="cursor:pointer;width:${size}px;height:${size}px;line-height:${size}px;font-size:11px;color:white;text-align:center;font-weight:bold;background:${bg};border-radius:50%;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
-          size: new window.naver.maps.Size(size, size),
-          anchor: new window.naver.maps.Point(size / 2, size / 2),
+    if (useCluster && markersRef.current.length > 0) {
+      if (!clusterRef.current) {        clusterRef.current = new window.MarkerClustering({
+          minClusterSize: 2,
+          maxZoom: 14,
+          map: mapInstance.current,
+          markers: markersRef.current,
+          disableClickZoom: false,
+          gridSize: 120,
+          icons: [
+            clusterIconHtml('#3B82F6', 36),
+            clusterIconHtml('#2563EB', 42),
+            clusterIconHtml('#1D4ED8', 50),
+            clusterIconHtml('#1E40AF', 58),
+          ],
+          indexGenerator: [10, 50, 100, 500],
+          averageCenter: true,
+          stylingFunction: (clusterMarker: NaverMarker, count: number) => {
+            const el = clusterMarker.getElement();
+            if (el) {
+              const div = el.querySelector('div');
+              if (div) div.textContent = String(count);
+            }
+          },
         });
-
-        markersRef.current.forEach(m => m.setMap(null));
-
+      } else if (markersChanged && typeof clusterRef.current.setMarkers === 'function') {
+        clusterRef.current.setMarkers(markersRef.current);
+      } else if (markersChanged && typeof clusterRef.current.redraw === 'function') {
+        clusterRef.current.redraw();
+      } else if (markersChanged) {        clusterRef.current.setMap(null);
         clusterRef.current = new window.MarkerClustering({
           minClusterSize: 2,
           maxZoom: 14,
@@ -434,12 +464,38 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
             }
           },
         });
-      } else {
-        markersRef.current.forEach(m => m.setMap(mapInstance.current));
       }
+    } else {
+      if (clusterRef.current) {
+        clusterRef.current.setMap(null);
+        clusterRef.current = null;
+      }
+      markersRef.current.forEach(m => m.setMap(mapInstance.current));
     }
 
-    // ✅ 마커 리스너 cleanup (per-marker Map 기반)
+  }, [filteredFacilities, isMapReady, isClusterReady]);
+
+  useEffect(() => {
+    if (!window.naver || !isMapReady) return;
+
+    for (const [facilityId, marker] of prevMarkerMapRef.current) {
+      const markerState = prevMarkerStateRef.current.get(facilityId);
+      if (!markerState) continue;
+
+      const isSelected = facilityId === selectedFacilityId;
+      const nextIcon = getOrCreateMarkerIcon(markerState.iconCategory, isSelected);
+
+      if (typeof marker.setIcon === 'function') {
+        marker.setIcon(nextIcon);
+      }
+
+      if (typeof marker.setZIndex === 'function') {
+        marker.setZIndex(isSelected ? 1000 : 1);
+      }
+    }
+  }, [selectedFacilityId, isMapReady]);
+
+  useEffect(() => {
     return () => {
       for (const [, listener] of markerListenerMapRef.current) {
         if (window.naver?.maps?.Event) {
@@ -448,7 +504,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
       }
       markerListenerMapRef.current.clear();
     };
-  }, [filteredFacilities, isMapReady, isClusterReady, selectedFacilityId]);
+  }, []);
 
   // 3. Sync Center (Removed to prevent snapping back when user moves map)
   // The map is initialized with initialCenter, and manual movement should be preserved.
@@ -495,7 +551,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
       const bounds = mapInstance.current.getBounds();
       const ne = bounds.getNE();
       const sw = bounds.getSW();
-      return new LeafletCompatibleBounds(sw.lat(), sw.lng(), ne.lat(), ne.lng());
+      return new LeafletCompatibleBounds(sw.lat(), sw.lng(), ne.lat(), ne.lng(), mapInstance.current.getZoom());
     },
   }));
 

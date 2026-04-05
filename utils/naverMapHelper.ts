@@ -57,10 +57,12 @@ export const getMarkerHtml = (category: string, isSelected: boolean = false) => 
 export class LeafletCompatibleBounds {
     private _min: { y: number; x: number };
     private _max: { y: number; x: number };
+    private _zoom?: number;
 
-    constructor(minLat: number, minLng: number, maxLat: number, maxLng: number) {
+    constructor(minLat: number, minLng: number, maxLat: number, maxLng: number, zoom?: number) {
         this._min = { y: minLat, x: minLng };
         this._max = { y: maxLat, x: maxLng };
+        this._zoom = zoom;
     }
 
     // Leaflet's contains method: contains(latLng: [number, number] | LatLng)
@@ -100,5 +102,9 @@ export class LeafletCompatibleBounds {
             lat: this._max.y,
             lng: this._max.x
         };
+    }
+
+    getZoom() {
+        return this._zoom;
     }
 }

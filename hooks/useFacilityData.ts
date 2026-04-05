@@ -1,11 +1,11 @@
 /**
- * useFacilityData - App.tsx?먯꽌 異붿텧???쒖꽕 ?곗씠??愿由?Hook
+ * useFacilityData - App.tsx?�?�� ?�붿?????�꽕 ?곗씠???�??Hook
  * Phase 4-2: facilities, selectedFacility, fetchFacilities, filteredFacilities, fetchFacilityDetails, handleFacilitySelect
  */
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Facility, ViewState } from '../types';
 
-/** Leaflet-compatible bounds interface (Leaflet ?쇱씠釉뚮윭由??쒓굅 ???泥? */
+/** Leaflet-compatible bounds interface (Leaflet ??�씠?�뚮??��???�굅 ????�? */
 interface LatLngBounds {
   getSouthWest(): { lat: number; lng: number };
   getNorthEast(): { lat: number; lng: number };
@@ -20,13 +20,13 @@ import { logger } from '../utils/logger';
 import { createSignedStorageImageUrl } from '../lib/security/storageImage';
 import { resolveFacilityDetailImages } from '../lib/facilityImageResolver';
 
-// ── 첫 화면 카테고리 균형 노출 (대안 3) ──
+// ?�?� �??�면 카테고리 균형 ?�출 (?�??3) ?�?�
 const BALANCE_CATEGORIES = ['funeral', 'charnel', 'park', 'natural', 'pet', 'sea'] as const;
 const BALANCE_PER_CATEGORY = 3;
 
-/** 상위 18건을 6카테고리×3건 라운드로빈으로 배치, 나머지는 원본 순서 유지 */
+/** ?�위 18건을 6카테고리×3�??�운?�로빈으�?배치, ?�머지???�본 ?�서 ?��? */
 function balanceFirstScreen(facilities: Facility[]): Facility[] {
-  // 1. 카테고리별 버킷 (앞에서부터 최대 3건씩)
+  // 1. 카테고리�?버킷 (?�에?��???최�? 3건씩)
   const normalizeImageKey = (imageUrl?: string | null) => {
     const trimmed = imageUrl?.trim();
     return trimmed ? trimmed : null;
@@ -60,7 +60,7 @@ function balanceFirstScreen(facilities: Facility[]): Facility[] {
     buckets.set(cat, bucket);
   }
 
-  // 2. 라운드로빈: cat[0], cat[0], ... cat[1], cat[1], ...
+  // 2. ?�운?�로�? cat[0], cat[0], ... cat[1], cat[1], ...
   const head: Facility[] = [];
   for (let round = 0; round < BALANCE_PER_CATEGORY; round++) {
     for (const cat of BALANCE_CATEGORIES) {
@@ -71,7 +71,7 @@ function balanceFirstScreen(facilities: Facility[]): Facility[] {
     }
   }
 
-  // 3. tail: head에 사용된 ID 제외, 원본 순서 유지
+  // 3. tail: head???�용??ID ?�외, ?�본 ?�서 ?��?
   const headIds = new Set(head.map(f => f.id));
   const tail = facilities.filter(f => !headIds.has(f.id));
 
@@ -81,17 +81,20 @@ function balanceFirstScreen(facilities: Facility[]): Facility[] {
 interface UseFacilityDataParams {
   viewState: ViewState;
   showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
+  disableInitialFetch?: boolean;
 }
 
-export function useFacilityData({ viewState, showToast }: UseFacilityDataParams) {
+export function useFacilityData({ viewState, showToast, disableInitialFetch = false }: UseFacilityDataParams) {
   const [facilities, setFacilities] = useState<Facility[]>(FACILITIES);
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [currentBounds, setCurrentBounds] = useState<LatLngBounds | null>(null);
-  // ??[2-3a] stale ?묐떟 臾댁떆瑜??꾪븳 ?붿껌 ID
+  // ??[2-3a] stale ?묐떟 ?�댁?�瑜??꾪븳 ?붿껌 ID
   const latestRequestIdRef = useRef(0);
-  // 뷰포트 fetch가 완료되면 true → 초기 전체 fetch 결과 무시
+  // 뷰포??fetch가 ?�료?�면 true ??초기 ?�체 fetch 결과 무시
   const viewportFetchedRef = useRef(false);
+  const viewportFetchStartedRef = useRef(false);
+  const unavailableDetailIdsRef = useRef<Set<string>>(new Set());
 
   const { searchQuery, selectedCategories } = useFilterStore();
 
@@ -99,6 +102,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
   useEffect(() => {
     let mounted = true;
     const fetchFacilities = async () => {
+      if (disableInitialFetch) return;
       if (!isSupabaseConfigured()) return;
 
       setIsDataLoading(true);
@@ -110,9 +114,8 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
 
         if (!mounted) return;
         if (error) throw error;
-        // 뷰포트 fetch가 이미 완료됐으면 전체 fetch 결과로 덮어쓰지 않음
+        if (viewportFetchStartedRef.current || viewportFetchedRef.current) return;
         if (viewportFetchedRef.current) return;
-
         if (data && data.length > 0) {
           interface FacilityRow {
             id?: string;
@@ -149,7 +152,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
 
             return {
               id: String(item.id || ''),
-              name: item.name || '?대쫫 ?놁쓬',
+              name: item.name || '??��???�쓬',
               category: mappedCategory,
               type: type,
               religion: 'none',
@@ -179,8 +182,8 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
         }
       } catch (err: unknown) {
         if (!mounted) return;
-        const message = err instanceof Error ? err.message : "?곌껐 ?ㅻ쪟";
-        showToast(`?곗씠??遺덈윭?ㅺ린 ?ㅽ뙣: ${message}`, 'error');
+        const message = err instanceof Error ? err.message : "?곌껐 ??�쪟";
+        showToast(`?곗씠???�덈???�린 ??�뙣: ${message}`, 'error');
       } finally {
         if (mounted) setIsDataLoading(false);
       }
@@ -188,13 +191,13 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
 
     fetchFacilities();
     return () => { mounted = false; };
-  }, []);
+  }, [disableInitialFetch]);
 
   // Filtered Facilities Logic
   const filteredFacilities = useMemo(() => {
     let result = facilities;
 
-    // 1. Filter by Map Bounds (MAP + LIST 공통 적용)
+    // 1. Filter by Map Bounds (MAP + LIST 공통 ?�용)
     if (currentBounds) {
       const sw = currentBounds.getSouthWest();
       const ne = currentBounds.getNorthEast();
@@ -209,9 +212,8 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
     // 2. Exclude sangjo from general list
     const sangjoSelected = (selectedCategories as string[]).includes('sangjo');
     if (!sangjoSelected) {
-      result = result.filter(f => f.type !== 'sangjo' && f.type !== '?곸“');
+      result = result.filter(f => f.type !== 'sangjo' && f.type !== '?곸�?');
     }
-
     // 3. Filter by Category
     if (selectedCategories.length > 0) {
       result = result.filter(f => (selectedCategories as string[]).includes(f.category || ''));
@@ -231,7 +233,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
 
   // Fetch Facility Details
   const fetchFacilityDetails = useCallback(async (facilityId: string) => {
-    const requestId = ++latestRequestIdRef.current;  // ??[2-3a] 怨좎쑀 ?붿껌 ID
+    const requestId = ++latestRequestIdRef.current;  // ??[2-3a] ?�좎?� ?붿껌 ID
 
     try {
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
@@ -244,12 +246,15 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
         query = query.eq('legacy_id', facilityId);
       }
 
-      const { data, error } = await query.single();
+      const { data, error } = await query.maybeSingle();
 
       if (error) throw error;
+      if (!data) {
+        if (!isUUID) unavailableDetailIdsRef.current.add(facilityId);
+        return;
+      }
 
-      // ??[2-3a] stale ?묐떟 臾댁떆
-      if (requestId !== latestRequestIdRef.current) return;
+      // ??[2-3a] stale ?묐떟 ?�댁??      if (requestId !== latestRequestIdRef.current) return;
 
       logger.debug(`Fetched Data from facilities:`, data);
 
@@ -286,7 +291,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
             facilityId: realUuid,
             error: rawReviewsResult.reason,
           });
-          showToast('시설 리뷰를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.', 'error');
+          showToast('?�설 리뷰�?불러?��? 못했?�니?? ?�시 ???�시 ?�도??주세??', 'error');
         }
 
         if (resolvedImagesResult.status === 'rejected') {
@@ -296,8 +301,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
           });
         }
 
-        // ??[2-3a] 異붽? fetch ?꾩뿉??stale 泥댄겕
-        if (requestId !== latestRequestIdRef.current) return;
+        // ??[2-3a] ?�붽? fetch ?꾩뿉??stale 泥댄�?        if (requestId !== latestRequestIdRef.current) return;
 
         interface RawReview {
           id: string;
@@ -313,7 +317,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
           id: r.id,
           rating: r.rating,
           content: r.content,
-          userName: r.userName || r.user_name || '?듬챸',
+          userName: r.userName || r.user_name || '??�챸',
           date: r.date || (r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : '')
         }));
 
@@ -363,7 +367,7 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
           updatedFacility.lat = data.location.coordinates[1];
         }
 
-        // ??[2-3b] setFacilities(prev => ...) ?대??먯꽌 prev.find()濡?stale closure 諛⑹?
+        // ??[2-3b] setFacilities(prev => ...) ??�??�?�� prev.find()�?stale closure 諛⑹?
         setFacilities(prev => {
           const existing = prev.find(f => f.id === realUuid || f.id === facilityId);
           if (existing) {
@@ -383,17 +387,23 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
         error,
       });
       if (requestId === latestRequestIdRef.current) {
-        showToast('?쒖꽕 ?곸꽭 ?뺣낫瑜?遺덈윭?ㅼ? 紐삵뻽?듬땲?? 紐⑸줉?먯꽌 ?ㅼ떆 ?좏깮??二쇱꽭?? 諛섎났?섎㈃ 怨좉컼?쇳꽣濡?臾몄쓽??二쇱꽭??', 'error');
+        showToast('??�꽕 ?곸꽭 ?뺣낫???�덈???? 紐삵�??�땲?? 紐⑸�?�?�� ??�떆 ?좏깮??二쇱�?? 諛섎???�㈃ ?�좉�??�꽣�??�몄???二쇱�??', 'error');
       }
     }
-  }, [setSelectedFacility, setFacilities, showToast]);  // ??[2-3b] facilities ?쒓굅?섏뿬 stale closure 諛⑹?
+  }, [setSelectedFacility, setFacilities, showToast]);  // ??[2-3b] facilities ??�굅??�뿬 stale closure 諛⑹?
 
   // Handle Facility Select
   const handleFacilitySelect = useCallback(async (facility: Facility) => {
     logger.debug('handleFacilitySelect CLICKED:', facility.name, facility.id, 'Loaded:', facility.isDetailLoaded);
+    const shouldFetchDetail =
+      isSupabaseConfigured() &&
+      !facility.isDetailLoaded &&
+      facility.id.startsWith('db-') === false &&
+      !unavailableDetailIdsRef.current.has(facility.id);
+
     setSelectedFacility(facility);
 
-    if (isSupabaseConfigured() && !facility.isDetailLoaded && facility.id.startsWith('db-') === false) {
+    if (shouldFetchDetail) {
       await fetchFacilityDetails(facility.id);
     }
   }, [setSelectedFacility, fetchFacilityDetails]);
@@ -409,6 +419,10 @@ export function useFacilityData({ viewState, showToast }: UseFacilityDataParams)
     handleFacilitySelect,
     currentBounds,
     setCurrentBounds,
+    viewportFetchStartedRef,
     viewportFetchedRef,
   };
 }
+
+
+

@@ -37,10 +37,16 @@ export function useFacilitySheet({ facility, isLoggedIn, currentUser, onLoginReq
   const [dbPackages, setDbPackages] = useState<DbPackage[]>([]);
   const { session } = useSession();
   const { checkQuota, decrementFavorite } = useQuotaGate();
+  const isFacilityUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facility.id);
 
   // Load facility_packages from DB
   useEffect(() => {
     const loadPackages = async () => {
+      if (!isFacilityUuid) {
+        setDbPackages([]);
+        return;
+      }
+
       const { data } = await supabase
         .from('facility_packages')
         .select('*')
@@ -50,11 +56,16 @@ export function useFacilitySheet({ facility, isLoggedIn, currentUser, onLoginReq
       if (data && data.length > 0) setDbPackages(data);
     };
     loadPackages();
-  }, [facility.id]);
+  }, [facility.id, isFacilityUuid]);
 
   // Check Favorite Status
   useEffect(() => {
     const checkFav = async () => {
+      if (!isFacilityUuid) {
+        setIsFavorite(false);
+        return;
+      }
+
       if (isLoggedIn && currentUser?.id && session) {
         try {
           const client = await getAuthClient(session, { strict: true });
@@ -74,7 +85,7 @@ export function useFacilitySheet({ facility, isLoggedIn, currentUser, onLoginReq
       }
     };
     checkFav();
-  }, [facility.id, isLoggedIn, currentUser, session]);
+  }, [facility.id, isFacilityUuid, isLoggedIn, currentUser, session]);
 
   // Keyboard navigation for lightbox
   useEffect(() => {
@@ -93,6 +104,10 @@ export function useFacilitySheet({ facility, isLoggedIn, currentUser, onLoginReq
 
   const handleToggleFavorite = async () => {
     if (!isLoggedIn || !currentUser) { onLoginRequired(); return; }
+    if (!isFacilityUuid) {
+      toast.error('시설 상세 정보가 아직 준비되지 않았습니다. 잠시 후 다시 시도해 주세요.');
+      return;
+    }
     let quotaIncremented = false;
     try {
       const newStatus = !isFavorite;

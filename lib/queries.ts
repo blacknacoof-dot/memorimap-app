@@ -2182,7 +2182,12 @@ export const getConsultationById = async (consultationId: string, client: Supaba
  * Fetch facilities within the current map viewport
  * Uses RPC 'search_facilities_in_view'
  */
-export const fetchFacilitiesInView = async (bounds: MapBounds, token?: string, _signal?: AbortSignal) => {
+export const fetchFacilitiesInView = async (
+    bounds: MapBounds,
+    token?: string,
+    _signal?: AbortSignal,
+    options?: { zoomLevel?: number }
+) => {
     try {
         const sw = bounds.getSouthWest();
         const ne = bounds.getNorthEast();
@@ -2196,7 +2201,8 @@ export const fetchFacilitiesInView = async (bounds: MapBounds, token?: string, _
             min_lat: sw.lat,
             min_lng: sw.lng,
             max_lat: ne.lat,
-            max_lng: ne.lng
+            max_lng: ne.lng,
+            zoom_level: options?.zoomLevel
         });
 
         if (error) throw error;

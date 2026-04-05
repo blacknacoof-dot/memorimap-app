@@ -64,8 +64,12 @@ const App: React.FC = () => {
     selectedFacility, setSelectedFacility,
     isDataLoading, filteredFacilities,
     fetchFacilityDetails: _fetchFacilityDetails, handleFacilitySelect,
-    setCurrentBounds, viewportFetchedRef,
-  } = useFacilityData({ viewState, showToast });
+    setCurrentBounds, viewportFetchStartedRef, viewportFetchedRef,
+  } = useFacilityData({
+    viewState,
+    showToast,
+    disableInitialFetch: viewState !== ViewState.LIST,
+  });
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showPromo, setShowPromo] = useState(true);
@@ -135,7 +139,14 @@ const App: React.FC = () => {
     targetMapCenter, setTargetMapCenter,
     targetMapZoom, setTargetMapZoom,
     handleMapBoundsChange,
-  } = useMapViewport({ setFacilities: setFacilitiesFromViewport, setCurrentBounds, session });
+  } = useMapViewport({
+    setFacilities: setFacilitiesFromViewport,
+    setCurrentBounds,
+    session,
+    onViewportFetchStart: () => {
+      viewportFetchStartedRef.current = true;
+    },
+  });
 
   // Reservations
   const {
@@ -322,6 +333,7 @@ const App: React.FC = () => {
     facilities,
     isDataLoading,
     showPromo,
+    setShowPromo,
     isSignedIn,
     userInfo,
     userRole,
