@@ -81,7 +81,7 @@ export const LegalModal: React.FC<Props> = ({ onClose, initialTab = 'privacy' })
           </div>
         </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-6 text-sm leading-relaxed text-gray-700">
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-6 text-sm leading-relaxed text-gray-700 [touch-action:pan-y] [-webkit-overflow-scrolling:touch]">
           {activeTab === 'terms' && (
             <div className="space-y-4">
               <h3 className="font-bold text-lg text-gray-900">이용약관</h3>

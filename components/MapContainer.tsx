@@ -147,7 +147,9 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
   const iconCacheRef = useRef<Map<string, Record<string, unknown>>>(new Map());
   // ✅ onFacilitySelect 최신 참조 유지 (리스너 재등록 최소화)
   const onFacilitySelectRef = useRef(onFacilitySelect);
+  const latestFacilitiesRef = useRef(facilities);
   useEffect(() => { onFacilitySelectRef.current = onFacilitySelect; }, [onFacilitySelect]);
+  useEffect(() => { latestFacilitiesRef.current = facilities; }, [facilities]);
 
   // facilities prop은 useFacilityData에서 이미 카테고리/검색 필터링 완료
   const filteredFacilities = facilities;
@@ -303,7 +305,13 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
 
     const useCluster = Boolean(isClusterReady && window.MarkerClustering);
     const nextFacilitySignature = `${useCluster ? 'cluster' : 'plain'}:${filteredFacilities
-      .map((facility) => facility.id)
+      .map((facility) => [
+        facility.id,
+        facility.lat ?? '',
+        facility.lng ?? '',
+        facility.type ?? '',
+        facility.category ?? '',
+      ].join(':'))
       .join(',')}`;
 
     if (prevFacilitySignatureRef.current === nextFacilitySignature) {
@@ -355,7 +363,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
         prevStateMap.set(facility.id, nextMarkerState);
         const fid = facility.id;
         const listener = window.naver.maps.Event.addListener(marker, 'click', () => {
-          const latest = filteredFacilities.find(f => f.id === fid);
+          const latest = latestFacilitiesRef.current.find(f => f.id === fid);
           onFacilitySelectRef.current(latest || facility);
         });
         markerListenerMapRef.current.set(fid, listener);
@@ -392,7 +400,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
           }
           const fid = facility.id;
           const listener = window.naver.maps.Event.addListener(marker, 'click', () => {
-            const latest = filteredFacilities.find(f => f.id === fid);
+            const latest = latestFacilitiesRef.current.find(f => f.id === fid);
             onFacilitySelectRef.current(latest || facility);
           });
           markerListenerMapRef.current.set(fid, listener);

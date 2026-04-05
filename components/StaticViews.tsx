@@ -23,7 +23,7 @@ const Header = ({ title, onBack }: { title: string, onBack: () => void }) => (
 // --- 장례/추모 가이드 ---
 export const GuideView: React.FC<ViewProps> = ({ onBack }) => {
   return (
-    <div className="bg-gray-50 min-h-full pb-20">
+    <div className="bg-gray-50 h-full overflow-y-auto overscroll-contain pb-20">
       <Header title="장례/추모 가이드" onBack={onBack} />
       <div className="p-4 space-y-4">
         <div className="bg-white p-5 rounded-xl shadow-sm border">
@@ -94,7 +94,7 @@ export const NoticesView: React.FC<ViewProps> = ({ onBack }) => {
   ];
 
   return (
-    <div className="bg-gray-50 min-h-full pb-20">
+    <div className="bg-gray-50 h-full overflow-y-auto overscroll-contain pb-20">
       <Header title="공지사항 & 이벤트" onBack={onBack} />
       <div className="divide-y border-b bg-white">
         {notices.map((notice) => (
@@ -198,7 +198,7 @@ export const SupportView: React.FC<ViewProps> = ({ onBack, user }) => {
   const currentFaqs = FAQ_DATA[faqTab] || [];
 
   return (
-    <div className="bg-gray-50 min-h-full pb-20">
+    <div className="bg-gray-50 h-full overflow-y-auto overscroll-contain pb-20">
       <Header title="고객센터" onBack={onBack} />
 
       {/* Contact Buttons */}
@@ -404,7 +404,7 @@ export const SupportView: React.FC<ViewProps> = ({ onBack, user }) => {
 // --- 앱 설정 ---
 export const SettingsView: React.FC<ViewProps> = ({ onBack, user: _user }) => {
   return (
-    <div className="bg-gray-50 min-h-full pb-20">
+    <div className="bg-gray-50 h-full overflow-y-auto overscroll-contain pb-20">
       <Header title="설정" onBack={onBack} />
 
       <div className="space-y-2 p-4">

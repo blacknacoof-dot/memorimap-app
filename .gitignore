@@ -76,6 +76,10 @@ public/images/defaults/*/originals/
 # Test artifacts
 playwright-report/
 test-results/
+.agent/
+
+# Build cache
+*.tsbuildinfo
 
 # Root-level work memos (keep docs in docs/)
 /*.txt
