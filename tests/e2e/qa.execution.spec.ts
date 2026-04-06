@@ -76,7 +76,7 @@ test.describe.serial('QA executable master', () => {
     await stubPortone(page);
     await loginViaUi(page, fx.regularUser.email, fx.regularUser.password);
 
-    const openedFacilityId = await openFixtureFacilityFromList(page, fx.facilityId);
+    const openedFacilityId = await openFixtureFacilityFromList(page, fx.facilityId, fx.facilityName);
     expect(openedFacilityId).toBeTruthy();
 
     await page.getByTestId('facility-sheet-book-button').click();
@@ -97,7 +97,6 @@ test.describe.serial('QA executable master', () => {
     await page.getByTestId('reservation-next-button').click();
 
     await expect(page.getByTestId('reservation-complete-confirm')).toBeVisible({ timeout: 30000 });
-    await page.getByTestId('reservation-complete-confirm').click();
 
     let reservation: ReservationRow | null = null;
     await expect.poll(async () => {

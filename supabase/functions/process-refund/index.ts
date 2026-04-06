@@ -326,7 +326,7 @@ serve(async (req: Request) => {
         });
 
         if (!portoneResponse.ok) {
-            const errorText = await portoneResponse.text();
+            await portoneResponse.text();
 
             // 실패 → refund_status를 'failed'로 복원
             await db
@@ -338,13 +338,11 @@ serve(async (req: Request) => {
                 paymentId,
                 reservationId,
                 portoneStatus: portoneResponse.status,
-                error: errorText,
                 requestedBy: verifiedUserId,
             });
 
             return new Response(JSON.stringify({
                 error: '환불 처리에 실패했습니다. 잠시 후 다시 시도하거나 고객센터에 문의해주세요.',
-                details: `PortOne API: ${portoneResponse.status}`,
             }), {
                 status: 502,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -384,7 +382,9 @@ serve(async (req: Request) => {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
     } catch (error: unknown) {
-        return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Internal error' }), {
+        console.error('internal error', error);
+
+        return new Response(JSON.stringify({ error: 'Payment processing failed' }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });

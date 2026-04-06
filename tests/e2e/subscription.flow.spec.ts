@@ -1,7 +1,7 @@
 import { expect, test, Page } from '@playwright/test';
 
 import { supabase } from './db.utils';
-import { setupCoreFlowFixture, teardownCoreFlowFixture } from './coreFlows.fixture';
+import { loginViaUi, setupCoreFlowFixture, teardownCoreFlowFixture } from './coreFlows.fixture';
 import {
   buildFacilitySubscriptionCriteria,
   createFacilityFixture,
@@ -51,19 +51,8 @@ const stubPortone = async (page: Page) => {
   });
 };
 
-const openLoginModal = async (page: Page) => {
-  await page.evaluate(() => {
-    window.dispatchEvent(new Event('open-login-modal'));
-  });
-  await expect(page.getByTestId('login-modal')).toBeVisible({ timeout: 15000 });
-};
-
 const loginAsFacilityAdmin = async (page: Page, user: HighRiskUser) => {
-  await page.goto('/');
-  await openLoginModal(page);
-  await page.getByTestId('login-email-input').fill(user.email);
-  await page.getByTestId('login-password-input').fill(user.password);
-  await page.getByTestId('login-submit-button').click();
+  await loginViaUi(page, user.email, user.password);
   await page.goto('/#/facility-admin');
   await expect(page.locator('button.bg-gradient-to-r.from-purple-500.to-purple-600')).toBeVisible({ timeout: 30000 });
 };
@@ -123,7 +112,7 @@ const setFacilityPlan = async (facilityId: string, planId: 'FREE' | 'PREMIUM') =
     throw new Error(`Failed to set facility plan (${planId}): ${error?.message || 'unknown error'}`);
   }
 
-  if (planId === 'premium') {
+  if (planId === 'PREMIUM') {
     const { error: paymentError } = await supabase.from('subscription_payments').insert([{
       subscription_id: row.id,
       amount: PLAN_PRICES.premium,
@@ -156,7 +145,7 @@ const clearSubscriptionState = async (facilityId: string) => {
 };
 
 test.describe.serial('High risk flow: subscription', () => {
-  test.setTimeout(180000);
+  test.setTimeout(60000);
 
   test.beforeAll(async () => {
     baseFixture = await setupCoreFlowFixture(marker);

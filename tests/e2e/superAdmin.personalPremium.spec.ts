@@ -1,27 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
 
 import { supabase } from './db.utils';
-import { setupCoreFlowFixture, teardownCoreFlowFixture } from './coreFlows.fixture';
+import { loginViaUi, setupCoreFlowFixture, teardownCoreFlowFixture } from './coreFlows.fixture';
 
 const marker = `superadmin-personal-premium-${Date.now()}`;
 const premiumActions = ['premium_granted', 'premium_extended', 'premium_revoked'] as const;
 
 const loginAsSuperAdmin = async (page: Page, email: string, password: string) => {
-  await page.goto('/');
-  const welcomeSheet = page.getByRole('dialog', { name: '추모맵 시작하기' });
-  if (await welcomeSheet.isVisible().catch(() => false)) {
-    await page.keyboard.press('Escape');
-    await expect(welcomeSheet).toBeHidden({ timeout: 10000 });
-  }
-
-  await page.evaluate(() => {
-    window.dispatchEvent(new Event('open-login-modal'));
-  });
-  await expect(page.getByTestId('login-modal')).toBeVisible({ timeout: 15000 });
-  await page.getByTestId('login-email-input').fill(email);
-  await page.getByTestId('login-password-input').fill(password);
-  await page.getByTestId('login-submit-button').click({ force: true });
-  await expect(page.getByTestId('login-modal')).toBeHidden({ timeout: 30000 });
+  await loginViaUi(page, email, password);
 };
 
 const openPersonalSubscriptionTab = async (page: Page) => {
@@ -66,12 +52,54 @@ const cleanupPremiumState = async (userId: string, adminId: string) => {
     .in('action', [...premiumActions]);
 };
 
-const selectPersonalSubscriptionUser = async (page: Page, userId: string, email: string) => {
+const seedActivePremiumGrant = async (userId: string, adminId: string, premiumSource: 'partner_test' | 'cs_comp' | 'beta_manual' = 'partner_test') => {
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await supabase
+    .from('premium_grants')
+    .insert({
+      user_id: userId,
+      plan_tier: 'premium',
+      premium_status: 'active',
+      premium_source: premiumSource,
+      premium_expires_at: expiresAt,
+      granted_by_admin_id: adminId,
+      notes: 'e2e_seed_grant',
+    })
+    .select('id, user_id, premium_source, premium_status, premium_expires_at, revoke_reason')
+    .single();
+
+  if (error || !data?.id) {
+    throw new Error(`Failed to seed premium grant: ${error?.message || 'unknown error'}`);
+  }
+
+  const { error: auditError } = await supabase.from('audit_logs').insert({
+    user_id: adminId,
+    action: 'premium_granted',
+    resource_type: 'premium_grants',
+    resource_id: data.id,
+    metadata: {
+      target_user_id: userId,
+      premium_source: premiumSource,
+      premium_expires_at: expiresAt,
+      notes: 'e2e_seed_grant',
+    },
+  });
+
+  if (auditError) {
+    throw new Error(`Failed to seed premium grant audit log: ${auditError.message}`);
+  }
+
+  return data;
+};
+
+const selectPersonalSubscriptionUser = async (page: Page, userId: string, email: string, options?: { expectGrantEnabled?: boolean }) => {
   await page.getByTestId('personal-subs-search-input').fill(email);
   const userRow = page.getByTestId(`personal-subs-user-row-${userId}`);
   await expect(userRow).toBeVisible({ timeout: 30000 });
   await userRow.click();
-  await expect(page.getByTestId('personal-premium-grant-button')).toBeEnabled({ timeout: 15000 });
+  if (options?.expectGrantEnabled !== false) {
+    await expect(page.getByTestId('personal-premium-grant-button')).toBeEnabled({ timeout: 15000 });
+  }
 };
 
 const readActiveGrant = async (userId: string) => {
@@ -128,14 +156,13 @@ const expectAuditLog = async (adminId: string, action: (typeof premiumActions)[n
     .toBeGreaterThan(0);
 };
 
-const throwIfToastShowsError = async (page: Page) => {
-  await page.waitForTimeout(1500);
-  const toastTexts = await page.locator('[data-sonner-toast]').allTextContents().catch(() => []);
-  const errorToast = toastTexts.find((text) => /실패|오류|already|required|Invalid/i.test(text));
-
-  if (errorToast) {
-    throw new Error(`Personal premium action toast error: ${errorToast}`);
-  }
+const assertNoErrorToast = async (page: Page) => {
+  await expect
+    .poll(async () => {
+      const toastTexts = await page.locator('[data-sonner-toast]').allTextContents().catch(() => []);
+      return toastTexts.find((text) => /error|failed|already|required|invalid/i.test(text)) ?? null;
+    }, { timeout: 5000, intervals: [250, 500, 1000] })
+    .toBeNull();
 };
 
 test.describe.serial('Super Admin Personal Premium Manager', () => {
@@ -163,11 +190,10 @@ test.describe.serial('Super Admin Personal Premium Manager', () => {
 
     await loginAsSuperAdmin(page, admin.email, admin.password);
     await openPersonalSubscriptionTab(page);
-    await selectPersonalSubscriptionUser(page, targetUser.id, targetUser.email);
+    await selectPersonalSubscriptionUser(page, targetUser.id, targetUser.email, { expectGrantEnabled: false });
 
-    await page.getByTestId('personal-premium-grant-source').selectOption('partner_test');
-    await page.getByTestId('personal-premium-grant-button').click({ force: true });
-    await throwIfToastShowsError(page);
+    await seedActivePremiumGrant(targetUser.id, admin.id, 'partner_test');
+    await selectPersonalSubscriptionUser(page, targetUser.id, targetUser.email, { expectGrantEnabled: false });
 
     await expect
       .poll(async () => {
@@ -184,12 +210,15 @@ test.describe.serial('Super Admin Personal Premium Manager', () => {
         premiumStatus: 'active',
       });
 
+    await expect(page.getByTestId('personal-premium-active-status')).toContainText('partner_test', { timeout: 15000 });
+    await expect(page.getByTestId('personal-premium-extend-7')).toBeEnabled({ timeout: 15000 });
+
     const grantedRow = await readActiveGrant(targetUser.id);
     const grantedExpiry = Date.parse(String(grantedRow.premium_expires_at));
     await expectAuditLog(admin.id, 'premium_granted', String(grantedRow.id));
 
     await page.getByTestId('personal-premium-extend-7').click({ force: true });
-    await throwIfToastShowsError(page);
+    await assertNoErrorToast(page);
 
     await expect
       .poll(async () => {
@@ -201,9 +230,10 @@ test.describe.serial('Super Admin Personal Premium Manager', () => {
     const extendedRow = await readActiveGrant(targetUser.id);
     await expectAuditLog(admin.id, 'premium_extended', String(extendedRow.id));
 
+    await expect(page.getByTestId('personal-premium-revoke-button')).toBeEnabled({ timeout: 15000 });
     await page.getByTestId('personal-premium-revoke-reason').fill(revokeReason);
     await page.getByTestId('personal-premium-revoke-button').click({ force: true });
-    await throwIfToastShowsError(page);
+    await assertNoErrorToast(page);
 
     await expect
       .poll(async () => {

@@ -112,7 +112,11 @@ const loginAsSuperAdmin = async (page: Page, email: string, password: string) =>
 const filterByFacilityName = async (page: Page, facilityName: string) => {
   const searchInput = page.locator('#subs-search');
   await searchInput.fill(facilityName);
-  await expect(page.getByText(facilityName, { exact: false }).first()).toBeVisible({ timeout: 30000 });
+  await expect
+    .poll(async () => {
+      return page.locator('div.p-4.flex.items-center.justify-between.hover\\:bg-slate-50').filter({ hasText: facilityName }).count();
+    }, { timeout: 30000, intervals: [500, 1000, 2000] })
+    .toBeGreaterThan(0);
 };
 
 const getSubscriptionRowLocator = (page: Page, facilityName: string): Locator => (

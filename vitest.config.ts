@@ -4,6 +4,7 @@ export default defineConfig({
   test: {
     exclude: [
       'tests/e2e/**',
+      '**/.worktree_deploy_today/**',
       'node_modules/**',
     ],
   },

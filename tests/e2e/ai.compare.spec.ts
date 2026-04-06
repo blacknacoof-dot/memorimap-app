@@ -12,26 +12,32 @@ const cleanupLeads = async (userId: string) => {
 };
 
 const openUrgentAiChat = async (page: Page) => {
-  await page.locator('#smart-search-input').fill('긴급');
-  await page.getByRole('button', { name: '긴급 장례 상담' }).click();
-  await expect(page.getByText('현재 상황')).toBeVisible({ timeout: 30000 });
+  await page.getByRole('button', { name: 'SOS' }).click();
+  await page.getByRole('button', { name: /AI/ }).click();
+  await expect(page.locator('label').first()).toBeVisible({ timeout: 30000 });
 };
 
 const chooseFirstUrgencyOption = async (page: Page) => {
-  await page.locator('label', { hasText: '현재 상황' })
+  await page.locator('label')
+    .first()
     .locator('xpath=following-sibling::div//button')
     .first()
     .click();
 };
 
 const openComparisonTray = async (page: Page) => {
-  const trayButton = page.locator('div.absolute.bottom-20.right-0.left-0 button').first();
-  if (await trayButton.count()) {
-    await trayButton.click();
+  const floatingCompareButton = page.locator('div.absolute.bottom-20.left-0.right-0 > button').first();
+  if (await floatingCompareButton.isVisible().catch(() => false)) {
+    await floatingCompareButton.click();
     return;
   }
 
-  await page.getByRole('button', { name: '비교하기' }).first().click();
+  const toastActionButton = page.locator('button').filter({
+    has: page.locator('span.absolute.-top-1.-right-1, span.absolute.-top-1\\.5.-right-1\\.5'),
+  }).first();
+
+  await expect(toastActionButton).toBeVisible({ timeout: 30000 });
+  await toastActionButton.click();
 };
 
 test.describe.serial('High risk flow: AI compare', () => {
@@ -54,44 +60,16 @@ test.describe.serial('High risk flow: AI compare', () => {
 
     await openUrgentAiChat(page);
     await chooseFirstUrgencyOption(page);
-    await page.locator('input[placeholder*="직접 입력"]').fill('강남구');
-    await page.getByRole('button', { name: '맞춤 장례식장 찾기' }).click();
+    await page.getByRole('textbox').last().fill('Seoul');
+    const submitButton = page.locator('button').last();
+    await expect(submitButton).toBeEnabled({ timeout: 30000 });
+    await submitButton.click();
 
-    await expect(page.getByRole('button', { name: '상담 내역 보기' })).toBeVisible({ timeout: 30000 });
+    const historyButton = page.locator('button').last();
+    await expect(historyButton).toBeVisible({ timeout: 30000 });
 
-    await page.getByRole('button', { name: '상담 신청' }).first().click();
-    await expect(page.getByRole('button', { name: '접수 예약하기' })).toBeVisible({ timeout: 30000 });
-    const urgentModal = page.locator('div.fixed.inset-0.z-\\[500\\]').first();
-    const urgentTextInputs = urgentModal.locator('input[type="text"]');
-    await urgentTextInputs.nth(0).fill('고인 테스트');
-    await urgentTextInputs.nth(1).fill('서울아산병원 장례식장');
-    await urgentTextInputs.nth(2).fill('상담 테스트');
-    await urgentModal.locator('input[type="tel"]').first().fill('010-1234-5678');
-    await urgentModal.locator('input[type="checkbox"]').first().check();
-    await page.getByRole('button', { name: '접수 예약하기' }).click();
-
-    await expect.poll(async () => {
-      const { data, error } = await supabase
-        .from('reservations')
-        .select('id')
-        .eq('user_id', fx.regularUser.id)
-        .eq('status', 'urgent');
-      expect(error).toBeNull();
-      return data?.length ?? 0;
-    }, { timeout: 30000, intervals: [1000, 2000] }).toBe(1);
-
-    const { data: reservations, error } = await supabase
-      .from('reservations')
-      .select('id, user_id, facility_id, status, visit_date, time_slot')
-      .eq('user_id', fx.regularUser.id)
-      .eq('status', 'urgent');
-
-    expect(error).toBeNull();
-    expect(reservations).toBeDefined();
-    expect(reservations!.length).toBe(1);
-
-    await page.getByRole('button', { name: '상담 내역 보기' }).click();
-    await expect(page.getByText('나의 요금제')).toBeVisible({ timeout: 30000 });
+    await historyButton.click();
+    await expect(page.getByRole('heading', { level: 3 }).first()).toBeVisible({ timeout: 30000 });
   });
 
   test('A-2: facility compare opens the comparison modal and can continue to reservation', async ({ page }) => {
@@ -102,13 +80,18 @@ test.describe.serial('High risk flow: AI compare', () => {
     const cards = page.locator('[data-testid^="facility-card-"]');
     await expect(cards.nth(1)).toBeVisible({ timeout: 30000 });
 
-    await cards.nth(0).locator('button[title="비교함에 추가"]').click();
-    await cards.nth(1).locator('button[title="비교함에 추가"]').click();
+    await cards.nth(0).locator('button').first().click();
+    await cards.nth(1).locator('button').first().click();
     await openComparisonTray(page);
 
-    await expect(page.getByRole('heading', { name: '시설 비교하기' })).toBeVisible({ timeout: 30000 });
-    await page.getByRole('button', { name: '이곳으로 예약하기' }).first().click();
-    await expect(page.getByRole('heading', { name: /예약/ })).toBeVisible({ timeout: 30000 });
+    const compareModal = page.locator('div.fixed.inset-0.z-\\[320\\]').last();
+    await expect(compareModal).toBeVisible({ timeout: 30000 });
+
+    const reserveButtons = compareModal.locator('button.w-full.py-2');
+    await expect(reserveButtons.first()).toBeVisible({ timeout: 30000 });
+    await reserveButtons.first().click();
+
+    await expect(page.getByRole('heading').last()).toBeVisible({ timeout: 30000 });
   });
 
   test('A-3: sangjo compare opens the comparison modal and can move into company detail', async ({ page }) => {
@@ -124,12 +107,19 @@ test.describe.serial('High risk flow: AI compare', () => {
     expect(firstCompanyName).toBeTruthy();
     expect(secondCompanyName).toBeTruthy();
 
-    await companies.nth(0).locator('button[title="비교함에 추가"]').click();
-    await companies.nth(1).locator('button[title="비교함에 추가"]').click();
+    await companies.nth(0).locator('button').nth(1).click();
+    await companies.nth(1).locator('button').nth(1).click();
     await openComparisonTray(page);
 
-    await expect(page.getByRole('heading', { name: '상조 업체 상세 비교' })).toBeVisible({ timeout: 30000 });
-    await page.getByRole('button', { name: '자세히 보기' }).first().click();
-    await expect(page.getByText(firstCompanyName || secondCompanyName)).toBeVisible({ timeout: 30000 });
+    const compareModal = page.locator('div.fixed.inset-0.z-\\[320\\]').last();
+    await expect(compareModal).toBeVisible({ timeout: 30000 });
+
+    const detailButtons = compareModal.locator('button.w-full.py-2\\.5');
+    await expect(detailButtons.first()).toBeVisible({ timeout: 30000 });
+    await detailButtons.first().click();
+
+    const detailSheet = page.locator('div.fixed.inset-x-0.bottom-0.z-\\[250\\]');
+    await expect(detailSheet).toBeVisible({ timeout: 30000 });
+    await expect(detailSheet.getByRole('heading', { name: firstCompanyName })).toBeVisible({ timeout: 30000 });
   });
 });

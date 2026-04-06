@@ -10,9 +10,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../../.env.local') });
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const serviceRoleKey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ??
-    process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl) {
     throw new Error('[E2E env] Missing VITE_SUPABASE_URL in .env.local');
@@ -20,10 +18,6 @@ if (!supabaseUrl) {
 
 if (!serviceRoleKey) {
     throw new Error('[E2E env] Missing SUPABASE_SERVICE_ROLE_KEY in .env.local');
-}
-
-if (!process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.VITE_SUPABASE_SERVICE_ROLE_KEY) {
-    console.warn('[E2E env] Using legacy VITE_SUPABASE_SERVICE_ROLE_KEY fallback; migrate to SUPABASE_SERVICE_ROLE_KEY');
 }
 
 // Service Role Key is required for cleanup and setup.

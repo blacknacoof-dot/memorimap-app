@@ -158,7 +158,21 @@ export async function teardownCoreFlowFixture(fixture: CoreFlowFixture): Promise
 }
 
 export async function loginViaUi(page: Page, email: string, password: string): Promise<void> {
+  await page.addInitScript(() => {
+    window.localStorage.setItem('memorimap_welcome_seen_v1', 'true');
+  });
+
   await page.goto('/');
+
+  await page.evaluate(() => {
+    window.localStorage.setItem('memorimap_welcome_seen_v1', 'true');
+  });
+
+  const welcomeSheet = page.getByRole('dialog', { name: '추모맵 시작하기' });
+  if (await welcomeSheet.isVisible().catch(() => false)) {
+    await page.keyboard.press('Escape').catch(() => {});
+    await expect(welcomeSheet).toBeHidden({ timeout: 10000 });
+  }
 
   for (let attempt = 1; attempt <= LOGIN_MAX_ATTEMPTS; attempt++) {
     await page.evaluate(() => {

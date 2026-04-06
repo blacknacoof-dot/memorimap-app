@@ -211,7 +211,9 @@ serve(async (req: Request) => {
       .maybeSingle();
 
     if (selectError) {
-      return new Response(JSON.stringify({ error: selectError.message }), {
+      console.error("internal error", selectError);
+
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -252,7 +254,9 @@ serve(async (req: Request) => {
       });
 
     if (insertError) {
-      return new Response(JSON.stringify({ error: insertError.message }), {
+      console.error("internal error", insertError);
+
+      return new Response(JSON.stringify({ error: "Payment processing failed" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -263,7 +267,9 @@ serve(async (req: Request) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Internal error" }), {
+    console.error("internal error", error);
+
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

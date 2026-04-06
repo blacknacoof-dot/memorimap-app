@@ -595,7 +595,7 @@ serve(async (req: Request) => {
         });
 
         if (!portoneResponse.ok) {
-            const errorText = await portoneResponse.text();
+            await portoneResponse.text();
             await supabaseAdmin.from('system_logs').insert({
                 level: 'ERROR',
                 message: 'PortOne API error during payment verification',
@@ -603,7 +603,6 @@ serve(async (req: Request) => {
                     paymentId,
                     status: portoneResponse.status,
                     requestedBy: verifiedUserId,
-                    upstreamError: errorText,
                 },
                 source: 'edge-function:verify-payment'
             });
@@ -794,7 +793,7 @@ serve(async (req: Request) => {
             if (!persistResult.persisted) {
                 await supabaseAdmin.from('system_logs').insert({
                     level: 'ERROR',
-                    message: `Facility subscription persistence failed: ${persistResult.error}`,
+                    message: 'Facility subscription persistence failed',
                     meta: { paymentId, facilityId: resolvedFacilityId, planId: resolvedPlanId, requestedBy: verifiedUserId },
                     source: 'edge-function:verify-payment'
                 });
@@ -802,7 +801,7 @@ serve(async (req: Request) => {
                 return new Response(JSON.stringify({
                     verified: true,
                     persisted: false,
-                    error: `결제는 확인되었으나 구독 정보 저장에 실패했습니다: ${persistResult.error}`,
+                    error: 'Payment verified but subscription activation failed',
                 }), {
                     status: 200,
                     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -875,7 +874,7 @@ serve(async (req: Request) => {
             if (!persistResult.persisted) {
                 await supabaseAdmin.from('system_logs').insert({
                     level: 'ERROR',
-                    message: `Personal subscription persistence failed: ${persistResult.error}`,
+                    message: 'Personal subscription persistence failed',
                     meta: { paymentId, planId: resolvedPlanId, targetUserId: verifiedUserId },
                     source: 'edge-function:verify-payment'
                 });
@@ -883,7 +882,7 @@ serve(async (req: Request) => {
                 return new Response(JSON.stringify({
                     verified: true,
                     persisted: false,
-                    error: `결제는 확인되었으나 구독 정보 저장에 실패했습니다: ${persistResult.error}`,
+                    error: 'Payment verified but subscription activation failed',
                 }), {
                     status: 200,
                     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -919,7 +918,9 @@ serve(async (req: Request) => {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
     } catch (error: unknown) {
-        return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Internal error' }), {
+        console.error('internal error', error);
+
+        return new Response(JSON.stringify({ error: 'Payment processing failed' }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });

@@ -1,48 +1,20 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 import { supabase } from './db.utils';
-import { setupCoreFlowFixture, teardownCoreFlowFixture } from './coreFlows.fixture';
+import { loginViaUi, setupCoreFlowFixture, teardownCoreFlowFixture } from './coreFlows.fixture';
 import { deleteHighRiskUser, type HighRiskUser } from './highRisk.helpers';
 
 const marker = `facmgrassign-${Date.now()}`;
 
-const loginAsSuperAdmin = async (page: Page, email: string, password: string) => {
-  await page.goto('/');
-  const welcomeSheet = page.getByRole('dialog', { name: '추모맵 시작하기' });
-  if (await welcomeSheet.isVisible().catch(() => false)) {
-    await page.keyboard.press('Escape');
-    await expect(welcomeSheet).toBeHidden({ timeout: 10000 });
-  }
-
-  await page.evaluate(() => {
-    window.dispatchEvent(new Event('open-login-modal'));
-  });
-  await expect(page.getByTestId('login-modal')).toBeVisible({ timeout: 15000 });
-  await page.getByTestId('login-email-input').fill(email);
-  await page.getByTestId('login-password-input').fill(password);
-  await page.getByTestId('login-submit-button').click({ force: true });
-  await expect(page.getByTestId('login-modal')).toBeHidden({ timeout: 30000 });
+const loginAsSuperAdmin = async (page: import('@playwright/test').Page, email: string, password: string) => {
+  await loginViaUi(page, email, password);
 };
 
-const loginAsFacilityAdmin = async (page: Page, email: string, password: string) => {
-  await page.goto('/');
-  const welcomeSheet = page.getByRole('dialog', { name: '추모맵 시작하기' });
-  if (await welcomeSheet.isVisible().catch(() => false)) {
-    await page.keyboard.press('Escape');
-    await expect(welcomeSheet).toBeHidden({ timeout: 10000 });
-  }
-
-  await page.evaluate(() => {
-    window.dispatchEvent(new Event('open-login-modal'));
-  });
-  await expect(page.getByTestId('login-modal')).toBeVisible({ timeout: 15000 });
-  await page.getByTestId('login-email-input').fill(email);
-  await page.getByTestId('login-password-input').fill(password);
-  await page.getByTestId('login-submit-button').click({ force: true });
-  await expect(page.getByTestId('login-modal')).toBeHidden({ timeout: 30000 });
+const loginAsFacilityAdmin = async (page: import('@playwright/test').Page, email: string, password: string) => {
+  await loginViaUi(page, email, password);
 };
 
-const openFacilityManagementTab = async (page: Page) => {
+const openFacilityManagementTab = async (page: import('@playwright/test').Page) => {
   await page.goto('/#/super-admin');
   await page.getByTestId('super-admin-open-menu').click();
   await page.getByTestId('super-admin-menu-facilities').click();
@@ -109,7 +81,7 @@ test.describe.serial('Super Admin Facility Assignment', () => {
         verified: true,
         latitude: 37.5665,
         longitude: 126.9780,
-        address: '서울특별시 강남구 테스트로 103',
+        address: '서울 강남구 테스트로 103',
       })
       .select('id, name')
       .single();
@@ -152,9 +124,15 @@ test.describe.serial('Super Admin Facility Assignment', () => {
     const facilityCard = page.getByTestId(`admin-facility-card-${facility.id}`);
     await expect(facilityCard).toBeVisible({ timeout: 30000 });
 
-    await page.getByTestId(`admin-facility-edit-${facility.id}`).click();
-    await page.getByTestId(`admin-facility-manager-select-${facility.id}`).selectOption(assignedUser.id);
-    await page.getByTestId(`admin-facility-manager-save-${facility.id}`).click();
+    await facilityCard.getByTestId(`admin-facility-edit-${facility.id}`).click();
+    await facilityCard.getByTestId(`admin-facility-manager-select-${facility.id}`).selectOption(assignedUser.id);
+
+    const saveButton = facilityCard.getByTestId(`admin-facility-manager-save-${facility.id}`);
+    await saveButton.scrollIntoViewIfNeeded();
+    await expect(saveButton).toBeVisible();
+    await expect(saveButton).toBeEnabled();
+    await saveButton.focus();
+    await page.keyboard.press('Enter');
 
     await expect
       .poll(async () => {

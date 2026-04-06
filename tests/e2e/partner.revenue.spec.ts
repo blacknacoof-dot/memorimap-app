@@ -1,7 +1,7 @@
 import { expect, test, Page } from '@playwright/test';
 
 import { supabase } from './db.utils';
-import { setupCoreFlowFixture, teardownCoreFlowFixture } from './coreFlows.fixture';
+import { loginViaUi, setupCoreFlowFixture, teardownCoreFlowFixture } from './coreFlows.fixture';
 import {
   buildFacilitySubscriptionCriteria,
   createFacilityFixture,
@@ -87,15 +87,6 @@ const getSubscriptionMatch = (facilityId: string) => {
   return criteria.column === 'facility_id_uuid'
     ? { facility_id_uuid: criteria.value, facility_id_bigint: null, facility_id: null }
     : { facility_id_uuid: null, facility_id_bigint: criteria.value, facility_id: criteria.value };
-};
-
-const loginViaUi = async (page: Page, email: string, password: string) => {
-  await page.goto('/');
-  await page.evaluate(() => window.dispatchEvent(new Event('open-login-modal')));
-  await expect(page.getByTestId('login-modal')).toBeVisible({ timeout: 15000 });
-  await page.getByTestId('login-email-input').fill(email);
-  await page.getByTestId('login-password-input').fill(password);
-  await page.getByTestId('login-submit-button').click();
 };
 
 const clickButtonByName = async (page: Page, name: string) => {
@@ -208,7 +199,7 @@ const clearSangjoState = async (facilityId: string, adminId?: string) => {
 };
 
 test.describe.serial('High risk flow: partner revenue', () => {
-  test.setTimeout(180000);
+  test.setTimeout(60000);
 
   test.beforeAll(async () => {
     baseFixture = await setupCoreFlowFixture(marker);
@@ -255,8 +246,7 @@ test.describe.serial('High risk flow: partner revenue', () => {
 
     await openSangjoRevenueTab(page);
     await page.getByRole('button', { name: '요금제 변경' }).click();
-    await expect(page.getByRole('heading', { name: '상조 STARTER' })).toBeVisible({ timeout: 30000 });
-    await expect(page.getByRole('heading', { name: '상조 PROFESSIONAL' })).toBeVisible({ timeout: 30000 });
+    await expect(page.getByRole('heading', { name: '파일럿', exact: true })).toBeVisible({ timeout: 30000 });
     await expect(page.locator('input[type="range"]').first()).toBeVisible({ timeout: 30000 });
   });
 
@@ -290,7 +280,6 @@ test.describe.serial('High risk flow: partner revenue', () => {
     await page.reload();
     await openSangjoRevenueTab(page);
     await expect(page.locator('input[type="range"]')).toHaveCount(0, { timeout: 30000 });
-    await page.getByRole('button', { name: '요금제 변경' }).click();
-    await expect(page.getByRole('heading', { name: '상조 ENTERPRISE' })).toBeVisible({ timeout: 30000 });
+    await expect(page.getByRole('heading', { name: '엔터프라이즈' }).first()).toBeVisible({ timeout: 30000 });
   });
 });

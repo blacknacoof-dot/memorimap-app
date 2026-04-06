@@ -156,7 +156,7 @@ test.describe.serial('@release-critical Super Admin Partner Status UX', () => {
           .single();
 
         return data?.status ?? null;
-      }, { timeout: 15000, intervals: [500, 1000, 2000] })
+      }, { timeout: 30000, intervals: [500, 1000, 2000, 3000] })
       .toBe('suspended');
   });
 
@@ -199,7 +199,7 @@ test.describe.serial('@release-critical Super Admin Partner Status UX', () => {
           .single();
 
         return data?.status ?? null;
-      }, { timeout: 15000, intervals: [500, 1000, 2000] })
+      }, { timeout: 30000, intervals: [500, 1000, 2000, 3000] })
       .toBe('rejected');
   });
 
@@ -242,7 +242,7 @@ test.describe.serial('@release-critical Super Admin Partner Status UX', () => {
           .single();
 
         return data?.status ?? null;
-      }, { timeout: 15000, intervals: [500, 1000, 2000] })
+      }, { timeout: 30000, intervals: [500, 1000, 2000, 3000] })
       .toBe('approved');
   });
 
@@ -284,7 +284,7 @@ test.describe.serial('@release-critical Super Admin Partner Status UX', () => {
           .single();
 
         return data?.status ?? null;
-      }, { timeout: 15000, intervals: [500, 1000, 2000] })
+      }, { timeout: 30000, intervals: [500, 1000, 2000, 3000] })
       .toBe('suspended');
 
     const resumeButton = partnerCard.getByRole('button', { name: '서비스 재개' });
@@ -318,7 +318,7 @@ test.describe.serial('@release-critical Super Admin Partner Status UX', () => {
           .single();
 
         return data?.status ?? null;
-      }, { timeout: 15000, intervals: [500, 1000, 2000] })
+      }, { timeout: 30000, intervals: [500, 1000, 2000, 3000] })
       .toBe('approved');
   });
 });

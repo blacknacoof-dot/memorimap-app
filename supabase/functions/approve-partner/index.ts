@@ -331,14 +331,13 @@ serve(async (req) => {
                 Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
                 { auth: { persistSession: false } }
             );
-            const errMsg = error instanceof Error ? error.message : String(error);
-            const errStack = error instanceof Error ? error.stack : undefined;
-            await logToDB(supabaseErrorClient, 'ERROR', `Edge Function Exception: ${errMsg}`, { stack: errStack });
+            await logToDB(supabaseErrorClient, 'ERROR', 'Edge Function Exception', {
+                errorType: error instanceof Error ? error.name : typeof error,
+            });
         } catch (logErr) {
             console.error('Failed to log error to DB', logErr);
         }
 
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        return new Response(JSON.stringify({ error: errorMessage }), { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } })
+        return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } })
     }
 })
