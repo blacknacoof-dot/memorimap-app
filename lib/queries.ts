@@ -2208,8 +2208,9 @@ export const fetchFacilitiesInView = async (
         if (error) throw error;
         return data;
     } catch (_e) {
-        // silent fallback
-        return [];
+        // Preserve the previous viewport set on transient RPC failures.
+        // Returning [] here causes visible marker drop-outs during zoom/pan retries.
+        return null;
     }
 };
 
