@@ -1,11 +1,11 @@
-/**
- * useMapViewport - App.tsx¿¡¼­ ÃßÃâÇÑ Áöµµ ºäÆ÷Æ® °ü¸® Hook
+ï»¿/**
+ * useMapViewport - App.tsxì—ì„œ ì¶”ì¶œí•œ ì§€ë„ ë·°í¬íŠ¸ ê´€ë¦¬ Hook
  * Phase 4-2: mapBounds, targetMapCenter, targetMapZoom, handleMapBoundsChange
  */
 import React, { useState, useRef, useEffect } from 'react';
 import { Facility } from '../types';
 
-/** Leaflet-compatible bounds interface (Leaflet ¶óÀÌºê·¯¸® Á¦°Å ÈÄ ´ëÃ¼) */
+/** Leaflet-compatible bounds interface (Leaflet ë¼ì´ë¸ŒëŸ¬ë¦¬ ì œê±° í›„ ëŒ€ì²´) */
 interface LatLngBounds {
   getSouthWest(): { lat: number; lng: number };
   getNorthEast(): { lat: number; lng: number };
@@ -36,9 +36,9 @@ export function useMapViewport({ setFacilities, setCurrentBounds, session, onVie
   const [targetMapCenter, setTargetMapCenter] = useState<[number, number] | undefined>(undefined);
   const [targetMapZoom, setTargetMapZoom] = useState<number | undefined>(undefined);
   const mapDebounceRef = useRef<NodeJS.Timeout | null>(null);
-  // ? [2-2a] ¾ğ¸¶¿îÆ® ¹æ¾î¿ë ref
+  // ? [2-2a] ì–¸ë§ˆìš´íŠ¸ ë°©ì–´ìš© ref
   const isMountedRef = useRef(true);
-  // ? [5-3] AbortController - stale viewport fetch ¹æÁö
+  // ? [5-3] AbortController - stale viewport fetch ë°©ì§€
   const abortControllerRef = useRef<AbortController | null>(null);
   const previousViewportSignatureRef = useRef<string>('');
   const previousRequestedBoundsRef = useRef<string>('');
@@ -75,15 +75,21 @@ export function useMapViewport({ setFacilities, setCurrentBounds, session, onVie
   const getBoundsSignature = (bounds: LatLngBounds) => {
     const sw = bounds.getSouthWest();
     const ne = bounds.getNorthEast();
-    return [sw.lat, sw.lng, ne.lat, ne.lng].join(':');
+    return [sw.lat, sw.lng, ne.lat, ne.lng, bounds.getZoom?.() ?? ''].join(':');
   };
 
   const hasMeaningfulBoundsChange = (prevSignature: string, bounds: LatLngBounds) => {
     if (!prevSignature) return true;
 
-    const [prevSwLat, prevSwLng, prevNeLat, prevNeLng] = prevSignature.split(':').map(Number);
+    const [prevSwLat, prevSwLng, prevNeLat, prevNeLng, prevZoom] = prevSignature.split(':').map(Number);
     const sw = bounds.getSouthWest();
     const ne = bounds.getNorthEast();
+    const nextZoom = bounds.getZoom?.();
+
+    // Zoom-only changes must refresh the viewport result set too.
+    if (nextZoom !== undefined && prevZoom !== undefined && nextZoom !== prevZoom) {
+      return true;
+    }
 
     const delta =
       Math.abs(prevSwLat - sw.lat) +
@@ -100,12 +106,13 @@ export function useMapViewport({ setFacilities, setCurrentBounds, session, onVie
     return () => {
       isMountedRef.current = false;
       if (mapDebounceRef.current) clearTimeout(mapDebounceRef.current);
-      abortControllerRef.current?.abort(); // ? [5-3] cleanup ½Ã abort
+      abortControllerRef.current?.abort(); // ? [5-3] cleanup ì‹œ abort
     };
   }, []);
 
   const handleMapBoundsChange = (bounds: LatLngBounds) => {
     setMapBounds(bounds);
+    setCurrentBounds(bounds);
 
     // Server-Side Viewport Fetching (Debounced)
     if (mapDebounceRef.current) {
@@ -117,7 +124,7 @@ export function useMapViewport({ setFacilities, setCurrentBounds, session, onVie
       if (!hasMeaningfulBoundsChange(previousRequestedBoundsRef.current, bounds)) return;
       previousRequestedBoundsRef.current = nextBoundsSignature;
       onViewportFetchStart?.();
-      // ? [5-3] ÀÌÀü ¿äÃ» Ãë¼Ò + »õ ÄÁÆ®·Ñ·¯ »ı¼º
+      // ? [5-3] ì´ì „ ìš”ì²­ ì·¨ì†Œ + ìƒˆ ì»¨íŠ¸ë¡¤ëŸ¬ ìƒì„±
       abortControllerRef.current?.abort();
       abortControllerRef.current = new AbortController();
       const signal = abortControllerRef.current.signal;
@@ -130,16 +137,16 @@ export function useMapViewport({ setFacilities, setCurrentBounds, session, onVie
             token = await session.getToken({ template: 'supabase' }) || undefined;
           }
         } catch {
-          // ÅäÅ« È¹µæ ½ÇÆĞ ½Ã ºñÀÎÁõ ¿äÃ»À¸·Î °è¼Ó
+          // í† í° íšë“ ì‹¤íŒ¨ ì‹œ ë¹„ì¸ì¦ ìš”ì²­ìœ¼ë¡œ ê³„ì†
         }
 
-        if (!isMountedRef.current || signal.aborted) return; // ? [5-3] stale Ã¼Å©
+        if (!isMountedRef.current || signal.aborted) return; // ? [5-3] stale ì²´í¬
 
         const fetchedData = await fetchFacilitiesInView(bounds, token, signal, {
           zoomLevel: bounds.getZoom?.(),
         });
 
-        if (!isMountedRef.current || signal.aborted) return; // ? [5-3] stale Ã¼Å©
+        if (!isMountedRef.current || signal.aborted) return; // ? [5-3] stale ì²´í¬
 
         if (fetchedData) {
           interface ViewFacilityRow {
@@ -190,14 +197,12 @@ export function useMapViewport({ setFacilities, setCurrentBounds, session, onVie
             .join('|');
 
           if (isMountedRef.current && !signal.aborted) {
-            setCurrentBounds(bounds);
-
             if (previousViewportSignatureRef.current !== nextSignature) {
               previousViewportSignatureRef.current = nextSignature;
               setFacilities((prev) => {
                 if (isSameFacilities(prev, mappedFacilities)) return prev;
                 return mappedFacilities;
-              }); // ? [5-3] stale Ã¼Å©
+              }); // ? [5-3] stale ì²´í¬
             }
           }
         }
@@ -217,3 +222,4 @@ export function useMapViewport({ setFacilities, setCurrentBounds, session, onVie
     handleMapBoundsChange,
   };
 }
+
