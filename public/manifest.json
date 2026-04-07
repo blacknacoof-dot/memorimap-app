@@ -1,6 +1,6 @@
 {
   "short_name": "추모맵",
-  "name": "추모맵 - 내 손안의 추모 비서",
+  "name": "추모맵 - 마음을 돕는 추모 비서",
   "icons": [
     {
       "src": "/favicon.ico",
@@ -24,5 +24,5 @@
   "display": "standalone",
   "theme_color": "#2563eb",
   "lang": "ko",
-  "description": "장례식장, 봉안시설, 자연장, 상조 서비스 검색 및 AI 상담"
+  "description": "장례식장, 봉안시설, 자연장, 상조 서비스를 검색하고 AI 상담을 받을 수 있는 서비스"
 }

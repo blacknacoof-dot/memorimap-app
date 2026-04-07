@@ -1,11 +1,11 @@
 /**
- * useFacilityData - App.tsx?ë¨?½Œ ?°ë¶¿?????–ê½• ?ê³—ì” ???¿Â€??Hook
+ * useFacilityData - App.tsx facility data hook
  * Phase 4-2: facilities, selectedFacility, fetchFacilities, filteredFacilities, fetchFacilityDetails, handleFacilitySelect
  */
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Facility, ViewState } from '../types';
 
-/** Leaflet-compatible bounds interface (Leaflet ??±ì” ?‰ëš®??”±???“êµ… ????ï§? */
+/** Leaflet-compatible bounds interface. */
 interface LatLngBounds {
   getSouthWest(): { lat: number; lng: number };
   getNorthEast(): { lat: number; lng: number };
@@ -20,13 +20,13 @@ import { logger } from '../utils/logger';
 import { createSignedStorageImageUrl } from '../lib/security/storageImage';
 import { resolveFacilityDetailImages } from '../lib/facilityImageResolver';
 
-// ?€?€ ì²??”ë©´ ì¹´í…Œê³ ë¦¬ ê· í˜• ?¸ì¶œ (?€??3) ?€?€
+// Balance the first screen by category.
 const BALANCE_CATEGORIES = ['funeral', 'charnel', 'park', 'natural', 'pet', 'sea'] as const;
 const BALANCE_PER_CATEGORY = 3;
 
-/** ?ìœ„ 18ê±´ì„ 6ì¹´í…Œê³ ë¦¬Ã—3ê±??¼ìš´?œë¡œë¹ˆìœ¼ë¡?ë°°ì¹˜, ?˜ë¨¸ì§€???ë³¸ ?œì„œ ? ì? */
+/** Arrange the first 18 items as a 6-category x 3 round-robin head, then append the remaining items. */
 function balanceFirstScreen(facilities: Facility[]): Facility[] {
-  // 1. ì¹´í…Œê³ ë¦¬ë³?ë²„í‚· (?ì—?œë???ìµœë? 3ê±´ì”©)
+  // 1. Bucket facilities by category.
   const normalizeImageKey = (imageUrl?: string | null) => {
     const trimmed = imageUrl?.trim();
     return trimmed ? trimmed : null;
@@ -60,7 +60,7 @@ function balanceFirstScreen(facilities: Facility[]): Facility[] {
     buckets.set(cat, bucket);
   }
 
-  // 2. ?¼ìš´?œë¡œë¹? cat[0], cat[0], ... cat[1], cat[1], ...
+  // 2. Round-robin pick: cat[0], cat[0], ... cat[1], cat[1], ...
   const head: Facility[] = [];
   for (let round = 0; round < BALANCE_PER_CATEGORY; round++) {
     for (const cat of BALANCE_CATEGORIES) {
@@ -71,7 +71,7 @@ function balanceFirstScreen(facilities: Facility[]): Facility[] {
     }
   }
 
-  // 3. tail: head???¬ìš©??ID ?œì™¸, ?ë³¸ ?œì„œ ? ì?
+  // 3. Tail: keep original order for items not included in head.
   const headIds = new Set(head.map(f => f.id));
   const tail = facilities.filter(f => !headIds.has(f.id));
 
@@ -89,9 +89,9 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [currentBounds, setCurrentBounds] = useState<LatLngBounds | null>(null);
-  // ??[2-3a] stale ?ë¬ë–Ÿ ?¾ëŒ?†ç‘œ??ê¾ªë¸³ ?ë¶¿ê»Œ ID
+  // [2-3a] Ignore stale facility detail responses by request id.
   const latestRequestIdRef = useRef(0);
-  // ë·°í¬??fetchê°€ ?„ë£Œ?˜ë©´ true ??ì´ˆê¸° ?„ì²´ fetch ê²°ê³¼ ë¬´ì‹œ
+  // Once a viewport fetch completes, ignore the initial full-fetch result.
   const viewportFetchedRef = useRef(false);
   const viewportFetchStartedRef = useRef(false);
   const unavailableDetailIdsRef = useRef<Set<string>>(new Set());
@@ -152,7 +152,7 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
 
             return {
               id: String(item.id || ''),
-              name: item.name || '??€ì«???ì“¬',
+              name: item.name || '\uC774\uB984 \uC5C6\uC74C',
               category: mappedCategory,
               type: type,
               religion: 'none',
@@ -182,8 +182,8 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
         }
       } catch (err: unknown) {
         if (!mounted) return;
-        const message = err instanceof Error ? err.message : "?ê³Œê» ??»ìªŸ";
-        showToast(`?ê³—ì” ???ºëˆ???ºë¦° ??½ë™£: ${message}`, 'error');
+        const message = err instanceof Error ? err.message : '\uC54C \uC218 \uC5C6\uB294 \uC624\uB958';
+        showToast(`\uC2DC\uC124 \uB370\uC774\uD130\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4: ${message}`, 'error');
       } finally {
         if (mounted) setIsDataLoading(false);
       }
@@ -197,7 +197,7 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
   const filteredFacilities = useMemo(() => {
     let result = facilities;
 
-    // 1. Filter by Map Bounds (MAP + LIST ê³µí†µ ?ìš©)
+    // 1. Filter by map bounds. Applied to MAP and LIST.
     if (currentBounds) {
       const sw = currentBounds.getSouthWest();
       const ne = currentBounds.getNorthEast();
@@ -212,7 +212,7 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
     // 2. Exclude sangjo from general list
     const sangjoSelected = (selectedCategories as string[]).includes('sangjo');
     if (!sangjoSelected) {
-      result = result.filter(f => f.type !== 'sangjo' && f.type !== '?ê³¸â€?');
+      result = result.filter(f => f.type !== 'sangjo' && f.type !== '\uC0C1\uC870');
     }
     // 3. Filter by Category
     if (selectedCategories.length > 0) {
@@ -233,7 +233,7 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
 
   // Fetch Facility Details
   const fetchFacilityDetails = useCallback(async (facilityId: string) => {
-    const requestId = ++latestRequestIdRef.current;  // ??[2-3a] ?¨ì¢?€ ?ë¶¿ê»Œ ID
+    const requestId = ++latestRequestIdRef.current;  // [2-3a] latest request id
 
     try {
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(facilityId);
@@ -254,7 +254,7 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
         return;
       }
 
-      // ??[2-3a] stale ?ë¬ë–Ÿ ?¾ëŒ??      if (requestId !== latestRequestIdRef.current) return;
+      if (requestId !== latestRequestIdRef.current) return;
 
       logger.debug(`Fetched Data from facilities:`, data);
 
@@ -291,7 +291,7 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
             facilityId: realUuid,
             error: rawReviewsResult.reason,
           });
-          showToast('?œì„¤ ë¦¬ë·°ë¥?ë¶ˆëŸ¬?¤ì? ëª»í–ˆ?µë‹ˆ?? ? ì‹œ ???¤ì‹œ ?œë„??ì£¼ì„¸??', 'error');
+          showToast('\uC2DC\uC124 \uC0C1\uC138 \uC815\uBCF4\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4. \uC7A0\uC2DC \uD6C4 \uB2E4\uC2DC \uC2DC\uB3C4\uD574 \uC8FC\uC138\uC694.', 'error');
         }
 
         if (resolvedImagesResult.status === 'rejected') {
@@ -301,7 +301,7 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
           });
         }
 
-        // ??[2-3a] ?°ë¶½? fetch ?ê¾©ë¿‰??stale ï§£ëŒ„ê²?        if (requestId !== latestRequestIdRef.current) return;
+        if (requestId !== latestRequestIdRef.current) return;
 
         interface RawReview {
           id: string;
@@ -317,7 +317,7 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
           id: r.id,
           rating: r.rating,
           content: r.content,
-          userName: r.userName || r.user_name || '??¬ì±¸',
+          userName: r.userName || r.user_name || '\uC775\uBA85',
           date: r.date || (r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : '')
         }));
 
@@ -367,7 +367,7 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
           updatedFacility.lat = data.location.coordinates[1];
         }
 
-        // ??[2-3b] setFacilities(prev => ...) ??€??ë¨?½Œ prev.find()æ¿?stale closure è«›â‘¹?
+        // [2-3b] Use functional state to avoid stale closure issues.
         setFacilities(prev => {
           const existing = prev.find(f => f.id === realUuid || f.id === facilityId);
           if (existing) {
@@ -387,10 +387,10 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
         error,
       });
       if (requestId === latestRequestIdRef.current) {
-        showToast('??–ê½• ?ê³¸ê½­ ?ëº£ë‚«???ºëˆ???? ï§ì‚µë»??¬ë•²?? ï§â‘¸ì¤?ë¨?½Œ ??¼ë–† ?ì¢ê¹®??äºŒì‡±ê½?? è«›ì„???ãˆƒ ?¨ì¢‰ì»??³ê½£æ¿??¾ëª„???äºŒì‡±ê½??', 'error');
+        showToast('\uC2DC\uC124 \uC0C1\uC138 \uC815\uBCF4\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4. \uC7A0\uC2DC \uD6C4 \uB2E4\uC2DC \uC2DC\uB3C4\uD574 \uC8FC\uC138\uC694.', 'error');
       }
     }
-  }, [setSelectedFacility, setFacilities, showToast]);  // ??[2-3b] facilities ??“êµ…??ë¿¬ stale closure è«›â‘¹?
+  }, [setSelectedFacility, setFacilities, showToast]);  // [2-3b] avoid stale closure on facilities
 
   // Handle Facility Select
   const handleFacilitySelect = useCallback(async (facility: Facility) => {
@@ -423,6 +423,5 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
     viewportFetchedRef,
   };
 }
-
 
 

@@ -1430,7 +1430,7 @@ export const submitPartnerApplication = async (data: PartnerApplicationInput, cl
         try {
             const validation = await validatePartnerDocumentFile(data.businessLicenseImage);
             if (!validation.valid) {
-                throw new Error(validation.error || '?뚯씪 寃利??ㅽ뙣');
+                throw new Error(validation.error || '파일 검증 실패');
             }
 
             const fileExt = validation.sanitizedExtension || 'pdf';
@@ -1500,7 +1500,7 @@ export const submitPartnerApplication = async (data: PartnerApplicationInput, cl
 export const uploadFacilityImage = async (facilityId: string, file: File, client: SupabaseClient) => {
     const validation = await validateFacilityImageFile(file);
     if (!validation.valid) {
-        throw new Error(validation.error || '?뚯씪 寃利??ㅽ뙣');
+        throw new Error(validation.error || '파일 검증 실패');
     }
 
     const fileExt = validation.sanitizedExtension || 'jpg';

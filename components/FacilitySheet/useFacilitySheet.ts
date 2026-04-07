@@ -77,7 +77,7 @@ export function useFacilitySheet({ facility, isLoggedIn, currentUser, onLoginReq
             userId: currentUser.id,
             error,
           });
-          toast.error('利먭꺼李얘린 ?곹깭瑜?遺덈윭?ㅼ? 紐삵뻽?듬땲?? ?좎떆 ???ㅼ떆 ?쒕룄?섍퀬, 諛섎났?섎㈃ 怨좉컼?쇳꽣濡?臾몄쓽??二쇱꽭??');
+          toast.error('즐겨찾기 상태를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.');
           setIsFavorite(false);
         }
       } else {
@@ -136,7 +136,7 @@ export function useFacilitySheet({ facility, isLoggedIn, currentUser, onLoginReq
         userId: currentUser.id,
         error,
       });
-      toast.error('利먭꺼李얘린 蹂寃쎌뿉 ?ㅽ뙣?덉뒿?덈떎.');
+      toast.error('즐겨찾기 변경에 실패했습니다.');
       setIsFavorite(!isFavorite);
     }
   };
