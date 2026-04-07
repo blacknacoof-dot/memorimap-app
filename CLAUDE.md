@@ -408,27 +408,40 @@ CLAUDE.md 규칙 준수하여 구현.
   - `stores/useSangjoFavoriteStore.ts` sets `quotaExceeded`
   - `components/sangjo/SangjoCompanyList.tsx` and `components/sangjo/SangjoCompanySheet/index.tsx` do not render `UpgradePrompt`
 
-## Deployment Unification Rule
+## Vercel Production Deployment Rule
+- Production stability has priority over speed.
+- Do not overwrite or reuse an old deployment as the release mechanism. Vercel production release must create a new immutable Production Deployment and move the Production domain alias to it.
 - Production deployment must target the single existing Vercel project: `memorimap-app`.
-- Production deployment must run only from the original repository workspace, not from any worktree.
+- Never deploy from a dirty working tree.
+- Deploy only from a Git commit, never from loose local changes.
+- Standard sequence: code change -> git commit -> `git push origin main` -> clean worktree -> `vercel --prod --yes` -> inspect -> cache-bypass check.
+- Use a clean worktree for production deployment:
+  - `git worktree add ../deploy-clean main`
+  - `cd ../deploy-clean`
+  - copy or verify the same `.vercel/project.json` link for `memorimap-app`
+  - `vercel --prod --yes`
 - Do not deploy from an unlinked worktree or any directory that can implicitly create a new Vercel project.
 - Before any `vercel --prod`, verify `.vercel/project.json` points to `memorimap-app` and the expected `projectId`.
-- If a worktree is used for release verification, link that worktree to the same Vercel project before deployment.
 - Production deploy is allowed only from `main` or an explicitly approved release branch.
-- Never deploy from a dirty workspace.
 - Vercel production uses manual deployment only. Do not rely on Git push, branch sync, or GitHub integration to ship production.
 - Automatic Vercel production deployment is prohibited unless explicitly re-approved and documented.
 - `git push origin main` does not mean production is deployed. It only updates the repository state.
 - Production release must be executed explicitly with `vercel --prod --yes` from the linked `memorimap-app` project.
 - After deployment, always verify the alias with `vercel inspect https://memorimap.kr`.
-- Production deployment is not complete until the `memorimap.kr` alias is confirmed to have moved to the newly created production deployment.
-- After deployment, run live checks on `https://memorimap.kr`, `https://memorimap.kr/assets/index.js.map`, and `https://memorimap.kr/ai-test.html`.
-- Production deployment is not complete until the live checks confirm:
+- Production deployment is not complete until all are confirmed:
+  - status is `Ready`
+  - alias includes `https://memorimap.kr`
+  - deployment URL changed to the intended new Production Deployment
   - `memorimap.kr` points to the intended new deployment
-  - CSP no longer includes `unsafe-eval`
-  - sourcemap routes return `404`
-  - `ai-test.html` returns `404`
-- Deployment is not complete until `memorimap.kr` points to the intended new production deployment.
+- Browser/live confirmation must use a cache-bypass URL: `https://memorimap.kr/?release=<commit>`.
+- Deployment failure suspicion checklist:
+  - Git commit reflected
+  - clean worktree used
+  - alias moved
+  - CDN/browser cache ruled out
+  - preview URL not mistaken for production
+- Rollback is allowed only for real production incidents, core feature errors, login errors, or payment errors. Use `vercel rollback` or promote the previous deployment in the Vercel Dashboard.
+- Do not declare `배포됨` or `운영 반영` until commit, push, clean deploy, inspect, and cache-bypass confirmation are complete.
 
 ## Work State Classification Rule
 - Never use `반영` alone. Always specify `main 반영` or `운영 반영`.
