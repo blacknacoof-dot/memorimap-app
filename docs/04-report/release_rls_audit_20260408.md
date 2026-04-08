@@ -149,6 +149,30 @@ Interpretation:
 - The skipped tests are quarantined/manual coverage, not the core RLS data-isolation checks reviewed in this audit.
 - The targeted rerun strengthens the finding that the REST anon result is the relevant production-facing signal, not the SQL Editor count simulation alone.
 
+## Edge Function CORS Verification
+
+Live OPTIONS requests were sent to selected Edge Functions with three origins:
+
+- `http://localhost:5173`
+- `https://evil.example`
+- `https://memorimap.kr`
+
+Observed responses:
+
+| Function | `localhost:5173` allow-origin | `evil.example` allow-origin | `memorimap.kr` allow-origin |
+| --- | --- | --- | --- |
+| `register-payment-intent` | `http://localhost:5173` | `https://memorimap.kr` | `https://memorimap.kr` |
+| `verify-payment` | `http://localhost:5173` | `https://memorimap.kr` | `https://memorimap.kr` |
+| `gemini-proxy` | `https://memorimap.kr` | `https://memorimap.kr` | `https://memorimap.kr` |
+| `process-refund` | `https://memorimap.kr` | `https://memorimap.kr` | `https://memorimap.kr` |
+
+Interpretation:
+
+- Arbitrary external browser origins such as `https://evil.example` are not reflected.
+- `gemini-proxy` and `process-refund` do not reflect localhost in the live OPTIONS response.
+- `register-payment-intent` and `verify-payment` still reflect `http://localhost:5173` in production OPTIONS responses.
+- The localhost finding is not a confirmed data exposure by itself because JWT ownership checks and auth gates are still in place, but it remains an origin-scope audit issue.
+
 ## Current Release Decision
 
 RLS activation and automated tests are strong passing signals. However, the anon count result on sensitive tables prevents a full release approval from an RLS audit perspective.
@@ -161,7 +185,7 @@ Reason:
 
 - No confirmed production outage or confirmed REST-level data leak has been established.
 - Sensitive-table anon count visibility was observed in SQL Editor role simulation, but live REST anon requests returned no rows for the reviewed sensitive tables.
-- Remaining approval blockers are now search-domain metadata mismatch and residual CORS/origin review. Authenticated A/B isolation has direct E2E support from the 16-test targeted rerun.
+- Remaining approval blockers are now search-domain metadata mismatch and the narrower finding that `register-payment-intent` and `verify-payment` reflect localhost in live CORS preflight responses. Authenticated A/B isolation has direct E2E support from the 16-test targeted rerun.
 
 ## Next Verification Targets
 
@@ -171,4 +195,5 @@ Continue with evidence-only checks:
 - Confirm whether Supabase REST API anon key behavior matches or differs from the SQL Editor `set local role anon` result. It differed on 2026-04-08: SQL Editor count showed rows, REST anon returned no rows.
 - Confirm authenticated user A cannot access user B rows for the sensitive tables. Targeted E2E passed on 2026-04-08 for notifications and reservations, plus payment IDOR.
 - Confirm skipped Playwright tests are not release-critical RLS coverage. Skipped tests were manual/quarantine review deletion and super-admin join-chat locking scenarios.
+- Confirm Edge Function CORS behavior. Live check shows arbitrary external origins are not reflected; localhost is reflected only by `register-payment-intent` and `verify-payment`.
 - Keep the robots/sitemap domain mismatch as a separate release approval issue.
