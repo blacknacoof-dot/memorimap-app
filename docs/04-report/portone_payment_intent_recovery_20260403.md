@@ -28,6 +28,45 @@ The flow is now:
 
 ## Verification Results
 
+### Production webhook verification - 2026-04-08
+
+Final status: PASS
+
+- Test payment:
+  - `payment_id`: `sub_mnpds2xg_dw6ov7`
+  - `payment_context`: `facility_subscription`
+  - `plan_id`: `BASIC`
+  - `expected_amount`: `49000`
+
+- `payment_intents`
+  - `status`: `paid`
+  - `portone_status`: `PAID`
+  - `expected_amount`: `49000`
+  - `plan_id`: `BASIC`
+  - `resolved_at`: `2026-04-08 01:40:48.179+00`
+
+- `subscription_payments`
+  - `portone_payment_id`: `sub_mnpds2xg_dw6ov7`
+  - `status`: `completed`
+  - `amount`: `49000`
+  - `payment_context`: `facility`
+  - `paid_at`: `2026-04-08 01:40:47.21+00`
+  - `billing_period_start`: `2026-04-08`
+  - `billing_period_end`: `2026-05-08`
+
+- `system_logs`
+  - `message`: `Webhook processed`
+  - `source`: `edge-function:payment-webhook`
+  - `eventType`: `Transaction.Paid`
+  - `paymentId`: `sub_mnpds2xg_dw6ov7`
+  - `portoneStatus`: `PAID`
+  - `action`: `synced:facility_subscription`
+
+- Additional webhook behavior:
+  - `Transaction.Ready` was received first and ignored as `ignored:status_READY`.
+  - `Transaction.Paid` was then received and processed successfully.
+  - PortOne v2 webhook was verified against a real production payment.
+
 ### Facility subscription
 
 - `payment_intents`
