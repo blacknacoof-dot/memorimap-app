@@ -215,9 +215,9 @@ Interpretation:
 
 ## Current Release Decision
 
-RLS activation and automated tests are strong passing signals. However, the anon count result on sensitive tables prevents a full release approval from an RLS audit perspective.
+RLS activation, automated tests, targeted auth-isolation E2E, and production REST anon checks are strong passing signals.
 
-Current decision after REST anon verification:
+Current decision after REST anon verification and domain metadata confirmation:
 
 - `Conditional Go`
 
@@ -225,6 +225,7 @@ Reason:
 
 - No confirmed production outage or confirmed REST-level data leak has been established.
 - Sensitive-table anon count visibility was observed in SQL Editor role simulation, but live REST anon requests returned no rows for the reviewed sensitive tables.
+- `memorimap.com` is not a production domain for this release. The live production domain is `memorimap.kr`.
 - Remaining approval blockers are now the live search-domain metadata mismatch and the narrower origin-scope finding that `register-payment-intent` and `verify-payment` reflect localhost in live CORS preflight responses. The payment functions still rejected unauthenticated POST requests with 401 across localhost, arbitrary external origin, and production origin. Authenticated A/B isolation has direct E2E support from the 16-test targeted rerun.
 
 ## Next Verification Targets
@@ -237,3 +238,26 @@ Continue with evidence-only checks:
 - Confirm skipped Playwright tests are not release-critical RLS coverage. Skipped tests were manual/quarantine review deletion and super-admin join-chat locking scenarios.
 - Confirm Edge Function CORS behavior. Live check shows arbitrary external origins are not reflected; localhost is reflected only by `register-payment-intent` and `verify-payment`.
 - Keep the robots/sitemap domain mismatch as a separate release approval issue. Live sitemap contains 2150 `memorimap.com` tokens and 0 `memorimap.kr` tokens.
+
+## Storage Bucket Live Verification
+
+Production anon-key list checks were sent to the live Supabase Storage API for:
+
+- `review-images`
+- `partner_docs`
+- `facility-images`
+
+Observed live result:
+
+| Bucket | Anon list result | Body/public-object result |
+| --- | --- | --- |
+| `review-images` | `200`, object names and metadata visible | sampled public object URL returned `400` JSON |
+| `partner_docs` | `200`, object names and metadata visible under `licenses` | sampled public object URL returned `400` JSON |
+| `facility-images` | `200`, object names and metadata visible | sampled public object URL returned `200` image |
+
+Interpretation:
+
+- `facility-images` appears intentionally public-compatible.
+- `review-images` and `partner_docs` did not expose sampled object bodies through public object URLs.
+- `review-images` and `partner_docs` did expose object names and metadata through anon list calls, including timestamps, object IDs, sizes, and mimetypes.
+- This is now a live Storage policy approval finding. It is not confirmed binary object-body exposure, but it is confirmed metadata/listing exposure on buckets that had previously been treated as private or restricted.
