@@ -29,8 +29,9 @@ The live search metadata still has a production-domain mismatch:
 - `robots.txt` points to `https://memorimap.com/sitemap.xml`
 - `sitemap.xml` contains `https://memorimap.com/...` URLs
 - Production domain under audit is `https://memorimap.kr`
+- `memorimap.com` is not an actual production domain for this release; only `memorimap.kr` is valid.
 
-This is not a core runtime failure, but it remains a search exposure and production-domain consistency issue for release approval.
+This is not a core runtime failure, but it remains a search exposure and invalid production-domain metadata issue for release approval.
 
 ## RLS Policy Condition Review
 
@@ -173,6 +174,45 @@ Interpretation:
 - `register-payment-intent` and `verify-payment` still reflect `http://localhost:5173` in production OPTIONS responses.
 - The localhost finding is not a confirmed data exposure by itself because JWT ownership checks and auth gates are still in place, but it remains an origin-scope audit issue.
 
+Additional unauthenticated POST checks were sent to `register-payment-intent` and `verify-payment` with the same origin set:
+
+| Function | Origin | HTTP status | Result |
+| --- | --- | ---: | --- |
+| `register-payment-intent` | `http://localhost:5173` | 401 | missing authorization rejected |
+| `register-payment-intent` | `https://evil.example` | 401 | missing authorization rejected |
+| `register-payment-intent` | `https://memorimap.kr` | 401 | missing authorization rejected |
+| `verify-payment` | `http://localhost:5173` | 401 | missing authorization rejected |
+| `verify-payment` | `https://evil.example` | 401 | missing authorization rejected |
+| `verify-payment` | `https://memorimap.kr` | 401 | missing authorization rejected |
+
+Interpretation:
+
+- The localhost OPTIONS reflection on `register-payment-intent` and `verify-payment` did not bypass the authorization gate in the unauthenticated POST check.
+- The residual CORS issue remains an origin-scope finding, not a confirmed payment data exposure.
+
+## Search Metadata Verification
+
+Live `robots.txt` still returns:
+
+- `Sitemap: https://memorimap.com/sitemap.xml`
+
+Live `sitemap.xml` body check:
+
+| Domain token | Count |
+| --- | ---: |
+| `memorimap.com` | 2150 |
+| `memorimap.kr` | 0 |
+
+First observed URL:
+
+- `<loc>https://memorimap.com/</loc>`
+
+Interpretation:
+
+- The production-domain metadata mismatch is confirmed live.
+- Because `memorimap.com` is not an actual production domain for this release, the live `robots.txt` and `sitemap.xml` values are invalid metadata rather than an alternate-domain preference.
+- This is not an RLS or runtime blocker, but it remains a release approval issue for search exposure and canonical production-domain consistency.
+
 ## Current Release Decision
 
 RLS activation and automated tests are strong passing signals. However, the anon count result on sensitive tables prevents a full release approval from an RLS audit perspective.
@@ -185,7 +225,7 @@ Reason:
 
 - No confirmed production outage or confirmed REST-level data leak has been established.
 - Sensitive-table anon count visibility was observed in SQL Editor role simulation, but live REST anon requests returned no rows for the reviewed sensitive tables.
-- Remaining approval blockers are now search-domain metadata mismatch and the narrower finding that `register-payment-intent` and `verify-payment` reflect localhost in live CORS preflight responses. Authenticated A/B isolation has direct E2E support from the 16-test targeted rerun.
+- Remaining approval blockers are now the live search-domain metadata mismatch and the narrower origin-scope finding that `register-payment-intent` and `verify-payment` reflect localhost in live CORS preflight responses. The payment functions still rejected unauthenticated POST requests with 401 across localhost, arbitrary external origin, and production origin. Authenticated A/B isolation has direct E2E support from the 16-test targeted rerun.
 
 ## Next Verification Targets
 
@@ -196,4 +236,4 @@ Continue with evidence-only checks:
 - Confirm authenticated user A cannot access user B rows for the sensitive tables. Targeted E2E passed on 2026-04-08 for notifications and reservations, plus payment IDOR.
 - Confirm skipped Playwright tests are not release-critical RLS coverage. Skipped tests were manual/quarantine review deletion and super-admin join-chat locking scenarios.
 - Confirm Edge Function CORS behavior. Live check shows arbitrary external origins are not reflected; localhost is reflected only by `register-payment-intent` and `verify-payment`.
-- Keep the robots/sitemap domain mismatch as a separate release approval issue.
+- Keep the robots/sitemap domain mismatch as a separate release approval issue. Live sitemap contains 2150 `memorimap.com` tokens and 0 `memorimap.kr` tokens.
