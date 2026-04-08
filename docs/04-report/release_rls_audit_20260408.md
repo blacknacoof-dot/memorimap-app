@@ -261,3 +261,20 @@ Interpretation:
 - `review-images` and `partner_docs` did not expose sampled object bodies through public object URLs.
 - `review-images` and `partner_docs` did expose object names and metadata through anon list calls, including timestamps, object IDs, sizes, and mimetypes.
 - This is now a live Storage policy approval finding. It is not confirmed binary object-body exposure, but it is confirmed metadata/listing exposure on buckets that had previously been treated as private or restricted.
+
+## Follow-up Test Batch
+
+Additional automated checks were run after the live Storage finding:
+
+| Scope | Result |
+| --- | --- |
+| Storage/Edge security contracts: `tests/security/upload.spec.ts`, `tests/security/releaseConfig.spec.ts`, `tests/security/edgeContracts.spec.ts`, `lib/security/fileValidation.test.ts` | 4 files, 20 tests passed |
+| Payment/subscription/Edge boundary E2E: `reservation.payment.spec.ts`, `subscription.flow.spec.ts`, `auth.edgeFunctions.spec.ts` | 14 tests passed |
+| Role and admin boundary E2E: `auth.roleAccess.spec.ts`, `sangjo.timeline.spec.ts`, `superAdmin.subscriptionManager.spec.ts`, `superAdmin.partnerStatus.spec.ts`, `superAdmin.monitoring.spec.ts` | 13 tests passed |
+| In-app redirect safety unit checks: `src/utils/browserDetection.test.ts` plus release config checks | 2 files, 7 tests passed |
+
+Interpretation:
+
+- The automated security and payment-boundary suite still passes after the live Storage finding.
+- The Storage finding remains live-policy specific: automated app-level tests verify signed URL handling, but live anon list calls still returned metadata for `review-images` and `partner_docs`.
+- Mobile in-app real-device behavior remains unverified. The unit test only covers redirect URL safety, not iOS Safari, Android Chrome, Kakao in-app, or Naver in-app runtime behavior.
