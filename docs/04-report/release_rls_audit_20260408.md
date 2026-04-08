@@ -97,25 +97,46 @@ Interpretation:
 - The anon count result is a serious audit signal until reconciled with actual REST anon behavior and row-body access.
 - This result may indicate either real anon visibility or a SQL Editor/session-context artifact. It must not be marked safe without follow-up access checks.
 
+## REST Anon Verification
+
+After the count finding, the same sensitive tables were checked through the live Supabase REST API using the anon key and no user session. The request selected only `id` with `limit=1` and did not print row bodies.
+
+| Table | HTTP status | Rows returned | Content-Range |
+| --- | ---: | --- | --- |
+| `subscription_payments` | 200 | no | `*/0` |
+| `user_subscriptions` | 200 | no | `*/0` |
+| `reservations` | 200 | no | `*/0` |
+| `leads` | 200 | no | `*/0` |
+| `user_notifications` | 200 | no | `*/0` |
+| `ai_consultations` | 200 | no | `*/0` |
+| `partner_conversations` | 200 | no | `*/0` |
+
+Interpretation:
+
+- The SQL Editor `set local role anon` count result did not reproduce through the live REST anon path.
+- No row body was returned for the reviewed sensitive tables through the actual anon API path.
+- This lowers the RLS finding from a No-Go candidate back to a conditional audit item.
+
 ## Current Release Decision
 
 RLS activation and automated tests are strong passing signals. However, the anon count result on sensitive tables prevents a full release approval from an RLS audit perspective.
 
-Current decision:
+Current decision after REST anon verification:
 
 - `Conditional Go`
 
 Reason:
 
 - No confirmed production outage or confirmed REST-level data leak has been established.
-- Sensitive-table anon count visibility has been observed and requires row-body and REST anon verification before the RLS audit can be closed.
+- Sensitive-table anon count visibility was observed in SQL Editor role simulation, but live REST anon requests returned no rows for the reviewed sensitive tables.
+- Remaining approval blockers are now search-domain metadata mismatch and final authenticated A/B isolation confidence, with automated E2E already providing strong supporting evidence.
 
 ## Next Verification Targets
 
 Continue with evidence-only checks:
 
-- Confirm whether anon can retrieve row bodies from the sensitive tables, not only counts.
-- Confirm whether Supabase REST API anon key behavior matches or differs from the SQL Editor `set local role anon` result.
+- Confirm whether anon can retrieve row bodies from the sensitive tables, not only counts. REST anon check returned no rows on 2026-04-08.
+- Confirm whether Supabase REST API anon key behavior matches or differs from the SQL Editor `set local role anon` result. It differed on 2026-04-08: SQL Editor count showed rows, REST anon returned no rows.
 - Confirm authenticated user A cannot access user B rows for the sensitive tables.
 - Confirm skipped Playwright tests are not release-critical RLS coverage.
 - Keep the robots/sitemap domain mismatch as a separate release approval issue.
