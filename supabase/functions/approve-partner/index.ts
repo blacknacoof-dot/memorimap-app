@@ -8,8 +8,6 @@ const PRODUCTION_ORIGINS = [
     'https://www.memorimap.kr',
     'https://memorimap-app.vercel.app',
     'https://memorimap-app-ptys-projects.vercel.app',
-    'https://memorimap.com',
-    'https://www.memorimap.com',
 ];
 
 // 개발 환경에서만 localhost 허용 (ENVIRONMENT=development 설정 시)
@@ -308,7 +306,7 @@ serve(async (req) => {
                             <p style="margin: 10px 0 0 0; color: #555;">이제 추모맵에서 시설 정보를 관리하고 고객 상담을 받으실 수 있습니다.</p>
                         </div>
                         <div style="text-align: center; margin-top: 30px;">
-                            <a href="https://memorimap.com/#/facility-admin" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                            <a href="https://memorimap.kr/#/facility-admin" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
                                 어드민 대시보드 바로가기
                             </a>
                         </div>

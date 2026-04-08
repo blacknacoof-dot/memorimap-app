@@ -21,8 +21,6 @@ const PRODUCTION_ORIGINS = [
     'https://www.memorimap.kr',
     'https://memorimap-app.vercel.app',
     'https://memorimap-app-ptys-projects.vercel.app',
-    'https://memorimap.com',
-    'https://www.memorimap.com',
 ];
 
 const DEV_ORIGINS = [

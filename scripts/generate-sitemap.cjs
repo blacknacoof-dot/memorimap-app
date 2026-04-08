@@ -13,7 +13,7 @@ dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
-const SITE_URL = 'https://memorimap.com';
+const SITE_URL = 'https://memorimap.kr';
 
 if (!supabaseUrl || !supabaseKey) {
     console.error('Error: Supabase config missing');

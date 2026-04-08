@@ -197,7 +197,7 @@ export async function handleSendMonthlyReportRequest(
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'memorimap<noreply@memorimap.com>',
+          from: 'memorimap<noreply@memorimap.kr>',
           to: [report.email],
           subject: `[memorimap] ${monthLabel} 월간 리포트 - ${report.facilityName}`,
           html: htmlBody,
@@ -253,7 +253,7 @@ function buildEmailHtml(report: PartnerReport, monthLabel: string, upgradeHint: 
   const hintBlock = upgradeHint
     ? `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:16px;margin-bottom:16px">
       <p style="font-size:13px;color:#1e40af;margin:0 0 12px;line-height:1.5">${upgradeHint}</p>
-      <a href="https://memorimap.com/partner" style="display:inline-block;background:#4f46e5;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:bold">
+      <a href="https://memorimap.kr/partner" style="display:inline-block;background:#4f46e5;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:bold">
         업그레이드 알아보기
       </a>
     </div>`

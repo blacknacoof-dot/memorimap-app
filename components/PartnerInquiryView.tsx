@@ -509,7 +509,7 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack, onLoginClick }) =>
                                         required
                                         value={formData.companyEmail}
                                         onChange={handleChange}
-                                        placeholder="ceo@memorimap.com"
+                                        placeholder="ceo@memorimap.kr"
                                         className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                     />
                                 </div>

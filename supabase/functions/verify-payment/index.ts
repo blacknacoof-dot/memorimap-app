@@ -7,8 +7,6 @@ const PRODUCTION_ORIGINS = [
     'https://www.memorimap.kr',
     'https://memorimap-app.vercel.app',
     'https://memorimap-app-ptys-projects.vercel.app',
-    'https://memorimap.com',
-    'https://www.memorimap.com',
 ];
 
 // 개발 환경에서만 localhost 허용 (ENVIRONMENT=development 설정 시)
