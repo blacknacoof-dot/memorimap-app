@@ -117,6 +117,38 @@ Interpretation:
 - No row body was returned for the reviewed sensitive tables through the actual anon API path.
 - This lowers the RLS finding from a No-Go candidate back to a conditional audit item.
 
+## Targeted Auth Isolation E2E
+
+After REST anon verification, the auth/RLS isolation and payment security subset was rerun separately:
+
+- Command scope:
+  - `tests/e2e/auth.dataIsolation.spec.ts`
+  - `tests/e2e/auth.edgeFunctions.spec.ts`
+  - `tests/e2e/reservation.payment.spec.ts`
+- Result: 16 passed
+
+Covered checks included:
+
+- Anonymous client cannot read protected notification rows
+- User A cannot read user B notification
+- User A cannot read user B reservation directly
+- Logout invalidates the old access token for a protected Edge Function
+- Missing or tampered Edge Function authorization is rejected
+- Regular user is blocked from admin-only Edge Function paths
+- Facility admin cannot update another facility bot data
+- Wrong user cannot verify another user's payment
+- Payment amount tampering is detected
+
+The skipped full-suite tests were identified as:
+
+- `tests/e2e/review-delete.spec.ts`: manual quarantine review deletion verification
+- `tests/e2e/superAdmin.joinChat.spec.ts`: quarantine join-chat and locking scenarios
+
+Interpretation:
+
+- The skipped tests are quarantined/manual coverage, not the core RLS data-isolation checks reviewed in this audit.
+- The targeted rerun strengthens the finding that the REST anon result is the relevant production-facing signal, not the SQL Editor count simulation alone.
+
 ## Current Release Decision
 
 RLS activation and automated tests are strong passing signals. However, the anon count result on sensitive tables prevents a full release approval from an RLS audit perspective.
@@ -129,7 +161,7 @@ Reason:
 
 - No confirmed production outage or confirmed REST-level data leak has been established.
 - Sensitive-table anon count visibility was observed in SQL Editor role simulation, but live REST anon requests returned no rows for the reviewed sensitive tables.
-- Remaining approval blockers are now search-domain metadata mismatch and final authenticated A/B isolation confidence, with automated E2E already providing strong supporting evidence.
+- Remaining approval blockers are now search-domain metadata mismatch and residual CORS/origin review. Authenticated A/B isolation has direct E2E support from the 16-test targeted rerun.
 
 ## Next Verification Targets
 
@@ -137,6 +169,6 @@ Continue with evidence-only checks:
 
 - Confirm whether anon can retrieve row bodies from the sensitive tables, not only counts. REST anon check returned no rows on 2026-04-08.
 - Confirm whether Supabase REST API anon key behavior matches or differs from the SQL Editor `set local role anon` result. It differed on 2026-04-08: SQL Editor count showed rows, REST anon returned no rows.
-- Confirm authenticated user A cannot access user B rows for the sensitive tables.
-- Confirm skipped Playwright tests are not release-critical RLS coverage.
+- Confirm authenticated user A cannot access user B rows for the sensitive tables. Targeted E2E passed on 2026-04-08 for notifications and reservations, plus payment IDOR.
+- Confirm skipped Playwright tests are not release-critical RLS coverage. Skipped tests were manual/quarantine review deletion and super-admin join-chat locking scenarios.
 - Keep the robots/sitemap domain mismatch as a separate release approval issue.
