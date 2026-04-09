@@ -304,7 +304,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
   useEffect(() => {    if (!mapInstance.current || !window.naver || !isMapReady) return;
 
     const useCluster = Boolean(isClusterReady && window.MarkerClustering);
-    const nextFacilitySignature = `${useCluster ? 'cluster' : 'plain'}:${filteredFacilities
+    const nextFacilitySignature = `${useCluster ? 'cluster' : 'plain'}:${selectedFacilityId ?? ''}:${filteredFacilities
       .map((facility) => [
         facility.id,
         facility.lat ?? '',
@@ -328,16 +328,14 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
     // ✅ 아이콘 캐시: 카테고리별 1회만 생성 (7종 캐시 vs ~2000회 반복 생성 제거)
     // ✅ 1단계: 삭제 — 이전에 있었으나 새 목록에 없는 마커 제거 (선택 마커는 예외)
     let markersChanged = false;
+    const markersToRemove: Array<{ id: string; marker: NaverMarker; listener?: unknown }> = [];
     for (const [id, marker] of prevMap) {
-      if (!newIds.has(id) && id !== selectedFacilityId) {
-        marker.setMap(null);
-        prevMap.delete(id);
-        prevStateMap.delete(id);
-        const listener = markerListenerMapRef.current.get(id);
-        if (listener && window.naver?.maps?.Event) {
-          window.naver.maps.Event.removeListener(listener);
-        }
-        markerListenerMapRef.current.delete(id);
+      if (!newIds.has(id)) {
+        markersToRemove.push({
+          id,
+          marker,
+          listener: markerListenerMapRef.current.get(id),
+        });
         markersChanged = true;
       }
     }
@@ -407,12 +405,16 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
         }
       }
 
-      marker.setMap(useCluster ? null : mapInstance.current);
+      if (!useCluster) {
+        marker.setMap(mapInstance.current);
+      }
       prevStateMap.set(facility.id, nextMarkerState);
     }
 
     // ✅ 3단계: 클러스터 — 마커 변경 시에만 재구성 (변경 없으면 skip)
-    markersRef.current = Array.from(prevMap.values());
+    markersRef.current = validFacilities
+      .map((facility) => prevMap.get(facility.id))
+      .filter((marker): marker is NaverMarker => Boolean(marker));
 
     const clusterIconHtml = (bg: string, size: number) => ({
       content: `<div style="cursor:pointer;width:${size}px;height:${size}px;line-height:${size}px;font-size:11px;color:white;text-align:center;font-weight:bold;background:${bg};border-radius:50%;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
@@ -481,7 +483,17 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
       markersRef.current.forEach(m => m.setMap(mapInstance.current));
     }
 
-  }, [filteredFacilities, isMapReady, isClusterReady]);
+    for (const { id, marker, listener } of markersToRemove) {
+      marker.setMap(null);
+      prevMap.delete(id);
+      prevStateMap.delete(id);
+      if (listener && window.naver?.maps?.Event) {
+        window.naver.maps.Event.removeListener(listener);
+      }
+      markerListenerMapRef.current.delete(id);
+    }
+
+  }, [filteredFacilities, isMapReady, isClusterReady, selectedFacilityId]);
 
   useEffect(() => {
     if (!window.naver || !isMapReady) return;

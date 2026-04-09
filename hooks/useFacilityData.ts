@@ -197,8 +197,9 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
   const filteredFacilities = useMemo(() => {
     let result = facilities;
 
-    // 1. Filter by map bounds. Applied to MAP and LIST.
-    if (currentBounds) {
+    // The map already receives a viewport-scoped dataset from the RPC.
+    // Keep client-side bounds trimming for list-style views only.
+    if (viewState !== ViewState.MAP && currentBounds) {
       const sw = currentBounds.getSouthWest();
       const ne = currentBounds.getNorthEast();
       result = result.filter(f => {
@@ -229,7 +230,7 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
     }
 
     return result;
-  }, [facilities, currentBounds, searchQuery, selectedCategories]);
+  }, [facilities, currentBounds, searchQuery, selectedCategories, viewState]);
 
   // Fetch Facility Details
   const fetchFacilityDetails = useCallback(async (facilityId: string) => {

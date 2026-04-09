@@ -112,7 +112,6 @@ export function useMapViewport({ setFacilities, setCurrentBounds, session, onVie
 
   const handleMapBoundsChange = (bounds: LatLngBounds) => {
     setMapBounds(bounds);
-    setCurrentBounds(bounds);
 
     // Server-Side Viewport Fetching (Debounced)
     if (mapDebounceRef.current) {
@@ -197,6 +196,7 @@ export function useMapViewport({ setFacilities, setCurrentBounds, session, onVie
             .join('|');
 
           if (isMountedRef.current && !signal.aborted) {
+            setCurrentBounds(bounds);
             if (previousViewportSignatureRef.current !== nextSignature) {
               previousViewportSignatureRef.current = nextSignature;
               setFacilities((prev) => {
