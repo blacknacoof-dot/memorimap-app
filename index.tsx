@@ -7,7 +7,9 @@ import './lib/analytics';
 import { ClerkProviderWrapper } from './lib/auth';
 import { installChunkRecoveryHandlers } from './lib/chunkRecovery';
 
-installChunkRecoveryHandlers();
+installChunkRecoveryHandlers({
+  currentEntryUrl: import.meta.url,
+});
 
 // Initialize QueryClient
 const queryClient = new QueryClient({

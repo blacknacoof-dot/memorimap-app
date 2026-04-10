@@ -1,15 +1,33 @@
 const CHUNK_RELOAD_KEY = 'memorimap:chunk-reload-attempted';
+const DEFAULT_INDEX_PATH = '/';
 
 const CHUNK_ERROR_PATTERNS = [
-  'Failed to fetch dynamically imported module',
-  'Importing a module script failed',
-  'ChunkLoadError',
-  'Loading chunk',
+  'failed to fetch dynamically imported module',
+  'importing a module script failed',
+  'chunkloaderror',
+  'loading chunk',
+  'asset load failure',
+  'error loading dynamically imported module',
 ];
 
+const normalizeMessage = (message?: string | null): string => (message || '').toLowerCase();
+
+const isAssetReference = (message: string): boolean =>
+  message.includes('/assets/') && (message.includes('.js') || message.includes('.css'));
+
 const isChunkErrorMessage = (message?: string | null): boolean => {
-  if (!message) return false;
-  return CHUNK_ERROR_PATTERNS.some((pattern) => message.includes(pattern));
+  const normalized = normalizeMessage(message);
+  if (!normalized) return false;
+
+  if (CHUNK_ERROR_PATTERNS.some((pattern) => normalized.includes(pattern))) {
+    return true;
+  }
+
+  return isAssetReference(normalized) && (
+    normalized.includes('404')
+    || normalized.includes('failed')
+    || normalized.includes('error')
+  );
 };
 
 const reloadOnceForChunkError = () => {
@@ -37,10 +55,78 @@ const extractEventMessage = (event: ErrorEvent): string | null => {
   return null;
 };
 
-export const installChunkRecoveryHandlers = () => {
+const extractRejectionMessage = (reason: unknown): string | null => {
+  if (typeof reason === 'string') {
+    return reason;
+  }
+
+  if (reason && typeof reason === 'object') {
+    const maybeMessage = (reason as { message?: unknown }).message;
+    if (typeof maybeMessage === 'string') {
+      return maybeMessage;
+    }
+
+    const maybeStack = (reason as { stack?: unknown }).stack;
+    if (typeof maybeStack === 'string') {
+      return maybeStack;
+    }
+  }
+
+  return null;
+};
+
+const extractEntrySrcFromHtml = (html: string): string | null => {
+  const entryMatch = html.match(/<script[^>]+type="module"[^>]+src="([^"]+)"/i);
+  return entryMatch?.[1] ?? null;
+};
+
+const toAbsoluteUrl = (path: string): string => new URL(path, window.location.origin).href;
+
+interface ChunkRecoveryOptions {
+  currentEntryUrl?: string;
+  indexPath?: string;
+}
+
+export const installChunkRecoveryHandlers = ({
+  currentEntryUrl,
+  indexPath = DEFAULT_INDEX_PATH,
+}: ChunkRecoveryOptions = {}) => {
   if (typeof window === 'undefined') return;
 
   window.sessionStorage.removeItem(CHUNK_RELOAD_KEY);
+
+  let isCheckingForUpdate = false;
+
+  const verifyCurrentEntry = async () => {
+    if (!currentEntryUrl || isCheckingForUpdate) return;
+
+    isCheckingForUpdate = true;
+
+    try {
+      const response = await fetch(indexPath, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+          Pragma: 'no-cache',
+        },
+      });
+
+      if (!response.ok) return;
+
+      const html = await response.text();
+      const nextEntrySrc = extractEntrySrcFromHtml(html);
+      if (!nextEntrySrc) return;
+
+      const absoluteNextEntryUrl = toAbsoluteUrl(nextEntrySrc);
+      if (absoluteNextEntryUrl !== currentEntryUrl) {
+        reloadOnceForChunkError();
+      }
+    } catch {
+      // Network/cache validation failure should not block the current session.
+    } finally {
+      isCheckingForUpdate = false;
+    }
+  };
 
   window.addEventListener('error', (event) => {
     const message = extractEventMessage(event);
@@ -50,16 +136,20 @@ export const installChunkRecoveryHandlers = () => {
   });
 
   window.addEventListener('unhandledrejection', (event) => {
-    const reason = event.reason;
-    const message =
-      typeof reason === 'string'
-        ? reason
-        : typeof reason?.message === 'string'
-          ? reason.message
-          : null;
+    const message = extractRejectionMessage(event.reason);
 
     if (isChunkErrorMessage(message)) {
       reloadOnceForChunkError();
+    }
+  });
+
+  window.addEventListener('focus', () => {
+    void verifyCurrentEntry();
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      void verifyCurrentEntry();
     }
   });
 };
