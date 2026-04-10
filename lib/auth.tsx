@@ -46,6 +46,34 @@ function wrapUser(session: Session | null): WrappedUser | null {
   };
 }
 
+function isInvalidSessionError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+
+  const maybeError = error as {
+    status?: number;
+    code?: string;
+    name?: string;
+    message?: string;
+  };
+
+  const status = maybeError.status;
+  const code = maybeError.code || '';
+  const name = maybeError.name || '';
+  const message = (maybeError.message || '').toLowerCase();
+
+  if (status === 401) return true;
+  if (code === 'PGRST301') return true;
+  if (name === 'AuthApiError' && status === 401) return true;
+
+  return (
+    message.includes('invalid jwt') ||
+    message.includes('jwt') ||
+    message.includes('token') ||
+    message.includes('session_not_found') ||
+    message.includes('user from sub claim in jwt does not exist')
+  );
+}
+
 // --- Provider ---
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
@@ -53,20 +81,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const queryClient = useQueryClient();
 
   useEffect(() => {
+    let mounted = true;
+
+    const clearInvalidSession = async () => {
+      try {
+        await supabase.auth.signOut({ scope: 'local' });
+      } catch {
+        // Best-effort cleanup below still clears persisted browser state.
+      }
+
+      await runLogoutCleanup(queryClient);
+
+      if (!mounted) return;
+      setSession(null);
+      setIsLoaded(true);
+    };
+
+    const resolveSession = async (nextSession: Session | null) => {
+      if (!nextSession?.access_token) {
+        if (!mounted) return;
+        setSession(nextSession);
+        setIsLoaded(true);
+        return;
+      }
+
+      const { data, error } = await supabase.auth.getUser(nextSession.access_token);
+
+      if (error && isInvalidSessionError(error)) {
+        await clearInvalidSession();
+        return;
+      }
+
+      if (!mounted) return;
+      setSession(data.user ? nextSession : null);
+      setIsLoaded(true);
+    };
+
     // Initial session
     supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(s);
-      setIsLoaded(true);
+      void resolveSession(s);
     });
 
     // Listen for auth changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(s);
-      setIsLoaded(true);
+      void resolveSession(s);
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [queryClient]);
 
   const signOut = useCallback(async () => {
     let signOutError: unknown;
