@@ -4,24 +4,11 @@
 
 import { logger } from '../../utils/logger';
 
-export function isInAppBrowser(): boolean {
-    if (typeof window === 'undefined') return false;
+export type InAppBrowserName = 'kakaotalk' | 'naver' | 'line' | 'instagram' | 'facebook';
 
-    const ua = window.navigator.userAgent.toLowerCase();
-    return (
-        ua.includes('kakaotalk') ||
-        ua.includes('naver') ||
-        ua.includes('line') ||
-        ua.includes('instagram') ||
-        ua.includes('fban') ||
-        ua.includes('fbav')
-    );
-}
-
-export function getInAppBrowserName(): string | null {
-    if (typeof window === 'undefined') return null;
-
-    const ua = window.navigator.userAgent.toLowerCase();
+export function getInAppBrowserNameFromUserAgent(userAgent?: string | null): InAppBrowserName | null {
+    const ua = (userAgent || '').toLowerCase();
+    if (!ua) return null;
 
     if (ua.includes('kakaotalk')) return 'kakaotalk';
     if (ua.includes('naver')) return 'naver';
@@ -30,6 +17,27 @@ export function getInAppBrowserName(): string | null {
     if (ua.includes('fban') || ua.includes('fbav')) return 'facebook';
 
     return null;
+}
+
+export function isInAppBrowser(): boolean {
+    if (typeof window === 'undefined') return false;
+
+    return getInAppBrowserNameFromUserAgent(window.navigator.userAgent) !== null;
+}
+
+export function getInAppBrowserName(): InAppBrowserName | null {
+    if (typeof window === 'undefined') return null;
+
+    return getInAppBrowserNameFromUserAgent(window.navigator.userAgent);
+}
+
+export function resolveExternalGuideBrowser(rawBrowser?: string | null, userAgent?: string | null): InAppBrowserName | 'generic' {
+    const normalized = (rawBrowser || '').trim().toLowerCase();
+    if (normalized === 'kakaotalk' || normalized === 'naver' || normalized === 'line' || normalized === 'instagram' || normalized === 'facebook') {
+        return normalized;
+    }
+
+    return getInAppBrowserNameFromUserAgent(userAgent) || 'generic';
 }
 
 /**

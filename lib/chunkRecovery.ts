@@ -1,5 +1,11 @@
-const CHUNK_RELOAD_KEY = 'memorimap:chunk-reload-attempted';
+export const CHUNK_RELOAD_KEY = 'memorimap:chunk-reload-attempted';
 const DEFAULT_INDEX_PATH = '/';
+
+type ChunkReloadState = {
+  entryUrl: string;
+  reason?: string;
+  attemptedAt: number;
+};
 
 const CHUNK_ERROR_PATTERNS = [
   'failed to fetch dynamically imported module',
@@ -30,11 +36,43 @@ const isChunkErrorMessage = (message?: string | null): boolean => {
   );
 };
 
-const reloadOnceForChunkError = () => {
-  if (typeof window === 'undefined') return;
-  if (window.sessionStorage.getItem(CHUNK_RELOAD_KEY) === '1') return;
+const parseChunkReloadState = (rawValue: string | null): ChunkReloadState | null => {
+  if (!rawValue) return null;
 
-  window.sessionStorage.setItem(CHUNK_RELOAD_KEY, '1');
+  try {
+    const parsed = JSON.parse(rawValue) as Partial<ChunkReloadState>;
+    if (!parsed || typeof parsed.entryUrl !== 'string' || typeof parsed.attemptedAt !== 'number') {
+      return null;
+    }
+
+    return {
+      entryUrl: parsed.entryUrl,
+      attemptedAt: parsed.attemptedAt,
+      reason: typeof parsed.reason === 'string' ? parsed.reason : undefined,
+    };
+  } catch {
+    return null;
+  }
+};
+
+export const shouldAttemptChunkReload = (currentEntryUrl?: string, storageValue?: string | null): boolean => {
+  if (!currentEntryUrl) return false;
+
+  const state = parseChunkReloadState(storageValue ?? null);
+  if (!state) return true;
+
+  return state.entryUrl !== currentEntryUrl;
+};
+
+const reloadOnceForChunkError = (currentEntryUrl?: string, reason?: string) => {
+  if (typeof window === 'undefined' || !currentEntryUrl) return;
+  if (!shouldAttemptChunkReload(currentEntryUrl, window.sessionStorage.getItem(CHUNK_RELOAD_KEY))) return;
+
+  window.sessionStorage.setItem(CHUNK_RELOAD_KEY, JSON.stringify({
+    entryUrl: currentEntryUrl,
+    attemptedAt: Date.now(),
+    reason,
+  } satisfies ChunkReloadState));
   window.location.reload();
 };
 
@@ -93,8 +131,6 @@ export const installChunkRecoveryHandlers = ({
 }: ChunkRecoveryOptions = {}) => {
   if (typeof window === 'undefined') return;
 
-  window.sessionStorage.removeItem(CHUNK_RELOAD_KEY);
-
   let isCheckingForUpdate = false;
 
   const verifyCurrentEntry = async () => {
@@ -119,7 +155,7 @@ export const installChunkRecoveryHandlers = ({
 
       const absoluteNextEntryUrl = toAbsoluteUrl(nextEntrySrc);
       if (absoluteNextEntryUrl !== currentEntryUrl) {
-        reloadOnceForChunkError();
+        reloadOnceForChunkError(currentEntryUrl, 'entry-changed');
       }
     } catch {
       // Network/cache validation failure should not block the current session.
@@ -131,7 +167,7 @@ export const installChunkRecoveryHandlers = ({
   window.addEventListener('error', (event) => {
     const message = extractEventMessage(event);
     if (isChunkErrorMessage(message)) {
-      reloadOnceForChunkError();
+      reloadOnceForChunkError(currentEntryUrl, message ?? 'window-error');
     }
   });
 
@@ -139,7 +175,7 @@ export const installChunkRecoveryHandlers = ({
     const message = extractRejectionMessage(event.reason);
 
     if (isChunkErrorMessage(message)) {
-      reloadOnceForChunkError();
+      reloadOnceForChunkError(currentEntryUrl, message ?? 'unhandledrejection');
     }
   });
 
