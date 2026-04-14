@@ -157,6 +157,10 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
 
     const handleSelectPlan = async (plan: PersonalPlan) => {
         if (plan.id === currentPlan) return;
+        if (!isLoaded || !session?.access_token) {
+            toast.error('로그인 세션을 확인하는 중입니다. 잠시 후 다시 시도해 주세요.');
+            return;
+        }
         const userId = session?.user?.id;
 
         if (plan.id === 'PERSONAL_FREE') {
@@ -167,6 +171,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
             try {
                 const result = await verifyPayment({
                     paymentContext: 'personal_free_downgrade',
+                    authToken: session.access_token,
                 });
                 if (!result.persisted) {
                     toast.error(result.error || '구독 해지에 실패했습니다. 잠시 후 다시 시도해 주세요.');
@@ -195,6 +200,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                 paymentContext: 'personal_subscription',
                 planId: plan.nameEn,
                 targetUserId: userId,
+                authToken: session.access_token,
                 orderName: `[추모맵] 개인 ${plan.name} 플랜`,
             });
             if (!intentRegistration.success) {
@@ -234,6 +240,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                 paymentContext: 'personal_subscription',
                 planId: plan.nameEn,
                 targetUserId: userId,
+                authToken: session.access_token,
             });
             if (!verification.verified) {
                 toast.error(verification.error || '결제 검증에 실패했습니다. 고객센터에 문의해주세요.');
