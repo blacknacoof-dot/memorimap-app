@@ -136,7 +136,7 @@ interface SubscriptionPlansProps {
 
 export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityId, type = 'facility' }: SubscriptionPlansProps) {
     const { user } = useUser();
-    const { session } = useSession();
+    const { session, isLoaded } = useSession();
 
     const plans = type === 'sangjo' ? sangjoPlans : facilityPlans;
     const [selectedPlan, setSelectedPlan] = useState<string | null>(normalizeSubscriptionPlanId(currentPlan) || null);
@@ -189,6 +189,10 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
 
     const handleSelectPlan = async (plan: Plan) => {
         if (isProcessing) return;
+        if (!isLoaded || !session?.access_token) {
+            toast.error('로그인 세션을 확인하는 중입니다. 잠시 후 다시 시도해 주세요.');
+            return;
+        }
         if (plan.id === 'FREE') {
             if (!confirm('구독을 해지하시겠습니까?\n\n현재 이용 기간이 끝날 때까지 유료 기능을 계속 사용할 수 있습니다.\n만료 후 자동으로 무료 플랜으로 전환됩니다.')) {
                 return;
@@ -198,6 +202,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                     const result = await verifyPayment({
                         paymentContext: 'facility_free_downgrade',
                         facilityId,
+                        authToken: session.access_token,
                     });
                     if (!result.persisted) {
                         toast.error(result.error || '구독 해지에 실패했습니다. 잠시 후 다시 시도해 주세요.');
@@ -229,6 +234,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                 facilityId,
                 planId: plan.nameEn,
                 orderName: `[추모맵] ${plan.name} 플랜`,
+                authToken: session.access_token,
             });
             if (!intentRegistration.success) {
                 toast.error(intentRegistration.error || '결제 준비에 실패했습니다.');
@@ -262,6 +268,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                 paymentContext: 'facility_subscription',
                 facilityId,
                 planId: plan.nameEn,
+                authToken: session.access_token,
             });
             if (!verification.verified) {
                 toast.error(verification.error || '결제 검증에 실패했습니다. 고객센터에 문의해주세요.');

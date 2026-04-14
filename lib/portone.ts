@@ -133,6 +133,7 @@ export const verifyPayment = async (params: {
     facilityId?: string;
     planId?: string;
     targetUserId?: string;
+    authToken?: string | null;
 }): Promise<{ verified: boolean; persisted?: boolean; error?: string; subscriptionId?: string }> => {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -143,7 +144,7 @@ export const verifyPayment = async (params: {
 
     try {
         // Send the user JWT so the Edge Function can verify identity and ownership.
-        const userToken = await getCurrentAccessToken();
+        const userToken = params.authToken || await getCurrentAccessToken();
         if (!userToken) {
             return { verified: false, error: '인증 토큰이 없습니다. 로그인 후 다시 시도해 주세요.' };
         }
@@ -180,6 +181,7 @@ export const registerPaymentIntent = async (params: {
     facilityId?: string;
     targetUserId?: string;
     orderName?: string;
+    authToken?: string | null;
 }): Promise<{ success: boolean; error?: string; alreadyExists?: boolean }> => {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -189,7 +191,7 @@ export const registerPaymentIntent = async (params: {
     }
 
     try {
-        const userToken = await getCurrentAccessToken();
+        const userToken = params.authToken || await getCurrentAccessToken();
         if (!userToken) {
             return { success: false, error: '인증 토큰이 없습니다. 로그인 후 다시 시도해 주세요.' };
         }

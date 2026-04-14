@@ -182,7 +182,7 @@ export const useClerk = () => {
 };
 
 export const useSession = () => {
-  const { session, user } = useContext(AuthContext);
+  const { session, user, isLoaded } = useContext(AuthContext);
   const wrappedSession = useMemo(() => session
     ? {
         ...session,
@@ -193,7 +193,7 @@ export const useSession = () => {
         getToken: async (_opts?: Record<string, unknown>): Promise<string | null> => session.access_token || null,
       }
     : null, [session, user]);
-  return { session: wrappedSession, isLoaded: true };
+  return { session: wrappedSession, isLoaded };
 };
 
 /**
