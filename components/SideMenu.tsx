@@ -216,6 +216,7 @@ export const SideMenu: React.FC<Props> = ({
         <div className="flex-1 space-y-1 overflow-y-auto px-4 py-2">
           <div className="mb-2 mt-2 px-3 text-xs font-bold text-gray-400">서비스 안내</div>
           <MenuItem icon={BookOpen} label="장례/추모 가이드" onClick={() => handleNav(ViewState.GUIDE)} />
+          <MenuItem icon={Calendar} label="구독 / 결제 안내" onClick={() => handleNav(ViewState.SUBSCRIPTION_PLANS)} />
           <MenuItem
             icon={ClipboardCheck}
             label="장례 후 행정 체크리스트"
@@ -249,7 +250,7 @@ export const SideMenu: React.FC<Props> = ({
 
           <div className="flex flex-col items-start text-[10px] text-gray-500">
             <span>버전 1.0.0</span>
-            <span>(주)웨브캐쳐</span>
+            <span>(주)아톰케어</span>
           </div>
         </div>
       </div>

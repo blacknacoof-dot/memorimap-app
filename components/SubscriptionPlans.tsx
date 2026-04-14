@@ -137,12 +137,14 @@ interface SubscriptionPlansProps {
 export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityId, type = 'facility' }: SubscriptionPlansProps) {
     const { user } = useUser();
     const { session, isLoaded } = useSession();
+    const isGuestCheckout = !session?.access_token;
 
     const plans = type === 'sangjo' ? sangjoPlans : facilityPlans;
     const [selectedPlan, setSelectedPlan] = useState<string | null>(normalizeSubscriptionPlanId(currentPlan) || null);
     const [expandedPlan, setExpandedPlan] = useState<string | null>(type === 'sangjo' ? 'sj_starter' : 'PREMIUM');
     const [showInquiryModal, setShowInquiryModal] = useState(false);
     const [inquiryForm, setInquiryForm] = useState({ name: '', phone: '', email: '', message: '' });
+    const [guestBuyer, setGuestBuyer] = useState({ fullName: '', phoneNumber: '', email: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isPaymentOpen, setIsPaymentOpen] = useState(false);
@@ -189,11 +191,15 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
 
     const handleSelectPlan = async (plan: Plan) => {
         if (isProcessing) return;
-        if (!isLoaded || !session?.access_token) {
-            toast.error('로그인 세션을 확인하는 중입니다. 잠시 후 다시 시도해 주세요.');
-            return;
-        }
         if (plan.id === 'FREE') {
+            if (isGuestCheckout) {
+                toast.error('비회원 상태에서는 무료 플랜 변경을 진행할 수 없습니다.');
+                return;
+            }
+            if (!isLoaded || !session?.access_token) {
+                toast.error('로그인 세션을 확인하는 중입니다. 잠시 후 다시 시도해 주세요.');
+                return;
+            }
             if (!confirm('구독을 해지하시겠습니까?\n\n현재 이용 기간이 끝날 때까지 유료 기능을 계속 사용할 수 있습니다.\n만료 후 자동으로 무료 플랜으로 전환됩니다.')) {
                 return;
             }
@@ -220,6 +226,55 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
 
         if (!window.PortOne) {
             toast.error('결제 모듈을 불러오지 못했습니다.');
+            return;
+        }
+
+        if (isGuestCheckout) {
+            if (!guestBuyer.fullName.trim() || !guestBuyer.phoneNumber.trim()) {
+                toast.error('비회원 결제를 위해 이름과 연락처를 입력해 주세요.');
+                return;
+            }
+
+            setIsProcessing(true);
+            setIsPaymentOpen(true);
+            try {
+                const paymentId = generatePaymentId('guestsub');
+                const response = await requestPayment({
+                    storeId: PORTONE_CONFIG.STORE_ID,
+                    channelKey: getChannelKey('general'),
+                    paymentId,
+                    orderName: `[추모맵] ${plan.name} 플랜`,
+                    totalAmount: plan.price,
+                    currency: "KRW",
+                    payMethod: "CARD",
+                    customer: {
+                        fullName: guestBuyer.fullName.trim(),
+                        phoneNumber: guestBuyer.phoneNumber.trim(),
+                        email: guestBuyer.email.trim() || undefined,
+                    },
+                });
+
+                if (response.code !== undefined) {
+                    toast.error(`결제 실패: ${response.message}`);
+                    return;
+                }
+
+                toast.success('결제 요청이 접수되었습니다. 결제 결과 확인 후 안내드립니다.');
+                return;
+            } catch (error) {
+                const msg = error instanceof Error ? error.message : '';
+                if (!msg.includes('취소')) {
+                    toast.error('결제 중 오류가 발생했습니다.');
+                }
+                return;
+            } finally {
+                setIsProcessing(false);
+                setIsPaymentOpen(false);
+            }
+        }
+
+        if (!isLoaded || !session?.access_token) {
+            toast.error('로그인 세션을 확인하는 중입니다. 잠시 후 다시 시도해 주세요.');
             return;
         }
 
@@ -327,6 +382,49 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
 
             {/* Plan List Area */}
             <div className="flex-1 px-4 py-6 space-y-4 pb-24">
+                {isGuestCheckout && (
+                    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div className="mb-3">
+                            <h2 className="text-sm font-bold text-slate-900">비회원 결제 정보</h2>
+                            <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                                카드 심사 확인을 위해 로그인 없이 운영 결제창까지 진입할 수 있습니다. 이름과 연락처를 입력한 뒤 원하는 플랜을 선택해 주세요.
+                            </p>
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                            <label className="block">
+                                <span className="mb-1 block text-[11px] font-bold text-slate-600">이름 *</span>
+                                <input
+                                    type="text"
+                                    value={guestBuyer.fullName}
+                                    onChange={(e) => setGuestBuyer((prev) => ({ ...prev, fullName: e.target.value }))}
+                                    placeholder="심사자 이름"
+                                    className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
+                                />
+                            </label>
+                            <label className="block">
+                                <span className="mb-1 block text-[11px] font-bold text-slate-600">연락처 *</span>
+                                <input
+                                    type="tel"
+                                    value={guestBuyer.phoneNumber}
+                                    onChange={(e) => setGuestBuyer((prev) => ({ ...prev, phoneNumber: e.target.value }))}
+                                    placeholder="010-0000-0000"
+                                    className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
+                                />
+                            </label>
+                            <label className="block sm:col-span-2">
+                                <span className="mb-1 block text-[11px] font-bold text-slate-600">이메일</span>
+                                <input
+                                    type="email"
+                                    value={guestBuyer.email}
+                                    onChange={(e) => setGuestBuyer((prev) => ({ ...prev, email: e.target.value }))}
+                                    placeholder="kcp-review@memorimap.kr"
+                                    className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
+                                />
+                            </label>
+                        </div>
+                    </div>
+                )}
+
                 {plans.map((plan) => {
                     const isExpanded = expandedPlan === plan.id;
                     const isSelected = selectedPlan === plan.id;
@@ -407,6 +505,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                                                 <li>• 결제 완료 후 30일간 이용 가능</li>
                                                 <li>• 해지 시 다음 결제일부터 중단</li>
                                                 <li>• 이미 결제된 당월 금액은 환불되지 않습니다</li>
+                                                {isGuestCheckout && <li>• 비회원은 결제창 확인용으로만 이용되며 관리자 기능은 제공되지 않습니다</li>}
                                             </ul>
                                         </div>
                                     )}
@@ -461,7 +560,13 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                                 ))}
                             </div>
                             <button
-                                onClick={() => setShowInquiryModal(true)}
+                                onClick={() => {
+                                    if (isGuestCheckout) {
+                                        toast('맞춤 견적은 고객센터 031-975-3335 또는 atomcare@naver.com으로 문의해 주세요.');
+                                        return;
+                                    }
+                                    setShowInquiryModal(true);
+                                }}
                                 className="w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg"
                             >
                                 <MessageCircle size={16} /> 맞춤 견적 문의하기
@@ -531,7 +636,13 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                     <p className="text-slate-400 text-xs mb-2">도움이 필요하신가요?</p>
                     <h3 className="text-white font-bold mb-6">전문 상담사가 파트너님의<br />시설에 맞는 플랜을 추천해드립니다.</h3>
                     <button
-                        onClick={() => setShowInquiryModal(true)}
+                        onClick={() => {
+                            if (isGuestCheckout) {
+                                toast('도입 문의는 고객센터 031-975-3335 또는 atomcare@naver.com으로 접수해 주세요.');
+                                return;
+                            }
+                            setShowInquiryModal(true);
+                        }}
                         className="w-full bg-white text-slate-900 py-3.5 rounded-xl font-bold hover:bg-slate-100 transition-colors"
                     >
                         1:1 도입 문의하기

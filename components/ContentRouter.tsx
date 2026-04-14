@@ -473,7 +473,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
       );
 
     case ViewState.SUBSCRIPTION_PLANS:
-      if (!isSignedIn || !userRole || !canAccessView(userRole, ViewState.SUBSCRIPTION_PLANS)) {
+      if (false) {
         return (
           <div className="h-full flex flex-col items-center justify-center p-6 bg-gray-50">
             <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
@@ -492,7 +492,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
           <div className="h-full relative flex flex-col">
             <div className="bg-white p-4 shadow-sm border-b flex items-center gap-3">
               <button
-                onClick={() => setViewState(ViewState.FACILITY_ADMIN)}
+                onClick={() => setViewState(isSignedIn && userRole && canAccessView(userRole, ViewState.SUBSCRIPTION_PLANS) ? ViewState.FACILITY_ADMIN : ViewState.MAP)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <ArrowLeft size={20} />
