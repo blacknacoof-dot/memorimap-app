@@ -9,6 +9,19 @@ import { getFacilitySubscription } from '../lib/queries/index';
 import { normalizeSubscriptionPlanId } from '../lib/subscriptionPlanIds';
 import { LegalModal } from './LegalModal';
 
+const normalizePhoneNumber = (value: string) => value.replace(/\D/g, '').slice(0, 11);
+
+const formatPhoneNumber = (value: string) => {
+    const cleaned = normalizePhoneNumber(value);
+    if (cleaned.length <= 3) return cleaned;
+    if (cleaned.length <= 7) return `${cleaned.slice(0, 3)}-${cleaned.slice(3)}`;
+    return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 7)}-${cleaned.slice(7)}`;
+};
+
+const normalizeGuestEmail = (value: string) => value.trim().toLowerCase();
+
+const isValidGuestEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
 interface Plan {
     id: string;
     name: string;
@@ -230,8 +243,24 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
         }
 
         if (isGuestCheckout) {
-            if (!guestBuyer.fullName.trim() || !guestBuyer.phoneNumber.trim()) {
+            const normalizedGuestBuyer = {
+                fullName: guestBuyer.fullName.trim(),
+                phoneNumber: normalizePhoneNumber(guestBuyer.phoneNumber),
+                email: normalizeGuestEmail(guestBuyer.email),
+            };
+
+            if (!normalizedGuestBuyer.fullName || !normalizedGuestBuyer.phoneNumber) {
                 toast.error('비회원 결제를 위해 이름과 연락처를 입력해 주세요.');
+                return;
+            }
+
+            if (normalizedGuestBuyer.phoneNumber.length < 10 || normalizedGuestBuyer.phoneNumber.length > 11) {
+                toast.error('연락처는 숫자 10-11자리로 입력해 주세요.');
+                return;
+            }
+
+            if (normalizedGuestBuyer.email && !isValidGuestEmail(normalizedGuestBuyer.email)) {
+                toast.error('이메일 형식을 다시 확인해 주세요.');
                 return;
             }
 
@@ -248,9 +277,9 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                     currency: "KRW",
                     payMethod: "CARD",
                     customer: {
-                        fullName: guestBuyer.fullName.trim(),
-                        phoneNumber: guestBuyer.phoneNumber.trim(),
-                        email: guestBuyer.email.trim() || undefined,
+                        fullName: normalizedGuestBuyer.fullName,
+                        phoneNumber: normalizedGuestBuyer.phoneNumber,
+                        email: normalizedGuestBuyer.email || undefined,
                     },
                 });
 
@@ -406,7 +435,8 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                                 <input
                                     type="tel"
                                     value={guestBuyer.phoneNumber}
-                                    onChange={(e) => setGuestBuyer((prev) => ({ ...prev, phoneNumber: e.target.value }))}
+                                    inputMode="numeric"
+                                    onChange={(e) => setGuestBuyer((prev) => ({ ...prev, phoneNumber: formatPhoneNumber(e.target.value) }))}
                                     placeholder="010-0000-0000"
                                     className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
                                 />
@@ -416,7 +446,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                                 <input
                                     type="email"
                                     value={guestBuyer.email}
-                                    onChange={(e) => setGuestBuyer((prev) => ({ ...prev, email: e.target.value }))}
+                                    onChange={(e) => setGuestBuyer((prev) => ({ ...prev, email: normalizeGuestEmail(e.target.value) }))}
                                     placeholder="kcp-review@memorimap.kr"
                                     className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
                                 />

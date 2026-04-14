@@ -32,6 +32,26 @@ export interface PaymentResponse {
     txId?: string;
 }
 
+function getPaymentErrorMessage(error: unknown): string {
+    if (error instanceof Error && error.message) {
+        return error.message;
+    }
+
+    if (typeof error === 'object' && error !== null) {
+        const maybeMessage = 'message' in error ? error.message : undefined;
+        if (typeof maybeMessage === 'string' && maybeMessage.length > 0) {
+            return maybeMessage;
+        }
+
+        const maybeCode = 'code' in error ? error.code : undefined;
+        if (typeof maybeCode === 'string' && maybeCode.length > 0) {
+            return maybeCode;
+        }
+    }
+
+    return '';
+}
+
 // PortOne 결제 요청
 export const requestPayment = async (params: PaymentRequest): Promise<PaymentResponse> => {
     if (!window.PortOne) {
@@ -66,7 +86,7 @@ export const requestPayment = async (params: PaymentRequest): Promise<PaymentRes
         return response;
 
     } catch (error: unknown) {
-        const errMsg = error instanceof Error ? error.message : '';
+        const errMsg = getPaymentErrorMessage(error);
 
         // User-friendly payment error messages.
         if (errMsg.includes('User closed') || errMsg.includes('cancel')) {
