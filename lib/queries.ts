@@ -2192,7 +2192,7 @@ export const fetchFacilitiesInView = async (
         const sw = bounds.getSouthWest();
         const ne = bounds.getNorthEast();
 
-        // 🟢 [Fix] Refresh Token if provided (Solves JWT Expired)
+        // Legacy token arg is ignored because the shared Supabase client manages auth state.
         if (token) {
             setSupabaseAuth(token);
         }

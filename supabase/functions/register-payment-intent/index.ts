@@ -114,14 +114,14 @@ serve(async (req: Request) => {
   }
 
   const authHeader = req.headers.get("Authorization");
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  const token = authHeader?.replace(/^Bearer\s+/i, "").trim() ?? "";
+  if (!authHeader || !token || token === authHeader.trim()) {
     return new Response(JSON.stringify({ error: "Missing or invalid Authorization header" }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
-  const token = authHeader.replace("Bearer ", "");
   const { userId: verifiedUserId, error: authError } = await verifyJWT(token);
   if (authError || !verifiedUserId) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
