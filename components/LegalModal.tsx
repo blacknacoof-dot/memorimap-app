@@ -100,7 +100,7 @@ export const LegalModal: React.FC<Props> = ({ onClose, initialTab = 'privacy' })
               </div>
               <div>
                 <h4 className="font-bold text-gray-900 mb-1">4. 해지</h4>
-                <p>구독 해지는 대시보드 또는 고객센터를 통해 요청할 수 있으며, 다음 결제일부터 자동 청구가 중단됩니다.</p>
+                <p>이용 중단은 대시보드 또는 고객센터를 통해 요청할 수 있으며, 현재 결제된 30일 이용 기간이 끝난 뒤 추가 결제 없이 종료됩니다.</p>
               </div>
               <div>
                 <h4 className="font-bold text-gray-900 mb-1">5. 책임 제한</h4>
@@ -144,8 +144,8 @@ export const LegalModal: React.FC<Props> = ({ onClose, initialTab = 'privacy' })
               <h3 className="font-bold text-lg text-gray-900">환불 및 해지 정책</h3>
               <p>아래 정책은 메모리맵의 구독형 유료 서비스 기준이며, 입점 시설과 이용자 사이의 개별 계약에는 별도 정책이 적용될 수 있습니다.</p>
               <div>
-                <h4 className="font-bold text-gray-900 mb-1">1. 정기결제 해지</h4>
-                <p>정기결제 해지는 다음 결제 예정일 전까지 신청해야 하며, 해지 후 다음 청구일부터 자동 결제가 중단됩니다.</p>
+                <h4 className="font-bold text-gray-900 mb-1">1. 1회 결제 이용 종료</h4>
+                <p>유료 이용권은 1회 결제로 30일간 제공되며, 이용 중단을 요청해도 현재 결제된 기간까지는 서비스를 이용할 수 있습니다. 추가 이용이 필요하면 기간 종료 후 다시 결제해야 합니다.</p>
               </div>
               <div>
                 <h4 className="font-bold text-gray-900 mb-1">2. 환불 기준</h4>

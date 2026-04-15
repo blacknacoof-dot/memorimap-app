@@ -473,7 +473,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
       );
 
     case ViewState.SUBSCRIPTION_PLANS:
-      if (false) {
+      if (!isSignedIn || !userRole || !canAccessView(userRole, ViewState.SUBSCRIPTION_PLANS)) {
         return (
           <div className="h-full flex flex-col items-center justify-center p-6 bg-gray-50">
             <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center">

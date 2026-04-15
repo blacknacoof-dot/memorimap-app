@@ -216,7 +216,7 @@ export const SideMenu: React.FC<Props> = ({
         <div className="flex-1 space-y-1 overflow-y-auto px-4 py-2">
           <div className="mb-2 mt-2 px-3 text-xs font-bold text-gray-400">서비스 안내</div>
           <MenuItem icon={BookOpen} label="장례/추모 가이드" onClick={() => handleNav(ViewState.GUIDE)} />
-          <MenuItem icon={Calendar} label="구독 / 결제 안내" onClick={() => handleNav(ViewState.SUBSCRIPTION_PLANS)} />
+          <MenuItem icon={Calendar} label="구독 / 결제 안내" onClick={() => handleNav(ViewState.PERSONAL_SUBSCRIPTION)} />
           <MenuItem
             icon={ClipboardCheck}
             label="장례 후 행정 체크리스트"

@@ -438,10 +438,10 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                                     {/* 결제 안내 블록 — 유료 플랜만 */}
                                     {plan.price > 0 && !isCurrent && (
                                         <div className="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                            <p className="text-[10px] font-bold text-slate-600 mb-1">구독 결제 안내</p>
+                                            <p className="text-[10px] font-bold text-slate-600 mb-1">1회 결제 안내</p>
                                             <ul className="text-[10px] text-slate-500 space-y-0.5">
                                                 <li>• 결제 완료 후 30일간 이용 가능</li>
-                                                <li>• 해지 시 다음 결제일부터 중단</li>
+                                                <li>• 이용 기간 종료 후 계속 이용하려면 다시 결제해야 합니다</li>
                                                 <li>• 이미 결제된 당월 금액은 환불되지 않습니다</li>
                                             </ul>
                                         </div>
@@ -489,9 +489,9 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                         <Shield size={16} className="text-primary" /> 안내 사항
                     </h3>
                     <div className="space-y-3 text-[11px] text-slate-500 leading-relaxed">
-                        <p>• 유료 플랜은 <strong className="text-slate-700">월 구독 결제</strong>로 진행됩니다.</p>
+                        <p>• 유료 플랜은 <strong className="text-slate-700">1회 결제형 30일 이용권</strong>으로 제공됩니다.</p>
                         <p>• 결제 완료 후 30일간 이용 가능합니다.</p>
-                        <p>• <strong className="text-slate-700">해지 시 다음 결제일부터 중단</strong>되며, 이미 결제된 당월은 환불되지 않습니다.</p>
+                        <p>• 이용 기간 종료 후 계속 이용하려면 다시 결제해야 하며, 이미 결제된 이용 기간은 환불되지 않습니다.</p>
                         <p>• 해지 후에도 남은 이용 기간까지 서비스를 이용하실 수 있습니다.</p>
                         <p>• 결제 관련 문의: <strong className="text-slate-700">support@memorimap.kr</strong></p>
                     </div>
