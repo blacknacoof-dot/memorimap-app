@@ -61,14 +61,15 @@ function isInvalidSessionError(error: unknown): boolean {
   const name = maybeError.name || '';
   const message = (maybeError.message || '').toLowerCase();
 
-  if (status === 401) return true;
+  if (status === 401 && name === 'AuthApiError') return true;
   if (code === 'PGRST301') return true;
   if (name === 'AuthApiError' && status === 401) return true;
 
   return (
     message.includes('invalid jwt') ||
-    message.includes('jwt') ||
-    message.includes('token') ||
+    message.includes('jwt expired') ||
+    message.includes('refresh_token_not_found') ||
+    message.includes('refresh token not found') ||
     message.includes('session_not_found') ||
     message.includes('user from sub claim in jwt does not exist')
   );
@@ -108,12 +109,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data, error } = await supabase.auth.getUser(nextSession.access_token);
 
       if (error && isInvalidSessionError(error)) {
+        const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+
+        if (!refreshError && refreshed.session?.access_token) {
+          const { data: refreshedUser, error: refreshedUserError } = await supabase.auth.getUser(refreshed.session.access_token);
+
+          if (!refreshedUserError && refreshedUser.user) {
+            if (!mounted) return;
+            setSession(refreshed.session);
+            setIsLoaded(true);
+            return;
+          }
+        }
+
         await clearInvalidSession();
         return;
       }
 
       if (!mounted) return;
-      setSession(data.user ? nextSession : null);
+      setSession(error ? nextSession : (data.user ? nextSession : null));
       setIsLoaded(true);
     };
 

@@ -22,10 +22,7 @@ const DEV_ORIGINS = [
     "http://127.0.0.1:5173",
 ];
 
-const isDevMode = Deno.env.get("ENVIRONMENT") === "development";
-const ALLOWED_ORIGINS = isDevMode
-    ? [...PRODUCTION_ORIGINS, ...DEV_ORIGINS]
-    : PRODUCTION_ORIGINS;
+const ALLOWED_ORIGINS = [...PRODUCTION_ORIGINS, ...DEV_ORIGINS];
 
 function getCorsOrigin(req: Request): string {
     const origin = req.headers.get("Origin") || "";
@@ -200,7 +197,13 @@ serve(async (req: Request) => {
         });
 
         // [Security] JWT 인증 — Supabase Auth 네이티브 검증
-        const token = authHeader.replace(/^Bearer\s+/i, "");
+        const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+        if (!token || token === authHeader.trim()) {
+            return new Response(
+                JSON.stringify({ success: false, error: "Invalid authorization header" }),
+                { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+        }
         const supabaseAuth = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
             global: { headers: { Authorization: `Bearer ${token}` } },
             auth: { autoRefreshToken: false, persistSession: false }
