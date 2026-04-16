@@ -24,6 +24,9 @@ export const RouteStateSync: React.FC<RouteStateSyncProps> = ({
     () => new Set<ViewState>([
       ViewState.ADMIN,
       ViewState.FACILITY_ADMIN,
+      ViewState.SUBSCRIPTION_PLANS,
+      ViewState.PERSONAL_SUBSCRIPTION,
+      ViewState.SANGJO_DASHBOARD,
       ViewState.SUPER_ADMIN,
       ViewState.FUNERAL_COMPANIES,
       ViewState.PARTNER_INQUIRY,

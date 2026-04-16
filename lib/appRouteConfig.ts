@@ -16,16 +16,22 @@ const ROUTABLE_PATH_TO_VIEW: Record<string, ViewState> = {
   '/admin': ViewState.ADMIN,
   '/facility-admin': ViewState.FACILITY_ADMIN,
   '/super-admin': ViewState.SUPER_ADMIN,
+  '/sangjo-dashboard': ViewState.SANGJO_DASHBOARD,
   '/funeral-company': ViewState.FUNERAL_COMPANIES,
   '/partner-inquiry': ViewState.PARTNER_INQUIRY,
+  '/subscription-plans': ViewState.SUBSCRIPTION_PLANS,
+  '/personal-subscription': ViewState.PERSONAL_SUBSCRIPTION,
 };
 
 const VIEW_TO_PATH: Record<ViewState, string> = {
   [ViewState.ADMIN]: '/admin',
   [ViewState.FACILITY_ADMIN]: '/facility-admin',
   [ViewState.SUPER_ADMIN]: '/super-admin',
+  [ViewState.SANGJO_DASHBOARD]: '/sangjo-dashboard',
   [ViewState.FUNERAL_COMPANIES]: '/funeral-company',
   [ViewState.PARTNER_INQUIRY]: '/partner-inquiry',
+  [ViewState.SUBSCRIPTION_PLANS]: '/subscription-plans',
+  [ViewState.PERSONAL_SUBSCRIPTION]: '/personal-subscription',
   [ViewState.MAP]: '/',
   [ViewState.LIST]: '/',
   [ViewState.MY_PAGE]: '/',
@@ -33,11 +39,8 @@ const VIEW_TO_PATH: Record<ViewState, string> = {
   [ViewState.NOTICES]: '/',
   [ViewState.SUPPORT]: '/',
   [ViewState.SETTINGS]: '/',
-  [ViewState.SUBSCRIPTION_PLANS]: '/',
   [ViewState.CONSULTATION]: '/',
   [ViewState.CONSULTATION_HISTORY]: '/',
-  [ViewState.SANGJO_DASHBOARD]: '/',
-  [ViewState.PERSONAL_SUBSCRIPTION]: '/',
   [ViewState.ADMIN_CHECKLIST]: '/',
 };
 
@@ -133,8 +136,11 @@ export const resolveLegacyPathToHashUrl = (pathname: string, search: string): st
   const passthroughPaths = new Set([
     '/facility-admin',
     '/super-admin',
+    '/sangjo-dashboard',
     '/funeral-company',
     '/partner-inquiry',
+    '/subscription-plans',
+    '/personal-subscription',
     '/auth',
     '/external-browser-guide',
   ]);

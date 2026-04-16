@@ -7,6 +7,7 @@ import { BottomNav } from './BottomNav';
 import { ContentRouter, ContentRouterProps, LoadingFallback } from './ContentRouter';
 import { ModalContainer, ModalContainerProps } from './ModalContainer';
 import { SOSEmergencyMode } from './SOSEmergencyMode';
+import { WebBusinessFooter } from './WebBusinessFooter';
 
 type ToastPayload = {
   message: string;
@@ -53,8 +54,9 @@ export const AppMainLayout: React.FC<AppMainLayoutProps> = ({
   modalContainerProps,
 }) => {
   return (
-    <div className="app-mobile-shell h-full w-full relative bg-gray-100 flex justify-center overflow-hidden">
-      <div className="w-full h-full md:max-w-md bg-white relative shadow-2xl flex flex-col">
+    <div className="app-mobile-shell h-full w-full relative bg-gray-100 flex justify-center overflow-x-hidden overflow-y-auto">
+      <div className="w-full md:max-w-md md:py-6">
+        <div className="w-full h-full bg-white relative shadow-2xl flex flex-col md:min-h-[calc(100dvh-7rem)]">
         {roleError && import.meta.env.DEV && (
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[10000] w-[90%] max-w-md bg-red-50 border border-red-200 p-4 rounded-xl shadow-lg flex items-start gap-3">
             <AlertCircle className="text-red-500 shrink-0" size={20} />
@@ -116,6 +118,8 @@ export const AppMainLayout: React.FC<AppMainLayoutProps> = ({
         <Toaster richColors position="bottom-center" closeButton />
 
         <ModalContainer {...modalContainerProps} />
+        </div>
+        <WebBusinessFooter className="md:rounded-b-2xl md:shadow-2xl md:shadow-slate-300/30" />
       </div>
     </div>
   );

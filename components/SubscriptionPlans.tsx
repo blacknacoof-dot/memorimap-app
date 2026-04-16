@@ -330,6 +330,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                     issueId,
                     issueName: `[추모맵] ${plan.name} 정기결제 카드 등록`,
                     customerName: user?.fullName || user?.firstName || '업체 관리자',
+                    customerPhoneNumber: user?.primaryPhoneNumber?.phoneNumber || '',
                     customerEmail: user?.primaryEmailAddress?.emailAddress || session?.user?.email || '',
                 });
 

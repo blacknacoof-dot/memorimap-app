@@ -212,6 +212,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                     issueId,
                     issueName: `[추모맵] 개인 ${plan.name} 정기결제 카드 등록`,
                     customerName: user?.fullName || user?.firstName || '개인 사용자',
+                    customerPhoneNumber: user?.primaryPhoneNumber?.phoneNumber || '',
                     customerEmail: user?.primaryEmailAddress?.emailAddress || session?.user?.email || '',
                 });
 
@@ -556,7 +557,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                             <p>유료 플랜은 첫 카드 등록과 초회 결제 완료 후 매월 자동으로 결제됩니다.</p>
                             <p>해지 요청 시 다음 결제일부터 자동청구가 중단되며 현재 이용 기간은 유지됩니다.</p>
                             <p>이미 결제된 당월 금액은 환불되지 않습니다.</p>
-                            <p>결제 관련 문의: <strong className="text-slate-700">support@memorimap.kr</strong></p>
+                            <p>결제 관련 문의: <strong className="text-slate-700">atomcare@naver.com</strong></p>
                         </div>
                     )}
                     <div className={`${recurringEnabled ? 'hidden ' : ''}space-y-3 text-[11px] text-slate-500 leading-relaxed`}>
@@ -564,7 +565,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                         <p>• 결제 완료 후 30일간 이용 가능합니다.</p>
                         <p>• 이용 기간 종료 후 계속 이용하려면 다시 결제해야 하며, 이미 결제된 이용 기간은 환불되지 않습니다.</p>
                         <p>• 이용 중 해지를 요청해도 남은 이용 기간까지는 서비스를 이용할 수 있습니다.</p>
-                        <p>• 결제 관련 문의: <strong className="text-slate-700">support@memorimap.kr</strong></p>
+                        <p>• 결제 관련 문의: <strong className="text-slate-700">atomcare@naver.com</strong></p>
                     </div>
                 </div>
 

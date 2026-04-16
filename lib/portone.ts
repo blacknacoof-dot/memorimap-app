@@ -404,8 +404,10 @@ interface PortOneIssueBillingKeyParams {
     billingKeyMethod: string;
     issueId?: string;
     issueName?: string;
+    redirectUrl?: string;
     customer?: {
         fullName?: string;
+        phoneNumber?: string;
         email?: string;
     };
     offerPeriod?: {
@@ -438,6 +440,7 @@ export const requestIssueBillingKey = async (params: {
     issueId?: string;
     issueName?: string;
     customerName?: string;
+    customerPhoneNumber?: string;
     customerEmail?: string;
 }): Promise<BillingKeyResponse> => {
     if (!window.PortOne?.requestIssueBillingKey) {
@@ -446,6 +449,7 @@ export const requestIssueBillingKey = async (params: {
 
     const customer: Record<string, string> = {};
     if (params.customerName) customer.fullName = params.customerName;
+    if (params.customerPhoneNumber) customer.phoneNumber = params.customerPhoneNumber;
     if (params.customerEmail) customer.email = params.customerEmail;
 
     const response = await window.PortOne.requestIssueBillingKey({
@@ -454,6 +458,7 @@ export const requestIssueBillingKey = async (params: {
         billingKeyMethod: 'CARD',
         ...(params.issueId && { issueId: params.issueId }),
         ...(params.issueName && { issueName: params.issueName }),
+        redirectUrl: `${window.location.origin}${window.location.pathname}${window.location.hash}`,
         ...(Object.keys(customer).length > 0 && { customer }),
         bypass: {
             kcp_v2: { site_name: '추모맵' },
