@@ -202,6 +202,33 @@ git reset --hard HEAD
 - Never deploy from a dirty working tree.
 - Deploy only from a Git commit, never from loose local changes.
 - Standard sequence: code change -> git commit -> `git push origin main` -> clean worktree -> `vercel --prod --yes` -> inspect -> cache-bypass check.
+- Use one repository state vocabulary only:
+  - `local-only`: changed or untracked in the current workspace, not committed
+  - `committed-local`: committed on the current machine, not pushed to `origin`
+  - `remote-only`: pushed to `origin`, not yet deployed to production
+  - `deployed`: confirmed on production after `vercel inspect` and live check
+- Do not describe a file or fix as "saved" without also classifying whether it is `local-only`, `committed-local`, `remote-only`, or `deployed`.
+- Do not describe `git push origin main` as deployment. It only moves work from `committed-local` to `remote-only`.
+- Do not describe `vercel --prod --yes` as source-control completion. Deployment does not replace commit or push.
+- Every task involving release state must be described in this fixed order:
+  - local working tree state
+  - committed local state
+  - remote repository state
+  - production deployment state
+- Before any commit or deploy, classify every relevant change into exactly one of these buckets:
+  - release code
+  - document-only
+  - local hold
+- Never mix these buckets in one routine commit unless explicitly requested.
+- Before any commit or deploy, re-check whether document-only changes are being mixed into code or release commits.
+- Preserve the 2026-04-10 document split unless the task explicitly asks to reorganize it.
+- Keep these documentation commits separate from routine patch/deploy work:
+  - `547a4f9` `docs: add deployment and security runbooks`
+  - `900bd49` `docs: add map marker cluster research report`
+  - `15fcfb1` `docs: add marketing and sales planning reports`
+- Treat these as held local artifacts until explicitly requested otherwise:
+  - `docs/04-report/screenshots/`
+  - `docs/audit_fix_plan_phase5_20260314.md`
 - Use a clean worktree for production deployment:
   - `git worktree add ../deploy-clean main`
   - `cd ../deploy-clean`
