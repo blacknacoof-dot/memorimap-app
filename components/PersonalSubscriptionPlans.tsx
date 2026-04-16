@@ -3,7 +3,18 @@ import {
     Check, X, Sparkles, Crown, Zap, ChevronDown, ChevronUp,
     MessageCircle, Shield, ArrowLeft
 } from 'lucide-react';
-import { requestPayment, verifyPayment, registerPaymentIntent, PORTONE_CONFIG, getChannelKey, generatePaymentId } from '../lib/portone';
+import {
+    requestPayment,
+    verifyPayment,
+    registerPaymentIntent,
+    PORTONE_CONFIG,
+    getChannelKey,
+    generatePaymentId,
+    generateIssueId,
+    requestIssueBillingKey,
+    issueBillingKeySubscription,
+    isRecurringSubscriptionEnabled,
+} from '../lib/portone';
 import { toast } from 'sonner';
 import { useUser, useSession } from '../lib/auth';
 import { getAuthClient } from '../lib/supabaseClient';
@@ -90,6 +101,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
     const { data: userPlanData, isLoading: isUserPlanLoading, refetch: refetchUserPlan } = useUserPlan();
 
     const currentPlan = (userPlanData?.plan_name || 'PERSONAL_FREE').toUpperCase();
+    const recurringEnabled = isRecurringSubscriptionEnabled();
     const isCancelling = userPlanData?.status === 'cancelling';
     const cancelExpiresAt = userPlanData?.expires_at ?? null;
     const isBetaPremium = userPlanData?.is_beta_premium === true;
@@ -193,6 +205,44 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
 
         try {
             setIsPaymentOpen(true);
+            if (recurringEnabled) {
+                const issueId = generateIssueId('psub');
+                const billingKeyResponse = await requestIssueBillingKey({
+                    channelKey: getChannelKey('billing'),
+                    issueId,
+                    issueName: `[추모맵] 개인 ${plan.name} 정기결제 카드 등록`,
+                    customerName: user?.fullName || user?.firstName || '개인 사용자',
+                    customerEmail: user?.primaryEmailAddress?.emailAddress || session?.user?.email || '',
+                });
+
+                if (billingKeyResponse.code !== undefined || !billingKeyResponse.billingKey) {
+                    toast.error(billingKeyResponse.message || '카드 등록에 실패했습니다.');
+                    return;
+                }
+
+                const activation = await issueBillingKeySubscription({
+                    billingKey: billingKeyResponse.billingKey,
+                    paymentContext: 'personal_subscription',
+                    planId: plan.nameEn,
+                    targetUserId: userId,
+                    authToken: session.access_token,
+                    orderName: `[추모맵] 개인 ${plan.name} 정기결제`,
+                    customerName: user?.fullName || user?.firstName || '개인 사용자',
+                    customerEmail: user?.primaryEmailAddress?.emailAddress || session?.user?.email || '',
+                    customerPhoneNumber: user?.primaryPhoneNumber?.phoneNumber || '',
+                });
+
+                if (!activation.success) {
+                    toast.error(activation.error || '정기결제 시작에 실패했습니다.');
+                    return;
+                }
+
+                setSelectedPlan(plan.id);
+                await refetchUserPlan();
+                toast.success(`${plan.name} 정기결제가 시작되었습니다.`);
+                return;
+            }
+
             const paymentId = generatePaymentId('psub');
             const intentRegistration = await registerPaymentIntent({
                 paymentId,
@@ -436,12 +486,25 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                                     </div>
 
                                     {/* 결제 안내 블록 — 유료 플랜만 */}
-                                    {plan.price > 0 && !isCurrent && (
+                                    {plan.price > 0 && !isCurrent && recurringEnabled && (
                                         <div className="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                            <p className="text-[10px] font-bold text-slate-600 mb-1">구독 결제 안내</p>
+                                            <p className="text-[10px] font-bold text-slate-600 mb-1">정기결제 안내</p>
                                             <ul className="text-[10px] text-slate-500 space-y-0.5">
-                                                <li>• 결제 완료 후 30일간 이용 가능</li>
-                                                <li>• 해지 시 다음 결제일부터 중단</li>
+                                                <li>• 첫 카드 등록과 초회 결제 완료 후 매월 자동으로 결제됩니다</li>
+                                                <li>• 해지 요청 시 다음 결제일부터 자동청구가 중단됩니다</li>
+                                                <li>• 이미 결제된 당월 금액은 환불되지 않습니다</li>
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {plan.price > 0 && !isCurrent && !recurringEnabled && (
+                                        <div className="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                            <p className="text-[10px] font-bold text-slate-600 mb-1">
+                                                {recurringEnabled ? '정기결제 안내' : '1회 결제 안내'}
+                                            </p>
+                                            <ul className="text-[10px] text-slate-500 space-y-0.5">
+                                                <li>• 1회 결제 완료 후 30일간 이용 가능합니다</li>
+                                                <li>• 이용 기간 종료 후 계속 이용하려면 다시 결제해야 합니다</li>
                                                 <li>• 이미 결제된 당월 금액은 환불되지 않습니다</li>
                                             </ul>
                                         </div>
@@ -475,7 +538,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                                                 ? '현재 이용 중'
                                                 : plan.price === 0
                                                     ? isCancelling ? '이미 해지 예약됨' : '구독 해지하기'
-                                                    : '구독 시작하기'}
+                                                    : recurringEnabled ? '정기결제 시작하기' : '구독 시작하기'}
                                     </button>
                                 </div>
                             )}
@@ -488,11 +551,19 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                     <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
                         <Shield size={16} className="text-primary" /> 안내 사항
                     </h3>
-                    <div className="space-y-3 text-[11px] text-slate-500 leading-relaxed">
-                        <p>• 유료 플랜은 <strong className="text-slate-700">월 구독 결제</strong>로 진행됩니다.</p>
+                    {recurringEnabled && (
+                        <div className="mb-3 space-y-3 text-[11px] text-slate-500 leading-relaxed">
+                            <p>유료 플랜은 첫 카드 등록과 초회 결제 완료 후 매월 자동으로 결제됩니다.</p>
+                            <p>해지 요청 시 다음 결제일부터 자동청구가 중단되며 현재 이용 기간은 유지됩니다.</p>
+                            <p>이미 결제된 당월 금액은 환불되지 않습니다.</p>
+                            <p>결제 관련 문의: <strong className="text-slate-700">support@memorimap.kr</strong></p>
+                        </div>
+                    )}
+                    <div className={`${recurringEnabled ? 'hidden ' : ''}space-y-3 text-[11px] text-slate-500 leading-relaxed`}>
+                        <p>• 유료 플랜은 <strong className="text-slate-700">1회 결제형 30일 이용권</strong>으로 제공됩니다.</p>
                         <p>• 결제 완료 후 30일간 이용 가능합니다.</p>
-                        <p>• <strong className="text-slate-700">해지 시 다음 결제일부터 중단</strong>되며, 이미 결제된 당월은 환불되지 않습니다.</p>
-                        <p>• 해지 후에도 남은 이용 기간까지 서비스를 이용하실 수 있습니다.</p>
+                        <p>• 이용 기간 종료 후 계속 이용하려면 다시 결제해야 하며, 이미 결제된 이용 기간은 환불되지 않습니다.</p>
+                        <p>• 이용 중 해지를 요청해도 남은 이용 기간까지는 서비스를 이용할 수 있습니다.</p>
                         <p>• 결제 관련 문의: <strong className="text-slate-700">support@memorimap.kr</strong></p>
                     </div>
                 </div>

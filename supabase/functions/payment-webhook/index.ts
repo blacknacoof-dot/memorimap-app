@@ -1,5 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  persistFacilitySubscription as persistFacilitySubscriptionShared,
+  persistPersonalSubscription as persistPersonalSubscriptionShared,
+} from "../_shared/subscriptionPersistence.ts";
 
 const PORTONE_API_URL = "https://api.portone.io";
 
@@ -12,6 +16,7 @@ type PaymentIntentRow = {
   plan_id: string;
   expected_amount: number;
   status: "pending" | "paid" | "failed" | "cancelled";
+  billing_key?: string | null;
 };
 
 async function verifyWebhookSignature(
@@ -109,7 +114,7 @@ async function getPaymentIntent(
 ): Promise<PaymentIntentRow | null> {
   const { data, error } = await db
     .from("payment_intents")
-    .select("payment_id, payment_context, user_id, facility_id, plan_id, expected_amount, status")
+    .select("payment_id, payment_context, user_id, facility_id, plan_id, expected_amount, status, billing_key")
     .eq("payment_id", paymentId)
     .limit(1)
     .maybeSingle();
@@ -391,13 +396,14 @@ async function handleSubscriptionPaid(
       return { action: "error:facility_metadata_missing" };
     }
 
-    const persistResult = await persistFacilitySubscription(
-      db,
-      intent.facility_id,
-      intent.plan_id,
-      paymentId,
-      amount || intent.expected_amount,
-    );
+    const persistResult = await persistFacilitySubscriptionShared(db, {
+      facilityId: intent.facility_id,
+      planId: intent.plan_id,
+      portonePaymentId: paymentId,
+      amount: amount || intent.expected_amount,
+      billingKey: intent.billing_key,
+      autoRenew: !!intent.billing_key,
+    });
 
     if (!persistResult.persisted) {
       await log(db, "ERROR", "Facility subscription persistence failed in webhook", {
@@ -407,13 +413,14 @@ async function handleSubscriptionPaid(
       return { action: "error:facility_persist_failed" };
     }
   } else {
-    const persistResult = await persistPersonalSubscription(
-      db,
-      intent.user_id,
-      intent.plan_id,
-      paymentId,
-      amount || intent.expected_amount,
-    );
+    const persistResult = await persistPersonalSubscriptionShared(db, {
+      userId: intent.user_id,
+      planId: intent.plan_id,
+      portonePaymentId: paymentId,
+      amount: amount || intent.expected_amount,
+      billingKey: intent.billing_key,
+      autoRenew: !!intent.billing_key,
+    });
 
     if (!persistResult.persisted) {
       await log(db, "ERROR", "Personal subscription persistence failed in webhook", {
