@@ -164,6 +164,8 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
     const isGuestCheckout = !session?.access_token;
     const recurringEnabled = isRecurringSubscriptionEnabled();
     const isRecurringUi = recurringEnabled && !isGuestCheckout;
+    const guestPaymentGuideTitle = recurringEnabled ? '비로그인 일반결제 안내' : '결제창 확인 안내';
+    const guestPaymentButtonLabel = recurringEnabled ? '일반결제 확인하기' : '결제창 확인하기';
 
     const plans = type === 'sangjo' ? sangjoPlans : facilityPlans;
     const [selectedPlan, setSelectedPlan] = useState<string | null>(normalizeSubscriptionPlanId(currentPlan) || null);
@@ -176,6 +178,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
     const [isPaymentOpen, setIsPaymentOpen] = useState(false);
     const [showLegalModal, setShowLegalModal] = useState(false);
     const [legalTab, setLegalTab] = useState<'terms' | 'privacy' | 'refund' | 'business' | 'license'>('business');
+    const effectiveSelectedPlan = isGuestCheckout ? null : selectedPlan;
 
     const cancelPayment = useCallback(() => {
         const bodyChildren = document.body.children;
@@ -280,6 +283,8 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
             setIsProcessing(true);
             setIsPaymentOpen(true);
             try {
+                // Guests can only verify the one-time payment flow.
+                // Recurring billing is available only after login.
                 const paymentId = generatePaymentId('guestsub');
                 const response = await requestPayment({
                     storeId: PORTONE_CONFIG.STORE_ID,
@@ -509,7 +514,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
 
                 {plans.map((plan) => {
                     const isExpanded = expandedPlan === plan.id;
-                    const isSelected = selectedPlan === plan.id;
+                    const isSelected = effectiveSelectedPlan === plan.id;
 
                     return (
                         <div
@@ -583,14 +588,14 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                                     {plan.price > 0 && !isSelected && (
                                         <div className="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
                                             <p className="text-[10px] font-bold text-slate-600 mb-1">
-                                                {isGuestCheckout ? '결제창 확인 안내' : isRecurringUi ? '정기결제 안내' : '1회 결제 안내'}
+                                                {isGuestCheckout ? guestPaymentGuideTitle : isRecurringUi ? '정기결제 안내' : '1회 결제 안내'}
                                             </p>
                                             <ul className="text-[10px] text-slate-500 space-y-0.5">
                                                 {isGuestCheckout ? (
                                                     <>
-                                                        <li>• 비회원은 운영 결제창 확인용으로만 이용할 수 있습니다</li>
-                                                        <li>• 정기결제 등록과 관리자 기능은 로그인 후 이용할 수 있습니다</li>
-                                                        <li>• 비회원 상태에서는 정기결제가 등록되지 않습니다</li>
+                                                        <li>• 비로그인 상태에서는 일반 카드결제 창만 확인할 수 있습니다</li>
+                                                        <li>• 정기결제 카드 등록과 구독 시작은 로그인 후에만 가능합니다</li>
+                                                        <li>• 비로그인 상태에서는 billing 채널과 자동결제가 사용되지 않습니다</li>
                                                     </>
                                                 ) : isRecurringUi ? (
                                                     <>
@@ -622,7 +627,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                                             : isSelected
                                                 ? '현재 적용 중인 플랜'
                                                 : isGuestCheckout
-                                                    ? '결제창 확인하기'
+                                                    ? guestPaymentButtonLabel
                                                     : isRecurringUi
                                                         ? '정기결제 시작하기'
                                                         : '구독 시작하기'}
