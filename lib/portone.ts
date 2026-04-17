@@ -460,9 +460,6 @@ export const requestIssueBillingKey = async (params: {
         ...(params.issueName && { issueName: params.issueName }),
         redirectUrl: `${window.location.origin}${window.location.pathname}${window.location.hash}`,
         ...(Object.keys(customer).length > 0 && { customer }),
-        bypass: {
-            kcp_v2: { site_name: '추모맵' },
-        },
     });
 
     return response;
