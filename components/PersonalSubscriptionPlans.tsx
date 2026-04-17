@@ -21,6 +21,19 @@ import { getAuthClient } from '../lib/supabaseClient';
 import { LegalModal } from './LegalModal';
 import { useUserPlan } from '../hooks/useUserPlan';
 
+const normalizePhoneNumber = (value: string) => value.replace(/\D/g, '').slice(0, 11);
+
+const formatPhoneNumber = (value: string) => {
+    const cleaned = normalizePhoneNumber(value);
+    if (cleaned.length <= 3) return cleaned;
+    if (cleaned.length <= 7) return `${cleaned.slice(0, 3)}-${cleaned.slice(3)}`;
+    return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 7)}-${cleaned.slice(7)}`;
+};
+
+const normalizeGuestEmail = (value: string) => value.trim().toLowerCase();
+
+const isValidGuestEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
 interface PersonalPlanFeature {
     name: string;
     included: boolean;
@@ -96,16 +109,25 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
     const [isPaymentOpen, setIsPaymentOpen] = useState(false);
     const [showLegalModal, setShowLegalModal] = useState(false);
     const [legalTab, setLegalTab] = useState<'terms' | 'privacy' | 'refund' | 'business' | 'license'>('business');
+    const [guestBuyer, setGuestBuyer] = useState({ fullName: '', phoneNumber: '', email: '' });
     const { user } = useUser();
     const { session, isLoaded } = useSession();
     const { data: userPlanData, isLoading: isUserPlanLoading, refetch: refetchUserPlan } = useUserPlan();
 
     const currentPlan = (userPlanData?.plan_name || 'PERSONAL_FREE').toUpperCase();
+    const isGuestCheckout = !session?.access_token;
     const recurringEnabled = isRecurringSubscriptionEnabled();
+    const isRecurringUi = recurringEnabled && !isGuestCheckout;
+    const guestPaymentGuideTitle = recurringEnabled ? '비로그인 일반결제 안내' : '결제창 확인 안내';
+    const guestPaymentButtonLabel = recurringEnabled ? '일반결제 확인하기' : '결제창 확인하기';
     const isCancelling = userPlanData?.status === 'cancelling';
-    const cancelExpiresAt = userPlanData?.expires_at ?? null;
+    const cancelExpiresAt = userPlanData?.expires_at ?? '';
     const isBetaPremium = userPlanData?.is_beta_premium === true;
     const isLoading = !isLoaded || isUserPlanLoading;
+    const effectiveCurrentPlan = isGuestCheckout ? null : currentPlan;
+    const effectiveIsCancelling = isGuestCheckout ? false : isCancelling;
+    const effectiveCancelExpiresAt = isGuestCheckout ? null : cancelExpiresAt;
+    const effectiveIsBetaPremium = isGuestCheckout ? false : isBetaPremium;
     const setCurrentPlan = (_value: string) => {};
     const setIsCancelling = (_value: boolean) => {};
     const setCancelExpiresAt = (_value: string | null) => {};
@@ -168,7 +190,74 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
     };
 
     const handleSelectPlan = async (plan: PersonalPlan) => {
-        if (plan.id === currentPlan) return;
+        if (plan.id === effectiveCurrentPlan) return;
+
+        if (isGuestCheckout) {
+            if (plan.price === 0) {
+                toast.error('비로그인 상태에서는 무료 플랜 변경을 진행할 수 없습니다.');
+                return;
+            }
+            if (!window.PortOne) {
+                toast.error('결제 모듈을 불러오지 못했습니다.');
+                return;
+            }
+
+            const normalizedGuestBuyer = {
+                fullName: guestBuyer.fullName.trim(),
+                phoneNumber: normalizePhoneNumber(guestBuyer.phoneNumber),
+                email: normalizeGuestEmail(guestBuyer.email),
+            };
+
+            if (!normalizedGuestBuyer.fullName || !normalizedGuestBuyer.phoneNumber) {
+                toast.error('비회원 결제를 위해 이름과 연락처를 입력해 주세요.');
+                return;
+            }
+
+            if (normalizedGuestBuyer.phoneNumber.length < 10 || normalizedGuestBuyer.phoneNumber.length > 11) {
+                toast.error('연락처는 숫자 10-11자리로 입력해 주세요.');
+                return;
+            }
+
+            if (normalizedGuestBuyer.email && !isValidGuestEmail(normalizedGuestBuyer.email)) {
+                toast.error('이메일 형식을 다시 확인해 주세요.');
+                return;
+            }
+
+            setIsPaymentOpen(true);
+            try {
+                const paymentId = generatePaymentId('guestpsub');
+                const response = await requestPayment({
+                    storeId: PORTONE_CONFIG.STORE_ID,
+                    channelKey: getChannelKey('general'),
+                    paymentId,
+                    orderName: `[추모맵] 개인 ${plan.name} 플랜`,
+                    totalAmount: plan.price,
+                    currency: 'KRW',
+                    payMethod: 'CARD',
+                    customer: {
+                        fullName: normalizedGuestBuyer.fullName,
+                        phoneNumber: normalizedGuestBuyer.phoneNumber,
+                        email: normalizedGuestBuyer.email || undefined,
+                    },
+                });
+
+                if (response.code !== undefined) {
+                    toast.error(`결제 실패: ${response.message}`);
+                    return;
+                }
+
+                toast.success('결제 요청이 접수되었습니다. 결제 결과 확인 후 안내드립니다.');
+                return;
+            } catch (error) {
+                const msg = error instanceof Error ? error.message : '';
+                if (!msg.includes('취소')) {
+                    toast.error('결제 중 오류가 발생했습니다.');
+                }
+                return;
+            } finally {
+                setIsPaymentOpen(false);
+            }
+        }
         if (!isLoaded || !session?.access_token) {
             toast.error('로그인 세션을 확인하는 중입니다. 잠시 후 다시 시도해 주세요.');
             return;
@@ -351,6 +440,51 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
             </div>
 
             {/* 요금 비교 요약 */}
+            {isGuestCheckout && (
+                <div className="px-4 pt-4">
+                    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div className="mb-3">
+                            <h2 className="text-sm font-bold text-slate-900">비회원 결제 정보</h2>
+                            <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                                비회원도 일반 카드결제로 상품을 결제할 수 있습니다. 결제 완료 후 서비스 이용 및 결제 내역 확인을 위해 회원가입 또는 로그인이 필요합니다. 정기결제 등록과 개인 구독 관리는 로그인 후 이용할 수 있습니다.
+                            </p>
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                            <label className="block">
+                                <span className="mb-1 block text-[11px] font-bold text-slate-600">이름 *</span>
+                                <input
+                                    type="text"
+                                    value={guestBuyer.fullName}
+                                    onChange={(e) => setGuestBuyer((prev) => ({ ...prev, fullName: e.target.value }))}
+                                    placeholder="홍길동"
+                                    className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
+                                />
+                            </label>
+                            <label className="block">
+                                <span className="mb-1 block text-[11px] font-bold text-slate-600">연락처 *</span>
+                                <input
+                                    type="tel"
+                                    value={guestBuyer.phoneNumber}
+                                    inputMode="numeric"
+                                    onChange={(e) => setGuestBuyer((prev) => ({ ...prev, phoneNumber: formatPhoneNumber(e.target.value) }))}
+                                    placeholder="010-0000-0000"
+                                    className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
+                                />
+                            </label>
+                            <label className="block sm:col-span-2">
+                                <span className="mb-1 block text-[11px] font-bold text-slate-600">이메일</span>
+                                <input
+                                    type="email"
+                                    value={guestBuyer.email}
+                                    onChange={(e) => setGuestBuyer((prev) => ({ ...prev, email: normalizeGuestEmail(e.target.value) }))}
+                                    placeholder="honggildong@example.com"
+                                    className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
+                                />
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            )}
             <div className="px-4 py-4">
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
                     <div className="grid grid-cols-3 text-center border-b border-slate-100">
@@ -358,7 +492,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                             <p className="text-[10px] font-bold text-slate-400">기능</p>
                         </div>
                         {personalPlans.map(plan => (
-                            <div key={plan.id} className={`p-2 md:p-3 ${plan.id === currentPlan ? 'bg-primary/5' : ''}`}>
+                            <div key={plan.id} className={`p-2 md:p-3 ${plan.id === effectiveCurrentPlan ? 'bg-primary/5' : ''}`}>
                                 <p className="text-[10px] font-bold text-slate-600">{plan.name}</p>
                                 <p className="text-xs font-black text-slate-900">
                                     {plan.price === 0 ? '무료' : `${plan.price.toLocaleString()}원`}
@@ -380,7 +514,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                                 <p className="text-[10px] font-medium text-slate-500">{row.label}</p>
                             </div>
                             {row.values.map((val, vi) => (
-                                <div key={vi} className={`p-1.5 md:p-2.5 ${personalPlans[vi].id === currentPlan ? 'bg-primary/5' : ''}`}>
+                                <div key={vi} className={`p-1.5 md:p-2.5 ${personalPlans[vi].id === effectiveCurrentPlan ? 'bg-primary/5' : ''}`}>
                                     <p className={`text-[10px] font-bold ${val === 'X' ? 'text-slate-300' : val === '무제한' || val === 'PDF + 공유' ? 'text-purple-600' : 'text-slate-700'}`}>
                                         {val}
                                     </p>
@@ -389,10 +523,10 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                         </div>
                     ))}
                 </div>
-                {isBetaPremium && (
+                {effectiveIsBetaPremium && (
                     <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-xs font-bold text-blue-700">
                         베타 프리미엄 사용 중
-                        {cancelExpiresAt ? ` (${new Date(cancelExpiresAt).toLocaleDateString('ko-KR')}까지)` : ''}
+                        {effectiveCancelExpiresAt ? ` (${new Date(effectiveCancelExpiresAt).toLocaleDateString('ko-KR')}까지)` : ''}
                     </div>
                 )}
             </div>
@@ -401,7 +535,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
             <div className="flex-1 px-4 py-2 space-y-4 pb-24">
                 {personalPlans.map((plan) => {
                     const isExpanded = expandedPlan === plan.id;
-                    const isCurrent = currentPlan === plan.id;
+                    const isCurrent = effectiveCurrentPlan === plan.id;
 
                     return (
                         <div
@@ -416,7 +550,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
 
                             {isCurrent && (
                                 <div className={`absolute -top-3 right-6 z-10 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md ${
-                                    isBetaPremium ? 'bg-blue-500' : isCancelling ? 'bg-amber-500' : 'bg-green-500'
+                                    effectiveIsBetaPremium ? 'bg-blue-500' : effectiveIsCancelling ? 'bg-amber-500' : 'bg-green-500'
                                 }`}>
                                     {isCancelling ? '해지 예정' : '현재 플랜'}
                                 </div>
@@ -487,7 +621,17 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                                     </div>
 
                                     {/* 결제 안내 블록 — 유료 플랜만 */}
-                                    {plan.price > 0 && !isCurrent && recurringEnabled && (
+                                    {plan.price > 0 && !isCurrent && isGuestCheckout && (
+                                        <div className="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                            <p className="text-[10px] font-bold text-slate-600 mb-1">{guestPaymentGuideTitle}</p>
+                                            <ul className="text-[10px] text-slate-500 space-y-0.5">
+                                                <li>• 비로그인 상태에서는 일반 카드결제 창만 확인할 수 있습니다</li>
+                                                <li>• 정기결제 카드 등록과 개인 구독 시작은 로그인 후에만 가능합니다</li>
+                                                <li>• 비로그인 상태에서는 billing 채널과 자동결제가 사용되지 않습니다</li>
+                                            </ul>
+                                        </div>
+                                    )}
+                                    {plan.price > 0 && !isCurrent && isRecurringUi && (
                                         <div className="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
                                             <p className="text-[10px] font-bold text-slate-600 mb-1">정기결제 안내</p>
                                             <ul className="text-[10px] text-slate-500 space-y-0.5">
@@ -497,12 +641,9 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                                             </ul>
                                         </div>
                                     )}
-
-                                    {plan.price > 0 && !isCurrent && !recurringEnabled && (
+                                    {plan.price > 0 && !isCurrent && !isGuestCheckout && !isRecurringUi && (
                                         <div className="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                            <p className="text-[10px] font-bold text-slate-600 mb-1">
-                                                {recurringEnabled ? '정기결제 안내' : '1회 결제 안내'}
-                                            </p>
+                                            <p className="text-[10px] font-bold text-slate-600 mb-1">1회 결제 안내</p>
                                             <ul className="text-[10px] text-slate-500 space-y-0.5">
                                                 <li>• 1회 결제 완료 후 30일간 이용 가능합니다</li>
                                                 <li>• 이용 기간 종료 후 계속 이용하려면 다시 결제해야 합니다</li>
@@ -511,10 +652,10 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                                         </div>
                                     )}
 
-                                    {isCurrent && isCancelling && cancelExpiresAt && (
+                                    {isCurrent && effectiveIsCancelling && effectiveCancelExpiresAt && (
                                         <div className="mb-4 p-3 bg-amber-50 rounded-xl border border-amber-200">
                                             <p className="text-[11px] font-bold text-amber-800">
-                                                {new Date(cancelExpiresAt).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}까지 이용 가능
+                                                {new Date(effectiveCancelExpiresAt).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}까지 이용 가능
                                             </p>
                                             <p className="text-[10px] text-amber-600 mt-0.5">
                                                 만료 후 자동으로 무료 플랜으로 전환됩니다.
@@ -524,22 +665,26 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
 
                                     <button
                                         onClick={() => handleSelectPlan(plan)}
-                                        disabled={isCurrent && !isCancelling}
+                                        disabled={isCurrent || isPaymentOpen}
                                         className={`w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
-                                            isCurrent && !isCancelling
+                                            isCurrent || isPaymentOpen
                                                 ? 'bg-slate-100 text-slate-400 cursor-default'
                                                 : isCurrent && isCancelling
                                                     ? 'bg-slate-100 text-slate-400 cursor-default'
                                                     : `bg-gradient-to-r ${plan.color} text-white shadow-lg shadow-blue-500/20`
                                         }`}
                                     >
-                                        {isCurrent && isCancelling
-                                            ? '해지 예약됨'
-                                            : isCurrent
-                                                ? '현재 이용 중'
-                                                : plan.price === 0
-                                                    ? isCancelling ? '이미 해지 예약됨' : '구독 해지하기'
-                                                    : recurringEnabled ? '정기결제 시작하기' : '구독 시작하기'}
+                                        {isPaymentOpen
+                                            ? (isRecurringUi ? '정기결제 등록 중...' : '결제 처리 중...')
+                                            : isGuestCheckout && !isCurrent
+                                                ? guestPaymentButtonLabel
+                                                : isCurrent && effectiveIsCancelling
+                                                    ? '해지 예약됨'
+                                                    : isCurrent
+                                                        ? '현재 이용 중'
+                                                        : plan.price === 0
+                                                            ? effectiveIsCancelling ? '이미 해지 예약됨' : '구독 해지하기'
+                                                            : isRecurringUi ? '정기결제 시작하기' : '구독 시작하기'}
                                     </button>
                                 </div>
                             )}
@@ -552,7 +697,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                     <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
                         <Shield size={16} className="text-primary" /> 안내 사항
                     </h3>
-                    {recurringEnabled && (
+                    {isRecurringUi && (
                         <div className="mb-3 space-y-3 text-[11px] text-slate-500 leading-relaxed">
                             <p>유료 플랜은 첫 카드 등록과 초회 결제 완료 후 매월 자동으로 결제됩니다.</p>
                             <p>해지 요청 시 다음 결제일부터 자동청구가 중단되며 현재 이용 기간은 유지됩니다.</p>
@@ -560,7 +705,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack }: PersonalS
                             <p>결제 관련 문의: <strong className="text-slate-700">atomcare@naver.com</strong></p>
                         </div>
                     )}
-                    <div className={`${recurringEnabled ? 'hidden ' : ''}space-y-3 text-[11px] text-slate-500 leading-relaxed`}>
+                    <div className={`${isRecurringUi ? 'hidden ' : ''}space-y-3 text-[11px] text-slate-500 leading-relaxed`}>
                         <p>• 유료 플랜은 <strong className="text-slate-700">1회 결제형 30일 이용권</strong>으로 제공됩니다.</p>
                         <p>• 결제 완료 후 30일간 이용 가능합니다.</p>
                         <p>• 이용 기간 종료 후 계속 이용하려면 다시 결제해야 하며, 이미 결제된 이용 기간은 환불되지 않습니다.</p>

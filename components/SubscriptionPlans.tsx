@@ -473,7 +473,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                         <div className="mb-3">
                             <h2 className="text-sm font-bold text-slate-900">비회원 결제 정보</h2>
                             <p className="mt-1 text-xs leading-relaxed text-slate-500">
-                                비회원은 운영 결제창 확인용으로만 이용할 수 있습니다. 정기결제 등록과 관리자 기능은 로그인 후 이용할 수 있습니다.
+                                비회원도 일반 카드결제로 상품을 결제할 수 있습니다. 결제 완료 후 서비스 이용 및 결제 내역 확인을 위해 회원가입 또는 로그인이 필요합니다. 정기결제 등록과 관리자 기능은 로그인 후 이용할 수 있습니다.
                             </p>
                         </div>
                         <div className="grid gap-3 sm:grid-cols-2">
@@ -483,7 +483,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                                     type="text"
                                     value={guestBuyer.fullName}
                                     onChange={(e) => setGuestBuyer((prev) => ({ ...prev, fullName: e.target.value }))}
-                                    placeholder="심사자 이름"
+                                    placeholder="홍길동"
                                     className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
                                 />
                             </label>
@@ -504,7 +504,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                                     type="email"
                                     value={guestBuyer.email}
                                     onChange={(e) => setGuestBuyer((prev) => ({ ...prev, email: normalizeGuestEmail(e.target.value) }))}
-                                    placeholder="kcp-review@memorimap.kr"
+                                    placeholder="honggildong@example.com"
                                     className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
                                 />
                             </label>
@@ -733,7 +733,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                             answer={isRecurringUi
                                 ? '국내 모든 신용카드를 지원하며, 첫 카드 등록과 초회 결제 완료 후 매월 자동으로 결제됩니다.'
                                 : isGuestCheckout
-                                    ? '비회원은 운영 결제창 확인용으로만 이용할 수 있습니다. 정기결제 등록과 관리자 기능은 로그인 후 이용할 수 있습니다.'
+                                    ? '비회원도 일반 카드결제로 상품을 결제할 수 있습니다. 결제 완료 후 서비스 이용 및 결제 내역 확인을 위해 회원가입 또는 로그인이 필요합니다. 정기결제 등록과 관리자 기능은 로그인 후 이용할 수 있습니다.'
                                     : '국내 모든 신용카드를 지원하며, 안전한 결제 시스템을 통해 처리됩니다. 결제 완료 후 30일간 이용 가능합니다.'}
                         />
                         <FAQItem
