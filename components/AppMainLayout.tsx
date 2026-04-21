@@ -7,7 +7,7 @@ import { BottomNav } from './BottomNav';
 import { ContentRouter, ContentRouterProps, LoadingFallback } from './ContentRouter';
 import { ModalContainer, ModalContainerProps } from './ModalContainer';
 import { SOSEmergencyMode } from './SOSEmergencyMode';
-import { WebBusinessFooter } from './WebBusinessFooter';
+import { MobileBusinessInfoBar, WebBusinessFooter } from './WebBusinessFooter';
 
 type ToastPayload = {
   message: string;
@@ -95,6 +95,7 @@ export const AppMainLayout: React.FC<AppMainLayoutProps> = ({
           </Suspense>
         </div>
 
+        <MobileBusinessInfoBar />
         <BottomNav viewState={viewState} setViewState={onBottomNavChange} />
 
         {toast && (

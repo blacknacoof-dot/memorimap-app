@@ -4,6 +4,7 @@ import {
   persistFacilitySubscription as persistFacilitySubscriptionShared,
   persistPersonalSubscription as persistPersonalSubscriptionShared,
 } from "../_shared/subscriptionPersistence.ts";
+import { normalizeKcpReviewFields, upsertPaymentAudit } from "../_shared/paymentAudit.ts";
 
 const PORTONE_API_URL = "https://api.portone.io";
 
@@ -15,7 +16,7 @@ type PaymentIntentRow = {
   facility_id: string | null;
   plan_id: string;
   expected_amount: number;
-  status: "pending" | "paid" | "failed" | "cancelled";
+  status: "pending" | "sync_required" | "paid" | "failed" | "cancelled";
   billing_key?: string | null;
 };
 
@@ -125,7 +126,7 @@ async function getPaymentIntent(
 async function updatePaymentIntentStatus(
   db: SupabaseAdmin,
   paymentId: string,
-  status: "paid" | "failed" | "cancelled",
+  status: "pending" | "sync_required" | "paid" | "failed" | "cancelled",
   portoneStatus: string,
 ): Promise<void> {
   await db
@@ -133,7 +134,7 @@ async function updatePaymentIntentStatus(
     .update({
       status,
       portone_status: portoneStatus,
-      resolved_at: new Date().toISOString(),
+      resolved_at: status === "pending" || status === "sync_required" ? null : new Date().toISOString(),
     })
     .eq("payment_id", paymentId)
     .neq("status", status);
@@ -406,6 +407,7 @@ async function handleSubscriptionPaid(
     });
 
     if (!persistResult.persisted) {
+      await updatePaymentIntentStatus(db, paymentId, "sync_required", "SYNC_REQUIRED");
       await log(db, "ERROR", "Facility subscription persistence failed in webhook", {
         paymentId,
         error: persistResult.error,
@@ -423,6 +425,7 @@ async function handleSubscriptionPaid(
     });
 
     if (!persistResult.persisted) {
+      await updatePaymentIntentStatus(db, paymentId, "sync_required", "SYNC_REQUIRED");
       await log(db, "ERROR", "Personal subscription persistence failed in webhook", {
         paymentId,
         error: persistResult.error,
@@ -656,6 +659,28 @@ serve(async (req: Request) => {
     return new Response(JSON.stringify({ error: "PortOne API unavailable" }), {
       status: 502,
       headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const paymentIntent = await getPaymentIntent(db, paymentId);
+  const kcpReviewFields = normalizeKcpReviewFields({
+    payment,
+    expectedAmount: paymentIntent?.expected_amount ?? payment.amount?.total ?? null,
+    requestedPayMethod: "CARD",
+  });
+  await upsertPaymentAudit(db, {
+    paymentId,
+    paymentContext: paymentIntent?.payment_context ?? (paymentId.startsWith("pay_") ? "reservation" : "subscription_unknown"),
+    source: "edge-function:payment-webhook",
+    reviewFields: kcpReviewFields,
+  });
+  if (kcpReviewFields.missingFields.length > 0) {
+    await log(db, "WARN", "KCP review fields incomplete during webhook sync", {
+      paymentId,
+      missingFields: kcpReviewFields.missingFields,
+      resCd: kcpReviewFields.resCd,
+      tno: kcpReviewFields.tno,
+      payMethod: kcpReviewFields.payMethod,
     });
   }
 

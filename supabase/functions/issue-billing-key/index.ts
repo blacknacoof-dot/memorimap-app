@@ -6,6 +6,7 @@ import {
   persistPersonalSubscription,
   type SupabaseAdmin,
 } from "../_shared/subscriptionPersistence.ts";
+import { normalizeKcpReviewFields, upsertPaymentAudit } from "../_shared/paymentAudit.ts";
 
 const PORTONE_API_URL = "https://api.portone.io";
 
@@ -153,7 +154,7 @@ async function upsertPaymentIntent(
 async function updatePaymentIntentStatus(
   db: SupabaseAdmin,
   paymentId: string,
-  status: "paid" | "failed" | "cancelled",
+  status: "pending" | "sync_required" | "paid" | "failed" | "cancelled",
   portoneStatus: string,
 ): Promise<void> {
   await db
@@ -161,9 +162,46 @@ async function updatePaymentIntentStatus(
     .update({
       status,
       portone_status: portoneStatus,
-      resolved_at: new Date().toISOString(),
+      resolved_at: status === "pending" || status === "sync_required" ? null : new Date().toISOString(),
     })
     .eq("payment_id", paymentId);
+}
+
+async function findRecentActivationAttempt(
+  db: SupabaseAdmin,
+  params: {
+    paymentContext: "facility_subscription" | "personal_subscription";
+    userId: string;
+    facilityId?: string;
+    planId: string;
+    billingKey: string;
+    createdAfterIso: string;
+  },
+): Promise<{ payment_id: string; status: string } | null> {
+  let query = db
+    .from("payment_intents")
+    .select("payment_id, status, created_at")
+    .eq("payment_context", params.paymentContext)
+    .eq("user_id", params.userId)
+    .eq("plan_id", params.planId)
+    .eq("billing_key", params.billingKey)
+    .gte("created_at", params.createdAfterIso)
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  query = params.facilityId
+    ? query.eq("facility_id", params.facilityId)
+    : query.is("facility_id", null);
+
+  const { data, error } = await query.maybeSingle();
+  if (error || !data) {
+    return null;
+  }
+
+  return {
+    payment_id: data.payment_id,
+    status: data.status,
+  };
 }
 
 async function chargeWithBillingKey(params: {
@@ -199,7 +237,15 @@ async function chargeWithBillingKey(params: {
   });
 
   if (!response.ok) {
-    return { ok: false, error: `PortOne billing charge failed (${response.status})` };
+    const raw = await response.text();
+    let detail = raw;
+    try {
+      const parsed = JSON.parse(raw) as { message?: string; code?: string; type?: string };
+      detail = parsed.message || parsed.code || parsed.type || raw;
+    } catch {
+      // Keep raw text when the upstream body is not JSON.
+    }
+    return { ok: false, error: `PortOne billing charge failed (${response.status}): ${detail}` };
   }
 
   return { ok: true };
@@ -359,6 +405,43 @@ serve(async (req: Request) => {
       }
     }
 
+    const duplicateWindowStart = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+    const recentAttempt = await findRecentActivationAttempt(db, {
+      paymentContext,
+      userId: verifiedUserId,
+      facilityId,
+      planId,
+      billingKey,
+      createdAfterIso: duplicateWindowStart,
+    });
+
+    if (recentAttempt?.status === "paid") {
+      return new Response(JSON.stringify({
+        success: true,
+        paymentId: recentAttempt.payment_id,
+        deduplicated: true,
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (recentAttempt?.status === "pending" || recentAttempt?.status === "sync_required") {
+      await log(db, "WARN", "Duplicate recurring activation attempt blocked", {
+        paymentContext,
+        planId,
+        billingKey,
+        facilityId: facilityId ?? null,
+        requestedBy: verifiedUserId,
+        existingPaymentId: recentAttempt.payment_id,
+      });
+
+      return new Response(JSON.stringify({ error: "Activation already in progress" }), {
+        status: 409,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const paymentId = generateServerPaymentId(paymentContext === "facility_subscription" ? "rsubf" : "rsubp");
     const resolvedOrderName = orderName || `[추모맵] ${planId} 정기결제 시작`;
 
@@ -386,6 +469,17 @@ serve(async (req: Request) => {
     });
 
     if (!chargeResult.ok) {
+      const failedReviewFields = normalizeKcpReviewFields({
+        payment: { status: "FAILED" },
+        expectedAmount: planCheck.price,
+        requestedPayMethod: "CARD",
+      });
+      await upsertPaymentAudit(db, {
+        paymentId,
+        paymentContext,
+        source: "edge-function:issue-billing-key",
+        reviewFields: failedReviewFields,
+      });
       await updatePaymentIntentStatus(db, paymentId, "failed", "FAILED");
       await deleteBillingKey(portoneApiSecret, billingKey);
 
@@ -396,23 +490,78 @@ serve(async (req: Request) => {
     }
 
     const payment = await fetchPayment(portoneApiSecret, paymentId);
+    const kcpReviewFields = normalizeKcpReviewFields({
+      payment,
+      expectedAmount: planCheck.price,
+      requestedPayMethod: "CARD",
+    });
+    await upsertPaymentAudit(db, {
+      paymentId,
+      paymentContext,
+      source: "edge-function:issue-billing-key",
+      reviewFields: kcpReviewFields,
+    });
+    if (kcpReviewFields.missingFields.length > 0) {
+      await log(db, "WARN", "KCP review fields incomplete during initial recurring activation", {
+        paymentId,
+        paymentContext,
+        missingFields: kcpReviewFields.missingFields,
+        resCd: kcpReviewFields.resCd,
+        tno: kcpReviewFields.tno,
+        payMethod: kcpReviewFields.payMethod,
+      });
+    }
     const isPaid = payment?.status === "PAID";
     const isAmountValid = payment?.amount?.total === planCheck.price;
 
-    if (!isPaid || !isAmountValid) {
-      await updatePaymentIntentStatus(db, paymentId, "failed", payment?.status || "UNKNOWN");
-      await log(db, "ERROR", "Initial recurring charge verification failed", {
+    if (!payment) {
+      await updatePaymentIntentStatus(db, paymentId, "pending", "VERIFY_PENDING");
+      await log(db, "WARN", "Initial recurring charge verification deferred", {
         paymentId,
         paymentContext,
         planId,
         expectedAmount: planCheck.price,
-        actualAmount: payment?.amount?.total,
-        status: payment?.status,
+        actualAmount: null,
+        status: "VERIFY_PENDING",
       });
-      await deleteBillingKey(portoneApiSecret, billingKey);
 
-      return new Response(JSON.stringify({ error: "Initial recurring charge verification failed" }), {
-        status: 502,
+      return new Response(JSON.stringify({
+        error: "Initial recurring charge verification pending",
+        paymentId,
+        recoverable: true,
+      }), {
+        status: 202,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!isPaid || !isAmountValid) {
+      const finalFailure = payment.status === "FAILED" || payment.status === "CANCELLED";
+      await updatePaymentIntentStatus(
+        db,
+        paymentId,
+        finalFailure ? "failed" : "sync_required",
+        !isAmountValid ? "AMOUNT_MISMATCH" : payment.status || "UNKNOWN",
+      );
+      await log(db, finalFailure ? "ERROR" : "WARN", "Initial recurring charge verification requires recovery", {
+        paymentId,
+        paymentContext,
+        planId,
+        expectedAmount: planCheck.price,
+        actualAmount: payment.amount?.total,
+        status: payment.status,
+      });
+
+      if (finalFailure) {
+        await deleteBillingKey(portoneApiSecret, billingKey);
+      }
+
+      return new Response(JSON.stringify({
+        error: finalFailure ? "Initial recurring charge verification failed" : "Initial recurring charge requires reconciliation",
+        paymentId,
+        recoverable: !finalFailure,
+      }), {
+        status: finalFailure ? 502 : 202,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -428,14 +577,19 @@ serve(async (req: Request) => {
       });
 
       if (!persistResult.persisted) {
+        await updatePaymentIntentStatus(db, paymentId, "sync_required", "SYNC_REQUIRED");
         await log(db, "ERROR", "Facility recurring activation persistence failed", {
           paymentId,
           facilityId,
           error: persistResult.error,
         });
 
-        return new Response(JSON.stringify({ error: persistResult.error || "Subscription persistence failed" }), {
-          status: 500,
+        return new Response(JSON.stringify({
+          error: persistResult.error || "Subscription persistence pending recovery",
+          paymentId,
+          recoverable: true,
+        }), {
+          status: 202,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
@@ -461,13 +615,18 @@ serve(async (req: Request) => {
     });
 
     if (!persistResult.persisted) {
+      await updatePaymentIntentStatus(db, paymentId, "sync_required", "SYNC_REQUIRED");
       await log(db, "ERROR", "Personal recurring activation persistence failed", {
         paymentId,
         error: persistResult.error,
       });
 
-      return new Response(JSON.stringify({ error: persistResult.error || "Subscription persistence failed" }), {
-        status: 500,
+      return new Response(JSON.stringify({
+        error: persistResult.error || "Subscription persistence pending recovery",
+        paymentId,
+        recoverable: true,
+      }), {
+        status: 202,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

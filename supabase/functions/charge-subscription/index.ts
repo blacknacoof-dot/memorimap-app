@@ -5,6 +5,7 @@ import {
   persistPersonalSubscription,
   type SupabaseAdmin,
 } from "../_shared/subscriptionPersistence.ts";
+import { normalizeKcpReviewFields, upsertPaymentAudit } from "../_shared/paymentAudit.ts";
 
 const PORTONE_API_URL = "https://api.portone.io";
 
@@ -31,7 +32,7 @@ async function log(
 async function updatePaymentIntentStatus(
   db: SupabaseAdmin,
   paymentId: string,
-  status: "paid" | "failed" | "cancelled",
+  status: "sync_required" | "paid" | "failed" | "cancelled",
   portoneStatus: string,
 ): Promise<void> {
   await db
@@ -39,7 +40,7 @@ async function updatePaymentIntentStatus(
     .update({
       status,
       portone_status: portoneStatus,
-      resolved_at: new Date().toISOString(),
+      resolved_at: status === "sync_required" ? null : new Date().toISOString(),
     })
     .eq("payment_id", paymentId);
 }
@@ -132,6 +133,33 @@ async function markUserFailure(
   await db.from("user_subscriptions").update(update).eq("user_id", userId);
 }
 
+async function pauseFacilityAutoRenewForSync(
+  db: SupabaseAdmin,
+  subscriptionId: string,
+  message: string,
+): Promise<void> {
+  await db.from("facility_subscriptions").update({
+    auto_renew: false,
+    cancel_at_period_end: true,
+    last_payment_error: message,
+    cancelled_reason: "billing_sync_required",
+    updated_at: new Date().toISOString(),
+  }).eq("id", subscriptionId);
+}
+
+async function pauseUserAutoRenewForSync(
+  db: SupabaseAdmin,
+  userId: string,
+  message: string,
+): Promise<void> {
+  await db.from("user_subscriptions").update({
+    auto_renew: false,
+    cancel_at_period_end: true,
+    last_payment_error: message,
+    cancelled_reason: "billing_sync_required",
+  }).eq("user_id", userId);
+}
+
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204 });
@@ -222,6 +250,27 @@ serve(async (req: Request) => {
     });
 
     const payment = charged ? await fetchPayment(portoneApiSecret, paymentId) : null;
+    const kcpReviewFields = normalizeKcpReviewFields({
+      payment: payment ?? { status: charged ? "UNKNOWN" : "FAILED" },
+      expectedAmount: amount,
+      requestedPayMethod: "CARD",
+    });
+    await upsertPaymentAudit(db, {
+      paymentId,
+      paymentContext: "facility_subscription",
+      source: "edge-function:charge-subscription",
+      reviewFields: kcpReviewFields,
+    });
+    if (kcpReviewFields.missingFields.length > 0) {
+      await log(db, "WARN", "KCP review fields incomplete during recurring facility charge", {
+        paymentId,
+        facilityId,
+        missingFields: kcpReviewFields.missingFields,
+        resCd: kcpReviewFields.resCd,
+        tno: kcpReviewFields.tno,
+        payMethod: kcpReviewFields.payMethod,
+      });
+    }
     if (!charged || payment?.status !== "PAID" || payment.amount?.total !== amount) {
       await updatePaymentIntentStatus(db, paymentId, "failed", payment?.status || "FAILED");
       await markFacilityFailure(db, sub.id, sub.retry_count ?? 0, "Recurring facility charge failed");
@@ -239,6 +288,12 @@ serve(async (req: Request) => {
     });
 
     if (!persistResult.persisted) {
+      await updatePaymentIntentStatus(db, paymentId, "sync_required", "SYNC_REQUIRED");
+      await pauseFacilityAutoRenewForSync(
+        db,
+        sub.id,
+        `SYNC_REQUIRED: ${persistResult.error || "Recurring facility persistence failed"}`,
+      );
       await log(db, "ERROR", "Facility recurring persistence failed", {
         paymentId,
         facilityId,
@@ -286,6 +341,27 @@ serve(async (req: Request) => {
     });
 
     const payment = charged ? await fetchPayment(portoneApiSecret, paymentId) : null;
+    const kcpReviewFields = normalizeKcpReviewFields({
+      payment: payment ?? { status: charged ? "UNKNOWN" : "FAILED" },
+      expectedAmount: amount,
+      requestedPayMethod: "CARD",
+    });
+    await upsertPaymentAudit(db, {
+      paymentId,
+      paymentContext: "personal_subscription",
+      source: "edge-function:charge-subscription",
+      reviewFields: kcpReviewFields,
+    });
+    if (kcpReviewFields.missingFields.length > 0) {
+      await log(db, "WARN", "KCP review fields incomplete during recurring personal charge", {
+        paymentId,
+        userId: sub.user_id,
+        missingFields: kcpReviewFields.missingFields,
+        resCd: kcpReviewFields.resCd,
+        tno: kcpReviewFields.tno,
+        payMethod: kcpReviewFields.payMethod,
+      });
+    }
     if (!charged || payment?.status !== "PAID" || payment.amount?.total !== amount) {
       await updatePaymentIntentStatus(db, paymentId, "failed", payment?.status || "FAILED");
       await markUserFailure(db, sub.user_id, sub.retry_count ?? 0, "Recurring personal charge failed");
@@ -303,6 +379,12 @@ serve(async (req: Request) => {
     });
 
     if (!persistResult.persisted) {
+      await updatePaymentIntentStatus(db, paymentId, "sync_required", "SYNC_REQUIRED");
+      await pauseUserAutoRenewForSync(
+        db,
+        sub.user_id,
+        `SYNC_REQUIRED: ${persistResult.error || "Recurring personal persistence failed"}`,
+      );
       await log(db, "ERROR", "Personal recurring persistence failed", {
         paymentId,
         userId: sub.user_id,

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
+import { BUSINESS_INFO } from '../lib/businessInfo';
 
 type LegalTab = 'terms' | 'privacy' | 'refund' | 'business' | 'license';
 
@@ -14,19 +15,6 @@ const TAB_LABELS: Record<LegalTab, string> = {
   refund: '환불/해지 정책',
   business: '사업자 정보',
   license: '오픈소스 라이선스',
-};
-
-const BUSINESS_INFO = {
-  serviceName: '메모리맵',
-  operatorName: '(주)아톰케어',
-  representative: '박태용',
-  registrationNumber: '576-87-02748',
-  address: '경기 고양시 일산동구 탄중로 421 (웅산프라자) 3층 305-1호',
-  supportPhone: '031-975-3335',
-  supportEmail: 'atomcare@naver.com',
-  faxNumber: '0504-336-4569',
-  ecommerceRegistration: '2024-고양일산동-0025',
-  businessHours: '평일 09:00 ~ 18:00',
 };
 
 export const LegalModal: React.FC<Props> = ({ onClose, initialTab = 'privacy' }) => {

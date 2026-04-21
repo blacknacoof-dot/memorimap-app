@@ -8,7 +8,9 @@ import { confirmAsync, promptAsync } from '../../src/components/common/ConfirmMo
 import { toast } from 'sonner';
 
 interface SubscriptionInfo {
+  plan_id?: string;
   plan_name?: string;
+  plan?: { name_en?: string; [key: string]: unknown };
   plan_price?: number;
   next_billing_date?: string;
   status?: string;

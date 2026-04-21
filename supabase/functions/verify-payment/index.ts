@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { rateLimit } from '../_shared/rateLimit.ts'
+import { normalizeKcpReviewFields, upsertPaymentAudit, type ClientPaymentResult } from "../_shared/paymentAudit.ts";
 
 const PRODUCTION_ORIGINS = [
     'https://memorimap.kr',
@@ -69,7 +70,7 @@ type PaymentIntentRow = {
     facility_id: string | null;
     plan_id: string;
     expected_amount: number;
-    status: 'pending' | 'paid' | 'failed' | 'cancelled';
+    status: 'pending' | 'sync_required' | 'paid' | 'failed' | 'cancelled';
 };
 
 async function verifySubscriptionPlanExists(
@@ -142,7 +143,7 @@ async function getPaymentIntent(
 async function updatePaymentIntentStatus(
     db: SupabaseAdmin,
     paymentId: string,
-    status: 'paid' | 'failed' | 'cancelled',
+    status: 'pending' | 'sync_required' | 'paid' | 'failed' | 'cancelled',
     portoneStatus: string,
 ): Promise<void> {
     await db
@@ -150,7 +151,7 @@ async function updatePaymentIntentStatus(
         .update({
             status,
             portone_status: portoneStatus,
-            resolved_at: new Date().toISOString(),
+            resolved_at: status === 'pending' || status === 'sync_required' ? null : new Date().toISOString(),
         })
         .eq('payment_id', paymentId)
         .neq('status', status);
@@ -540,6 +541,7 @@ serve(async (req: Request) => {
             facilityId,
             planId,
             targetUserId,
+            clientPaymentResult,
         } = await req.json();
 
         // ============================================================
@@ -614,6 +616,33 @@ serve(async (req: Request) => {
         }
 
         const paymentData = await portoneResponse.json();
+        const kcpReviewFields = normalizeKcpReviewFields({
+            payment: paymentData,
+            clientResult: clientPaymentResult as ClientPaymentResult | null,
+            expectedAmount: resolvedExpectedAmount,
+        });
+        await upsertPaymentAudit(supabaseAdmin, {
+            paymentId,
+            paymentContext: paymentContext || "reservation",
+            source: "edge-function:verify-payment",
+            orderRef: orderId ?? null,
+            reviewFields: kcpReviewFields,
+        });
+        if (kcpReviewFields.missingFields.length > 0) {
+            await supabaseAdmin.from('system_logs').insert({
+                level: 'WARN',
+                message: 'KCP review fields incomplete during payment verification',
+                meta: {
+                    paymentId,
+                    paymentContext: paymentContext || 'reservation',
+                    missingFields: kcpReviewFields.missingFields,
+                    resCd: kcpReviewFields.resCd,
+                    tno: kcpReviewFields.tno,
+                    payMethod: kcpReviewFields.payMethod,
+                },
+                source: 'edge-function:verify-payment'
+            });
+        }
 
         // 결제 금액 및 상태 검증
         const isAmountValid = paymentData.amount?.total === resolvedExpectedAmount;

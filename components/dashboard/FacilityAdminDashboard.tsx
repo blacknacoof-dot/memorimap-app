@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
+import { toast } from 'sonner';
 import { ViewState, Facility } from '../../types';
 import { useFacilityAdmin } from './useFacilityAdmin';
 import ReservationManager from './facility/ReservationManager';
@@ -6,10 +7,16 @@ import { ConsultationList } from '../ConsultationList';
 import { ReservationDetailModal } from '../ReservationDetailModal';
 import { FacilityEditModal } from '../FacilityEditModal';
 import { FacilityFAQManager } from '../FacilityFAQManager';
+import { useSession } from '../../lib/auth';
+import { issueBillingKeySubscription } from '../../lib/portone';
+import { normalizeSubscriptionPlanId } from '../../lib/subscriptionPlanIds';
 import {
   Loader2, CheckCircle, XCircle, Clock, Home, Edit,
   Building2, MapPin, Phone, ArrowRight, HelpCircle, MessageSquare, Calendar,
 } from 'lucide-react';
+
+const FACILITY_BILLING_PENDING_KEY = 'pendingFacilityBillingActivation';
+const FACILITY_BILLING_INFLIGHT_KEY = 'pendingFacilityBillingActivationInFlight';
 
 interface Props {
   user: { id: string; name: string; email: string; imageUrl?: string } | null;
@@ -18,6 +25,7 @@ interface Props {
 }
 
 export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNavigate }) => {
+  const { session, isLoaded } = useSession();
   const {
     myFacilityId, myFacility,
     reservations, consultations,
@@ -30,6 +38,90 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
     handleAnswerConsultation, handleReadConsultation,
     loadData,
   } = useFacilityAdmin({ user, facilities });
+
+  const clearBillingRedirectParams = useCallback(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('billingKey');
+    url.searchParams.delete('transactionType');
+    url.searchParams.delete('code');
+    url.searchParams.delete('message');
+    window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
+  }, []);
+  const normalizedPlanId = normalizeSubscriptionPlanId(
+    subscription?.plan_id ?? subscription?.plan?.name_en ?? subscription?.plan_name,
+  );
+
+  useEffect(() => {
+    if (!isLoaded || !session?.access_token || !myFacilityId) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const billingKey = params.get('billingKey');
+    const transactionType = params.get('transactionType');
+    const code = params.get('code');
+    const message = params.get('message');
+
+    if (code) {
+      toast.error(message ? decodeURIComponent(message) : '카드 등록에 실패했습니다.');
+      sessionStorage.removeItem(FACILITY_BILLING_PENDING_KEY);
+      clearBillingRedirectParams();
+      return;
+    }
+
+    if (!billingKey || transactionType !== 'ISSUE_BILLING_KEY') return;
+    if (sessionStorage.getItem(FACILITY_BILLING_INFLIGHT_KEY) === billingKey) return;
+
+    const pendingRaw = sessionStorage.getItem(FACILITY_BILLING_PENDING_KEY);
+    if (!pendingRaw) return;
+
+    const pending = JSON.parse(pendingRaw) as {
+      facilityId: string;
+      planId: string;
+      orderName: string;
+      customerName: string;
+      customerEmail: string;
+      customerPhoneNumber: string;
+    };
+
+    if (pending.facilityId !== myFacilityId) return;
+
+    let cancelled = false;
+    const activate = async () => {
+      sessionStorage.setItem(FACILITY_BILLING_INFLIGHT_KEY, billingKey);
+      sessionStorage.removeItem(FACILITY_BILLING_PENDING_KEY);
+      try {
+        const activation = await issueBillingKeySubscription({
+          billingKey,
+          paymentContext: 'facility_subscription',
+          facilityId: myFacilityId,
+          planId: pending.planId,
+          authToken: session.access_token,
+          orderName: pending.orderName,
+          customerName: pending.customerName,
+          customerEmail: pending.customerEmail,
+          customerPhoneNumber: pending.customerPhoneNumber,
+        });
+
+        if (cancelled) return;
+
+        if (!activation.success) {
+          toast.error(activation.error || '정기결제 시작에 실패했습니다. 결제 상태를 확인해 주세요.');
+          return;
+        }
+
+        toast.success('정기결제가 시작되었습니다.');
+        await loadData();
+      } finally {
+        sessionStorage.removeItem(FACILITY_BILLING_INFLIGHT_KEY);
+        clearBillingRedirectParams();
+      }
+    };
+
+    void activate();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [clearBillingRedirectParams, isLoaded, loadData, myFacilityId, session]);
 
   return (
     <div className="h-full overflow-y-auto pt-4 md:pt-6 pb-20 md:pb-6 px-4 sm:px-6 md:px-8 bg-gray-50">
@@ -91,10 +183,10 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                 <div className="flex items-center gap-2 mb-2 min-w-0">
                   <Building2 size={18} className="text-primary shrink-0" />
                   <h3 className="font-bold text-gray-900 truncate">{myFacility.name}</h3>
-                  {(subscription?.plan_name || '').toLowerCase() === 'premium' && (
+                  {normalizedPlanId === 'PREMIUM' && (
                     <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold border border-purple-200">PREMIUM</span>
                   )}
-                  {(subscription?.plan_name || '').toLowerCase() === 'enterprise' && (
+                  {normalizedPlanId === 'ENTERPRISE' && (
                     <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold border border-amber-200">ENTERPRISE</span>
                   )}
                 </div>

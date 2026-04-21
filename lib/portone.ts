@@ -30,6 +30,8 @@ export interface PaymentResponse {
     code?: string;
     message?: string;
     txId?: string;
+    pgCode?: string;
+    pgMessage?: string;
 }
 
 function getPaymentErrorMessage(error: unknown): string {
@@ -159,6 +161,17 @@ export const verifyPayment = async (params: {
     planId?: string;
     targetUserId?: string;
     authToken?: string | null;
+    clientPaymentResult?: {
+        paymentId?: string;
+        transactionId?: string;
+        txId?: string;
+        code?: string;
+        message?: string;
+        pgCode?: string;
+        pgMessage?: string;
+        payMethod?: string;
+        amount?: number;
+    };
 }): Promise<{ verified: boolean; persisted?: boolean; error?: string; subscriptionId?: string }> => {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -447,10 +460,21 @@ export const requestIssueBillingKey = async (params: {
         throw new Error('PortOne SDK의 빌링키 발급 기능이 로드되지 않았습니다.');
     }
 
+    const normalizeBillingPhoneNumber = (value?: string): string => {
+        if (!value) return '';
+        const digits = value.replace(/\D/g, '');
+        if (!digits) return '';
+        if (digits.startsWith('82') && digits.length >= 11) {
+            return `0${digits.slice(2)}`.slice(0, 11);
+        }
+        return digits.slice(0, 11);
+    };
+
     const customer: Record<string, string> = {};
-    if (params.customerName) customer.fullName = params.customerName;
-    if (params.customerPhoneNumber) customer.phoneNumber = params.customerPhoneNumber;
-    if (params.customerEmail) customer.email = params.customerEmail;
+    if (params.customerName) customer.fullName = params.customerName.trim();
+    const normalizedPhoneNumber = normalizeBillingPhoneNumber(params.customerPhoneNumber);
+    if (normalizedPhoneNumber) customer.phoneNumber = normalizedPhoneNumber;
+    if (params.customerEmail) customer.email = params.customerEmail.trim().toLowerCase();
 
     const response = await window.PortOne.requestIssueBillingKey({
         storeId: PORTONE_CONFIG.STORE_ID,
