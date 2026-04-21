@@ -10,8 +10,7 @@ import { ArrowLeft, MoreVertical } from 'lucide-react';
 import { toast } from 'sonner';
 import type { AiConsultCategory, QuotaCheckResult } from '../../types/subscription';
 import UpgradePrompt from '../UpgradePrompt';
-
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+import { checkAiConsultationQuota } from '../../lib/aiConsultationQuota';
 
 interface Props {
     facility: Facility;
@@ -140,22 +139,10 @@ export const ConsultationView: React.FC<Props> = ({
             // 새 상담 생성 전 쿼터 체크 (user + facility 동시)
             const category = getAiCategory();
             const authClient = await getAuthClient(session, { strict: true });
-            const hasFacilityTarget = UUID_RE.test(facility.id);
 
             let result: QuotaCheckResult;
             try {
-                const { data, error } = hasFacilityTarget
-                    ? await authClient.rpc('check_and_increment_ai_consult_quotas', {
-                        p_facility_id: facility.id,
-                        p_category: category,
-                    })
-                    : await authClient.rpc('check_and_increment_user_quota', {
-                        p_quota_type: 'ai_consult',
-                        p_category: category,
-                    });
-
-                if (error) throw error;
-                result = data as QuotaCheckResult;
+                result = await checkAiConsultationQuota(authClient, facility.id, category);
             } catch {
                 toast.error('AI 상담 이용 한도를 확인하지 못했습니다. 다시 시도해 주세요.');
                 return false;

@@ -16,6 +16,7 @@ import { useClerk, useSession } from '../../lib/auth'; // For login modal + auth
 import { logger } from '../../utils/logger';
 import type { AiConsultCategory, QuotaCheckResult } from '../../types/subscription';
 import UpgradePrompt from '../UpgradePrompt';
+import { checkAiConsultationQuota } from '../../lib/aiConsultationQuota';
 
 interface Props {
     facility: Facility;
@@ -326,26 +327,11 @@ export const ChatInterface: React.FC<Props> = ({
         if (messages.length === 0 && !sessionQuotaCheckedRef.current && currentUser) {
             try {
                 const client = await getAuthClient(session, { strict: true });
-                const hasFacilityQuotaTarget = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(facility.id);
-                const { data, error } = hasFacilityQuotaTarget
-                    ? await client.rpc('check_and_increment_ai_consult_quotas', {
-                        p_facility_id: facility.id,
-                        p_category: getAiCategory(),
-                    })
-                    : await client.rpc('check_and_increment_user_quota', {
-                        p_quota_type: 'ai_consult',
-                        p_category: getAiCategory(),
-                    });
-                if (error) {
+                const result = await checkAiConsultationQuota(client, facility.id, getAiCategory());
+                if (!result.allowed) {
+                    setQuotaExceeded(result);
                     toast.error('AI 상담 이용 한도를 확인하지 못했습니다. 다시 시도해 주세요.');
                     return;
-                }
-                if (data) {
-                    const result = data as QuotaCheckResult;
-                    if (!result.allowed) {
-                        setQuotaExceeded(result);
-                        return;
-                    }
                 }
                 sessionQuotaCheckedRef.current = true;
             } catch (_err) {

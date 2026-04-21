@@ -11,10 +11,11 @@ function readRepoFile(relativePath: string): string {
 describe('AI consultation flow contracts', () => {
     it('ConsultationView enforces atomic user+facility quota checks for UUID facilities', () => {
         const source = readRepoFile('components/Consultation/ConsultationView.tsx');
+        const helperSource = readRepoFile('lib/aiConsultationQuota.ts');
 
-        expect(source).toContain("check_and_increment_ai_consult_quotas");
-        expect(source).toContain("p_facility_id: facility.id");
-        expect(source).toContain("check_and_increment_user_quota");
+        expect(source).toContain("checkAiConsultationQuota(authClient, facility.id, category)");
+        expect(helperSource).toContain("check_and_increment_ai_consult_quotas");
+        expect(helperSource).toContain("p_facility_id: facilityId");
         expect(source).toContain("quotaExceeded?.reason === 'facility_limit'");
     });
 
