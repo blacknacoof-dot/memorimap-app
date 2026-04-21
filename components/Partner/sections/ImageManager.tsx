@@ -1,33 +1,50 @@
 import React, { useRef } from 'react';
 import { Image as ImageIcon, Upload, Trash2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { getAuthClient } from '../../../lib/supabaseClient';
+
 import { useSession } from '../../../lib/auth';
-import { validateFacilityImageFile } from '../../../lib/security/fileValidation';
+import { getFacilityPhotoLimitLabel, getFacilityPlanMeta } from '../../../lib/facilityPlan';
 import { uploadFacilityImage } from '../../../lib/queries/uploads';
+import { validateFacilityImageFile } from '../../../lib/security/fileValidation';
+import { getAuthClient } from '../../../lib/supabaseClient';
 import { confirmAsync } from '../../../src/components/common/ConfirmModal';
 import OptimizedImage from '../../ui/OptimizedImage';
 
 interface ImageManagerProps {
     facilityId: string;
     images: string[];
+    planId?: string;
     onImagesChange: (images: string[]) => void;
 }
 
-export const ImageManager: React.FC<ImageManagerProps> = ({ facilityId, images, onImagesChange }) => {
+export const ImageManager: React.FC<ImageManagerProps> = ({ facilityId, images, planId, onImagesChange }) => {
     const [uploading, setUploading] = React.useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { session } = useSession();
+    const photoLimit = getFacilityPlanMeta(planId).photoLimit;
+    const remainingSlots = photoLimit < 0 ? Number.POSITIVE_INFINITY : Math.max(photoLimit - images.length, 0);
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (!files) return;
 
+        if (remainingSlots <= 0) {
+            toast.error(`현재 플랜의 사진 업로드 한도(${getFacilityPhotoLimitLabel(planId)})에 도달했습니다.`);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+            return;
+        }
+
         setUploading(true);
         const client = await getAuthClient(session, { strict: true });
         const newImages = [...images];
+        const selectedFiles = Array.from(files);
+        const allowedFiles = selectedFiles.slice(0, remainingSlots);
 
-        for (const file of Array.from(files)) {
+        if (allowedFiles.length < selectedFiles.length) {
+            toast.error(`현재 플랜에서는 이번 업로드에 ${allowedFiles.length}장만 추가할 수 있습니다.`);
+        }
+
+        for (const file of allowedFiles) {
             const validation = await validateFacilityImageFile(file);
             if (!validation.valid) {
                 toast.error(validation.error || `업로드할 수 없는 파일입니다: ${file.name}`);
@@ -77,7 +94,9 @@ export const ImageManager: React.FC<ImageManagerProps> = ({ facilityId, images, 
                 <h3 className="font-black text-slate-800 flex items-center gap-2">
                     <ImageIcon size={18} className="text-purple-600" />
                     이미지 관리
-                    <span className="text-xs font-normal text-slate-400">({images.length}장)</span>
+                    <span className="text-xs font-normal text-slate-400">
+                        ({images.length}장 / {getFacilityPhotoLimitLabel(planId)})
+                    </span>
                 </h3>
                 <button
                     onClick={() => fileInputRef.current?.click()}
@@ -127,7 +146,7 @@ export const ImageManager: React.FC<ImageManagerProps> = ({ facilityId, images, 
                     <div className="text-center py-12 text-slate-400 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
                         <ImageIcon size={36} className="mx-auto mb-2 opacity-50" />
                         <p className="text-sm font-medium">등록된 이미지가 없습니다.</p>
-                        <p className="text-xs mt-1">이미지를 추가하면 검색 결과에 노출됩니다.</p>
+                        <p className="text-xs mt-1">이미지를 추가하면 검색 결과와 상세 화면에서 함께 노출됩니다.</p>
                     </div>
                 )}
             </div>

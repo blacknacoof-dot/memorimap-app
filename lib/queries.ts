@@ -24,6 +24,7 @@ import { isZodIssueCode } from './validation/commonSchema';
 import { facilityUpdateSchema } from './validation/facilitySchema';
 import { reviewContentSchema } from './validation/reviewSchema';
 import { resolveFacilityDetailImages } from './facilityImageResolver';
+import { compareFacilityPlanExposure, getFacilityPlanId } from './facilityPlan';
 
 function logValidationFailure(scope: string, error: z.ZodError) {
     const firstIssue = error.issues[0];
@@ -144,6 +145,65 @@ interface SubscriptionRow {
     status?: string;
     [key: string]: unknown;
 }
+
+interface FacilitySubscriptionSummary {
+    plan_id?: string | null;
+    status?: string | null;
+    subscription_plans?: {
+        name?: string | null;
+        name_en?: string | null;
+        features?: unknown;
+    } | null;
+}
+
+const buildFacilitySubscriptionView = (subscription: FacilitySubscriptionSummary | null | undefined) => {
+    if (!subscription) return undefined;
+
+    const canonicalPlanId = getFacilityPlanId(subscription.subscription_plans?.name_en || subscription.plan_id);
+
+    return {
+        plan_name: subscription.subscription_plans?.name || canonicalPlanId,
+        plan: {
+            name_en: canonicalPlanId.toLowerCase(),
+            features: subscription.subscription_plans?.features,
+        },
+        status: subscription.status || undefined,
+    };
+};
+
+const enrichFacilityRowsWithSubscriptions = async (rows: FacilityRow[]) => {
+    if (rows.length === 0) return new Map<string, ReturnType<typeof buildFacilitySubscriptionView>>();
+
+    const uuidIds = rows
+        .map((row) => String(row.id))
+        .filter((id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id));
+
+    if (uuidIds.length === 0) {
+        return new Map<string, ReturnType<typeof buildFacilitySubscriptionView>>();
+    }
+
+    const { data } = await supabase
+        .from('facility_subscriptions')
+        .select(`
+            facility_id_uuid,
+            plan_id,
+            status,
+            subscription_plans (
+                name,
+                name_en,
+                features
+            )
+        `)
+        .in('facility_id_uuid', uuidIds);
+
+    const map = new Map<string, ReturnType<typeof buildFacilitySubscriptionView>>();
+    for (const row of (data || []) as Array<FacilitySubscriptionSummary & { facility_id_uuid?: string | null }>) {
+        if (!row.facility_id_uuid) continue;
+        map.set(row.facility_id_uuid, buildFacilitySubscriptionView(row));
+    }
+
+    return map;
+};
 
 /** DB pending facility row */
 interface PendingFacilityRow {
@@ -568,7 +628,9 @@ export const getIntelligentRecommendations = async (
     finalData.forEach(item => uniqueMap.set(item.id, item));
     let results = Array.from(uniqueMap.values());
 
-    // Sort: 1) 지역 일치 우선  2) Rating Descending
+    const subscriptionByFacilityId = await enrichFacilityRowsWithSubscriptions(results);
+
+    // Sort: 1) 지역 일치 우선  2) 플랜 노출 우선순위  3) Rating Descending
     if (regionText) {
         const safeRegion = regionText.split(' ')[0];
         results.sort((a, b) => {
@@ -577,10 +639,22 @@ export const getIntelligentRecommendations = async (
             const matchA = addressContainsRegion(addrA, safeRegion) ? 1 : 0;
             const matchB = addressContainsRegion(addrB, safeRegion) ? 1 : 0;
             if (matchB !== matchA) return matchB - matchA; // 지역 일치 우선
+            const exposureDiff = compareFacilityPlanExposure(
+                subscriptionByFacilityId.get(String(a.id))?.plan?.name_en,
+                subscriptionByFacilityId.get(String(b.id))?.plan?.name_en,
+            );
+            if (exposureDiff !== 0) return exposureDiff;
             return (b.rating || 0) - (a.rating || 0);
         });
     } else {
-        results.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        results.sort((a, b) => {
+            const exposureDiff = compareFacilityPlanExposure(
+                subscriptionByFacilityId.get(String(a.id))?.plan?.name_en,
+                subscriptionByFacilityId.get(String(b.id))?.plan?.name_en,
+            );
+            if (exposureDiff !== 0) return exposureDiff;
+            return (b.rating || 0) - (a.rating || 0);
+        });
     }
 
     // Limit to 5 (User asked for 3, but 5 covers scrolling)
@@ -592,6 +666,7 @@ export const getIntelligentRecommendations = async (
         lat: r.latitude || r.lat,
         lng: r.longitude || r.lng,
         imageUrl: await signFacilityImageValue((r.image_url as string | undefined) || ((r.images && r.images.length > 0) ? r.images[0] : null)),
+        subscription: subscriptionByFacilityId.get(String(r.id)),
         reviewCount: r.review_count,
         rating: r.rating || 0
     })));
@@ -775,6 +850,7 @@ export const getFacility = async (id: string) => {
     const resolvedImages = await resolveFacilityDetailImages(data, {
         signImage: (value) => signFacilityImageValue(value),
     });
+    const subscription = await getFacilitySubscription(String(data.id), supabase);
 
     return {
         ...data,
@@ -782,7 +858,12 @@ export const getFacility = async (id: string) => {
         lng: data.longitude,
         imageUrl: resolvedImages.imageUrl,
         priceRange: data.price_range,
-        galleryImages: resolvedImages.galleryImages
+        galleryImages: resolvedImages.galleryImages,
+        subscription: subscription ? {
+            plan_name: subscription.plan_name,
+            plan: subscription.plan,
+            status: subscription.status,
+        } : undefined,
     };
 };
 
@@ -1297,6 +1378,7 @@ export const getFacilitySubscription = async (facilityId: string, client: Supaba
                 subscription_plans (
                     id,
                     name,
+                    name_en,
                     price,
                     features
                 )
@@ -1320,11 +1402,13 @@ export const getFacilitySubscription = async (facilityId: string, client: Supaba
 
         // Return flattened object for easier UI handling
         if (data) {
+            const subscriptionView = buildFacilitySubscriptionView(data as FacilitySubscriptionSummary);
             return {
                 ...data,
                 plan_name: data.subscription_plans?.name || data.plan_id,
                 plan_price: data.subscription_plans?.price,
-                next_billing_date: data.next_billing_date
+                next_billing_date: data.next_billing_date,
+                plan: subscriptionView?.plan,
             };
         }
 

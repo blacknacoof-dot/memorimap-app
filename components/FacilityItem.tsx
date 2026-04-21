@@ -1,6 +1,7 @@
 import React from 'react';
 import { Check, Scale, Award, Bot, BadgeCheck } from 'lucide-react';
 import { Facility } from '../types';
+import { normalizeSubscriptionPlanId } from '../lib/subscriptionPlanIds';
 import { OptimizedImage } from './ui/OptimizedImage';
 import { getCategoryLabel } from '../utils/facilityNormalizer';
 
@@ -53,6 +54,8 @@ interface FacilityItemProps {
 }
 
 export const FacilityItem = React.memo(({ facility, onClick, isCompared, onToggleCompare, style }: FacilityItemProps) => {
+    const normalizedPlanId = normalizeSubscriptionPlanId(facility.subscription?.plan?.name_en || facility.subscription?.plan_name);
+
     if (IMAGE_DEBUG && DEBUG_IMAGE_SAMPLE_NAMES.has(facility.name)) {
         console.info('[image-debug:FacilityItem:render]', {
             name: facility.name,
@@ -90,17 +93,17 @@ export const FacilityItem = React.memo(({ facility, onClick, isCompared, onToggl
                         <div className="text-xs text-primary font-bold shrink-0">
                             {getCategoryLabel(facility.type || '') || facility.category}
                         </div>
-                        {facility.subscription?.plan?.name_en === 'premium' && (
+                        {normalizedPlanId === 'PREMIUM' && (
                             <div className="bg-gradient-to-r from-gray-300 to-gray-400 text-white p-0.5 rounded-full shadow-sm" title="프리미엄 실버">
                                 <Award size={10} />
                             </div>
                         )}
-                        {facility.subscription?.plan?.name_en === 'enterprise' && (
+                        {normalizedPlanId === 'ENTERPRISE' && (
                             <div className="bg-gradient-to-r from-amber-400 to-amber-600 text-white p-0.5 rounded-full shadow-sm" title="프리미엄 골드">
                                 <Award size={10} />
                             </div>
                         )}
-                        {facility.subscription?.plan && facility.subscription.plan.name_en !== 'free' && (
+                        {facility.subscription?.plan && normalizedPlanId !== 'FREE' && (
                             <div className="flex items-center gap-1 px-1.5 py-0.5 bg-primary/5 text-primary text-[9px] rounded font-bold border border-primary/10 shrink-0">
                                 <Bot size={10} /> AI상담
                             </div>

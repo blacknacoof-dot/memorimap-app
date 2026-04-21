@@ -3,6 +3,7 @@ import { X, Check, Scale, Bot, Award, Crown, ShieldCheck, Share2 } from 'lucide-
 import { Facility, Reservation } from '../../types';
 import { toast } from 'sonner';
 import { analytics } from '../../lib/analytics';
+import { normalizeSubscriptionPlanId } from '../../lib/subscriptionPlanIds';
 import { getCategoryLabel } from '../../utils/facilityNormalizer';
 import { useFacilitySheet } from './useFacilitySheet';
 import { Lightbox } from './Lightbox';
@@ -35,6 +36,7 @@ export const FacilitySheet: React.FC<Props> = ({
   reservations = [], onOpenAiChat, onViewSangjoList, onDirectConsult,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const normalizedPlanId = normalizeSubscriptionPlanId(facility.subscription?.plan?.name_en || facility.subscription?.plan_name);
 
   useEffect(() => {
     analytics.facilityDetailOpen(facility.id, facility.name, facility.type || facility.category || '');
@@ -109,12 +111,12 @@ export const FacilitySheet: React.FC<Props> = ({
             </div>
             <div className="flex items-center gap-2">
               <h2 className="text-2xl font-bold shadow-sm">{facility.name}</h2>
-              {facility.subscription?.plan?.name_en === 'premium' && (
+              {normalizedPlanId === 'PREMIUM' && (
                 <div className="bg-gradient-to-r from-gray-300 to-gray-400 text-white p-1 rounded-full shadow-lg" title="프리미엄 실버 등급">
                   <Award size={16} />
                 </div>
               )}
-              {facility.subscription?.plan?.name_en === 'enterprise' && (
+              {normalizedPlanId === 'ENTERPRISE' && (
                 <div className="bg-gradient-to-r from-amber-400 to-amber-600 text-white p-1 rounded-full shadow-lg" title="프리미엄 골드 등급">
                   <Crown className="w-4 h-4" />
                 </div>
@@ -127,14 +129,14 @@ export const FacilitySheet: React.FC<Props> = ({
         {facility.subscription?.plan && (
           <div className="hidden md:block px-4 py-6">
             <div className={`p-4 rounded-2xl border-2 transition-all duration-300 ${
-              facility.subscription.plan.name_en === 'premium' || facility.subscription.plan.name_en === 'enterprise'
+              normalizedPlanId === 'PREMIUM' || normalizedPlanId === 'ENTERPRISE'
                 ? 'bg-gradient-to-br from-primary/5 to-purple-500/5 border-primary/20 shadow-sm'
                 : 'bg-slate-50 border-slate-100'
             }`}>
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-inner ${
-                    facility.subscription.plan.name_en === 'premium' || facility.subscription.plan.name_en === 'enterprise'
+                    normalizedPlanId === 'PREMIUM' || normalizedPlanId === 'ENTERPRISE'
                       ? 'bg-primary text-white' : 'bg-slate-200 text-slate-500'
                   }`}>
                     <Bot size={20} />
@@ -147,7 +149,7 @@ export const FacilitySheet: React.FC<Props> = ({
                 <button
                   onClick={() => onOpenAiChat?.()}
                   className={`px-4 py-2 rounded-lg text-xs font-bold transition-all active:scale-95 ${
-                    facility.subscription.plan.name_en === 'premium' || facility.subscription.plan.name_en === 'enterprise'
+                    normalizedPlanId === 'PREMIUM' || normalizedPlanId === 'ENTERPRISE'
                       ? 'bg-primary text-white shadow-md shadow-primary/20'
                       : 'bg-white border border-slate-200 text-slate-700'
                   }`}
