@@ -79,7 +79,7 @@ body {
 
 @media (display-mode: standalone) {
   .list-view-shell {
-    padding-top: calc(7rem + var(--safe-area-inset-top));
+    padding-top: calc(9rem + var(--safe-area-inset-top));
   }
 }
 
