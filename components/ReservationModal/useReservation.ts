@@ -205,6 +205,17 @@ export function useReservation({ facility, onClose: _onClose, onConfirm, reserva
       const verification = await verifyPayment({
         paymentId: response.paymentId || paymentId,
         expectedAmount: depositAmount,
+        clientPaymentResult: {
+          paymentId: response.paymentId || paymentId,
+          transactionId: response.transactionId,
+          txId: response.txId,
+          code: response.code,
+          message: response.message,
+          pgCode: response.pgCode,
+          pgMessage: response.pgMessage,
+          payMethod: paymentMethod,
+          amount: depositAmount,
+        },
       });
       if (!verification.verified) {
         throw new Error(verification.error || '결제 검증에 실패했습니다. 고객센터에 문의해주세요.');

@@ -30,6 +30,8 @@ export interface PaymentResponse {
     code?: string;
     message?: string;
     txId?: string;
+    pgCode?: string;
+    pgMessage?: string;
 }
 
 function getPaymentErrorMessage(error: unknown): string {
@@ -124,6 +126,7 @@ export const PORTONE_CONFIG = {
             || import.meta.env.VITE_PORTONE_CHANNEL_KEY
             || '',
     },
+    RECURRING_ENABLED: import.meta.env.VITE_ENABLE_RECURRING_SUBSCRIPTIONS === 'true',
     /** @deprecated Use getChannelKey() instead. */
     get CHANNEL_KEY() { return this.CHANNELS.general; },
 } as const;
@@ -135,6 +138,10 @@ export function getChannelKey(role: PaymentRole = 'general'): string {
         throw new Error(`PortOne ${role} 채널 키가 설정되지 않았습니다.`);
     }
     return key;
+}
+
+export function isRecurringSubscriptionEnabled(): boolean {
+    return PORTONE_CONFIG.RECURRING_ENABLED;
 }
 
 if (!PORTONE_CONFIG.STORE_ID || !PORTONE_CONFIG.CHANNELS.general) {
@@ -154,6 +161,17 @@ export const verifyPayment = async (params: {
     planId?: string;
     targetUserId?: string;
     authToken?: string | null;
+    clientPaymentResult?: {
+        paymentId?: string;
+        transactionId?: string;
+        txId?: string;
+        code?: string;
+        message?: string;
+        pgCode?: string;
+        pgMessage?: string;
+        payMethod?: string;
+        amount?: number;
+    };
 }): Promise<{ verified: boolean; persisted?: boolean; error?: string; subscriptionId?: string }> => {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -240,6 +258,61 @@ export const registerPaymentIntent = async (params: {
         };
     } catch (error: unknown) {
         const msg = error instanceof Error ? error.message : '결제 준비 중 오류가 발생했습니다.';
+        return { success: false, error: msg };
+    }
+};
+
+export const issueBillingKeySubscription = async (params: {
+    billingKey: string;
+    planId: string;
+    paymentContext: 'facility_subscription' | 'personal_subscription';
+    facilityId?: string;
+    targetUserId?: string;
+    customerName?: string;
+    customerEmail?: string;
+    customerPhoneNumber?: string;
+    orderName?: string;
+    authToken?: string | null;
+}): Promise<{ success: boolean; error?: string; paymentId?: string; subscriptionId?: string }> => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl) {
+        return { success: false, error: 'Supabase URL not configured' };
+    }
+
+    try {
+        const userToken = params.authToken || await getCurrentAccessToken();
+        if (!userToken) {
+            return { success: false, error: '인증 토큰이 없습니다. 로그인 후 다시 시도해 주세요.' };
+        }
+
+        const response = await fetch(`${supabaseUrl}/functions/v1/issue-billing-key`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': supabaseKey,
+                'Authorization': `Bearer ${userToken}`,
+            },
+            body: JSON.stringify(params),
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+            return {
+                success: false,
+                error: result?.error || `issue-billing-key failed (${response.status})`,
+            };
+        }
+
+        return {
+            success: result?.success === true,
+            error: result?.error,
+            paymentId: result?.paymentId,
+            subscriptionId: result?.subscriptionId,
+        };
+    } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : '정기결제 등록 중 오류가 발생했습니다.';
         return { success: false, error: msg };
     }
 };
@@ -344,8 +417,10 @@ interface PortOneIssueBillingKeyParams {
     billingKeyMethod: string;
     issueId?: string;
     issueName?: string;
+    redirectUrl?: string;
     customer?: {
         fullName?: string;
+        phoneNumber?: string;
         email?: string;
     };
     offerPeriod?: {
@@ -378,15 +453,28 @@ export const requestIssueBillingKey = async (params: {
     issueId?: string;
     issueName?: string;
     customerName?: string;
+    customerPhoneNumber?: string;
     customerEmail?: string;
 }): Promise<BillingKeyResponse> => {
     if (!window.PortOne?.requestIssueBillingKey) {
         throw new Error('PortOne SDK의 빌링키 발급 기능이 로드되지 않았습니다.');
     }
 
+    const normalizeBillingPhoneNumber = (value?: string): string => {
+        if (!value) return '';
+        const digits = value.replace(/\D/g, '');
+        if (!digits) return '';
+        if (digits.startsWith('82') && digits.length >= 11) {
+            return `0${digits.slice(2)}`.slice(0, 11);
+        }
+        return digits.slice(0, 11);
+    };
+
     const customer: Record<string, string> = {};
-    if (params.customerName) customer.fullName = params.customerName;
-    if (params.customerEmail) customer.email = params.customerEmail;
+    if (params.customerName) customer.fullName = params.customerName.trim();
+    const normalizedPhoneNumber = normalizeBillingPhoneNumber(params.customerPhoneNumber);
+    if (normalizedPhoneNumber) customer.phoneNumber = normalizedPhoneNumber;
+    if (params.customerEmail) customer.email = params.customerEmail.trim().toLowerCase();
 
     const response = await window.PortOne.requestIssueBillingKey({
         storeId: PORTONE_CONFIG.STORE_ID,
@@ -394,10 +482,8 @@ export const requestIssueBillingKey = async (params: {
         billingKeyMethod: 'CARD',
         ...(params.issueId && { issueId: params.issueId }),
         ...(params.issueName && { issueName: params.issueName }),
+        redirectUrl: `${window.location.origin}${window.location.pathname}${window.location.hash}`,
         ...(Object.keys(customer).length > 0 && { customer }),
-        bypass: {
-            kcp_v2: { site_name: '추모맵' },
-        },
     });
 
     return response;

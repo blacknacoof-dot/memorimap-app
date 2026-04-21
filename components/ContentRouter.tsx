@@ -503,6 +503,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
               <SubscriptionPlans
                 facilityId={adminFacilityId ?? undefined}
                 type={userRole === 'sangjo_hq_admin' ? 'sangjo' : 'facility'}
+                onOpenLogin={() => setShowLoginModal(true)}
                 onSelectPlan={() => {
                   // 토스트는 SubscriptionPlans 내부에서 이미 표시
                 }}
@@ -528,6 +529,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
             <div className="flex-1 overflow-auto">
               <PersonalSubscriptionPlans
                 onBack={() => setViewState(ViewState.MY_PAGE)}
+                onOpenLogin={() => setShowLoginModal(true)}
               />
             </div>
           </div>

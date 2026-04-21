@@ -1,7 +1,14 @@
 ﻿import React, { useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Check, X, Sparkles, Crown, Zap, ChevronDown, ChevronUp, MessageCircle, ShieldCheck, ArrowLeft } from 'lucide-react';
-import { requestPayment, verifyPayment, registerPaymentIntent, PORTONE_CONFIG, getChannelKey, generatePaymentId } from '../lib/portone';
+import {
+    verifyPayment,
+    getChannelKey,
+    generateIssueId,
+    requestIssueBillingKey,
+    issueBillingKeySubscription,
+    isRecurringSubscriptionEnabled,
+} from '../lib/portone';
 import { toast } from 'sonner';
 import { useUser, useSession } from '../lib/auth';
 import { getAuthClient } from '../lib/supabaseClient';
@@ -9,18 +16,8 @@ import { getFacilitySubscription } from '../lib/queries/index';
 import { normalizeSubscriptionPlanId } from '../lib/subscriptionPlanIds';
 import { LegalModal } from './LegalModal';
 
-const normalizePhoneNumber = (value: string) => value.replace(/\D/g, '').slice(0, 11);
-
-const formatPhoneNumber = (value: string) => {
-    const cleaned = normalizePhoneNumber(value);
-    if (cleaned.length <= 3) return cleaned;
-    if (cleaned.length <= 7) return `${cleaned.slice(0, 3)}-${cleaned.slice(3)}`;
-    return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 7)}-${cleaned.slice(7)}`;
-};
-
-const normalizeGuestEmail = (value: string) => value.trim().toLowerCase();
-
-const isValidGuestEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+const FACILITY_BILLING_PENDING_KEY = 'pendingFacilityBillingActivation';
+const FACILITY_BILLING_INFLIGHT_KEY = 'pendingFacilityBillingActivationInFlight';
 
 interface Plan {
     id: string;
@@ -69,9 +66,9 @@ const facilityPlans: Plan[] = [
             { name: '시설 정보 등록/수정', included: true },
             { name: '리뷰 답글 작성', included: true },
             { name: '기본 통계 리포트', included: true },
-            { name: '알림 50건/월', included: true },
+            { name: '알림 100건/월', included: true },
             { name: '사진 업로드 (20장)', included: true },
-            { name: 'AI 채팅 상담 (50회/월)', included: true },
+            { name: 'AI 채팅 상담 (100회/월)', included: true },
             { name: '상위 노출 광고', included: false },
         ],
     },
@@ -106,12 +103,11 @@ const enterprisePlan: Plan = {
     badge: '맞춤 견적',
     features: [
         { name: '프리미엄 모든 기능', included: true },
-        { name: '최상단 고정 노출', included: true, description: '지역별 독점' },
+        { name: '최상위 우선 노출', included: true, description: '검색 결과 우선순위 최상' },
         { name: '골드 인증 배지', included: true },
-        { name: '전담 계정 매니저', included: true },
-        { name: 'AI 리뷰 분석/관리', included: true },
-        { name: '맞춤 디자인 지원', included: true },
-        { name: 'API 연동 지원', included: true },
+        { name: 'AI 상담/알림 무제한', included: true },
+        { name: '리뷰 답글 및 상세 통계', included: true },
+        { name: '도입 범위 맞춤 협의', included: true, description: '세부 운영 지원은 계약 조건에 따라 별도 안내' },
     ],
 };
 
@@ -145,24 +141,35 @@ interface SubscriptionPlansProps {
     currentPlan?: string;
     facilityId?: string;
     type?: 'facility' | 'sangjo'; // 추가: 업체 유형
+    onOpenLogin?: () => void;
 }
 
-export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityId, type = 'facility' }: SubscriptionPlansProps) {
+export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityId, type = 'facility', onOpenLogin }: SubscriptionPlansProps) {
     const { user } = useUser();
     const { session, isLoaded } = useSession();
     const isGuestCheckout = !session?.access_token;
+    const recurringEnabled = isRecurringSubscriptionEnabled();
 
     const plans = type === 'sangjo' ? sangjoPlans : facilityPlans;
     const [selectedPlan, setSelectedPlan] = useState<string | null>(normalizeSubscriptionPlanId(currentPlan) || null);
     const [expandedPlan, setExpandedPlan] = useState<string | null>(type === 'sangjo' ? 'sj_starter' : 'PREMIUM');
     const [showInquiryModal, setShowInquiryModal] = useState(false);
     const [inquiryForm, setInquiryForm] = useState({ name: '', phone: '', email: '', message: '' });
-    const [guestBuyer, setGuestBuyer] = useState({ fullName: '', phoneNumber: '', email: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isPaymentOpen, setIsPaymentOpen] = useState(false);
     const [showLegalModal, setShowLegalModal] = useState(false);
     const [legalTab, setLegalTab] = useState<'terms' | 'privacy' | 'refund' | 'business' | 'license'>('business');
+    const effectiveSelectedPlan = selectedPlan;
+
+    const clearBillingRedirectParams = useCallback(() => {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('billingKey');
+        url.searchParams.delete('transactionType');
+        url.searchParams.delete('code');
+        url.searchParams.delete('message');
+        window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
+    }, []);
 
     const cancelPayment = useCallback(() => {
         const bodyChildren = document.body.children;
@@ -185,6 +192,15 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
         toast('결제가 취소되었습니다.');
     }, []);
 
+    const redirectToBillingActivation = useCallback((billingKey: string) => {
+        const url = new URL(window.location.href);
+        url.searchParams.set('billingKey', billingKey);
+        url.searchParams.set('transactionType', 'ISSUE_BILLING_KEY');
+        url.searchParams.delete('code');
+        url.searchParams.delete('message');
+        window.location.replace(`${url.pathname}${url.search}${url.hash}`);
+    }, []);
+
     React.useEffect(() => {
         const loadSub = async () => {
             if (facilityId) {
@@ -200,7 +216,86 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
             }
         };
         loadSub();
-    }, [facilityId]);
+    }, [facilityId, session]);
+
+    React.useEffect(() => {
+        if (!facilityId || !isLoaded || !session?.access_token) return;
+
+        const params = new URLSearchParams(window.location.search);
+        const billingKey = params.get('billingKey');
+        const transactionType = params.get('transactionType');
+        const code = params.get('code');
+        const message = params.get('message');
+
+        if (code) {
+            const decodedMessage = message ? decodeURIComponent(message) : '카드 등록에 실패했습니다.';
+            toast.error(decodedMessage);
+            sessionStorage.removeItem(FACILITY_BILLING_PENDING_KEY);
+            clearBillingRedirectParams();
+            return;
+        }
+
+        if (!billingKey || transactionType !== 'ISSUE_BILLING_KEY') return;
+        if (sessionStorage.getItem(FACILITY_BILLING_INFLIGHT_KEY) === billingKey) return;
+
+        const pendingRaw = sessionStorage.getItem(FACILITY_BILLING_PENDING_KEY);
+        if (!pendingRaw) return;
+
+        const pending = JSON.parse(pendingRaw) as {
+            facilityId: string;
+            planId: string;
+            orderName: string;
+            customerName: string;
+            customerEmail: string;
+            customerPhoneNumber: string;
+        };
+
+        if (pending.facilityId !== facilityId) return;
+
+        let cancelled = false;
+        const activate = async () => {
+            sessionStorage.setItem(FACILITY_BILLING_INFLIGHT_KEY, billingKey);
+            sessionStorage.removeItem(FACILITY_BILLING_PENDING_KEY);
+            setIsProcessing(true);
+            try {
+                const activation = await issueBillingKeySubscription({
+                    billingKey,
+                    paymentContext: 'facility_subscription',
+                    facilityId,
+                    planId: pending.planId,
+                    authToken: session.access_token,
+                    orderName: pending.orderName,
+                    customerName: pending.customerName,
+                    customerEmail: pending.customerEmail,
+                    customerPhoneNumber: pending.customerPhoneNumber,
+                });
+
+                if (cancelled) return;
+
+                if (!activation.success) {
+                    toast.error(activation.error || '정기결제 시작에 실패했습니다. 결제 상태를 확인해 주세요.');
+                    return;
+                }
+
+                setSelectedPlan(pending.planId);
+                onSelectPlan?.(pending.planId);
+                toast.success('정기결제가 시작되었습니다.');
+            } finally {
+                sessionStorage.removeItem(FACILITY_BILLING_INFLIGHT_KEY);
+                clearBillingRedirectParams();
+                if (!cancelled) {
+                    setIsPaymentOpen(false);
+                    setIsProcessing(false);
+                }
+            }
+        };
+
+        void activate();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [clearBillingRedirectParams, facilityId, isLoaded, onSelectPlan, session]);
 
     const handleSelectPlan = async (plan: Plan) => {
         if (isProcessing) return;
@@ -243,63 +338,9 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
         }
 
         if (isGuestCheckout) {
-            const normalizedGuestBuyer = {
-                fullName: guestBuyer.fullName.trim(),
-                phoneNumber: normalizePhoneNumber(guestBuyer.phoneNumber),
-                email: normalizeGuestEmail(guestBuyer.email),
-            };
-
-            if (!normalizedGuestBuyer.fullName || !normalizedGuestBuyer.phoneNumber) {
-                toast.error('비회원 결제를 위해 이름과 연락처를 입력해 주세요.');
-                return;
-            }
-
-            if (normalizedGuestBuyer.phoneNumber.length < 10 || normalizedGuestBuyer.phoneNumber.length > 11) {
-                toast.error('연락처는 숫자 10-11자리로 입력해 주세요.');
-                return;
-            }
-
-            if (normalizedGuestBuyer.email && !isValidGuestEmail(normalizedGuestBuyer.email)) {
-                toast.error('이메일 형식을 다시 확인해 주세요.');
-                return;
-            }
-
-            setIsProcessing(true);
-            setIsPaymentOpen(true);
-            try {
-                const paymentId = generatePaymentId('guestsub');
-                const response = await requestPayment({
-                    storeId: PORTONE_CONFIG.STORE_ID,
-                    channelKey: getChannelKey('general'),
-                    paymentId,
-                    orderName: `[추모맵] ${plan.name} 플랜`,
-                    totalAmount: plan.price,
-                    currency: "KRW",
-                    payMethod: "CARD",
-                    customer: {
-                        fullName: normalizedGuestBuyer.fullName,
-                        phoneNumber: normalizedGuestBuyer.phoneNumber,
-                        email: normalizedGuestBuyer.email || undefined,
-                    },
-                });
-
-                if (response.code !== undefined) {
-                    toast.error(`결제 실패: ${response.message}`);
-                    return;
-                }
-
-                toast.success('결제 요청이 접수되었습니다. 결제 결과 확인 후 안내드립니다.');
-                return;
-            } catch (error) {
-                const msg = error instanceof Error ? error.message : '';
-                if (!msg.includes('취소')) {
-                    toast.error('결제 중 오류가 발생했습니다.');
-                }
-                return;
-            } finally {
-                setIsProcessing(false);
-                setIsPaymentOpen(false);
-            }
+            toast('로그인 후 정기결제를 시작할 수 있습니다.');
+            onOpenLogin?.();
+            return;
         }
 
         if (!isLoaded || !session?.access_token) {
@@ -307,69 +348,47 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
             return;
         }
 
+        if (!recurringEnabled) {
+            toast.error('정기결제 준비 중입니다. 승인 완료 후 다시 시도해 주세요.');
+            return;
+        }
+
         setIsProcessing(true);
         setIsPaymentOpen(true);
         try {
-            const paymentId = generatePaymentId('sub');
-            const intentRegistration = await registerPaymentIntent({
-                paymentId,
-                expectedAmount: plan.price,
-                paymentContext: 'facility_subscription',
+            const issueId = generateIssueId('sub');
+            sessionStorage.setItem(FACILITY_BILLING_PENDING_KEY, JSON.stringify({
                 facilityId,
                 planId: plan.nameEn,
-                orderName: `[추모맵] ${plan.name} 플랜`,
-                authToken: session.access_token,
-            });
-            if (!intentRegistration.success) {
-                toast.error(intentRegistration.error || '결제 준비에 실패했습니다.');
-                return;
-            }
-
-            const response = await requestPayment({
-                storeId: PORTONE_CONFIG.STORE_ID,
-                channelKey: getChannelKey('general'),  // Phase C 전까지 일반결제 채널 사용
-                paymentId,
-                orderName: `[추모맵] ${plan.name} 플랜`,
-                totalAmount: plan.price,
-                currency: "KRW",
-                payMethod: "CARD",
-                customer: {
-                    fullName: user?.fullName || user?.firstName || "업체 관리자",
-                    phoneNumber: user?.primaryPhoneNumber?.phoneNumber || "",
-                    email: user?.primaryEmailAddress?.emailAddress || session?.user?.email || "",
-                },
+                orderName: `[추모맵] ${plan.name} 정기결제`,
+                customerName: user?.fullName || user?.firstName || '업체 관리자',
+                customerEmail: user?.primaryEmailAddress?.emailAddress || session?.user?.email || '',
+                customerPhoneNumber: user?.primaryPhoneNumber?.phoneNumber || '',
+            }));
+            const billingKeyResponse = await requestIssueBillingKey({
+                channelKey: getChannelKey('billing'),
+                issueId,
+                issueName: `[추모맵] ${plan.name} 정기결제 카드 등록`,
+                customerName: user?.fullName || user?.firstName || '업체 관리자',
+                customerPhoneNumber: user?.primaryPhoneNumber?.phoneNumber || '',
+                customerEmail: user?.primaryEmailAddress?.emailAddress || session?.user?.email || '',
             });
 
-            if (response.code !== undefined) {
-                toast.error(`결제 실패: ${response.message}`);
+            if (billingKeyResponse.code !== undefined || !billingKeyResponse.billingKey) {
+                console.error('[PortOne billing key issuance failed]', {
+                    issueId,
+                    planId: plan.nameEn,
+                    paymentContext: 'facility_subscription',
+                    response: billingKeyResponse,
+                });
+                sessionStorage.removeItem(FACILITY_BILLING_PENDING_KEY);
+                toast.error(billingKeyResponse.message || '카드 등록에 실패했습니다.');
                 return;
             }
-
-            // 서버사이드 결제 검증
-            const verification = await verifyPayment({
-                paymentId: response.paymentId || paymentId,
-                expectedAmount: plan.price,
-                paymentContext: 'facility_subscription',
-                facilityId,
-                planId: plan.nameEn,
-                authToken: session.access_token,
-            });
-            if (!verification.verified) {
-                toast.error(verification.error || '결제 검증에 실패했습니다. 고객센터에 문의해주세요.');
-                return;
-            }
-
-            // DB 영속화는 verify-payment EF (service_role)에서 처리
-            // persisted === false면 결제는 됐으나 DB 저장 실패
-            if (verification.persisted === false) {
-                toast.error(verification.error || '결제는 완료되었으나 구독 정보 저장에 실패했습니다. 고객센터에 문의해주세요.');
-                return;
-            }
-
-            setSelectedPlan(plan.id);
-            onSelectPlan?.(plan.id);
-            toast.success(`${plan.name} 구독이 시작되었습니다!`);
+            redirectToBillingActivation(billingKeyResponse.billingKey);
+            return;
         } catch (error) {
+            sessionStorage.removeItem(FACILITY_BILLING_PENDING_KEY);
             const msg = error instanceof Error ? error.message : '';
             if (!msg.includes('취소')) {
                 toast.error('결제 중 오류가 발생했습니다.');
@@ -414,50 +433,22 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                 {isGuestCheckout && (
                     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                         <div className="mb-3">
-                            <h2 className="text-sm font-bold text-slate-900">비회원 결제 정보</h2>
+                            <h2 className="text-sm font-bold text-slate-900">로그인 후 이용 안내</h2>
                             <p className="mt-1 text-xs leading-relaxed text-slate-500">
-                                카드 심사 확인을 위해 로그인 없이 운영 결제창까지 진입할 수 있습니다. 이름과 연락처를 입력한 뒤 원하는 플랜을 선택해 주세요.
+                                서비스 이용과 구독 등록은 로그인 후 가능합니다. 유료 플랜은 정기결제로 제공되며 카드 등록과 구독 관리는 로그인한 계정에서만 이용할 수 있습니다.
                             </p>
                         </div>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                            <label className="block">
-                                <span className="mb-1 block text-[11px] font-bold text-slate-600">이름 *</span>
-                                <input
-                                    type="text"
-                                    value={guestBuyer.fullName}
-                                    onChange={(e) => setGuestBuyer((prev) => ({ ...prev, fullName: e.target.value }))}
-                                    placeholder="심사자 이름"
-                                    className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
-                                />
-                            </label>
-                            <label className="block">
-                                <span className="mb-1 block text-[11px] font-bold text-slate-600">연락처 *</span>
-                                <input
-                                    type="tel"
-                                    value={guestBuyer.phoneNumber}
-                                    inputMode="numeric"
-                                    onChange={(e) => setGuestBuyer((prev) => ({ ...prev, phoneNumber: formatPhoneNumber(e.target.value) }))}
-                                    placeholder="010-0000-0000"
-                                    className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
-                                />
-                            </label>
-                            <label className="block sm:col-span-2">
-                                <span className="mb-1 block text-[11px] font-bold text-slate-600">이메일</span>
-                                <input
-                                    type="email"
-                                    value={guestBuyer.email}
-                                    onChange={(e) => setGuestBuyer((prev) => ({ ...prev, email: normalizeGuestEmail(e.target.value) }))}
-                                    placeholder="kcp-review@memorimap.kr"
-                                    className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
-                                />
-                            </label>
-                        </div>
+                        <ul className="space-y-1 text-xs leading-relaxed text-slate-500">
+                            <li>• 비로그인 상태에서는 플랜 비교만 확인할 수 있습니다</li>
+                            <li>• 유료 플랜 결제와 무료 플랜 전환은 로그인 후 가능합니다</li>
+                            <li>• 정기결제 등록과 해지는 로그인한 계정에서만 관리됩니다</li>
+                        </ul>
                     </div>
                 )}
 
                 {plans.map((plan) => {
                     const isExpanded = expandedPlan === plan.id;
-                    const isSelected = selectedPlan === plan.id;
+                    const isSelected = effectiveSelectedPlan === plan.id;
 
                     return (
                         <div
@@ -530,12 +521,23 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                                     {/* 결제 안내 블록 — 유료 플랜만 */}
                                     {plan.price > 0 && !isSelected && (
                                         <div className="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                            <p className="text-[10px] font-bold text-slate-600 mb-1">구독 결제 안내</p>
+                                            <p className="text-[10px] font-bold text-slate-600 mb-1">
+                                                {isGuestCheckout ? '로그인 안내' : '정기결제 안내'}
+                                            </p>
                                             <ul className="text-[10px] text-slate-500 space-y-0.5">
-                                                <li>• 결제 완료 후 30일간 이용 가능</li>
-                                                <li>• 해지 시 다음 결제일부터 중단</li>
-                                                <li>• 이미 결제된 당월 금액은 환불되지 않습니다</li>
-                                                {isGuestCheckout && <li>• 비회원은 결제창 확인용으로만 이용되며 관리자 기능은 제공되지 않습니다</li>}
+                                                {isGuestCheckout ? (
+                                                    <>
+                                                        <li>• 유료 플랜은 로그인 후 정기결제로만 제공됩니다</li>
+                                                        <li>• 구독 등록과 해지는 로그인한 계정에서만 진행할 수 있습니다</li>
+                                                        <li>• 결제 내역과 구독 상태는 로그인 후 확인할 수 있습니다</li>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <li>• 첫 카드 등록과 초회 결제 완료 후 매월 자동으로 결제됩니다</li>
+                                                        <li>• 해지 요청 시 다음 결제일부터 자동청구가 중단됩니다</li>
+                                                        <li>• 이미 결제된 당월 금액은 환불되지 않습니다</li>
+                                                    </>
+                                                )}
                                             </ul>
                                         </div>
                                     )}
@@ -548,7 +550,15 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                                             : `bg-gradient-to-r ${plan.color} text-white shadow-lg shadow-blue-500/20`
                                             }`}
                                     >
-                                        {isProcessing ? '결제 처리 중...' : isSelected ? '현재 적용 중인 플랜' : '구독 시작하기'}
+                                        {isProcessing
+                                            ? '정기결제 등록 중...'
+                                            : isSelected
+                                                ? '현재 적용 중인 플랜'
+                                                : isGuestCheckout
+                                                    ? '로그인 후 이용하기'
+                                                    : recurringEnabled
+                                                        ? '정기결제 시작하기'
+                                                        : '정기결제 준비 중'}
                                     </button>
                                 </div>
                             )}
@@ -648,11 +658,13 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                     <div className="space-y-6">
                         <FAQItem
                             question="결제는 어떻게 진행되나요?"
-                            answer="국내 모든 신용카드를 지원하며, 안전한 결제 시스템을 통해 처리됩니다. 결제 완료 후 30일간 이용 가능합니다."
+                            answer={isGuestCheckout
+                                ? '서비스 이용과 구독 등록은 로그인 후 가능합니다. 유료 플랜은 로그인한 계정에서 카드 등록 후 정기결제로 시작됩니다.'
+                                : '국내 모든 신용카드를 지원하며, 첫 카드 등록과 초회 결제 완료 후 매월 자동으로 결제됩니다.'}
                         />
                         <FAQItem
                             question="플랜 변경이나 해지는 언제든 가능한가요?"
-                            answer="네, 대시보드에서 언제든 해지할 수 있습니다. 해지 시 다음 결제일부터 중단되며, 이미 결제된 당월 금액은 환불되지 않습니다."
+                            answer='네, 대시보드에서 해지를 요청할 수 있습니다. 현재 이용 기간은 유지되며 다음 결제일부터 자동청구가 중단됩니다.'
                         />
                         <FAQItem
                             question="AI 상담 데이터는 어떻게 학습되나요?"

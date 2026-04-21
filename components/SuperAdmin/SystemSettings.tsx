@@ -11,7 +11,6 @@ export const SystemSettings = () => {
     const [isSaving, setIsSaving] = useState(false);
     const client = useSuperAdminClient();
 
-    // DB에서 설정값 로드
     useEffect(() => {
         const load = async () => {
             try {
@@ -24,7 +23,9 @@ export const SystemSettings = () => {
                     if (row.key === 'commission_rate' && row.value != null) setCommission(String(row.value));
                     if (row.key === 'maintenance_mode') setMaintenanceMode(row.value === true || row.value === 'true');
                 }
-            } catch { /* 기본값 유지 */ }
+            } catch {
+                // Keep local defaults when settings cannot be loaded.
+            }
         };
         load();
     }, [client]);
@@ -44,7 +45,6 @@ export const SystemSettings = () => {
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            {/* Maintenance Mode */}
             <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                 <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
                     <MonitorStop className="w-5 h-5 text-red-500" />
@@ -53,29 +53,34 @@ export const SystemSettings = () => {
                 <div className="flex items-center justify-between bg-red-50 p-4 rounded-lg border border-red-100">
                     <div>
                         <p className="text-sm font-bold text-red-800">점검 모드 (Maintenance)</p>
-                        <p className="text-[10px] text-red-600 mt-0.5">활성화 시 일반 사용자의 접속이 차단됩니다.</p>
+                        <p className="text-[10px] text-red-600 mt-0.5">활성화하면 일반 사용자의 접속이 차단됩니다.</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                        <input data-testid="system-settings-maintenance-toggle" type="checkbox" className="sr-only peer" checked={maintenanceMode} onChange={async (e) => {
-                            const checked = e.target.checked;
-                            const label = checked ? '활성화' : '비활성화';
-                            if (!await confirmAsync(`점검 모드를 ${label}하시겠습니까?\n${checked ? '일반 사용자의 접속이 차단됩니다.' : ''}`)) {
-                                return;
-                            }
-                            try {
-                                await updateSystemSetting('maintenance_mode', checked, client);
-                                setMaintenanceMode(checked);
-                                toast.success(`점검 모드가 ${label} 되었습니다.`);
-                            } catch {
-                                toast.error('점검 모드 설정 실패');
-                            }
-                        }} />
+                        <input
+                            data-testid="system-settings-maintenance-toggle"
+                            type="checkbox"
+                            className="sr-only peer"
+                            checked={maintenanceMode}
+                            onChange={async (e) => {
+                                const checked = e.target.checked;
+                                const label = checked ? '활성화' : '비활성화';
+                                if (!await confirmAsync(`점검 모드를 ${label}하시겠습니까?\n${checked ? '일반 사용자의 접속이 차단됩니다.' : ''}`)) {
+                                    return;
+                                }
+                                try {
+                                    await updateSystemSetting('maintenance_mode', checked, client);
+                                    setMaintenanceMode(checked);
+                                    toast.success(`점검 모드가 ${label}되었습니다.`);
+                                } catch {
+                                    toast.error('점검 모드 설정에 실패했습니다.');
+                                }
+                            }}
+                        />
                         <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
                     </label>
                 </div>
             </div>
 
-            {/* Commission Settings */}
             <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                 <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
                     <Percent className="w-5 h-5 text-blue-600" />
@@ -112,28 +117,27 @@ export const SystemSettings = () => {
                 </div>
             </div>
 
-            {/* Revenue Sync Tool */}
             <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mt-6">
                 <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
                     <History className="w-5 h-5 text-indigo-600" />
-                    매출 데이터 동기화
+                    수동 매출 복구
                 </h3>
                 <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100 mb-4">
-                    <p className="text-sm font-medium text-indigo-800">미집계 매출 복구</p>
+                    <p className="text-sm font-medium text-indigo-800">수동 복구 가이드</p>
                     <p className="text-[10px] text-indigo-600 mt-1 leading-relaxed">
-                        결제 내역이 누락된 구독 데이터를 찾아 매출 기록을 생성합니다.<br />
-                        데이터 정합성 유지를 위해 주기적으로 실행하는 것을 권장합니다.
+                        이 버튼은 매출 데이터를 자동 동기화하지 않습니다.<br />
+                        운영자가 데이터베이스에서 수동 SQL을 실행해야 하는 복구 절차 안내용입니다.
                     </p>
                 </div>
                 <button
                     onClick={async () => {
-                        if (await confirmAsync('데이터베이스를 스캔하여 누락된 매출 기록을 생성하시겠습니까?')) {
-                            toast.warning('SQL 패치(fix_revenue_and_billing_date.sql)를 데이터베이스에서 실행해주세요.', { duration: 8000 });
+                        if (await confirmAsync('자동 동기화 기능은 제공되지 않습니다. 수동 SQL 실행 안내를 확인하시겠습니까?')) {
+                            toast.warning('운영자가 데이터베이스에서 fix_revenue_and_billing_date.sql을 직접 실행해야 합니다.', { duration: 8000 });
                         }
                     }}
                     className="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
                 >
-                    동기화 프로세스 시작
+                    수동 복구 안내 보기
                 </button>
             </div>
         </div>
