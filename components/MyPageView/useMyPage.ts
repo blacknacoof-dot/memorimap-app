@@ -11,7 +11,8 @@ import { normalizeType } from '../../utils/facilityNormalizer';
 import { useQuotaGate } from '../../hooks/useQuotaGate';
 import { createSignedStorageImageUrl, SIGNED_IMAGE_URL_TTL_SECONDS } from '../../lib/security/storageImage';
 
-export type ActiveTab = 'consultations' | 'pending' | 'confirmed' | 'cancelled' | 'favorites' | 'sangjo_favorites';
+export type ReservationTab = 'consultations' | 'pending' | 'confirmed' | 'cancelled';
+export type FavoriteTab = 'favorites' | 'sangjo_favorites';
 
 interface UseMyPageProps {
   isLoggedIn: boolean;
@@ -25,7 +26,8 @@ export function useMyPage({ isLoggedIn, user, facilities: _facilities }: UseMyPa
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showLegalModal, setShowLegalModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<ActiveTab>('favorites');
+  const [reservationTab, setReservationTab] = useState<ReservationTab>('consultations');
+  const [favoriteTab, setFavoriteTab] = useState<FavoriteTab>('favorites');
   const [userPhone, setUserPhone] = useState<string>('');
   const [myFavorites, setMyFavorites] = useState<Favorite[]>([]);
   const [isLoadingFavorites, setIsLoadingFavorites] = useState(false);
@@ -129,7 +131,8 @@ export function useMyPage({ isLoggedIn, user, facilities: _facilities }: UseMyPa
       const { count } = await client
         .from('consultations')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .not('status', 'eq', 'cancelled');
       setConsultationCount(count || 0);
     } catch {
       toast.error('상담 내역을 불러오지 못했습니다.');
@@ -205,9 +208,9 @@ export function useMyPage({ isLoggedIn, user, facilities: _facilities }: UseMyPa
 
   const pendingCount = myReservations.filter(r => r.status === 'pending' || r.status === 'urgent').length;
   const filteredReservations = myReservations.filter(r => {
-    if (activeTab === 'pending') return r.status === 'pending' || r.status === 'urgent';
-    if (activeTab === 'confirmed') return r.status === 'confirmed';
-    if (activeTab === 'cancelled') return r.status === 'cancelled' || r.status === 'rejected';
+    if (reservationTab === 'pending') return r.status === 'pending' || r.status === 'urgent';
+    if (reservationTab === 'confirmed') return r.status === 'confirmed';
+    if (reservationTab === 'cancelled') return r.status === 'cancelled' || r.status === 'rejected';
     return false;
   });
 
@@ -216,7 +219,8 @@ export function useMyPage({ isLoggedIn, user, facilities: _facilities }: UseMyPa
     selectedReservation, setSelectedReservation,
     showEditProfile, setShowEditProfile,
     showLegalModal, setShowLegalModal,
-    activeTab, setActiveTab,
+    reservationTab, setReservationTab,
+    favoriteTab, setFavoriteTab,
     userPhone,
     myFavorites, isLoadingFavorites, extraFacilities,
     sangjoFavorites, isLoadingSangjoFavorites,

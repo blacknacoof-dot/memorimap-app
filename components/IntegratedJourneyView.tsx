@@ -7,6 +7,7 @@ import { QRCodeCanvas } from 'qrcode.react';
 import EndingNoteEditModal from './EndingNoteEditModal';
 import JourneyProgressGraph, { computeJourneySteps } from './JourneyProgressGraph';
 import { useUserPlan } from '../hooks/useUserPlan';
+import { getEndingNoteLimits, sanitizeEndingNoteDraft } from '../lib/endingNoteAccess';
 
 interface JourneyLog {
     title: string;
@@ -84,6 +85,8 @@ export default function IntegratedJourneyView({
 
     // 엔딩노트: 모든 플랜에서 3필드 편집 가능
     const endingNoteLevel = userPlan?.limits?.ending_note ?? 'basic';
+    const visibleNote = note ? sanitizeEndingNoteDraft(endingNoteLevel, note) : null;
+    const endingNoteLimits = getEndingNoteLimits(endingNoteLevel);
 
     // 엔딩 노트 저장 핸들러
     const handleSaveEndingNote = async (updates: Partial<EndingNote>) => {
@@ -95,17 +98,16 @@ export default function IntegratedJourneyView({
         try {
             const authClient = await getAuthClient(session, { strict: true });
 
-            const safeContact = updates.contact || null;
-            const safeMemo = updates.memo || null;
+            const sanitized = sanitizeEndingNoteDraft(endingNoteLevel, updates);
 
             const { error } = await authClient
                 .from('user_ending_notes')
                 .upsert({
                     user_id: user.id,
-                    preferred_types: updates.preferences,
-                    emergency_contact: safeContact,
-                    final_memo: safeMemo,
-                    progress_percent: updates.percent,
+                    preferred_types: sanitized.preferences,
+                    emergency_contact: sanitized.contact || null,
+                    final_memo: sanitized.memo || null,
+                    progress_percent: sanitized.percent,
                     updated_at: new Date().toISOString()
                 });
 
@@ -134,7 +136,7 @@ export default function IntegratedJourneyView({
 
     // 공유 생성 핸들러
     const createShare = async () => {
-        if (!user || !note || !session) {
+        if (!user || !visibleNote || !session) {
             toast.error('공유할 내용이 없습니다.');
             return;
         }
@@ -150,8 +152,7 @@ export default function IntegratedJourneyView({
             const authClient = await getAuthClient(session, { strict: true });
 
             // 프리 플랜: 공유 1회 제한
-            const isFree = !userPlan || (userPlan.plan_name || '').toUpperCase() === 'PERSONAL_FREE';
-            if (isFree) {
+            if (endingNoteLimits.shareLimit !== null) {
                 const { count, error: shareCountError } = await authClient
                     .from('user_shares')
                     .select('id', { count: 'exact', head: true })
@@ -162,18 +163,18 @@ export default function IntegratedJourneyView({
                     setIsCreatingShare(false);
                     return;
                 }
-                if (count && count >= 1) {
-                    toast.error('무료 플랜은 공유 1회까지 가능합니다. 플랜을 업그레이드해주세요.');
+                if ((count || 0) >= endingNoteLimits.shareLimit) {
+                    toast.error(`현재 플랜은 활성 공유 ${endingNoteLimits.shareLimit}개까지만 가능합니다.`);
                     setIsCreatingShare(false);
                     return;
                 }
             }
 
             const { data, error } = await authClient.rpc('create_journey_share', {
-                p_preferences: note.preferences || [],
-                p_contact: note.contact || '',
-                p_memo: note.memo || '',
-                p_percent: note.percent || 0,
+                p_preferences: visibleNote.preferences || [],
+                p_contact: visibleNote.contact || '',
+                p_memo: visibleNote.memo || '',
+                p_percent: visibleNote.percent || 0,
                 p_password: sharePassword
             });
 
@@ -250,7 +251,7 @@ export default function IntegratedJourneyView({
         facilityFavoriteCount,
         sangjoFavoriteCount,
         consultationCount,
-        note
+        visibleNote
     );
     const percent = journeyPercent;
 
@@ -321,8 +322,8 @@ export default function IntegratedJourneyView({
                             나의 선호 방식
                         </h4>
                         <div className="flex flex-wrap gap-1.5">
-                            {note?.preferences && note.preferences.length > 0 ? (
-                                note.preferences.map((p, i) => (
+                            {visibleNote?.preferences && visibleNote.preferences.length > 0 ? (
+                                visibleNote.preferences.map((p, i) => (
                                     <span key={i} className="text-[10px] text-pink-600 bg-pink-50 px-2 py-0.5 rounded-full border border-pink-100 font-bold">#{p}</span>
                                 ))
                             ) : (
@@ -335,8 +336,8 @@ export default function IntegratedJourneyView({
                         <h4 className="text-[11px] font-bold text-gray-500 mb-1">
                             비상 연락망
                         </h4>
-                        {note?.contact ? (
-                            <span className="text-xs text-gray-800 font-medium">{note.contact}</span>
+                        {visibleNote?.contact ? (
+                            <span className="text-xs text-gray-800 font-medium">{visibleNote.contact}</span>
                         ) : (
                             <span className="text-[11px] text-gray-400 italic">미등록 (예: 아들 김철수 010-1234-5678)</span>
                         )}
@@ -346,10 +347,10 @@ export default function IntegratedJourneyView({
                         <h4 className="text-[11px] font-bold text-gray-500 mb-1">
                             한 줄 메모
                         </h4>
-                        {note?.memo ? (
+                        {visibleNote?.memo ? (
                             <div className="border-l-2 border-pink-300 pl-2.5 py-0.5">
                                 <p className="text-xs text-gray-700 font-medium leading-relaxed italic">
-                                    "{note.memo}"
+                                    "{visibleNote.memo}"
                                 </p>
                             </div>
                         ) : (
@@ -365,9 +366,9 @@ export default function IntegratedJourneyView({
                         onClick={() => setIsEditModalOpen(true)}
                         className="flex-[2] py-2.5 bg-gradient-to-r from-pink-400 to-purple-400 text-white rounded-xl text-xs font-bold shadow-sm active:scale-[0.98] transition-all"
                     >
-                        엔딩 노트 {note ? '관리하기' : '작성하기'}
+                        엔딩 노트 {visibleNote ? '관리하기' : '작성하기'}
                     </button>
-                    {note && (
+                    {visibleNote && (
                         <button
                             onClick={handleShare}
                             className="flex-1 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl text-xs font-bold shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
@@ -382,7 +383,7 @@ export default function IntegratedJourneyView({
             <EndingNoteEditModal
                 isOpen={isEditModalOpen}
                 onClose={() => setIsEditModalOpen(false)}
-                currentNote={note}
+                currentNote={visibleNote}
                 onSave={handleSaveEndingNote}
                 endingNoteLevel={endingNoteLevel}
                 onUpgrade={onUpgrade}

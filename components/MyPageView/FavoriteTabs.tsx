@@ -4,13 +4,13 @@ import { Facility, FuneralCompany } from '../../types';
 import type { Favorite } from '../../services/favoriteService';
 import type { SangjoFavorite } from '../../services/sangjoFavoriteService';
 import { FUNERAL_COMPANIES } from '../../constants';
-import type { ActiveTab } from './useMyPage';
+import type { FavoriteTab } from './useMyPage';
 import { FavoriteCard } from './FavoriteCard';
 import { SangjoFavoriteCard } from './SangjoFavoriteCard';
 
 interface Props {
-  activeTab: ActiveTab;
-  setActiveTab: (t: ActiveTab) => void;
+  activeTab: FavoriteTab;
+  setActiveTab: (t: FavoriteTab) => void;
   myFavorites: Favorite[];
   isLoadingFavorites: boolean;
   extraFacilities: Map<string, Facility>;
@@ -35,7 +35,7 @@ export const FavoriteTabs: React.FC<Props> = ({
   sangjoFavorites, isLoadingSangjoFavorites, onSelectFacility, onSelectCompany,
   onRemoveFavorite, onRemoveSangjoFavorite,
 }) => {
-  const tabClass = (tab: ActiveTab, active: string) =>
+  const tabClass = (tab: FavoriteTab, active: string) =>
     `flex-1 py-2 px-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-1 text-sm ${
       activeTab === tab ? `${active} text-white` : 'bg-white text-gray-600 hover:bg-pink-50'
     }`;

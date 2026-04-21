@@ -35,7 +35,8 @@ export const MyPageView: React.FC<Props> = ({
     selectedReservation, setSelectedReservation,
     showEditProfile, setShowEditProfile,
     showLegalModal, setShowLegalModal,
-    activeTab, setActiveTab,
+    reservationTab, setReservationTab,
+    favoriteTab, setFavoriteTab,
     userPhone,
     myFavorites, isLoadingFavorites, extraFacilities,
     sangjoFavorites, isLoadingSangjoFavorites,
@@ -79,8 +80,8 @@ export const MyPageView: React.FC<Props> = ({
       {userRole === 'pending_facility_admin' && <PendingAdminNotice />}
 
       <ReservationTabs
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        activeTab={reservationTab}
+        setActiveTab={setReservationTab}
         myReservations={myReservations}
         filteredReservations={filteredReservations}
         isLoadingReservations={isLoadingReservations}
@@ -92,8 +93,8 @@ export const MyPageView: React.FC<Props> = ({
       />
 
       <FavoriteTabs
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        activeTab={favoriteTab}
+        setActiveTab={setFavoriteTab}
         myFavorites={myFavorites}
         isLoadingFavorites={isLoadingFavorites}
         extraFacilities={extraFacilities}

@@ -4,11 +4,11 @@ import { Reservation, Facility } from '../../types';
 import { ReservationList } from '../ReservationList';
 import { MyConsultations } from '../dashboard/MyConsultations';
 import { toast } from 'sonner';
-import type { ActiveTab } from './useMyPage';
+import type { ReservationTab } from './useMyPage';
 
 interface Props {
-  activeTab: ActiveTab;
-  setActiveTab: (t: ActiveTab) => void;
+  activeTab: ReservationTab;
+  setActiveTab: (t: ReservationTab) => void;
   myReservations: Reservation[];
   filteredReservations: Reservation[];
   isLoadingReservations: boolean;
@@ -24,7 +24,7 @@ export const ReservationTabs: React.FC<Props> = ({
   isLoadingReservations, userId, facilities, onSelectFacility,
   onViewDetails, onCancel,
 }) => {
-  const tabClass = (tab: ActiveTab) =>
+  const tabClass = (tab: ReservationTab) =>
     `min-w-0 py-2.5 px-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-1 text-xs sm:text-sm min-h-[44px] ${
       activeTab === tab ? 'bg-primary text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
     }`;
