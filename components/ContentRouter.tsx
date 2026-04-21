@@ -155,7 +155,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
   );
 
   const promoBanner = showPromo ? (
-    <div className="mb-3">
+    <div className="standalone-hide mb-3">
       <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-amber-400 p-2.5 md:p-3 rounded-xl shadow-xl border border-amber-500/30 flex justify-between items-center">
         <div className="flex items-center gap-2 md:gap-3">
           <div className="bg-amber-500/20 p-1 md:p-1.5 rounded-lg shrink-0">

@@ -78,6 +78,10 @@ body {
 }
 
 @media (display-mode: standalone) {
+  .standalone-hide {
+    display: none !important;
+  }
+
   .list-view-shell {
     padding-top: calc(9rem + var(--safe-area-inset-top));
   }
