@@ -95,6 +95,7 @@ export const AppMainLayout: React.FC<AppMainLayoutProps> = ({
           </Suspense>
         </div>
 
+        {/* MobileBusinessInfoBar now renders inside BottomNav to avoid leaving a separate blank footer gap. */}
         <BottomNav viewState={viewState} setViewState={onBottomNavChange} />
 
         {toast && (
