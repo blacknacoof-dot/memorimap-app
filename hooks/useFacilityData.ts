@@ -24,6 +24,24 @@ import { resolveFacilityDetailImages } from '../lib/facilityImageResolver';
 const BALANCE_CATEGORIES = ['funeral', 'charnel', 'park', 'natural', 'pet', 'sea'] as const;
 const BALANCE_PER_CATEGORY = 3;
 
+const NON_PRODUCTION_FACILITY_PATTERNS = [
+  /ai-consult-flow/i,
+  /^ph장례식장$/i,
+  /\btest\b/i,
+  /\bqa\b/i,
+  /\bfixture\b/i,
+  /\bdemo\b/i,
+] as const;
+
+function isPublicFacilityCandidate(row: { name?: string; address?: string }) {
+  const haystack = [row.name, row.address]
+    .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+    .join(' ');
+
+  if (!haystack) return true;
+  return !NON_PRODUCTION_FACILITY_PATTERNS.some((pattern) => pattern.test(haystack));
+}
+
 /** Arrange the first 18 items as a 6-category x 3 round-robin head, then append the remaining items. */
 function balanceFirstScreen(facilities: Facility[]): Facility[] {
   // 1. Bucket facilities by category.
@@ -135,7 +153,12 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
             packages?: Facility['products'];
             [key: string]: unknown;
           }
-          const mappedFacilities: Facility[] = (data as FacilityRow[]).map((item) => {
+          const mappedFacilities: Facility[] = (data as FacilityRow[])
+            .filter((item) => isPublicFacilityCandidate({
+              name: item.name,
+              address: item.address,
+            }))
+            .map((item) => {
             const resolvedCategory = String(item.type || item.category || 'charnel');
             const itemName = item.name || '';
             const type = normalizeType(resolvedCategory, itemName);
