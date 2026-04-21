@@ -5,6 +5,7 @@ import { getAuthClient } from '../../lib/supabaseClient';
 import { Consultation } from '../../lib/queries';
 import { toast } from 'sonner';
 import type { Session } from '@supabase/supabase-js';
+import { persistReadSangjoContractId } from './sangjoContractState';
 
 interface Props {
     consultations: Consultation[];
@@ -23,6 +24,7 @@ export const PartnerConsultationsTab: React.FC<Props> = ({ consultations, setCon
                 .update({ status: '계약진행', assigned_counselor: text })
                 .eq('id', id);
             if (!error) {
+                persistReadSangjoContractId(session?.user?.id, target.facility_id, id);
                 setConsultations(prev => prev.map(c =>
                     c.id === id ? { ...c, answer: text, answered_at: new Date().toISOString(), status: 'accepted' as const, is_read: true } : c
                 ));
@@ -45,6 +47,7 @@ export const PartnerConsultationsTab: React.FC<Props> = ({ consultations, setCon
     const handleRead = async (id: string) => {
         const target = consultations.find(c => c.id === id);
         if (target?.source === 'sangjo_contract') {
+            persistReadSangjoContractId(session?.user?.id, target.facility_id, id);
             setConsultations(prev => prev.map(c => c.id === id ? { ...c, is_read: true } : c));
         } else {
             const client = await getAuthClient(session, { strict: true });
