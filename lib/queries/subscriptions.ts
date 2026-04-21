@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { buildSafeOrFilter } from '../security/sqlSanitize';
+import { getFacilityPlanId } from '../facilityPlan';
 
 interface SubscriptionRow {
     id: string;
@@ -12,6 +13,7 @@ interface SubscriptionRow {
     subscription_plans?: {
         id?: string | null;
         name?: string | null;
+        name_en?: string | null;
         price?: number | null;
         features?: unknown;
     } | null;
@@ -29,6 +31,7 @@ export const getFacilitySubscription = async (facilityId: string, client: Supaba
                 subscription_plans (
                     id,
                     name,
+                    name_en,
                     price,
                     features
                 )
@@ -57,6 +60,12 @@ export const getFacilitySubscription = async (facilityId: string, client: Supaba
             plan_name: data.subscription_plans?.name || data.plan_id,
             plan_price: data.subscription_plans?.price,
             next_billing_date: data.next_billing_date,
+            plan: data.subscription_plans?.name_en
+                ? {
+                    name_en: getFacilityPlanId(data.subscription_plans.name_en).toLowerCase(),
+                    features: data.subscription_plans.features,
+                }
+                : undefined,
         };
     } catch (_error) {
         return null;

@@ -6,6 +6,8 @@ import {
 import { toast } from 'sonner';
 import { getAuthClient } from '../../lib/supabaseClient';
 import { useSession } from '../../lib/auth';
+import { getFacilitySubscription } from '../../lib/queries/index';
+import { getFacilityPlanId, getFacilityPhotoLimitLabel, getFacilityPlanMeta } from '../../lib/facilityPlan';
 import { confirmAsync } from '../../src/components/common/ConfirmModal';
 import { ImageManager } from './sections/ImageManager';
 import { PackageManager } from './sections/PackageManager';
@@ -30,6 +32,7 @@ interface FacilityData {
 export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facilityId }) => {
     const [facility, setFacility] = useState<FacilityData | null>(null);
     const [packages, setPackages] = useState<PackageItem[]>([]);
+    const [planId, setPlanId] = useState<string>('FREE');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [newFeature, setNewFeature] = useState('');
@@ -39,7 +42,7 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
         setLoading(true);
         const client = await getAuthClient(session, { strict: true });
 
-        const [facilityResult, packagesResult] = await Promise.all([
+        const [facilityResult, packagesResult, subscriptionResult] = await Promise.all([
             client.from('facilities')
                 .select('id, name, address, phone, description, operating_hours, images, features')
                 .eq('id', facilityId)
@@ -47,7 +50,8 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
             client.from('facility_packages')
                 .select('*')
                 .eq('facility_id', facilityId)
-                .order('sort_order')
+                .order('sort_order'),
+            getFacilitySubscription(facilityId, client),
         ]);
 
         if (facilityResult.data) {
@@ -77,6 +81,8 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
                 is_active: (p.is_active as boolean) ?? true,
             })));
         }
+
+        setPlanId(getFacilityPlanId(subscriptionResult?.plan_id ?? subscriptionResult?.plan?.name_en ?? subscriptionResult?.plan_name));
 
         setLoading(false);
     };
@@ -222,8 +228,13 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
             <ImageManager
                 facilityId={facilityId}
                 images={facility.images}
+                planId={planId}
                 onImagesChange={images => setFacility({ ...facility, images })}
             />
+            <p className="-mt-5 px-1 text-[11px] text-slate-500">
+                현재 플랜: <span className="font-semibold text-slate-700">{getFacilityPlanMeta(planId).displayName}</span>
+                {' · '}사진 업로드 한도 {getFacilityPhotoLimitLabel(planId)}
+            </p>
 
             {/* 섹션 3: 서비스 특징 */}
             <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
