@@ -3,7 +3,6 @@ import { Map as MapIcon, List, User, Award } from 'lucide-react';
 import { ViewState } from '../types';
 import { FEATURE_FLAGS } from '../config/featureFlags';
 import { analytics } from '../lib/analytics';
-import { MobileBusinessInfoBar } from './WebBusinessFooter';
 
 interface BottomNavProps {
   viewState: ViewState;
@@ -52,9 +51,6 @@ export const BottomNav: React.FC<BottomNavProps> = ({ viewState, setViewState })
             <span className="text-[11px] mt-0.5 font-medium">{label}</span>
           </button>
         ))}
-      </div>
-      <div className="pt-1">
-        <MobileBusinessInfoBar />
       </div>
     </div>
   );
