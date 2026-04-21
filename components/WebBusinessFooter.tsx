@@ -1,5 +1,5 @@
 import React from 'react';
-import { BUSINESS_INFO, BUSINESS_REVIEW_FIELDS } from '../lib/businessInfo';
+import { BUSINESS_INFO } from '../lib/businessInfo';
 
 interface WebBusinessFooterProps {
   className?: string;
@@ -22,13 +22,11 @@ export const WebBusinessFooter: React.FC<WebBusinessFooterProps> = ({ className 
 };
 
 export const MobileBusinessInfoBar: React.FC = () => {
-  const primaryLine = BUSINESS_REVIEW_FIELDS.slice(0, 3).join(' · ');
-  const secondaryLine = `주소: ${BUSINESS_INFO.address} · 고객센터: ${BUSINESS_INFO.supportPhone} · 이메일: ${BUSINESS_INFO.supportEmail} · 통신판매업신고: ${BUSINESS_INFO.ecommerceRegistration}`;
+  const compactLine = `${BUSINESS_INFO.operatorName} · 사업자등록번호 ${BUSINESS_INFO.registrationNumber} · 통신판매업신고 ${BUSINESS_INFO.ecommerceRegistration}`;
 
   return (
-    <div className="border-t border-slate-200 bg-slate-50 px-3 py-2 text-[10px] leading-4 text-slate-500 md:hidden">
-      <p className="font-medium text-slate-600">{primaryLine}</p>
-      <p className="mt-0.5">{secondaryLine}</p>
+    <div className="shrink-0 border-t border-slate-100 bg-white px-1 pt-0.5 pb-0 text-center text-[9px] leading-3 text-slate-500 md:hidden">
+      <p className="truncate whitespace-nowrap">{compactLine}</p>
     </div>
   );
 };

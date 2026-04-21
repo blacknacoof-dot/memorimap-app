@@ -180,7 +180,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
 
   const listView = () => (
     <div className="h-full relative">
-      <div className="h-full flex flex-col pt-24 pb-20 bg-gray-50">
+      <div className="h-full flex flex-col pt-24 pb-4 bg-gray-50">
         <div className="px-4 shrink-0">
           {promoBanner}
           <div className="flex items-center justify-between mb-1">
@@ -207,7 +207,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
           />
         </div>
       </div>
-      <div className="absolute bottom-20 right-0 left-0 px-4 pointer-events-none z-30 flex justify-center items-end">
+      <div className="absolute bottom-4 right-0 left-0 px-4 pointer-events-none z-30 flex justify-center items-end">
         {compareList.length > 0 && (
           <button
             onClick={() => setShowComparison(true)}
