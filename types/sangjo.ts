@@ -126,6 +126,7 @@ export interface SangjoContract {
   platform_fee?: number;
   assigned_counselor?: string;
   created_at: string;
+  updated_at?: string;
   death_time?: string;
   current_location?: string;
   application_type?: 'CONTRACT' | 'CONSULTATION';

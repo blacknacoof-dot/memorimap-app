@@ -207,7 +207,7 @@ export interface Payment {
     amount: number;
     final_amount?: number;
     currency: string;
-    status: 'succeeded' | 'failed' | 'pending' | 'refunded';
+    status: 'succeeded' | 'completed' | 'failed' | 'pending' | 'refunded';
     payment_method: string | null;
     paid_at: string;
     billing_period_start?: string;

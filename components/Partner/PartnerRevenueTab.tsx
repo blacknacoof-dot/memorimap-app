@@ -10,6 +10,7 @@ import { UpgradeBenefitComparison } from './UpgradeBenefitComparison';
 import { CommissionSimulator } from './CommissionSimulator';
 import { ActivityStats } from './ActivityStats';
 import { normalizeSubscriptionPlanId } from '../../lib/subscriptionPlanIds';
+import { getPartnerPaymentStatusBadge } from './paymentStatus';
 
 const SubscriptionPlans = lazy(() => import('../SubscriptionPlans'));
 
@@ -187,7 +188,9 @@ export const PartnerRevenueTab: React.FC<Props> = ({
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
-                            {payments.map((p) => (
+                            {payments.map((p) => {
+                                const badge = getPartnerPaymentStatusBadge(p.status);
+                                return (
                                 <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
                                     <td className="px-3 md:px-6 py-3.5 text-slate-600 text-xs">
                                         {p.paid_at ? new Date(p.paid_at).toLocaleDateString() : '-'}
@@ -201,14 +204,13 @@ export const PartnerRevenueTab: React.FC<Props> = ({
                                         {(p.final_amount || p.amount || 0).toLocaleString()}원
                                     </td>
                                     <td className="px-3 md:px-6 py-3.5 text-right">
-                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                            p.status === 'succeeded' ? 'bg-green-100 text-green-700' : p.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
-                                        }`}>
-                                            {p.status === 'succeeded' ? '완료' : p.status === 'failed' ? '실패' : '대기'}
+                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${badge.className}`}>
+                                            {badge.label}
                                         </span>
                                     </td>
                                 </tr>
-                            ))}
+                                );
+                            })}
                         </tbody>
                     </table>
                     </div>
