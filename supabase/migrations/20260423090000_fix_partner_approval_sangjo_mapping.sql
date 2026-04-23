@@ -95,11 +95,17 @@ BEGIN
         updated_at = now()
     WHERE id = p_inquiry_id;
 
+    -- Reject only exact duplicate pending inquiries. Company name alone is not
+    -- enough because branches, business types, or login emails can differ.
     UPDATE partner_inquiries
     SET status = 'rejected',
-        message = '[System] Another pending inquiry for the same company was automatically rejected after approval.',
+        message = '[System] Another pending inquiry with the same company, type, email, phone, and address was automatically rejected after approval.',
         updated_at = now()
-    WHERE company_name = v_inquiry.company_name
+    WHERE lower(btrim(COALESCE(company_name, ''))) = lower(btrim(COALESCE(v_inquiry.company_name, '')))
+      AND lower(btrim(COALESCE(business_type, ''))) = lower(btrim(COALESCE(v_inquiry.business_type, '')))
+      AND lower(btrim(COALESCE(company_email, email, ''))) = lower(btrim(COALESCE(v_inquiry.company_email, v_inquiry.email, '')))
+      AND lower(btrim(COALESCE(contact_number, manager_mobile, phone, ''))) = lower(btrim(COALESCE(v_inquiry.contact_number, v_inquiry.manager_mobile, v_inquiry.phone, '')))
+      AND lower(btrim(COALESCE(address, ''))) = lower(btrim(COALESCE(v_inquiry.address, '')))
       AND status = 'pending'
       AND id != p_inquiry_id;
 
@@ -129,6 +135,7 @@ BEGIN
             'facility_id', v_facility_id,
             'partner_id', v_partner_id,
             'company_name', v_inquiry.company_name,
+            'business_type', v_inquiry.business_type,
             'existing_sangjo', v_existing_sangjo,
             'sangjo_mapping_created', v_is_sangjo AND v_existing_sangjo IS NULL,
             'role_assigned', NOT (v_is_sangjo AND v_existing_sangjo IS NOT NULL)

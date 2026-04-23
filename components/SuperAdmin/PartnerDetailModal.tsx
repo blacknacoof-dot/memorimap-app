@@ -160,6 +160,32 @@ export const PartnerDetailModal: React.FC<Props> = ({ partner, onClose, onStatus
       if (partner.status !== 'approved') return;
 
       try {
+        let targetFacilityId: string | undefined;
+        let businessType = '';
+
+        const { data: approvalAudit, error: approvalAuditError } = await client
+          .from('audit_logs')
+          .select('metadata, created_at')
+          .eq('action', 'APPROVE_PARTNER')
+          .contains('metadata', { partner_id: partner.id })
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (approvalAuditError) {
+          console.warn('Falling back to partner inquiry lookup after approval audit lookup failed', approvalAuditError);
+        }
+
+        const auditMetadata = approvalAudit?.metadata as
+          | { facility_id?: string; business_type?: string; company_name?: string }
+          | null
+          | undefined;
+
+        if (auditMetadata?.facility_id) {
+          targetFacilityId = auditMetadata.facility_id;
+          businessType = String(auditMetadata.business_type || '');
+        }
+
         let inquiryQuery = client
           .from('partner_inquiries')
           .select('target_facility_id, business_type, company_name, company_email, created_at')
@@ -172,9 +198,11 @@ export const PartnerDetailModal: React.FC<Props> = ({ partner, onClose, onStatus
           inquiryQuery = inquiryQuery.eq('company_email', partner.contact_email);
         }
 
-        const { data: inquiry } = await inquiryQuery.maybeSingle();
-        const targetFacilityId = inquiry?.target_facility_id;
-        const businessType = String(inquiry?.business_type || '');
+        if (!targetFacilityId || !businessType) {
+          const { data: inquiry } = await inquiryQuery.maybeSingle();
+          targetFacilityId = targetFacilityId || inquiry?.target_facility_id || undefined;
+          businessType = businessType || String(inquiry?.business_type || '');
+        }
 
         if (!targetFacilityId || (businessType !== 'sangjo' && businessType !== 'sangjo_hq')) {
           return;
@@ -204,7 +232,7 @@ export const PartnerDetailModal: React.FC<Props> = ({ partner, onClose, onStatus
     return () => {
       cancelled = true;
     };
-  }, [client, partner.company_name, partner.contact_email, partner.status]);
+  }, [client, partner.company_name, partner.contact_email, partner.id, partner.status]);
 
   const handleAction = async (status: Partner['status']) => {
     const changed = await onStatusChange(partner.id, status);
