@@ -128,12 +128,30 @@ export function useMyPage({ isLoggedIn, user, facilities: _facilities }: UseMyPa
     if (!user) return;
     try {
       const client = await getAuthClient(session);
-      const { count } = await client
-        .from('consultations')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .not('status', 'eq', 'cancelled');
-      setConsultationCount(count || 0);
+      const [consultationsResult, leadsResult, reservationsResult] = await Promise.all([
+        client
+          .from('consultations')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .not('status', 'eq', 'cancelled'),
+        client
+          .from('leads')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .not('status', 'eq', 'cancelled'),
+        client
+          .from('reservations')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .in('purpose', ['funeral', 'memorial', 'pet'])
+          .not('status', 'eq', 'cancelled')
+          .not('status', 'eq', 'rejected'),
+      ]);
+      setConsultationCount(
+        (consultationsResult.count || 0) +
+        (leadsResult.count || 0) +
+        (reservationsResult.count || 0)
+      );
     } catch {
       toast.error('상담 내역을 불러오지 못했습니다.');
     }

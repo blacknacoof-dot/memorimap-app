@@ -12,6 +12,8 @@ import { confirmAsync } from '@/src/components/common/ConfirmModal';
 /** Extended consultation type */
 type ExtendedConsultation = Consultation & {
     facility_name?: string;
+    source_kind?: 'consultation' | 'lead' | 'reservation';
+    source_label?: string;
 };
 
 interface Props {
@@ -65,28 +67,80 @@ export const MyConsultations: React.FC<Props> = ({ userId, onViewFacility }) => 
     const fetchConsultations = async () => {
         setIsLoading(true);
         // 1. Fetch Legacy Consultations (자동 재시도 + 토큰 갱신)
-        let legacyData: Consultation[] = [];
+        let mergedData: ExtendedConsultation[] = [];
         try {
             const client = await getAuthClient(session, { strict: true });
-            const { data, error } = await client
-                .from('consultations')
-                .select('*')
-                .eq('user_id', userId)
-                .not('status', 'eq', 'cancelled')
-                .order('created_at', { ascending: false });
-            if (!error && data) {
-                legacyData = data as Consultation[];
-            }
+            const [consultationsResult, leadsResult, reservationsResult] = await Promise.all([
+                client.from('consultations').select('*').eq('user_id', userId).not('status', 'eq', 'cancelled').order('created_at', { ascending: false }),
+                client.from('leads').select('*').eq('user_id', userId).not('status', 'eq', 'cancelled').order('created_at', { ascending: false }),
+                client.from('reservations').select('*').eq('user_id', userId).in('purpose', ['funeral', 'memorial', 'pet']).not('status', 'eq', 'cancelled').not('status', 'eq', 'rejected').order('created_at', { ascending: false }),
+            ]);
+            const consultationRows = (consultationsResult.data || []).map((row) => ({
+                ...(row as Consultation),
+                source_kind: 'consultation' as const,
+                source_label: '상담',
+            }));
+            const leadRows = (leadsResult.data || []).map((row: Record<string, unknown>) => ({
+                id: `lead-${String(row.id || '')}`,
+                facility_id: String(row.facility_id || ''),
+                facility_name: String(row.facility_name || row.company_name || ''),
+                user_id: userId,
+                user_name: String(row.contact_name || ''),
+                user_phone: String(row.contact_phone || ''),
+                urgency: String(row.urgency || 'normal'),
+                scale: String(row.scale || ''),
+                religion: '',
+                schedule: '',
+                notes: String((row.context_data as { notes?: string } | null)?.notes || row.notes || ''),
+                status: row.status === 'converted' || row.status === 'contacted' ? 'accepted' : 'waiting',
+                created_at: String(row.created_at || new Date().toISOString()),
+                updated_at: String(row.updated_at || row.created_at || new Date().toISOString()),
+                is_ai_response: true,
+                metadata: (row.context_data as Record<string, unknown>) || {},
+                source: 'lead',
+                source_kind: 'lead' as const,
+                source_label: 'AI 접수',
+            } as ExtendedConsultation));
+            const reservationRows = (reservationsResult.data || []).map((row: Record<string, unknown>) => {
+                const rawStatus = String(row.status || 'pending');
+                const status = rawStatus === 'confirmed' ? 'accepted' : rawStatus === 'completed' ? 'completed' : 'waiting';
+                return {
+                    id: `reservation-${String(row.id || '')}`,
+                    facility_id: String(row.facility_id || ''),
+                    facility_name: String(row.facility_name || ''),
+                    user_id: userId,
+                    user_name: String(row.visitor_name || ''),
+                    user_phone: String(row.contact_number || ''),
+                    urgency: rawStatus === 'urgent' ? 'deceased' : 'normal',
+                    scale: '',
+                    religion: '',
+                    schedule: String(row.time_slot || ''),
+                    notes: String(row.special_requests || row.purpose || ''),
+                    status,
+                    created_at: String(row.created_at || row.visit_date || new Date().toISOString()),
+                    updated_at: String(row.updated_at || row.created_at || new Date().toISOString()),
+                    is_ai_response: true,
+                    metadata: { visit_date: row.visit_date, time_slot: row.time_slot, purpose: row.purpose },
+                    source: 'reservation',
+                    source_kind: 'reservation' as const,
+                    source_label: '예약 접수',
+                } as ExtendedConsultation;
+            });
+            mergedData = [...consultationRows, ...leadRows, ...reservationRows];
         } catch {
             const fallbackClient = await getAuthClient(session, { strict: true });
-            legacyData = await getConsultationsByUser(userId, fallbackClient);
+            mergedData = (await getConsultationsByUser(userId, fallbackClient)).map((row) => ({
+                ...row,
+                source_kind: 'consultation' as const,
+                source_label: '상담',
+            }));
         }
 
         // ai_consultations 조회 제거 — ScenarioBot(유일한 쓰기 경로) 폐기로 빈 테이블
         // 향후 AI 상담 인계 복구 시 여기에 다시 추가
 
         setConsultations(
-            legacyData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+            mergedData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         );
         setIsLoading(false);
     };
@@ -109,6 +163,26 @@ export const MyConsultations: React.FC<Props> = ({ userId, onViewFacility }) => 
                         event: '*',
                         schema: 'public',
                         table: 'consultations',
+                        filter: `user_id=eq.${userId}`
+                    },
+                    () => { fetchConsultations(); }
+                )
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: 'leads',
+                        filter: `user_id=eq.${userId}`
+                    },
+                    () => { fetchConsultations(); }
+                )
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: 'reservations',
                         filter: `user_id=eq.${userId}`
                     },
                     () => { fetchConsultations(); }
@@ -245,6 +319,11 @@ export const MyConsultations: React.FC<Props> = ({ userId, onViewFacility }) => 
                                             <span className="font-bold text-slate-800">
                                                 {statusConfig.label}
                                             </span>
+                                            {consultation.source_label && (
+                                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/70 text-slate-600 border border-slate-200 font-bold">
+                                                    {consultation.source_label}
+                                                </span>
+                                            )}
                                             {consultation.urgency === 'deceased' && (
                                                 <span className="text-xs px-2 py-0.5 rounded-full bg-red-500 text-white font-bold">
                                                     긴급
@@ -317,7 +396,7 @@ export const MyConsultations: React.FC<Props> = ({ userId, onViewFacility }) => 
                             )}
 
                             {/* Actions */}
-                            {(['waiting', 'pending'].includes(consultation.status)) && (
+                            {consultation.source_kind === 'consultation' && (['waiting', 'pending'].includes(consultation.status)) && (
                                 <button
                                     onClick={() => handleCancel(consultation)}
                                     className="w-full py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition font-medium"
@@ -327,7 +406,7 @@ export const MyConsultations: React.FC<Props> = ({ userId, onViewFacility }) => 
                             )}
 
                             {/* Delete Button */}
-                            {(['waiting', 'pending', 'cancelled'].includes(consultation.status)) && (
+                            {consultation.source_kind === 'consultation' && (['waiting', 'pending', 'cancelled'].includes(consultation.status)) && (
                                 <button
                                     onClick={() => handleDelete(consultation)}
                                     className="w-full py-2 text-sm text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition font-medium flex items-center justify-center gap-1"

@@ -114,18 +114,27 @@ export const ChatInterface: React.FC<Props> = ({
             try {
                 const latestData = await getFacilityLatestInfo(facility.id.toString());
                 if (latestData) {
-                    const data = latestData as Facility;
+                    const data = latestData as Facility & { ai_context?: string; price_range?: string };
                     // Merge latest DB data with existing facility object
                     setLiveFacility(prev => ({
                         ...prev,
                         ...data,
+                        priceRange: data.priceRange || data.price_range || prev.priceRange,
                         // Ensure prices is properly formatted
                         prices: data.prices || prev.prices || [],
+                        packages: data.packages || prev.packages || [],
+                        products: data.products || prev.products || [],
                         // Map snake_case DB fields to camelCase Facility type
-                        aiContext: (data as Facility & { ai_context?: string }).ai_context || prev.aiContext,
+                        aiContext: data.ai_context || data.aiContext || prev.aiContext,
                         features: data.ai_features || data.features || prev.features,
                         ai_welcome_message: data.ai_welcome_message || prev.ai_welcome_message,
                     }));
+                    if (data.ai_welcome_message) {
+                        setMessages(prev => {
+                            if (prev.length === 0 || prev[0].role !== 'model' || prev[0].action) return prev;
+                            return [{ ...prev[0], text: data.ai_welcome_message as string }, ...prev.slice(1)];
+                        });
+                    }
                     logger.debug('[Dynamic Prompt Injection] Loaded latest facility data:', data.name);
                 }
             } catch (_e) {
@@ -735,10 +744,10 @@ export const ChatInterface: React.FC<Props> = ({
             </div>
 
             {/* Chat Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 pb-4 no-scrollbar" ref={scrollRef}>
+            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 bg-slate-50 pb-4 no-scrollbar" ref={scrollRef}>
                 {messages.map((msg, idx) => (
                     <div key={idx} className={`flex w-full animate-in fade-in slide-in-from-bottom-2 duration-300 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`${['SHOW_FORM_A', 'SHOW_FORM_B', 'SHOW_FORM_C'].includes(msg.action || '') ? 'max-w-full w-full' : 'max-w-[85%]'} flex flex-col items-start gap-2`}>
+                        <div className={`${['SHOW_FORM_A', 'SHOW_FORM_B', 'SHOW_FORM_C'].includes(msg.action || '') ? 'max-w-full w-full' : 'max-w-[92%] sm:max-w-[85%]'} flex flex-col items-start gap-2`}>
                             <div className={`p-4 text-sm leading-relaxed ${msg.role === 'user'
                                 ? `bg-slate-800 text-white rounded-2xl rounded-tr-sm shadow-sm self-end`
                                 : 'bg-white text-slate-800 border border-slate-200 rounded-2xl rounded-tl-sm shadow-sm w-full'

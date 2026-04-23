@@ -9,6 +9,24 @@ interface Props {
 }
 
 export const PriceTab: React.FC<Props> = ({ facility, dbPackages }) => {
+  const fallbackPackages: DbPackage[] = [
+    ...(facility.packages || []).map((pkg, index) => ({
+      id: `facility-package-${index}`,
+      name: pkg.name,
+      price: pkg.price,
+      description: pkg.description,
+      included_items: pkg.items,
+    })),
+    ...(facility.products || []).map((product, index) => ({
+      id: `facility-product-${index}`,
+      name: product.name,
+      price: product.price,
+      description: product.description || product.tagline,
+      included_items: product.includedServices,
+    })),
+  ].filter((pkg) => pkg.name);
+  const displayPackages = dbPackages.length > 0 ? dbPackages : fallbackPackages;
+
   const renderPrice = (rawPrice: string | number | undefined): string => {
     const priceStr = String(rawPrice ?? '');
     const priceNum = parseInt(priceStr.replace(/[^0-9]/g, ''));
@@ -40,9 +58,9 @@ export const PriceTab: React.FC<Props> = ({ facility, dbPackages }) => {
         )}
       </div>
 
-      {dbPackages.length > 0 ? (
+      {displayPackages.length > 0 ? (
         <div className="space-y-3">
-          {dbPackages.map((pkg) => (
+          {displayPackages.map((pkg) => (
             <div key={pkg.id} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-sm transition-shadow">
               <div className="flex items-start justify-between mb-2">
                 <div>

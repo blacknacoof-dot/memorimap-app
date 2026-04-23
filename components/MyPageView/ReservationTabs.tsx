@@ -17,12 +17,13 @@ interface Props {
   onSelectFacility?: (facility: Facility) => void;
   onViewDetails: (r: Reservation) => void;
   onCancel: (id: string) => void;
+  onWriteReview?: (facilityId: string) => void;
 }
 
 export const ReservationTabs: React.FC<Props> = ({
   activeTab, setActiveTab, myReservations, filteredReservations,
   isLoadingReservations, userId, facilities, onSelectFacility,
-  onViewDetails, onCancel,
+  onViewDetails, onCancel, onWriteReview,
 }) => {
   const tabClass = (tab: ReservationTab) =>
     `min-w-0 py-2.5 px-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-1 text-xs sm:text-sm min-h-[44px] ${
@@ -77,6 +78,7 @@ export const ReservationTabs: React.FC<Props> = ({
             reservations={filteredReservations}
             onViewDetails={onViewDetails}
             onCancel={onCancel}
+            onWriteReview={onWriteReview}
             emptyIcon={<CalendarX2 size={32} className="text-gray-300 mb-2" />}
             emptyMessage={
               activeTab === 'pending' ? '대기 중인 예약이 없습니다. 시설을 둘러보고 예약해보세요.' :

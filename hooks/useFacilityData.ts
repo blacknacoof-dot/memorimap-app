@@ -366,13 +366,14 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
           address: data.address,
           lat: Number(data.lat || (data.location?.coordinates ? data.location.coordinates[1] : 0)),
           lng: Number(data.lng || (data.location?.coordinates ? data.location.coordinates[0] : 0)),
-          priceRange: formatPriceRange(data.price_min),
+          priceRange: data.price_range || formatPriceRange(data.price_min),
           rating: Number(data.rating || 0),
           reviewCount: Number(data.reviews_count || 0),
           imageUrl: selectedImage || 'https://placehold.co/800x600?text=No+Image',
           description: data.description || '',
           features: data.ai_features || data.features || [],
           phone: data.phone || data.contact || '',
+          operating_hours: data.operating_hours || '',
           prices: data.prices || [],
           galleryImages: resolvedImages.galleryImages || [],
           reviews: reviews.length > 0 ? reviews : [],
@@ -383,6 +384,7 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
           priceInfo: null,
           products: data.packages || [],
           aiContext: data.ai_context || '',
+          ai_welcome_message: data.ai_welcome_message || '',
           subscription: subscription || undefined
         };
 

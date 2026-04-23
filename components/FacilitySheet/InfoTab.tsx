@@ -90,7 +90,7 @@ export const InfoTab: React.FC<Props> = ({
       </div>
       <div className="flex items-center gap-3">
         <Clock className="text-gray-400" size={18} />
-        <span className="text-sm">09:00 - 18:00 (연중무휴)</span>
+        <span className="text-sm">{facility.operating_hours || '09:00 - 18:00 (연중무휴)'}</span>
       </div>
     </div>
 

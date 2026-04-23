@@ -98,7 +98,7 @@ export const ReservationDetailModal: React.FC<Props> = ({
                         >
                             닫기
                         </button>
-                        {reservation.status === 'pending' && onCancel && (
+                        {(reservation.status === 'pending' || reservation.status === 'urgent') && onCancel && (
                             <button
                                 onClick={onCancel}
                                 className="flex-1 py-3 px-4 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors"

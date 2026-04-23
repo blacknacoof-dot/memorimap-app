@@ -16,10 +16,12 @@ import type { PackageItem } from './sections/PackageManager';
 
 interface FacilityInfoEditorProps {
     facilityId: string;
+    isSangjo?: boolean;
 }
 
 interface FacilityData {
     id: string;
+    type?: string;
     name: string;
     address: string;
     phone: string;
@@ -29,7 +31,7 @@ interface FacilityData {
     features: string[];
 }
 
-export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facilityId }) => {
+export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facilityId, isSangjo: isSangjoProp }) => {
     const [facility, setFacility] = useState<FacilityData | null>(null);
     const [packages, setPackages] = useState<PackageItem[]>([]);
     const [planId, setPlanId] = useState<string>('FREE');
@@ -44,7 +46,7 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
 
         const [facilityResult, packagesResult, subscriptionResult] = await Promise.all([
             client.from('facilities')
-                .select('id, name, address, phone, description, operating_hours, images, features')
+                .select('id, type, name, address, phone, description, operating_hours, images, features')
                 .eq('id', facilityId)
                 .single(),
             client.from('facility_packages')
@@ -58,6 +60,7 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
             const d = facilityResult.data;
             setFacility({
                 id: d.id,
+                type: d.type || '',
                 name: d.name || '',
                 address: d.address || '',
                 phone: d.phone || '',
@@ -96,6 +99,7 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
         if (!facility) return;
         setSaving(true);
         const client = await getAuthClient(session, { strict: true });
+        const effectiveIsSangjo = isSangjoProp ?? facility.type === 'sangjo';
 
         const { error } = await client.from('facilities').update({
             name: facility.name,
@@ -105,6 +109,21 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
             operating_hours: facility.operating_hours,
             features: facility.features,
         }).eq('id', facilityId);
+
+        if (!error && effectiveIsSangjo) {
+            const { error: companyError } = await client.from('funeral_companies').update({
+                name: facility.name,
+                phone: facility.phone,
+                description: facility.description,
+                features: facility.features,
+            }).eq('id', facilityId);
+
+            if (companyError) {
+                toast.error('????ㅽ뙣: ' + companyError.message);
+                setSaving(false);
+                return;
+            }
+        }
 
         if (error) {
             toast.error('저장 실패: ' + error.message);
@@ -229,6 +248,7 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
                 facilityId={facilityId}
                 images={facility.images}
                 planId={planId}
+                isSangjo={isSangjoProp ?? facility.type === 'sangjo'}
                 onImagesChange={images => setFacility({ ...facility, images })}
             />
             <p className="-mt-5 px-1 text-[11px] text-slate-500">
@@ -293,7 +313,7 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
             />
 
             {/* 섹션 5: AI 챗봇 설정 */}
-            <AISettingsSection facilityId={facilityId} />
+            <AISettingsSection facilityId={facilityId} isSangjo={isSangjoProp ?? facility.type === 'sangjo'} />
         </div>
     );
 };

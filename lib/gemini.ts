@@ -105,6 +105,22 @@ export async function* streamConsultationMessage(
         return;
     }
 
+    const packagePriceLines = (facility.packages || []).map((pkg) => {
+        const includedItems = pkg.items?.length ? ` (${pkg.items.join(', ')})` : '';
+        return `${pkg.name}: ${pkg.price.toLocaleString('ko-KR')}원${includedItems}`;
+    });
+    const productPriceLines = (facility.products || []).map((product) => {
+        const includedItems = product.includedServices?.length ? ` (${product.includedServices.join(', ')})` : '';
+        return `${product.name}: ${product.price.toLocaleString('ko-KR')}원${includedItems}`;
+    });
+    const legacyPriceLines = (facility.prices || []).map((price) => {
+        const label = price.item || price.type || price.label || '가격';
+        return `${label}: ${price.price}`;
+    });
+    const priceTableText = [...packagePriceLines, ...productPriceLines, ...legacyPriceLines]
+        .filter(Boolean)
+        .join(', ') || '정보 없음';
+
     // System prompt 구성
     const systemPrompt = `
 # Role: Facility AI Concierge (Urgent Direct Booking Mode)
@@ -181,8 +197,9 @@ Output structure must always range "message", "options" (optional), "action_trig
 - 이름: ${facility.name}
 - 주소: ${facility.address}
 - 가격대: ${facility.priceRange}
+- 운영시간: ${facility.operating_hours || '정보 없음'}
 - 상세설명: ${facility.description}
-- 가격표: ${(facility.prices || []).map(p => `${p.type}: ${p.price}`).join(', ')}
+- 가격표: ${priceTableText}
 
 - 현재 상담 주제: ${topic}
 ${faqs.length > 0 ? `

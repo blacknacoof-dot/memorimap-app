@@ -1264,6 +1264,13 @@ export const getMyReservations = async (userId: string, client: SupabaseClient) 
         message: item.message,
         created_at: item.created_at,
         payment_id: item.payment_id,
+        contact_number: item.contact_number,
+        special_requests: item.special_requests,
+        purpose: item.purpose,
+        payment_amount: item.payment_amount,
+        paid_at: item.paid_at,
+        rejection_reason: item.rejection_reason,
+        manager_note: item.manager_note,
         visitor_name: item.visitor_name,
     }));
 };
@@ -1998,6 +2005,12 @@ export const getFacilityLatestInfo = async (facilityId: string) => {
                     type,
                     description,
                     ai_features,
+                    price_range,
+                    prices,
+                    packages,
+                    operating_hours,
+                    ai_context,
+                    ai_welcome_message,
                     image_url,
                     images
                 `)
@@ -2015,6 +2028,12 @@ export const getFacilityLatestInfo = async (facilityId: string) => {
                     type,
                     ai_features,
                     description,
+                    price_range,
+                    prices,
+                    packages,
+                    operating_hours,
+                    ai_context,
+                    ai_welcome_message,
                     image_url,
                     images
                 `)
@@ -2031,6 +2050,7 @@ export const getFacilityLatestInfo = async (facilityId: string) => {
 
         return {
             ...data,
+            priceRange: data.price_range,
             image_url: await signFacilityImageValue(data.image_url),
             images: await signFacilityImageList(data.images || [])
         };

@@ -57,7 +57,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, isTyping, 
 
                         {/* Product Carousel */}
                         {msg.type === 'product_carousel' && (
-                            <div className="flex gap-3 overflow-x-auto py-2 px-1 snap-x scrollbar-hide -ml-10 w-[120%] sm:w-[110%] sm:ml-0 pr-4">
+                            <div className="flex w-full max-w-full gap-3 overflow-x-auto py-2 px-1 snap-x scrollbar-hide pr-4">
                                 {msg.data?.map((product) => (
                                     <div key={product.id} className="snap-center min-w-[260px] w-[260px] bg-white rounded-2xl border border-gray-200 shadow-md flex-shrink-0 overflow-hidden group hover:border-[#005B50] transition-all relative">
                                         {product.badge && (
