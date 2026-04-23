@@ -33,13 +33,23 @@ export function usePartnerInquiries(options: UsePartnerInquiriesOptions) {
 
             if (error) throw error;
 
-            // Deduplicate by company_name (keep latest — already sorted by created_at DESC)
+            // Deduplicate exact duplicate submissions only. Company name alone is
+            // not safe because branches and business types can share a name.
             const uniqueData: PartnerInquiry[] = [];
             const seen = new Set<string>();
 
+            const normalize = (value?: string | null) => (value || '').trim().toLowerCase();
             for (const item of (data as PartnerInquiry[]) || []) {
-                if (!seen.has(item.company_name)) {
-                    seen.add(item.company_name);
+                const dedupeKey = [
+                    normalize(item.company_name),
+                    normalize(item.business_type),
+                    normalize(item.company_email || item.email),
+                    normalize(item.contact_number || item.manager_mobile),
+                    normalize(item.address),
+                ].join('|');
+
+                if (!seen.has(dedupeKey)) {
+                    seen.add(dedupeKey);
                     uniqueData.push(item);
                 }
             }

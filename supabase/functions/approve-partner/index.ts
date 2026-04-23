@@ -315,7 +315,16 @@ serve(async (req) => {
             });
         }
 
-        return new Response(JSON.stringify({ success: true, action: 'approved', result: rpcResult }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        const approvalWarning = rpcResult && typeof rpcResult === 'object'
+            ? (rpcResult as Record<string, unknown>).warning
+            : undefined;
+
+        return new Response(JSON.stringify({
+            success: true,
+            action: 'approved',
+            warning: typeof approvalWarning === 'string' ? approvalWarning : undefined,
+            result: rpcResult
+        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 
     } catch (error: unknown) {
         console.error('Edge Function Error:', error);

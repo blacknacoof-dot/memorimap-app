@@ -1,15 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAllFacilities, AdminFacility } from '../../hooks/useAdminFacilities';
 import { useAllUsers } from '../../hooks/useUsers';
-import { Search, Building2, MapPin, User, Edit2, AlertCircle, Camera, Phone, FileText } from 'lucide-react';
+import { Search, Building2, MapPin, User, Edit2, AlertCircle, Camera, Phone, FileText, CheckCircle2, Clock, Package } from 'lucide-react';
 
 export function FacilityManagement({ initialSearch, onClearSearch }: { initialSearch?: string; onClearSearch?: () => void }) {
-    const { facilities, loading, totalCount, page, itemsPerPage, search, updateManager } = useAllFacilities();
+    const { facilities, loading, totalCount, page, itemsPerPage, search, updateManager, updateBasics } = useAllFacilities();
     const { users } = useAllUsers();
 
     const [searchTerm, setSearchTerm] = useState(initialSearch || '');
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [editingBasicsId, setEditingBasicsId] = useState<string | null>(null);
     const [tempManagerId, setTempManagerId] = useState<string>('');
+    const [tempVerified, setTempVerified] = useState(false);
+    const [tempStatus, setTempStatus] = useState('active');
+    const [tempPriceRange, setTempPriceRange] = useState('');
+    const [tempOperatingHours, setTempOperatingHours] = useState('');
     const [hasSearched, setHasSearched] = useState(!!initialSearch);
 
     // handleSearch의 정의를 위로 올리고 useCallback으로 감쌉니다.
@@ -38,10 +43,28 @@ export function FacilityManagement({ initialSearch, onClearSearch }: { initialSe
         setTempManagerId(f.user_id || '');
     };
 
+    const handleStartBasicsEdit = (f: AdminFacility) => {
+        setEditingBasicsId(f.id);
+        setTempVerified(Boolean(f.verified));
+        setTempStatus(f.status || 'active');
+        setTempPriceRange(f.price_range || '');
+        setTempOperatingHours(f.operating_hours || '');
+    };
+
     const handleSave = async (facilityId: string) => {
         const finalId = tempManagerId === '' ? null : tempManagerId;
         await updateManager(facilityId, finalId);
         setEditingId(null);
+    };
+
+    const handleSaveBasics = async (facilityId: string) => {
+        const updated = await updateBasics(facilityId, {
+            verified: tempVerified,
+            status: tempStatus || null,
+            price_range: tempPriceRange.trim() || null,
+            operating_hours: tempOperatingHours.trim() || null,
+        });
+        if (updated) setEditingBasicsId(null);
     };
 
     return (
@@ -137,19 +160,107 @@ export function FacilityManagement({ initialSearch, onClearSearch }: { initialSe
                                     const hasPhotos = f.images && Array.isArray(f.images) && f.images.length > 0;
                                     const hasPhone = !!f.phone;
                                     const hasDesc = !!f.description;
-                                    const score = [hasPhotos, hasPhone, hasDesc].filter(Boolean).length;
-                                    const pct = Math.round((score / 3) * 100);
+                                    const hasPrice = !!f.price_range || (Array.isArray(f.packages) && f.packages.length > 0);
+                                    const hasBusinessHours = Boolean(f.business_hours && Object.keys(f.business_hours).length > 0);
+                                    const hasHours = !!f.operating_hours || hasBusinessHours;
+                                    const packageCount = Array.isArray(f.packages) ? f.packages.length : 0;
+                                    const score = [hasPhotos, hasPhone, hasDesc, hasPrice, hasHours].filter(Boolean).length;
+                                    const pct = Math.round((score / 5) * 100);
                                     return (
                                         <>
                                             <span title={hasPhotos ? '사진 있음' : '사진 없음'}><Camera size={13} className={hasPhotos ? 'text-green-500' : 'text-red-400'} /></span>
                                             <span title={hasPhone ? '연락처 있음' : '연락처 없음'}><Phone size={13} className={hasPhone ? 'text-green-500' : 'text-red-400'} /></span>
                                             <span title={hasDesc ? '설명 있음' : '설명 없음'}><FileText size={13} className={hasDesc ? 'text-green-500' : 'text-red-400'} /></span>
+                                            <span title={hasPrice ? '가격/상품 있음' : '가격/상품 없음'}><Package size={13} className={hasPrice ? 'text-green-500' : 'text-red-400'} /></span>
+                                            <span title={hasHours ? '운영시간 있음' : '운영시간 없음'}><Clock size={13} className={hasHours ? 'text-green-500' : 'text-red-400'} /></span>
                                             <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${pct === 100 ? 'bg-green-100 text-green-700' : pct >= 66 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
                                                 {pct}%
                                             </span>
+                                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full border ${f.verified ? 'bg-green-50 text-green-700 border-green-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
+                                                {f.verified ? '검수완료' : '미검수'}
+                                            </span>
+                                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full border bg-slate-50 text-slate-600 border-slate-200">
+                                                {f.status || 'status 없음'}
+                                            </span>
+                                            {packageCount > 0 && (
+                                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full border bg-blue-50 text-blue-700 border-blue-100">
+                                                    상품 {packageCount}개
+                                                </span>
+                                            )}
                                         </>
                                     );
                                 })()}
+                            </div>
+
+                            <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-3">
+                                <div className="mb-2 flex items-center justify-between">
+                                    <p className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                                        <CheckCircle2 size={12} />
+                                        노출/기본 정보
+                                    </p>
+                                    <button
+                                        onClick={() => handleStartBasicsEdit(f)}
+                                        className="text-[11px] font-bold text-blue-600 hover:text-blue-700"
+                                    >
+                                        수정
+                                    </button>
+                                </div>
+
+                                {editingBasicsId === f.id ? (
+                                    <div className="space-y-2">
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <label className="flex items-center gap-2 rounded-lg border bg-white px-2 py-2 text-xs text-slate-600">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={tempVerified}
+                                                    onChange={(e) => setTempVerified(e.target.checked)}
+                                                />
+                                                검수 완료
+                                            </label>
+                                            <select
+                                                value={tempStatus}
+                                                onChange={(e) => setTempStatus(e.target.value)}
+                                                className="rounded-lg border bg-white px-2 py-2 text-xs"
+                                            >
+                                                <option value="active">active</option>
+                                                <option value="pending">pending</option>
+                                                <option value="inactive">inactive</option>
+                                                <option value="suspended">suspended</option>
+                                            </select>
+                                        </div>
+                                        <input
+                                            value={tempPriceRange}
+                                            onChange={(e) => setTempPriceRange(e.target.value)}
+                                            placeholder="가격 범위 예: 150만원~300만원"
+                                            className="w-full rounded-lg border bg-white px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-blue-500/20"
+                                        />
+                                        <input
+                                            value={tempOperatingHours}
+                                            onChange={(e) => setTempOperatingHours(e.target.value)}
+                                            placeholder="운영시간 예: 09:00 - 18:00"
+                                            className="w-full rounded-lg border bg-white px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-blue-500/20"
+                                        />
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => handleSaveBasics(f.id)}
+                                                className="flex-1 rounded-lg bg-blue-600 px-3 py-2 text-xs font-bold text-white hover:bg-blue-700"
+                                            >
+                                                저장
+                                            </button>
+                                            <button
+                                                onClick={() => setEditingBasicsId(null)}
+                                                className="rounded-lg bg-white px-3 py-2 text-xs font-bold text-slate-600 border hover:bg-slate-100"
+                                            >
+                                                취소
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-1 text-xs text-slate-600">
+                                        <p>가격: <span className="font-medium text-slate-800">{f.price_range || '미입력'}</span></p>
+                                        <p>운영시간: <span className="font-medium text-slate-800">{f.operating_hours || (f.business_hours && Object.keys(f.business_hours).length > 0 ? 'business_hours 입력됨' : '미입력')}</span></p>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="mt-4 pt-4 border-t border-gray-50">

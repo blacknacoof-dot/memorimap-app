@@ -11,6 +11,7 @@ interface ApprovePartnerResult {
     success: boolean;
     action: string;
     error?: string;
+    warning?: string;
 }
 
 /**
@@ -53,12 +54,16 @@ export function useApprovePartner(client: SupabaseClient) {
 
             if (fnError) throw fnError;
 
-            const result = data as { success?: boolean; error?: string; action?: string } | null;
+            const result = data as { success?: boolean; error?: string; action?: string; warning?: string | null } | null;
             if (result?.success === false) {
                 throw new Error(result.error || 'Request failed.');
             }
 
-            return { success: true, action: result?.action ?? params.action };
+            return {
+                success: true,
+                action: result?.action ?? params.action,
+                warning: result?.warning || undefined,
+            };
         } catch (err) {
             const errorMessage = await extractErrorMessage(err);
             setError(errorMessage);
