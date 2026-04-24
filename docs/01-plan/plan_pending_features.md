@@ -23,6 +23,43 @@
 
 ---
 
+## Status Update (2026-04-24)
+
+### 구현 상태 기준
+
+- `구현 완료 / 검증 필요`
+- `구현 완료 / 자동화 미흡`
+- `미구현`
+
+### 이번 문서 기준 정정
+
+- `F1. 메시지 버튼 (ContractMonitoring)`:
+  `구현 완료 / 검증 필요`
+  `ContractMonitoring`에서 `onNavigateCommunication` prop을 받아 커뮤니케이션 탭으로 이동함.
+- `F2. 계약 관제 상세 버튼 (ContractMonitoring)`:
+  `구현 완료 / 검증 필요`
+  `ContractDetailDrawer`가 연결되어 있고 관리자 메모 저장까지 동작함.
+- `F3. 리포트 다운로드 (RevenueManagement)`:
+  `구현 완료 / 검증 필요`
+  CSV 다운로드 로직이 구현되어 있음.
+- `F4. 알림 설정 토글 (AdminSettings)`:
+  `구현 완료 / 검증 필요`
+  `system_settings` 기반 토글 저장 로직이 구현되어 있음.
+
+### 릴리스 관점에서 남은 항목
+
+- 릴리스 블로커
+  - `구현 완료 / 검증 필요` `verify-payment` 실배포 경로 재검증 및 필요 시 재배포
+  - `구현 완료 / 검증 필요` 슈퍼관리자 파트너 승인 E2E
+  - `구현 완료 / 검증 필요` 관리자 권한/RLS spot check
+  - `구현 완료 / 검증 필요` iOS/Android 실기기 점검
+- 비블로커
+  - `구현 완료 / 자동화 미흡` `tests/e2e/superAdmin.joinChat.spec.ts`
+  - `구현 완료 / 자동화 미흡` `tests/e2e/review-delete.spec.ts`
+  - `구현 완료 / 자동화 미흡` `tests/e2e/core.flows.spec.ts` 로그인 성공 케이스 TODO
+  - `미구현` `components/Partner/OperationsManagement.tsx` 더보기 액션
+  - `미구현` `components/Partner/LiveConsultation.tsx` 추가 기능 버튼
+
 ## 1. 현황 진단
 
 ### 왜 구현되지 않았는가

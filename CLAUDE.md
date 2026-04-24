@@ -294,6 +294,10 @@ CLAUDE.md 규칙 준수하여 구현.
 - 만료 후 전환 검증은 `select public.process_expired_subscriptions();` 로 수동 확인 가능하다.
 
 ## Release QA Priority
+- Status labels
+  - `구현 완료 / 검증 필요`: 코드 구현은 끝났고 릴리스 전 수동 검증 또는 실배포 검증이 남은 상태
+  - `구현 완료 / 자동화 미흡`: 사용자 흐름은 존재하지만 E2E 또는 자동화 커버리지가 부족한 상태
+  - `미구현`: 사용자 액션이 placeholder 이거나 요구 동작이 아직 확정되지 않은 상태
 - P0
   - `verify-payment` Edge Function must be redeployed before release.
   - Vercel production deploy must be followed by immediate smoke test on live URL.
@@ -303,6 +307,24 @@ CLAUDE.md 규칙 준수하여 구현.
   - Mobile UI check on real device
 - P2
   - DB spot checks: `admin_memo`, `system_settings` RLS, `sangjo_contracts` RLS
+
+## Release Status Snapshot
+- 릴리스 블로커
+  - `구현 완료 / 검증 필요` `verify-payment` 실배포 경로 재검증 및 필요 시 재배포
+  - `구현 완료 / 검증 필요` 슈퍼관리자 파트너 승인 E2E
+  - `구현 완료 / 검증 필요` 관리자 권한 및 RLS spot check
+  - `구현 완료 / 검증 필요` iOS/Android 실기기 모바일 점검
+- 비블로커이지만 마감 전 정리 필요
+  - `구현 완료 / 자동화 미흡` `tests/e2e/superAdmin.joinChat.spec.ts` 복구 및 `skip` 해제
+  - `구현 완료 / 자동화 미흡` `tests/e2e/review-delete.spec.ts` Supabase Auth 기준으로 정리
+  - `구현 완료 / 자동화 미흡` `tests/e2e/core.flows.spec.ts` 로그인 성공 케이스 TODO 보강
+  - `미구현` `components/Partner/OperationsManagement.tsx` 더보기 액션 확정
+  - `미구현` `components/Partner/LiveConsultation.tsx` 추가 기능 버튼 확정
+- 문서 기준 구현 완료로 봐야 하는 항목
+  - `구현 완료 / 검증 필요` 슈퍼관리자 모니터링에서 커뮤니케이션 이동
+  - `구현 완료 / 검증 필요` 계약 상세 드로어
+  - `구현 완료 / 검증 필요` 매출 CSV 다운로드
+  - `구현 완료 / 검증 필요` 관리자 알림 토글
 
 ## Release QA Scope
 - General user

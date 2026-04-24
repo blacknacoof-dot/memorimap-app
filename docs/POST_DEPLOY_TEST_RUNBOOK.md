@@ -3,6 +3,37 @@
 Updated: 2026-04-10
 Target app: `https://memorimap.kr`
 
+## Status Classification (2026-04-24)
+
+- `구현 완료 / 검증 필요`
+  코드 구현은 끝났고 배포 직후 실서비스 기준 확인이 남은 상태
+- `구현 완료 / 자동화 미흡`
+  흐름은 존재하지만 E2E 또는 자동화 검증이 충분하지 않은 상태
+- `미구현`
+  사용자 액션 또는 운영 액션이 아직 placeholder 이거나 요구 동작이 확정되지 않은 상태
+
+## Release Blockers In Order
+
+1. `구현 완료 / 검증 필요` `verify-payment` 실배포 경로 재검증 및 필요 시 재배포
+2. `구현 완료 / 검증 필요` 슈퍼관리자 파트너 승인 E2E
+3. `구현 완료 / 검증 필요` 관리자 권한/RLS spot check
+4. `구현 완료 / 검증 필요` iOS/Android 실기기 점검
+
+## Non-Blockers To Clean Up Before Closeout
+
+- `구현 완료 / 자동화 미흡` `tests/e2e/superAdmin.joinChat.spec.ts` 복구 및 `skip` 해제
+- `구현 완료 / 자동화 미흡` `tests/e2e/review-delete.spec.ts` Supabase Auth 기준 정리
+- `구현 완료 / 자동화 미흡` `tests/e2e/core.flows.spec.ts` 로그인 성공 케이스 TODO 보강
+- `미구현` `components/Partner/OperationsManagement.tsx` 더보기 액션 확정
+- `미구현` `components/Partner/LiveConsultation.tsx` 추가 기능 버튼 확정
+
+## Implemented But Must Not Be Marked Pending
+
+- `구현 완료 / 검증 필요` 슈퍼관리자 커뮤니케이션 탭 이동
+- `구현 완료 / 검증 필요` 계약 상세 드로어
+- `구현 완료 / 검증 필요` 매출 CSV 다운로드
+- `구현 완료 / 검증 필요` 알림 토글
+
 ## Purpose
 
 This runbook is for the first 30-60 minutes after a production deploy.

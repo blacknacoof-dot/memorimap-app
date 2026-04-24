@@ -7,6 +7,30 @@
 
 ---
 
+## 릴리스 상태 분류 (2026-04-24)
+
+### 릴리스 블로커
+
+- `구현 완료 / 검증 필요` `verify-payment` 실배포 경로 재검증 및 필요 시 재배포
+- `구현 완료 / 검증 필요` 슈퍼관리자 파트너 승인 E2E
+- `구현 완료 / 검증 필요` 관리자 권한/RLS spot check
+- `구현 완료 / 검증 필요` iOS/Android 실기기 점검
+
+### 비블로커이지만 마감 전 정리 필요
+
+- `구현 완료 / 자동화 미흡` `tests/e2e/superAdmin.joinChat.spec.ts` 복구
+- `구현 완료 / 자동화 미흡` `tests/e2e/review-delete.spec.ts` Supabase Auth 기준 정리
+- `구현 완료 / 자동화 미흡` `tests/e2e/core.flows.spec.ts` 로그인 성공 TODO 보강
+- `미구현` `components/Partner/OperationsManagement.tsx` 더보기 액션 확정
+- `미구현` `components/Partner/LiveConsultation.tsx` 추가 기능 버튼 확정
+
+### 문서상 구현 완료로 취급할 항목
+
+- `구현 완료 / 검증 필요` 슈퍼관리자 커뮤니케이션 이동
+- `구현 완료 / 검증 필요` 계약 상세 드로어
+- `구현 완료 / 검증 필요` 매출 CSV 다운로드
+- `구현 완료 / 검증 필요` 알림 토글
+
 ## 사전 준비
 
 - [ ] 테스트 계정 준비
