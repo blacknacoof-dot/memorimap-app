@@ -174,10 +174,10 @@
 ## 🔴 저장소 운영 표준 (2026-03-25 확정)
 - 워크플로우 표준 문서: `docs/01-plan/repository_workflow_unification.plan.md`
 - 브랜치: `dev`(개발), `main`(배포) 2개만 사용. `claude/*`, `gpt/*` 금지
-- 워크트리: 메인 워크스페이스만 사용. 생성 시 반드시 제거 후 `git worktree prune`
+- 워크트리: 기본은 메인 워크스페이스 사용. clean deploy, 격리 테스트 등 필요한 경우에만 생성하고 종료 후 반드시 제거한 뒤 `git worktree prune`
 - 문서: `docs/01-plan/`, `02-design/`, `03-analysis/`, `04-report/`에만 저장. 루트 임시 파일 금지
-- 배포: dirty workspace에서 배포 금지. `main`이 의도한 커밋인지 확인 후 배포
-- 운영 배포: dirty workspace 금지, worktree 금지, 원본 저장소에서만 실행
+- 배포: dirty workspace에서 배포 금지. `main`이 의도한 커밋인지 확인 후, 필요 시 clean worktree에서 배포
+- 운영 배포: linked clean worktree 또는 clean workspace에서만 실행. unlinked worktree, dirty workspace, 임시 로컬 변경 상태에서는 실행 금지
 - 운영 배포: 반드시 `.vercel/project.json`이 `memorimap-app`를 가리키는 상태에서만 실행
 - 운영 배포 완료 기준: `vercel --prod --yes` 실행 후 `vercel inspect https://memorimap.kr`로 alias 이동까지 확인
 - 멀티 에이전트: Claude/GPT 모두 동일 규칙. 핸드오프는 `dev` 브랜치 또는 커밋 SHA로
@@ -415,6 +415,33 @@ CLAUDE.md 규칙 준수하여 구현.
 - Never deploy from a dirty working tree.
 - Deploy only from a Git commit, never from loose local changes.
 - Standard sequence: code change -> git commit -> `git push origin main` -> clean worktree -> `vercel --prod --yes` -> inspect -> cache-bypass check.
+- Use one repository state vocabulary only:
+  - `local-only`: changed or untracked in the current workspace, not committed
+  - `committed-local`: committed on the current machine, not pushed to `origin`
+  - `remote-only`: pushed to `origin`, not yet deployed to production
+  - `deployed`: confirmed on production after `vercel inspect` and live check
+- Do not describe a file or fix as "saved" without also classifying whether it is `local-only`, `committed-local`, `remote-only`, or `deployed`.
+- Do not describe `git push origin main` as deployment. It only moves work from `committed-local` to `remote-only`.
+- Do not describe `vercel --prod --yes` as source-control completion. Deployment does not replace commit or push.
+- Every task involving release state must be described in this fixed order:
+  - local working tree state
+  - committed local state
+  - remote repository state
+  - production deployment state
+- Before any commit or deploy, classify every relevant change into exactly one of these buckets:
+  - release code
+  - document-only
+  - local hold
+- Never mix these buckets in one routine commit unless explicitly requested.
+- Before any commit or deploy, review whether document-only commits should stay separate from code or release commits.
+- Do not re-mix the 2026-04-10 documentation split into later patch or deployment commits unless explicitly requested.
+- Keep these documentation commits separate:
+  - `547a4f9` `docs: add deployment and security runbooks`
+  - `900bd49` `docs: add map marker cluster research report`
+  - `15fcfb1` `docs: add marketing and sales planning reports`
+- Keep these local-only hold items out of routine deploy/patch commits unless explicitly requested:
+  - `docs/04-report/screenshots/`
+  - `docs/audit_fix_plan_phase5_20260314.md`
 - Use a clean worktree for production deployment:
   - `git worktree add ../deploy-clean main`
   - `cd ../deploy-clean`

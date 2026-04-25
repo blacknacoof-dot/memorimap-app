@@ -202,6 +202,35 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
         return min === max ? `${fmt(min)}원` : `${fmt(min)}원 ~ ${fmt(max)}원`;
     };
 
+    const syncFacilityPackages = async (authClient: Awaited<ReturnType<typeof getAuthClient>>) => {
+        const normalizedPackages = packages
+            .map((pkg, index) => ({
+                facility_id: facility.id,
+                name: pkg.name.trim(),
+                category: null,
+                price: Number(pkg.price) || 0,
+                price_label: pkg.price > 0 ? `${Number(pkg.price).toLocaleString('ko-KR')}원` : null,
+                description: pkg.description?.trim() || null,
+                included_items: pkg.items.length > 0 ? pkg.items : null,
+                sort_order: index,
+                is_active: true,
+            }))
+            .filter((pkg) => pkg.name);
+
+        const { error: deleteError } = await authClient
+            .from('facility_packages')
+            .delete()
+            .eq('facility_id', facility.id);
+        if (deleteError) throw deleteError;
+
+        if (normalizedPackages.length === 0) return;
+
+        const { error: insertError } = await authClient
+            .from('facility_packages')
+            .insert(normalizedPackages);
+        if (insertError) throw insertError;
+    };
+
     // --- Submit ---
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -233,6 +262,7 @@ export const FacilityEditModal: React.FC<Props> = ({ facility, onClose, onSave }
                 features: features.length > 0 ? features : [],
                 managers: managers.length > 0 ? managers : [],
             }, authClient);
+            await syncFacilityPackages(authClient);
             onSave();
             onClose();
             toast.success('시설 정보가 성공적으로 수정되었습니다.');

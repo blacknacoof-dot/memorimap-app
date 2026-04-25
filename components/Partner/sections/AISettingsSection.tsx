@@ -13,9 +13,10 @@ interface AIContext {
 
 interface AISettingsSectionProps {
     facilityId: string;
+    isSangjo?: boolean;
 }
 
-export const AISettingsSection: React.FC<AISettingsSectionProps> = ({ facilityId }) => {
+export const AISettingsSection: React.FC<AISettingsSectionProps> = ({ facilityId, isSangjo = false }) => {
     const [aiContext, setAiContext] = useState<AIContext>({});
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -26,7 +27,7 @@ export const AISettingsSection: React.FC<AISettingsSectionProps> = ({ facilityId
             const client = await getAuthClient(session, { strict: true });
             const { data } = await client
                 .from('facilities')
-                .select('ai_context')
+                .select('ai_context, ai_welcome_message')
                 .eq('id', facilityId)
                 .single();
             if (data?.ai_context) {
@@ -34,6 +35,8 @@ export const AISettingsSection: React.FC<AISettingsSectionProps> = ({ facilityId
                     ? JSON.parse(data.ai_context)
                     : data.ai_context;
                 setAiContext(ctx as AIContext);
+            } else if (data?.ai_welcome_message) {
+                setAiContext({ welcome_message: data.ai_welcome_message as string });
             }
             setLoading(false);
         };
@@ -49,7 +52,10 @@ export const AISettingsSection: React.FC<AISettingsSectionProps> = ({ facilityId
         const client = await getAuthClient(session, { strict: true });
         const { error } = await client
             .from('facilities')
-            .update({ ai_context: aiContext })
+            .update({
+                ai_context: aiContext,
+                ...(isSangjo ? { ai_welcome_message: aiContext.welcome_message || null } : {}),
+            })
             .eq('id', facilityId);
 
         if (error) {

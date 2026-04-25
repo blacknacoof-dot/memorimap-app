@@ -85,6 +85,7 @@ export const PartnerDetailModal: React.FC<Props> = ({ partner, onClose, onStatus
   const [documentPath, setDocumentPath] = useState<string | null>(partner.business_license_url?.trim() || null);
   const [isDocumentLoading, setIsDocumentLoading] = useState(!hasPartnerDocument(partner.business_license_url));
   const [isDocumentOpening, setIsDocumentOpening] = useState(false);
+  const [dashboardAssignmentWarning, setDashboardAssignmentWarning] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -149,6 +150,89 @@ export const PartnerDetailModal: React.FC<Props> = ({ partner, onClose, onStatus
       cancelled = true;
     };
   }, [client, partner.business_license_url, partner.company_name, partner.contact_email]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadDashboardAssignmentStatus = async () => {
+      setDashboardAssignmentWarning(null);
+
+      if (partner.status !== 'approved') return;
+
+      try {
+        let targetFacilityId: string | undefined;
+        let businessType = '';
+
+        const { data: approvalAudit, error: approvalAuditError } = await client
+          .from('audit_logs')
+          .select('metadata, created_at')
+          .eq('action', 'APPROVE_PARTNER')
+          .contains('metadata', { partner_id: partner.id })
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (approvalAuditError) {
+          console.warn('Falling back to partner inquiry lookup after approval audit lookup failed', approvalAuditError);
+        }
+
+        const auditMetadata = approvalAudit?.metadata as
+          | { facility_id?: string; business_type?: string; company_name?: string }
+          | null
+          | undefined;
+
+        if (auditMetadata?.facility_id) {
+          targetFacilityId = auditMetadata.facility_id;
+          businessType = String(auditMetadata.business_type || '');
+        }
+
+        let inquiryQuery = client
+          .from('partner_inquiries')
+          .select('target_facility_id, business_type, company_name, company_email, created_at')
+          .eq('status', 'approved')
+          .eq('company_name', partner.company_name)
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        if (partner.contact_email) {
+          inquiryQuery = inquiryQuery.eq('company_email', partner.contact_email);
+        }
+
+        if (!targetFacilityId || !businessType) {
+          const { data: inquiry } = await inquiryQuery.maybeSingle();
+          targetFacilityId = targetFacilityId || inquiry?.target_facility_id || undefined;
+          businessType = businessType || String(inquiry?.business_type || '');
+        }
+
+        if (!targetFacilityId || (businessType !== 'sangjo' && businessType !== 'sangjo_hq')) {
+          return;
+        }
+
+        const { data: dashboardUser } = await client
+          .from('sangjo_dashboard_users')
+          .select('id')
+          .eq('sangjo_id', targetFacilityId)
+          .limit(1)
+          .maybeSingle();
+
+        if (!cancelled && !dashboardUser) {
+          setDashboardAssignmentWarning(
+            '이 상조 파트너는 승인되었지만 상조 대시보드 관리자 연결이 없습니다. 기존 상조 관리자 매핑 보호로 자동 연결이 생략되었을 수 있으니 별도 배정이 필요합니다.',
+          );
+        }
+      } catch (error) {
+        console.error('Failed to load sangjo dashboard assignment status', error);
+        if (!cancelled) {
+          setDashboardAssignmentWarning('상조 대시보드 관리자 연결 상태를 확인하지 못했습니다.');
+        }
+      }
+    };
+
+    loadDashboardAssignmentStatus();
+    return () => {
+      cancelled = true;
+    };
+  }, [client, partner.company_name, partner.contact_email, partner.id, partner.status]);
 
   const handleAction = async (status: Partner['status']) => {
     const changed = await onStatusChange(partner.id, status);
@@ -273,6 +357,15 @@ export const PartnerDetailModal: React.FC<Props> = ({ partner, onClose, onStatus
               void openPartnerDocument('download');
             }}
           />
+
+          {dashboardAssignmentWarning && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <p>{dashboardAssignmentWarning}</p>
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-col gap-2 pt-2">
             {partner.status === 'pending' && (

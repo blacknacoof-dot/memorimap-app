@@ -5,7 +5,7 @@ import MapComponent, { MapRef } from './MapContainer';
 import { FacilityList } from './FacilityList';
 import { Scale, Crosshair, Database, ArrowLeft, Building2, ShieldAlert, Shield, Loader2, Ticket, X } from 'lucide-react';
 import { useSession } from '../lib/auth';
-import { canAccessView } from '../lib/rolePolicy';
+import { canAccessView, getRoleEntryView } from '../lib/rolePolicy';
 import { FEATURE_FLAGS } from '../config/featureFlags';
 import { analytics } from '../lib/analytics';
 
@@ -492,7 +492,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
           <div className="h-full relative flex flex-col">
             <div className="bg-white p-4 shadow-sm border-b flex items-center gap-3">
               <button
-                onClick={() => setViewState(isSignedIn && userRole && canAccessView(userRole, ViewState.SUBSCRIPTION_PLANS) ? ViewState.FACILITY_ADMIN : ViewState.MAP)}
+                onClick={() => setViewState(userRole ? getRoleEntryView(userRole) : ViewState.MAP)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <ArrowLeft size={20} />

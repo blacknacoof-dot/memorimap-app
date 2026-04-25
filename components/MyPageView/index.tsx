@@ -12,6 +12,7 @@ import { ProfileSection } from './ProfileSection';
 import { SubscriptionCard, PendingAdminNotice } from './SubscriptionCard';
 import { ReservationTabs } from './ReservationTabs';
 import { FavoriteTabs } from './FavoriteTabs';
+import { MyReviews } from './MyReviews';
 
 interface Props {
   isLoggedIn: boolean;
@@ -90,6 +91,10 @@ export const MyPageView: React.FC<Props> = ({
         onSelectFacility={onSelectFacility}
         onViewDetails={setSelectedReservation}
         onCancel={handleCancelReservation}
+        onWriteReview={(facilityId) => {
+          const facility = facilities.find(f => String(f.id) === String(facilityId));
+          if (facility) onSelectFacility?.(facility);
+        }}
       />
 
       <FavoriteTabs
@@ -119,6 +124,8 @@ export const MyPageView: React.FC<Props> = ({
       </div>
 
       {/* 서비스 정보 */}
+      <MyReviews userId={user.id} facilities={facilities} />
+
       <div className="mt-2 border-t pt-2 relative z-10 bg-gray-50">
         <button
           onClick={(e) => { e.stopPropagation(); setShowLegalModal(true); }}

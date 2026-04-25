@@ -208,15 +208,23 @@ export const sendMessageToGemini = async (
       return facility.products.map(p => `- **${p.name}**: ${p.price.toLocaleString()}원~`).join('\n');
     }
 
-    // 2. Check for prices array (Facility)
+    // 2. Check for facility dashboard packages
+    if ('packages' in facility && facility.packages && facility.packages.length > 0) {
+      return facility.packages.map((p) => {
+        const items = p.items?.length ? ` (${p.items.join(', ')})` : '';
+        return `- **${p.name}**: ${p.price.toLocaleString()}원~${items}`;
+      }).join('\n');
+    }
+
+    // 3. Check for prices array (Facility)
     if ('prices' in facility && Array.isArray(facility.prices) && facility.prices.length > 0) {
       return facility.prices.map((p) => `- **${p.label || p.type}**: ${parseInt(String(p.price) || '0').toLocaleString()}원~`).join('\n');
     }
 
-    // 3. Fallback to priceRange string
+    // 4. Fallback to priceRange string
     if (facility.priceRange) return facility.priceRange;
 
-    // 4. Default
+    // 5. Default
     return '상세 가격은 방문 상담 시 안내해 드립니다.';
   };
 

@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 
 const NAVER_MAP_CLIENT_ID = import.meta.env.VITE_NAVER_MAP_CLIENT_ID as string | undefined;
 let naverMapScriptPromise: Promise<void> | null = null;
+const DEFAULT_MAP_CENTER: [number, number] = [37.5665, 126.9780];
 
 const loadNaverMapSdk = (): Promise<void> => {
   if (typeof window === 'undefined') {
@@ -134,6 +135,12 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
   const [isClusterReady, setIsClusterReady] = useState(false);
   const [_myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null);
   const locationMarkerRef = useRef<NaverMarker | null>(null);
+  const moveToFallbackLocation = () => {
+    if (!mapInstance.current || !window.naver?.maps) return;
+    const fallbackLatLng = new window.naver.maps.LatLng(DEFAULT_MAP_CENTER[0], DEFAULT_MAP_CENTER[1]);
+    mapInstance.current.setCenter(fallbackLatLng);
+    mapInstance.current.setZoom(12);
+  };
 
   // ✅ [1-2a] idle 리스너 핸들 저장용 ref
   const idleListenerRef = useRef<unknown>(null);
@@ -533,7 +540,13 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
   // 4. Handle Imperative Ref (FlyToLocation)
   useImperativeHandle(ref, () => ({
     flyToLocation: () => {
-      if (!mapInstance.current || !navigator.geolocation || !window.naver || !window.naver.maps) return;
+      if (!mapInstance.current || !window.naver || !window.naver.maps) return;
+
+      if (!navigator.geolocation) {
+        moveToFallbackLocation();
+        toast.error('이 브라우저는 위치 정보를 지원하지 않습니다.');
+        return;
+      }
 
       navigator.geolocation.getCurrentPosition((position) => {
         const { latitude, longitude } = position.coords;
@@ -556,8 +569,25 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
             }
           });
         }
-      }, (_err) => {
-        toast.error("위치를 가져올 수 없습니다.");
+      }, (err) => {
+        moveToFallbackLocation();
+
+        if (err.code === err.PERMISSION_DENIED) {
+          toast.error('위치 권한이 꺼져 있습니다. 브라우저 설정에서 위치 권한을 허용해 주세요.');
+          return;
+        }
+
+        if (err.code === err.POSITION_UNAVAILABLE) {
+          toast.error('현재 위치를 확인할 수 없습니다. GPS 또는 네트워크 상태를 확인해 주세요.');
+          return;
+        }
+
+        if (err.code === err.TIMEOUT) {
+          toast.error('위치 확인 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.');
+          return;
+        }
+
+        toast.error('위치를 가져올 수 없습니다.');
       }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }); // ✅ [3-1] GPS timeout 추가
     },
     flyTo: (center: [number, number], zoom: number) => {

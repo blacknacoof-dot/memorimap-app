@@ -28,6 +28,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
     reservations, setReservations,
     subscription, payments,
     showPlanSelector, setShowPlanSelector,
+    isSangjo,
     session,
     unreadConsultations, pendingReservations,
     monthlyConsultationCount,
@@ -204,7 +205,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
             {activeTab === 'ops' && facilityId && <OperationsManagement partnerId={facilityId} />}
             {activeTab === 'settings' && (
               facilityId ? (
-                <FacilityInfoEditor facilityId={facilityId} />
+                <FacilityInfoEditor facilityId={facilityId} isSangjo={isSangjo} />
               ) : (
                 <div className="p-20 text-center text-slate-400">
                   <Settings className="mx-auto mb-3 opacity-50" size={48} />

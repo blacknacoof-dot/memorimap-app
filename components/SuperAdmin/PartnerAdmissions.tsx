@@ -22,7 +22,8 @@ export const PartnerAdmissions: React.FC = () => {
 
   const handleApprove = async (inquiry: PartnerInquiry) => {
     try {
-      if (inquiry.business_type === 'sangjo' || inquiry.business_type === ('sangjo_hq' as string)) {
+      const businessType = inquiry.business_type as string | undefined;
+      if (businessType === 'sangjo' || businessType === 'sangjo_hq') {
         const { data: existing } = await client
           .from('sangjo_dashboard_users')
           .select('sangjo_id')
@@ -33,20 +34,29 @@ export const PartnerAdmissions: React.FC = () => {
           const { data: existingFacility } = await client
             .from('facilities')
             .select('name')
-            .eq('id', existing.sangjo_id)
+            .eq('id', existing?.sangjo_id || '')
             .maybeSingle();
 
-          const existingName = existingFacility?.name || existing.sangjo_id;
+          let existingName = existingFacility?.name || '';
+          if (!existingName) {
+            const { data: existingCompany } = await client
+              .from('funeral_companies')
+              .select('name')
+              .eq('id', existing.sangjo_id)
+              .maybeSingle();
+            existingName = existingCompany?.name || existing.sangjo_id;
+          }
+
           const confirmed = await confirmAsync(
-            `이 사용자는 이미 "${existingName}" 상조를 관리 중입니다.\n계속 승인하면 새 시설을 만들지 않고 기존 상조 매핑만 유지합니다.\n계속 진행하시겠습니까?`,
-            '기존 상조 관리자 경고',
+            `이 사용자는 이미 "${existingName}" 상조를 관리 중입니다.\n계속 승인하면 신청 내역은 승인되고 새 업체 레코드는 생성될 수 있지만, 기존 상조 대시보드 연결은 변경하지 않습니다.\n계속 진행하시겠습니까?`,
+            '기존 상조 관리자 확인',
           );
           if (!confirmed) return;
         }
       }
     } catch (err) {
-      console.error('상조 중복 체크 실패:', err);
-      toast.error('상조 관리자 확인 중 오류가 발생했습니다.');
+      console.error('Failed to check existing sangjo admin mapping:', err);
+      toast.error('기존 상조 관리자 확인 중 오류가 발생했습니다.');
       return;
     }
 

@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { FUNERAL_COMPANIES } from '../../data/sangjoCompanyDefaults';
 import { generateDefaultReviews } from '../../types/sangjo';
-import type { FuneralCompany, Review } from '../../types';
+import type { FuneralCompany, Review, SangjoProduct } from '../../types';
 import { toast } from 'sonner';
 
 // 갤러리 이미지 풀
@@ -99,6 +99,52 @@ interface DbRow {
   [key: string]: unknown;
 }
 
+interface FacilitySangjoRow {
+  id: string;
+  name?: string | null;
+  image_url?: string | null;
+  images?: string[] | null;
+  description?: string | null;
+  features?: string[] | null;
+  phone?: string | null;
+  price_range?: string | null;
+  ai_context?: unknown;
+  ai_welcome_message?: string | null;
+}
+
+interface FacilityPackageRow {
+  id: string;
+  facility_id: string;
+  name?: string | null;
+  category?: string | null;
+  price?: number | null;
+  price_label?: string | null;
+  description?: string | null;
+  included_items?: string[] | null;
+  sort_order?: number | null;
+  is_active?: boolean | null;
+}
+
+function packageRowsToProducts(rows: FacilityPackageRow[]): SangjoProduct[] {
+  return rows
+    .filter((row) => row.is_active !== false && row.name)
+    .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+    .map((row) => {
+      const includedItems = Array.isArray(row.included_items) ? row.included_items : [];
+      const category = row.category || 'Package';
+      return {
+        id: row.id,
+        name: row.name || '',
+        price: row.price ?? 0,
+        tagline: row.price_label || (row.price ? `${row.price.toLocaleString()} KRW` : 'Contact us'),
+        description: row.description || '',
+        serviceDetails: includedItems.length > 0 ? [{ category, items: includedItems }] : [],
+        includedServices: includedItems,
+        optionalServices: [],
+      };
+    });
+}
+
 export function useSangjoCompanies() {
   const [companies, setCompanies] = useState<FuneralCompany[]>(FUNERAL_COMPANIES);
   const [isLoading, setIsLoading] = useState(true);
@@ -126,12 +172,32 @@ export function useSangjoCompanies() {
         }).filter(Boolean) as string[];
         const allTargetIds = Array.from(new Set([...companyIds, ...staticIds]));
 
-        const { data: allReviews } = await supabase
-          .from('facility_reviews')
-          .select('*')
-          .in('facility_id', allTargetIds)
-          .eq('is_active', true)
-          .order('created_at', { ascending: false });
+        const [{ data: facilityRows }, { data: packageRows }, { data: allReviews }] = await Promise.all([
+          supabase
+            .from('facilities')
+            .select('id, name, image_url, images, description, features, phone, price_range, ai_context, ai_welcome_message')
+            .in('id', companyIds),
+          supabase
+            .from('facility_packages')
+            .select('id, facility_id, name, category, price, price_label, description, included_items, sort_order, is_active')
+            .in('facility_id', companyIds),
+          supabase
+            .from('facility_reviews')
+            .select('*')
+            .in('facility_id', allTargetIds)
+            .eq('is_active', true)
+            .order('created_at', { ascending: false }),
+        ]);
+
+        const facilitiesById = new Map(
+          ((facilityRows || []) as FacilitySangjoRow[]).map((row) => [String(row.id), row]),
+        );
+        const packagesByFacilityId = new Map<string, FacilityPackageRow[]>();
+        ((packageRows || []) as FacilityPackageRow[]).forEach((row) => {
+          const facilityId = String(row.facility_id);
+          if (!packagesByFacilityId.has(facilityId)) packagesByFacilityId.set(facilityId, []);
+          packagesByFacilityId.get(facilityId)!.push(row);
+        });
 
         // 리뷰 그룹핑
         const reviewsByCompany = new Map<string, Array<Record<string, unknown>>>();
@@ -147,21 +213,41 @@ export function useSangjoCompanies() {
           const staticMatch = FUNERAL_COMPANIES.find(c => c.name.replace(/\s/g, '') === item.name.replace(/\s/g, ''));
           const dbId = item.id.toString().trim();
           const staticId = staticMatch?.id?.toString().trim();
+          const facilityMatch = facilitiesById.get(dbId);
           const reviews = [
             ...(reviewsByCompany.get(dbId) || []),
             ...(staticId ? (reviewsByCompany.get(staticId) || []) : [])
           ];
           const uniqueReviews = Array.from(new Map(reviews.map(r => [r.id, r])).values());
 
-          const products = (staticMatch?.products && staticMatch.products.length > 0)
-            ? staticMatch.products
-            : parseProducts(item as Record<string, unknown>, staticMatch);
+          const packageProducts = packageRowsToProducts(packagesByFacilityId.get(dbId) || []);
+          const products = packageProducts.length > 0
+            ? packageProducts
+            : (staticMatch?.products && staticMatch.products.length > 0)
+              ? staticMatch.products
+              : parseProducts(item as Record<string, unknown>, staticMatch);
 
+          const primaryImage = item.image_url || facilityMatch?.image_url || staticMatch?.imageUrl || '/images/default_sangjo.png';
           const galleryImages = (item.gallery_images && item.gallery_images.length > 0)
             ? item.gallery_images
             : (item.images && item.images.length > 0)
               ? item.images
-              : [staticMatch?.imageUrl || item.image_url || '/images/default_sangjo.png', ...pickRandomGallery(idx)];
+              : (facilityMatch?.images && facilityMatch.images.length > 0)
+                ? facilityMatch.images
+                : [primaryImage, ...pickRandomGallery(idx)];
+
+          const facilityAiContext = facilityMatch?.ai_context;
+          const aiWelcomeMessage =
+            facilityMatch?.ai_welcome_message ||
+            (facilityAiContext && typeof facilityAiContext === 'object' && 'welcome_message' in facilityAiContext
+              ? String((facilityAiContext as { welcome_message?: unknown }).welcome_message || '')
+              : undefined);
+          const aiContext =
+            typeof facilityAiContext === 'string'
+              ? facilityAiContext
+              : facilityAiContext
+                ? JSON.stringify(facilityAiContext)
+                : undefined;
 
           const dbReviews: Review[] = uniqueReviews.map(r => ({
             id: String(r.id),
@@ -189,14 +275,16 @@ export function useSangjoCompanies() {
             name: item.name,
             rating: item.rating || 4.8,
             reviewCount: item.review_count || uniqueReviews.length || 5,
-            imageUrl: staticMatch?.imageUrl || item.image_url || '/images/default_sangjo.png',
-            description: item.description || staticMatch?.description || `${item.name}의 프리미엄 상조 서비스입니다.`,
-            features: (item.features && item.features.length > 0) ? item.features : (staticMatch?.features || ['전국 의전망', '24시간 상담']),
-            phone: item.phone || item.contact || '1588-0000',
-            priceRange: item.priceRange || '문의',
+            imageUrl: primaryImage,
+            description: item.description || facilityMatch?.description || staticMatch?.description || `${item.name} service information`,
+            features: (item.features && item.features.length > 0) ? item.features : ((facilityMatch?.features && facilityMatch.features.length > 0) ? facilityMatch.features : (staticMatch?.features || [])),
+            phone: item.phone || item.contact || facilityMatch?.phone || '1588-0000',
+            priceRange: item.price_range || facilityMatch?.price_range || item.priceRange || staticMatch?.priceRange || 'Contact us',
             benefits: item.benefits || ['회원 전용 혜택'],
             galleryImages,
             products,
+            ai_welcome_message: aiWelcomeMessage,
+            ai_context: aiContext,
             reviews: dbReviews.length > 0 ? dbReviews : generateDefaultReviews(item.id.toString()),
           };
         });

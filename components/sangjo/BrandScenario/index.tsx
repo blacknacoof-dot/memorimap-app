@@ -45,6 +45,13 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
         }]);
     }, [company.name]);
 
+    useEffect(() => {
+        if (!company.ai_welcome_message) return;
+        setMessages(prev => prev.length > 0
+            ? [{ ...prev[0], text: company.ai_welcome_message as string }, ...prev.slice(1)]
+            : prev);
+    }, [company.ai_welcome_message]);
+
     function getMainMenuOptions() {
         return [
             { label: '📋 상품 안내', action: 'SHOW_PRODUCTS', variant: 'default' as const },

@@ -155,6 +155,13 @@ export interface Subscription {
     facility_id_bigint?: string | number;
     next_billing_date?: string;
     billing_cycle?: BillingCycle;
+    billing_key?: string | null;
+    billing_key_issued_at?: string | null;
+    retry_count?: number;
+    last_payment_error?: string | null;
+    cancel_at_period_end?: boolean;
+    cancelled_at?: string | null;
+    cancelled_reason?: string | null;
 }
 
 /**
@@ -178,6 +185,14 @@ export interface UserSubscription {
     started_at: string | null;
     expires_at: string | null;
     billing_cycle?: BillingCycle;
+    billing_key?: string | null;
+    billing_key_issued_at?: string | null;
+    retry_count?: number;
+    last_payment_error?: string | null;
+    cancel_at_period_end?: boolean;
+    cancelled_at?: string | null;
+    cancelled_reason?: string | null;
+    auto_renew?: boolean;
 }
 
 /**

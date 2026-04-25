@@ -151,7 +151,33 @@ Rules:
 - do not deploy from an uncommitted dirty workspace
 - do not assume a deployed environment reflects uncommitted local fixes
 - before deployment, confirm `main` points to the intended commit
+- production deployment should run from a linked clean worktree or an equivalently clean linked workspace so the deploy source is immutable and inspectable
 - after deployment, record the deployed commit SHA in a report if the release is significant
+- use one repository state vocabulary only:
+  - `local-only`: changed or untracked in the current workspace, not committed
+  - `committed-local`: committed locally, not pushed to `origin`
+  - `remote-only`: pushed to `origin`, not yet deployed to production
+  - `deployed`: confirmed on production after `vercel inspect` and live check
+- never call work merely "saved" without also placing it in one of those four states
+- `git push origin main` changes state from `committed-local` to `remote-only`; it is not deployment
+- `vercel --prod --yes` changes state from `remote-only` to `deployed` only after verification; it is not a substitute for commit or push
+- whenever reporting release status, always report in this order:
+  - local working tree state
+  - committed local state
+  - remote repository state
+  - production deployment state
+- before any commit or deploy, classify each relevant change into exactly one bucket:
+  - release code
+  - document-only
+  - local hold
+- do not mix those buckets in one routine commit unless explicitly requested
+- before any commit or deploy, review whether document-only changes should remain in their own commit stream instead of being mixed into code/release work
+- preserve the 2026-04-10 document split unless a task explicitly asks to reorganize those docs
+- do not fold these doc commits into later patch/deploy commits by accident:
+  - `547a4f9` `docs: add deployment and security runbooks`
+  - `900bd49` `docs: add map marker cluster research report`
+  - `15fcfb1` `docs: add marketing and sales planning reports`
+- keep `docs/04-report/screenshots/` and `docs/audit_fix_plan_phase5_20260314.md` out of routine deploy/patch commits unless explicitly requested
 
 ## Multi-Agent Operating Rules
 

@@ -14,10 +14,11 @@ interface ImageManagerProps {
     facilityId: string;
     images: string[];
     planId?: string;
+    isSangjo?: boolean;
     onImagesChange: (images: string[]) => void;
 }
 
-export const ImageManager: React.FC<ImageManagerProps> = ({ facilityId, images, planId, onImagesChange }) => {
+export const ImageManager: React.FC<ImageManagerProps> = ({ facilityId, images, planId, isSangjo = false, onImagesChange }) => {
     const [uploading, setUploading] = React.useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { session } = useSession();
@@ -64,6 +65,13 @@ export const ImageManager: React.FC<ImageManagerProps> = ({ facilityId, images, 
             .update({ images: newImages })
             .eq('id', facilityId);
 
+        if (!error && isSangjo) {
+            await client
+                .from('funeral_companies')
+                .update({ gallery_images: newImages, image_url: newImages[0] || null })
+                .eq('id', facilityId);
+        }
+
         if (!error) {
             onImagesChange(newImages);
             toast.success('이미지가 업로드되었습니다.');
@@ -81,6 +89,13 @@ export const ImageManager: React.FC<ImageManagerProps> = ({ facilityId, images, 
             .from('facilities')
             .update({ images: newImages })
             .eq('id', facilityId);
+
+        if (!error && isSangjo) {
+            await client
+                .from('funeral_companies')
+                .update({ gallery_images: newImages, image_url: newImages[0] || null })
+                .eq('id', facilityId);
+        }
 
         if (!error) {
             onImagesChange(newImages);

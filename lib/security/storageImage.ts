@@ -47,6 +47,23 @@ function resolveUnsignedPassthrough(bucket: StorageImageBucket, value: string): 
     return null;
 }
 
+function createPublicStorageImageUrl(
+    client: SupabaseClient,
+    bucket: StorageImageBucket,
+    objectPath: string,
+    transform?: TransformOptions,
+): string {
+    const { data } = client.storage
+        .from(bucket)
+        .getPublicUrl(objectPath, transform ? { transform } : undefined);
+
+    if (!data?.publicUrl) {
+        throw new Error('PUBLIC_IMAGE_URL_FAILED');
+    }
+
+    return data.publicUrl;
+}
+
 export function normalizeStorageObjectPath(bucket: StorageImageBucket, value?: string | null): string | null {
     if (!value) return null;
 
@@ -112,6 +129,15 @@ export async function createSignedStorageImageUrl(
     const cached = signedUrlCache.get(cacheKey);
     if (cached && cached.expiresAt > now) {
         return cached.url;
+    }
+
+    if (!isPrivateStorageBucket(bucket)) {
+        const publicUrl = createPublicStorageImageUrl(client, bucket, objectPath, transform);
+        signedUrlCache.set(cacheKey, {
+            url: publicUrl,
+            expiresAt: now + Math.max(expiresIn - 60, 60) * 1000,
+        });
+        return publicUrl;
     }
 
     const { data, error } = await client.storage
