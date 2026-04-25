@@ -26,6 +26,10 @@ const BALANCE_PER_CATEGORY = 3;
 
 const NON_PRODUCTION_FACILITY_PATTERNS = [
   /ai-consult-flow/i,
+  /ai-consult/i,
+  /facmgrassign/i,
+  /admin-settings/i,
+  /\badmin\b.*\bsettings\b/i,
   /^ph장례식장$/i,
   /\btest\b/i,
   /\bqa\b/i,
@@ -128,7 +132,8 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
         const { data, error } = await supabase
           .from('facilities')
           .select('*')
-          .eq('verified', true);
+          .eq('verified', true)
+          .or('status.is.null,status.eq.active,status.eq.approved,status.eq.verified');
 
         if (!mounted) return;
         if (error) throw error;
