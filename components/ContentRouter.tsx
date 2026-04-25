@@ -180,7 +180,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
 
   const listView = () => (
     <div className="h-full relative">
-      <div className="list-view-shell h-full flex flex-col pt-36 pb-4 bg-gray-50">
+      <div className="list-view-shell h-full flex flex-col pt-28 md:pt-36 pb-4 bg-gray-50">
         <div className="px-4 shrink-0">
           {promoBanner}
           <div className="flex items-center justify-between mb-1">
@@ -288,7 +288,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
     case ViewState.LIST:
       return (
         <div className="h-full relative">
-          <div className="list-view-shell h-full flex flex-col pt-36 pb-4 bg-gray-50">
+          <div className="list-view-shell h-full flex flex-col pt-28 md:pt-36 pb-4 bg-gray-50">
             <div className="px-4 shrink-0">
               {promoBanner}
               <div className="flex items-center justify-between mb-1">
