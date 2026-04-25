@@ -155,7 +155,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
   );
 
   const promoBanner = showPromo ? (
-    <div className="standalone-hide mb-3">
+    <div className="mb-3 md:hidden">
       <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-amber-400 p-2.5 md:p-3 rounded-xl shadow-xl border border-amber-500/30 flex justify-between items-center">
         <div className="flex items-center gap-2 md:gap-3">
           <div className="bg-amber-500/20 p-1 md:p-1.5 rounded-lg shrink-0">
@@ -180,8 +180,9 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
 
   const listView = () => (
     <div className="h-full relative">
-      <div className="list-view-shell h-full flex flex-col pt-24 pb-4 bg-gray-50">
+      <div className="list-view-shell h-full flex flex-col pt-36 pb-4 bg-gray-50">
         <div className="px-4 shrink-0">
+          {promoBanner}
           <div className="flex items-center justify-between mb-1">
             <h2 className="font-bold text-lg">추천 시설 목록</h2>
             {isDataLoading && (
@@ -287,8 +288,9 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
     case ViewState.LIST:
       return (
         <div className="h-full relative">
-          <div className="list-view-shell h-full flex flex-col pt-24 pb-4 bg-gray-50">
+          <div className="list-view-shell h-full flex flex-col pt-36 pb-4 bg-gray-50">
             <div className="px-4 shrink-0">
+              {promoBanner}
               <div className="flex items-center justify-between mb-1">
                 <h2 className="font-bold text-lg">추천 시설 목록</h2>
                 {isDataLoading && (
