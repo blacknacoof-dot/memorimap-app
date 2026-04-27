@@ -576,6 +576,33 @@ const normalizePaymentStatus = (status?: string | null) => {
     return status || 'pending';
 };
 
+const resolvePersonalPaymentNameMap = async (client: SupabaseClient, rows: Payment[]) => {
+    const userIds = Array.from(new Set(
+        rows
+            .filter((payment) => payment.payment_context === 'personal' && Boolean(payment.user_id))
+            .map((payment) => payment.user_id as string)
+    ));
+
+    const userMap = new Map<string, string>();
+    if (userIds.length === 0) return userMap;
+
+    const { data: profiles, error } = await client
+        .from('profiles')
+        .select('clerk_id, email, full_name')
+        .in('clerk_id', userIds);
+
+    if (error) return userMap;
+
+    (profiles || []).forEach((profile) => {
+        const label = profile.full_name || profile.email || profile.clerk_id;
+        if (profile.clerk_id && label) {
+            userMap.set(profile.clerk_id, `개인 구독 - ${label}`);
+        }
+    });
+
+    return userMap;
+};
+
 export const fetchPayments = async (client: SupabaseClient): Promise<FetchPaymentsResult> => {
     const { data: payments, error: pError } = await client
         .from('subscription_payments')
@@ -594,12 +621,26 @@ export const fetchPayments = async (client: SupabaseClient): Promise<FetchPaymen
     ));
 
     try {
-        const { data: subs, error: sError } = await client
-            .from('facility_subscriptions')
-            .select('id, status, facility_id, facility_id_uuid, facility_id_bigint')
-            .in('id', facilityPayments.map((payment) => payment.subscription_id).filter(Boolean));
+        const personalNameMap = await resolvePersonalPaymentNameMap(client, normalizedPayments);
+        let subs: Array<{
+            id: string;
+            status?: string | null;
+            facility_id?: string | number | null;
+            facility_id_uuid?: string | null;
+            facility_id_bigint?: string | number | null;
+        }> = [];
 
-        if (!sError && subs) {
+        if (facilityPayments.length > 0) {
+            const { data, error: sError } = await client
+                .from('facility_subscriptions')
+                .select('id, status, facility_id, facility_id_uuid, facility_id_bigint')
+                .in('id', facilityPayments.map((payment) => payment.subscription_id).filter(Boolean));
+
+            if (sError) throw sError;
+            subs = data || [];
+        }
+
+        {
             const facilityMap = await resolveFacilityNameMap(client, subs);
 
             const subMap = new Map(subs.map((sub) => {
@@ -616,7 +657,9 @@ export const fetchPayments = async (client: SupabaseClient): Promise<FetchPaymen
 
             const resolvedPayments = normalizedPayments.map((item: Payment) => ({
                 ...item,
-                facility_name: subMap.get(item.subscription_id ?? '') || '(시설 정보 유실)',
+                facility_name: item.payment_context === 'personal'
+                    ? personalNameMap.get(item.user_id || '') || '개인 구독'
+                    : subMap.get(item.subscription_id ?? '') || '(시설 정보 확인 필요)',
             })) as PaymentWithFacility[];
 
             const activeFacilityNameFailed = resolvedPayments.some((payment) => (
@@ -629,7 +672,10 @@ export const fetchPayments = async (client: SupabaseClient): Promise<FetchPaymen
             return {
                 payments: resolvedPayments,
                 activeFacilityNameFailed,
-                facilityNameFailed: resolvedPayments.some((payment) => payment.facility_name === '(시설 정보 유실)'),
+                facilityNameFailed: resolvedPayments.some((payment) => (
+                    payment.payment_context === 'facility'
+                    && payment.facility_name.startsWith('(')
+                )),
             };
         }
     } catch {
@@ -637,8 +683,11 @@ export const fetchPayments = async (client: SupabaseClient): Promise<FetchPaymen
     }
 
     return {
-        payments: normalizedPayments.map((payment) => ({ ...payment, facility_name: '(시설명 확인 불가)' })) as PaymentWithFacility[],
-        facilityNameFailed: true,
+        payments: normalizedPayments.map((payment) => ({
+            ...payment,
+            facility_name: payment.payment_context === 'personal' ? '개인 구독' : '(시설명 확인 불가)',
+        })) as PaymentWithFacility[],
+        facilityNameFailed: normalizedPayments.some((payment) => payment.payment_context === 'facility'),
     };
 };
 
