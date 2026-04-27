@@ -85,7 +85,7 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
       <div className={`bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden ring-1 ring-black/5 ${
         isFocused ? 'ring-primary/30 border-primary/20' : ''
       }`}>
-        <div className={`flex items-center px-3 md:px-4 bg-white ${compact ? 'h-9 md:h-12' : 'h-14'}`}>
+        <div className={`flex items-center px-3 md:px-4 bg-white ${compact ? 'h-11 md:h-12' : 'h-14'}`}>
           <Search size={compact ? 16 : 20} className="text-primary mr-2 md:mr-3 shrink-0 md:!w-[18px] md:!h-[18px]" />
           <input
             id="smart-search-input"
@@ -105,7 +105,7 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
           {query && (
             <button
               onClick={() => setQuery('')}
-              className="ml-2 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors shrink-0"
+              className="ml-2 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="검색어 초기화"
             >
               <X size={compact ? 16 : 18} />

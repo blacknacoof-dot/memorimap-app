@@ -104,7 +104,7 @@ export const SangjoCompanyList: React.FC<Props> = ({
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="상조회사 이름 검색..."
-                        className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all text-gray-900"
+                        className="w-full h-11 pl-9 pr-4 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all text-gray-900"
                     />
                 </div>
             </div>
@@ -124,7 +124,7 @@ export const SangjoCompanyList: React.FC<Props> = ({
             </div>
 
             {/* Company List */}
-            <div className="flex-1 overflow-y-auto px-4 space-y-2.5 pb-8 no-scrollbar">
+            <div className="flex-1 overflow-y-auto px-4 space-y-2.5 pb-32 no-scrollbar">
                 {filteredCompanies.map(company => (
                     <SangjoCompanyCard
                         key={company.id}
@@ -149,11 +149,11 @@ export const SangjoCompanyList: React.FC<Props> = ({
                     </div>
                 )}
 
-                <div className="h-28" />
+                <div className="h-10" />
             </div>
 
             {/* Floating AI Counselor + Compare Button */}
-            <div className="absolute bottom-20 left-0 right-0 px-4 z-40 animate-in slide-in-from-bottom-4 duration-500">
+            <div className="absolute bottom-[5.75rem] left-0 right-0 px-4 z-40 animate-in slide-in-from-bottom-4 duration-500">
                 {compareList.length > 0 && (
                     <button
                         onClick={onShowComparison}

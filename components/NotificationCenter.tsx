@@ -28,7 +28,7 @@ export const NotificationCenter: React.FC = () => {
             <button
                 onClick={() => setIsModalOpen(true)}
                 data-testid="notification-bell-button"
-                className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors active:scale-95"
+                className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
                 <Bell size={20} />
                 {unreadCount > 0 && (
