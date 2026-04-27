@@ -517,14 +517,6 @@ serve(async (req: Request) => {
     }
     // ============================================================
 
-    const portoneApiSecret = Deno.env.get('PORTONE_API_SECRET');
-    if (!portoneApiSecret) {
-        return new Response(JSON.stringify({ error: 'PortOne API secret not configured' }), {
-            status: 500,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-    }
-
     // Service role client for DB operations (created once, reused)
     const supabaseAdmin = createClient(
         Deno.env.get('SUPABASE_URL')!,
@@ -569,6 +561,14 @@ serve(async (req: Request) => {
             });
         }
         // ============================================================
+
+        const portoneApiSecret = Deno.env.get('PORTONE_API_SECRET');
+        if (!portoneApiSecret) {
+            return new Response(JSON.stringify({ error: 'PortOne API secret not configured' }), {
+                status: 500,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+        }
 
         const paymentIntent = paymentId && (
             paymentContext === 'facility_subscription'

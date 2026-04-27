@@ -3,11 +3,9 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// ✅ [핵심] ES Module 환경에서 __dirname 변수 생성 (이게 없어서 에러가 났던 겁니다)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// https://vitejs.dev/config/
 export default defineConfig({
   envPrefix: ['VITE_', 'REACT_APP_'],
   server: {
@@ -15,10 +13,9 @@ export default defineConfig({
     host: 'localhost',
     strictPort: true,
     hmr: {
-      overlay: false, // 에러 오버레이 비활성화 (CPU 절약)
+      overlay: false,
     },
     watch: {
-      // 대용량 폴더를 감시에서 제외하여 CPU 사용량 감소
       ignored: [
         '**/backups/**',
         '**/scripts/**',
@@ -31,22 +28,21 @@ export default defineConfig({
         '**/supabase/**',
         '**/cypress/**',
         '**/playwright-report/**',
-        '**/test-results/**'
+        '**/test-results/**',
       ],
     },
   },
   base: '/',
   resolve: {
     alias: {
-      // 프로젝트 구조가 Root 기반이므로 './' 유지
+      // Avoid the supabase-js wrapper entry that triggers Rollup default-export warnings on Vite 7.
+      '@supabase/supabase-js': path.resolve(__dirname, './node_modules/@supabase/supabase-js/dist/module/index.js'),
       '@': path.resolve(__dirname, './'),
-    }
+    },
   },
   plugins: [
     react(),
   ],
-  // ✅ [Security Fix] 프로덕션 빌드에서 console.log/debugger 제거
-  // Note: vite build는 항상 production 모드이므로 조건문 불필요
   esbuild: {
     drop: ['debugger'],
     pure: ['console.log', 'console.debug', 'console.warn', 'console.error', 'console.info'],
@@ -64,10 +60,10 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
-          ui: ['lucide-react', 'framer-motion']
-        }
-      }
+          ui: ['lucide-react', 'framer-motion'],
+        },
+      },
     },
-    chunkSizeWarningLimit: 1000
-  }
+    chunkSizeWarningLimit: 1000,
+  },
 });

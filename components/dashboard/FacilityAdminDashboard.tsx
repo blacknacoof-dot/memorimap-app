@@ -11,8 +11,19 @@ import { useSession } from '../../lib/auth';
 import { issueBillingKeySubscription } from '../../lib/portone';
 import { normalizeSubscriptionPlanId } from '../../lib/subscriptionPlanIds';
 import {
-  Loader2, CheckCircle, XCircle, Clock, Home, Edit,
-  Building2, MapPin, Phone, ArrowRight, HelpCircle, MessageSquare, Calendar,
+  Loader2,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Home,
+  Edit,
+  Building2,
+  MapPin,
+  Phone,
+  ArrowRight,
+  HelpCircle,
+  MessageSquare,
+  Calendar,
 } from 'lucide-react';
 
 const FACILITY_BILLING_PENDING_KEY = 'pendingFacilityBillingActivation';
@@ -27,15 +38,25 @@ interface Props {
 export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNavigate }) => {
   const { session, isLoaded } = useSession();
   const {
-    myFacilityId, myFacility,
-    reservations, consultations,
-    isLoading, activeTab, setActiveTab,
-    selectedReservation, setSelectedReservation,
-    editingFacility, setEditingFacility,
+    myFacilityId,
+    myFacility,
+    reservations,
+    consultations,
+    isLoading,
+    activeTab,
+    setActiveTab,
+    selectedReservation,
+    setSelectedReservation,
+    editingFacility,
+    setEditingFacility,
     subscription,
-    pendingCount, urgentCount, consultationCount,
-    handleApprove, handleReject,
-    handleAnswerConsultation, handleReadConsultation,
+    pendingCount,
+    urgentCount,
+    consultationCount,
+    handleApprove,
+    handleReject,
+    handleAnswerConsultation,
+    handleReadConsultation,
     loadData,
   } = useFacilityAdmin({ user, facilities });
 
@@ -47,6 +68,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
     url.searchParams.delete('message');
     window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
   }, []);
+
   const normalizedPlanId = normalizeSubscriptionPlanId(
     subscription?.plan_id ?? subscription?.plan?.name_en ?? subscription?.plan_name,
   );
@@ -125,18 +147,21 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
 
   return (
     <div className="h-full overflow-y-auto pt-4 md:pt-6 pb-20 md:pb-6 px-4 sm:px-6 md:px-8 bg-gray-50">
-      {/* Header */}
       <div className="mb-6 flex justify-between items-start">
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">업체 관리 대시보드</h1>
           <p className="text-sm text-gray-600">
-            {myFacility ? `${myFacility.name} 관리 중` : '할당된 시설 정보를 불러오는 중...'}
+            {myFacility ? `${myFacility.name} 관리 중` : '담당 시설 정보를 불러오는 중...'}
           </p>
           {pendingCount > 0 && (
             <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
               <Clock size={16} />
               승인 대기 중인 예약 {pendingCount}건
-              {urgentCount > 0 && <span className="ml-1 text-red-600 font-bold animate-pulse">(긴급 {urgentCount}건)</span>}
+              {urgentCount > 0 && (
+                <span className="ml-1 text-red-600 font-bold animate-pulse">
+                  (긴급 {urgentCount}건)
+                </span>
+              )}
             </div>
           )}
         </div>
@@ -145,7 +170,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
             onClick={() => onNavigate(ViewState.SUBSCRIPTION_PLANS, { facilityId: myFacility?.id })}
             className="px-3 md:px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg font-medium hover:from-purple-600 hover:to-purple-700 transition-all shadow-md text-xs md:text-sm"
           >
-            💎 구독 관리
+            구독 관리
           </button>
           <button
             onClick={() => onNavigate(ViewState.MY_PAGE)}
@@ -157,15 +182,14 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
         </div>
       </div>
 
-      {/* Subscription upsell banner */}
       {(!subscription || !subscription.plan_name) && myFacility && (
         <div
           onClick={() => onNavigate(ViewState.SUBSCRIPTION_PLANS, { facilityId: myFacility.id })}
           className="mb-6 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-4 text-white shadow-lg cursor-pointer transform transition-transform hover:scale-[1.01] flex justify-between items-center group"
         >
           <div>
-            <h3 className="font-bold text-lg mb-1">💎 프리미엄 멤버십으로 업그레이드하세요!</h3>
-            <p className="text-indigo-100 text-sm">무제한 AI 상담, 상위 노출 등 다양한 혜택을 누려보세요.</p>
+            <h3 className="font-bold text-lg mb-1">프리미엄 멤버십으로 업그레이드하세요.</h3>
+            <p className="text-indigo-100 text-sm">AI 상담, 상위 노출, 상세 통계 기능을 사용할 수 있습니다.</p>
           </div>
           <div className="bg-white/20 p-2 rounded-full group-hover:bg-white/30 transition-colors">
             <ArrowRight size={20} />
@@ -173,7 +197,6 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
         </div>
       )}
 
-      {/* Facility Card */}
       {myFacility ? (
         <div className="mb-6">
           <h2 className="text-lg font-bold text-gray-900 mb-3">시설 정보</h2>
@@ -184,19 +207,29 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                   <Building2 size={18} className="text-primary shrink-0" />
                   <h3 className="font-bold text-gray-900 truncate">{myFacility.name}</h3>
                   {normalizedPlanId === 'PREMIUM' && (
-                    <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold border border-purple-200">PREMIUM</span>
+                    <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold border border-purple-200">
+                      PREMIUM
+                    </span>
                   )}
                   {normalizedPlanId === 'ENTERPRISE' && (
-                    <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold border border-amber-200">ENTERPRISE</span>
+                    <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold border border-amber-200">
+                      ENTERPRISE
+                    </span>
                   )}
                 </div>
                 <div className="space-y-1 text-sm text-gray-600 min-w-0">
-                  <div className="flex items-start gap-2"><MapPin size={14} className="shrink-0 mt-0.5" /><span className="break-words">{myFacility.address}</span></div>
-                  <div className="flex items-center gap-2"><Phone size={14} className="shrink-0" /><span>{myFacility.phone || '전화번호 미등록'}</span></div>
+                  <div className="flex items-start gap-2">
+                    <MapPin size={14} className="shrink-0 mt-0.5" />
+                    <span className="break-words">{myFacility.address}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone size={14} className="shrink-0" />
+                    <span>{myFacility.phone || '전화번호 미등록'}</span>
+                  </div>
                   {subscription?.next_billing_date && (
                     <div className="flex items-center gap-2 text-primary font-medium mt-1">
                       <Calendar size={14} />
-                      <span>다음 결제 예정일: {new Date(subscription.next_billing_date).toLocaleDateString()}</span>
+                      <span>다음 결제 예정일 {new Date(subscription.next_billing_date).toLocaleDateString()}</span>
                     </div>
                   )}
                 </div>
@@ -210,7 +243,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                   <Edit size={18} />
                   정보 수정
                 </div>
-                <span className="text-[10px] opacity-90 font-medium">사진 · 가격 · 설명 관리</span>
+                <span className="text-[10px] opacity-90 font-medium">사진, 가격, 설명 관리</span>
               </button>
             </div>
           </div>
@@ -219,11 +252,12 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
         <div className="mb-6 p-8 bg-white rounded-2xl border-2 border-dashed border-gray-200 text-center">
           <Building2 size={48} className="mx-auto text-gray-300 mb-4" />
           <h3 className="text-lg font-bold text-gray-900 mb-2">관리 중인 시설이 없습니다.</h3>
-          <p className="text-sm text-gray-500">관리자 계정으로 시설을 할당받아야 대시보드를 사용할 수 있습니다.</p>
+          <p className="text-sm text-gray-500">
+            관리자 계정으로 시설을 할당받아야 대시보드를 사용할 수 있습니다.
+          </p>
         </div>
       )}
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-2 mb-4">
         {[
           { key: 'pending', label: '대기', color: 'yellow', icon: Clock, count: reservations.filter(r => r.status === 'pending' || r.status === 'urgent').length },
@@ -247,7 +281,6 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
         ))}
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-1.5 mb-4 overflow-x-auto pb-2">
         {[
           { key: 'pending', label: '예약 대기', count: reservations.filter(r => r.status === 'pending' || r.status === 'urgent').length },
@@ -275,7 +308,6 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
         ))}
       </div>
 
-      {/* Content */}
       {activeTab === 'consultations' ? (
         <ConsultationList
           consultations={consultations}
@@ -298,7 +330,6 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
         />
       ) : null}
 
-      {/* Reservation Detail Modal */}
       {selectedReservation && (
         <ReservationDetailModal
           reservation={selectedReservation}
@@ -326,7 +357,6 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
         />
       )}
 
-      {/* Facility Edit Modal */}
       {editingFacility && (
         <FacilityEditModal
           facility={editingFacility}

@@ -92,17 +92,21 @@ Pass criteria:
 
 - `tests/security/edgeContracts.spec.ts`
 - `tests/security/releaseConfig.spec.ts`
+- `tests/security/billingRecoveryContracts.spec.ts`
+- `tests/security/billingHotfixContracts.spec.ts`
+- `tests/security/billingOpsContracts.spec.ts`
 
 Purpose:
 - `gemini-proxy` generic external errors only
 - `approve-partner` raw request body not logged
-- rate-limit helper wired into target functions
+- rate-limit helper wired into target functions including payment intent registration
 - release config keeps source maps off, `unsafe-eval` absent, `ai-test` blocked
+- recurring billing recovery, hotfix, and operational safeguards remain documented and enforced
 
 Run:
 
 ```bash
-npx vitest run tests/security/edgeContracts.spec.ts tests/security/releaseConfig.spec.ts
+npx vitest run tests/security/edgeContracts.spec.ts tests/security/releaseConfig.spec.ts tests/security/billingRecoveryContracts.spec.ts tests/security/billingHotfixContracts.spec.ts tests/security/billingOpsContracts.spec.ts
 ```
 
 Pass criteria:
@@ -110,12 +114,13 @@ Pass criteria:
 - no raw `body` logging regression
 - rate limit helper/migration present
 - release config stays hardened
+- recurring billing recovery and reconcile contracts stay intact
 
 ## Recommended Full Run
 
 ```bash
 npm run typecheck
-npx vitest run lib/security/sqlSanitize.test.ts lib/validation/reviewSchema.test.ts lib/validation/facilitySchema.test.ts src/utils/browserDetection.test.ts lib/security/fileValidation.test.ts tests/security/upload.spec.ts tests/security/edgeContracts.spec.ts tests/security/releaseConfig.spec.ts
+npx vitest run lib/security/sqlSanitize.test.ts lib/validation/reviewSchema.test.ts lib/validation/facilitySchema.test.ts src/utils/browserDetection.test.ts lib/security/fileValidation.test.ts tests/security/upload.spec.ts tests/security/edgeContracts.spec.ts tests/security/releaseConfig.spec.ts tests/security/billingRecoveryContracts.spec.ts tests/security/billingHotfixContracts.spec.ts tests/security/billingOpsContracts.spec.ts
 npx playwright test tests/e2e/auth.edgeFunctions.spec.ts tests/e2e/auth.dataIsolation.spec.ts tests/e2e/auth.roleAccess.spec.ts tests/e2e/report.smoke.spec.ts tests/e2e/security.xss.spec.ts --reporter=line --workers=1
 ```
 

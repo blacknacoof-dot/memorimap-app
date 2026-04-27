@@ -7,8 +7,8 @@ import { getAuthClient, isSupabaseConfigured } from '../lib/supabaseClient';
  * We anchor the profile row to profiles.id = auth user id so auth-created
  * placeholder rows are updated instead of creating duplicates.
  *
- * 한 세션에서 1회만 시도. 성공/실패 무관하게 재시도하지 않음.
- * (409 Conflict 등 에러 시 무한 루프 방지)
+ * Per session we only try once. Success and failure both stop retries
+ * to avoid noisy loops around profile upsert conflicts.
  */
 export const useProfileSync = () => {
   const { user, isSignedIn } = useUser();
@@ -23,7 +23,7 @@ export const useProfileSync = () => {
 
     if (!user || !isSupabaseConfigured() || hasSyncedRef.current) return;
 
-    // 즉시 true로 설정하여 의존성 변경으로 인한 재실행 차단
+    // Mark immediately so auth-state changes do not trigger repeated writes.
     hasSyncedRef.current = true;
 
     const syncProfile = async () => {
@@ -43,7 +43,7 @@ export const useProfileSync = () => {
             { onConflict: 'id' },
           );
       } catch {
-        // 프로필 동기화 실패는 앱 사용에 치명적이지 않음 — 무시
+        // Profile sync failure should not block the signed-in experience.
       }
     };
 

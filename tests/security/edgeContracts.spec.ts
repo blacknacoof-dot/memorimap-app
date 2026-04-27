@@ -55,6 +55,29 @@ describe('edge function security contracts', () => {
     expect(source).not.toContain("details: errorText");
   });
 
+  it('register-payment-intent applies rate limiting before writing payment intents', () => {
+    const source = readRepoFile('supabase/functions/register-payment-intent/index.ts');
+
+    expect(source).toMatch(/import\s+\{\s*rateLimit\s*\}\s+from\s+['"]\.\.\/_shared\/rateLimit\.ts['"]/);
+    expect(source).toMatch(/endpoint:\s*['"]register-payment-intent['"]/);
+    expect(source).toContain("maxRequests: 20");
+    expect(source).toContain("windowSeconds: 60");
+    expect(source).toContain("status: 429");
+    expect(source).toMatch(/['"]Retry-After['"]/);
+    expect(source).toMatch(/\.from\(['"]payment_intents['"]\)/);
+  });
+
+  it('verify-payment handles free downgrade before requiring PortOne configuration', () => {
+    const source = readRepoFile('supabase/functions/verify-payment/index.ts');
+    const secretCheckIndex = source.indexOf("const portoneApiSecret = Deno.env.get('PORTONE_API_SECRET');");
+    const freeDowngradeIndex = source.indexOf("if (paymentContext === 'facility_free_downgrade')");
+    const personalDowngradeIndex = source.indexOf("if (paymentContext === 'personal_free_downgrade')");
+
+    expect(freeDowngradeIndex).toBeGreaterThan(-1);
+    expect(personalDowngradeIndex).toBeGreaterThan(-1);
+    expect(secretCheckIndex).toBeGreaterThan(personalDowngradeIndex);
+  });
+
   it('shared rate limit helper and backing migration exist', () => {
     const helper = readRepoFile('supabase/functions/_shared/rateLimit.ts');
     const migration = readRepoFile('supabase/migrations/20260330190000_edge_function_rate_limits.sql');

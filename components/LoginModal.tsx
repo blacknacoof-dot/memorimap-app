@@ -33,7 +33,7 @@ export const LoginModal: React.FC<Props> = ({ onClose, onLogin, onSignUpClick })
         if (signInError.message.includes('Invalid login credentials')) {
           setError('이메일 또는 비밀번호가 올바르지 않습니다.');
         } else if (signInError.message.includes('Email not confirmed')) {
-          setError('이메일 인증이 필요합니다. 가입 시 발송된 이메일을 확인해주세요.');
+          setError('이메일 인증이 필요합니다. 받은편지함에서 인증 메일을 확인해 주세요.');
         } else {
           setError(signInError.message);
         }
@@ -87,18 +87,22 @@ export const LoginModal: React.FC<Props> = ({ onClose, onLogin, onSignUpClick })
 
       setResetSent(true);
     } catch {
-      setError('비밀번호 재설정 이메일 발송 중 오류가 발생했습니다.');
+      setError('비밀번호 재설정 메일 발송 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" data-testid="login-modal">
+    <div
+      className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      data-testid="login-modal"
+    >
       <div className="bg-white w-full max-w-md max-h-[90vh] rounded-2xl shadow-2xl overflow-y-auto animate-in fade-in zoom-in-95 duration-200 relative">
         <button
           onClick={onClose}
           className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 z-10 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+          aria-label="닫기"
         >
           <X size={24} />
         </button>
@@ -111,11 +115,14 @@ export const LoginModal: React.FC<Props> = ({ onClose, onLogin, onSignUpClick })
           {resetSent ? (
             <div className="text-center py-4">
               <div className="bg-green-50 text-green-700 p-4 rounded-lg mb-4">
-                <p className="font-medium">이메일이 발송되었습니다.</p>
-                <p className="text-sm mt-1">받은편지함을 확인하고 링크를 클릭하여 비밀번호를 재설정해주세요.</p>
+                <p className="font-medium">이메일을 보냈습니다.</p>
+                <p className="text-sm mt-1">받은편지함에서 비밀번호 재설정 링크를 확인해 주세요.</p>
               </div>
               <button
-                onClick={() => { setResetMode(false); setResetSent(false); }}
+                onClick={() => {
+                  setResetMode(false);
+                  setResetSent(false);
+                }}
                 className="text-primary font-medium hover:underline"
               >
                 로그인으로 돌아가기
@@ -124,7 +131,7 @@ export const LoginModal: React.FC<Props> = ({ onClose, onLogin, onSignUpClick })
           ) : resetMode ? (
             <form onSubmit={handleResetPassword} className="space-y-4">
               <p className="text-sm text-gray-600 mb-4">
-                가입 시 사용한 이메일 주소를 입력하시면 비밀번호 재설정 링크를 보내드립니다.
+                가입에 사용한 이메일 주소를 입력하면 비밀번호 재설정 링크를 보내드립니다.
               </p>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">이메일</label>
@@ -149,12 +156,15 @@ export const LoginModal: React.FC<Props> = ({ onClose, onLogin, onSignUpClick })
                 className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading && <Loader2 size={18} className="animate-spin" />}
-                재설정 이메일 발송
+                재설정 메일 보내기
               </button>
 
               <button
                 type="button"
-                onClick={() => { setResetMode(false); setError(null); }}
+                onClick={() => {
+                  setResetMode(false);
+                  setError(null);
+                }}
                 className="w-full text-gray-500 text-sm hover:underline"
               >
                 로그인으로 돌아가기
@@ -162,7 +172,6 @@ export const LoginModal: React.FC<Props> = ({ onClose, onLogin, onSignUpClick })
             </form>
           ) : (
             <>
-              {/* Social Login Buttons */}
               <div className="space-y-3 mb-5">
                 <button
                   type="button"
@@ -173,7 +182,12 @@ export const LoginModal: React.FC<Props> = ({ onClose, onLogin, onSignUpClick })
                   {socialLoading === 'kakao' ? (
                     <Loader2 size={18} className="animate-spin" />
                   ) : (
-                    <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#191919" d="M9 1C4.58 1 1 3.79 1 7.21c0 2.17 1.45 4.08 3.64 5.18-.16.57-.58 2.07-.66 2.39-.11.39.14.39.3.28.12-.08 1.93-1.31 2.71-1.84.64.09 1.31.14 2.01.14 4.42 0 8-2.79 8-6.21S13.42 1 9 1"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 18 18">
+                      <path
+                        fill="#191919"
+                        d="M9 1C4.58 1 1 3.79 1 7.21c0 2.17 1.45 4.08 3.64 5.18-.16.57-.58 2.07-.66 2.39-.11.39.14.39.3.28.12-.08 1.93-1.31 2.71-1.84.64.09 1.31.14 2.01.14 4.42 0 8-2.79 8-6.21S13.42 1 9 1"
+                      />
+                    </svg>
                   )}
                   카카오로 시작하기
                 </button>
@@ -187,20 +201,23 @@ export const LoginModal: React.FC<Props> = ({ onClose, onLogin, onSignUpClick })
                   {socialLoading === 'google' ? (
                     <Loader2 size={18} className="animate-spin" />
                   ) : (
-                    <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.26c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.997 8.997 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 18 18">
+                      <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" />
+                      <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.26c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" />
+                      <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.997 8.997 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" />
+                      <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" />
+                    </svg>
                   )}
                   Google로 시작하기
                 </button>
               </div>
 
-              {/* Divider */}
               <div className="flex items-center gap-3 mb-5">
                 <div className="flex-1 h-px bg-gray-200" />
                 <span className="text-xs text-gray-400">또는 이메일로 로그인</span>
                 <div className="flex-1 h-px bg-gray-200" />
               </div>
 
-              {/* Email Login Form */}
               <form onSubmit={handleLogin} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">이메일</label>
@@ -225,7 +242,7 @@ export const LoginModal: React.FC<Props> = ({ onClose, onLogin, onSignUpClick })
                       onChange={(e) => setPassword(e.target.value)}
                       data-testid="login-password-input"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none pr-12"
-                      placeholder="비밀번호를 입력하세요"
+                      placeholder="비밀번호를 입력해 주세요"
                       required
                       autoComplete="current-password"
                     />
@@ -233,6 +250,7 @@ export const LoginModal: React.FC<Props> = ({ onClose, onLogin, onSignUpClick })
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                      aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 보기'}
                     >
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
@@ -255,7 +273,10 @@ export const LoginModal: React.FC<Props> = ({ onClose, onLogin, onSignUpClick })
 
                 <button
                   type="button"
-                  onClick={() => { setResetMode(true); setError(null); }}
+                  onClick={() => {
+                    setResetMode(true);
+                    setError(null);
+                  }}
                   className="w-full text-gray-500 text-sm hover:underline min-h-[44px]"
                 >
                   비밀번호를 잊으셨나요?
