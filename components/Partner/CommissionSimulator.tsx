@@ -25,7 +25,7 @@ interface PlanCost {
 }
 
 const PLAN_FEES: Record<string, { name: string; fee: number; settingsKey: string }> = {
-    sj_starter: { name: 'STARTER', fee: 3000000, settingsKey: 'sj_starter_commission' },
+    sj_starter: { name: 'STARTER', fee: 1500000, settingsKey: 'sj_starter_commission' },
     sj_professional: { name: 'PROFESSIONAL', fee: 8000000, settingsKey: 'sj_professional_commission' },
     sj_enterprise: { name: 'ENTERPRISE', fee: 15000000, settingsKey: 'sj_enterprise_commission' },
 };

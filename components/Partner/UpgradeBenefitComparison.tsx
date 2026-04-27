@@ -19,7 +19,7 @@ interface PlanInfo {
 
 const SANGJO_PLANS: PlanInfo[] = [
     {
-        id: 'sj_starter', name: 'STARTER', price: 3000000, commission: 10,
+        id: 'sj_starter', name: 'STARTER', price: 1500000, commission: 10,
         features: ['AI 24시간 자동 상담', 'AI 계약 클로징 유도', '독점 혜택권 발행', '기본 리포트', '일반 노출'],
     },
     {
