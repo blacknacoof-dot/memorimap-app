@@ -47,7 +47,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         <button
           onClick={() => setIsMenuOpen(true)}
           data-testid="topbar-menu-button"
-          className="bg-white p-2.5 md:p-3 rounded-xl shadow-md text-gray-700 active:scale-95 transition-transform shrink-0"
+          className="bg-white p-2.5 md:p-3 rounded-xl shadow-md text-gray-700 active:scale-95 transition-transform shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
         >
           <Menu size={18} className="md:hidden" />
           <Menu size={20} className="hidden md:block" />
@@ -67,7 +67,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         {onSOS && viewState !== ViewState.MY_PAGE && (
           <button
             onClick={onSOS}
-            className="bg-red-600 text-white p-2.5 rounded-xl shadow-md active:scale-95 transition-transform shrink-0 min-w-[40px] min-h-[40px] md:min-w-[44px] md:min-h-[44px] flex items-center justify-center"
+            className="bg-red-600 text-white p-2.5 rounded-xl shadow-md active:scale-95 transition-transform shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
             title="긴급 장례 안내"
           >
             <span className="text-[10px] font-black leading-none">SOS</span>
@@ -81,7 +81,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         {viewState === ViewState.MY_PAGE && (
           <button
             onClick={() => setViewState(ViewState.SETTINGS)}
-            className="bg-white p-2.5 md:p-3 rounded-xl shadow-md text-gray-700 active:scale-95 transition-transform shrink-0"
+            className="bg-white p-2.5 md:p-3 rounded-xl shadow-md text-gray-700 active:scale-95 transition-transform shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
           >
             <Settings size={18} className="md:hidden" />
             <Settings size={20} className="hidden md:block" />
@@ -104,7 +104,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
       {/* Promo Banner — 모바일: 컴팩트, 데스크톱: 기존 유지 */}
       {showPromo && viewState === ViewState.MAP && (
-        <div className="absolute left-3 right-3 md:left-4 md:right-4 z-20 animate-in fade-in slide-in-from-top-2 transition-all duration-300 top-[5.5rem] md:top-[7.5rem]">
+        <div className="absolute left-3 right-3 md:left-4 md:right-4 z-20 animate-in fade-in slide-in-from-top-2 transition-all duration-300 top-[5.75rem] md:top-[9rem]">
           <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-amber-400 p-2.5 md:p-3 rounded-xl shadow-xl border border-amber-500/30 flex justify-between items-center">
             <div className="flex items-center gap-2 md:gap-3">
               <div className="bg-amber-500/20 p-1 md:p-1.5 rounded-lg shrink-0">
@@ -118,7 +118,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </div>
             <button
               onClick={() => setShowPromo(false)}
-              className="text-gray-500 hover:text-white transition-colors p-1"
+              className="text-gray-500 hover:text-white transition-colors p-1 min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
               <X size={14} className="md:hidden" />
               <X size={16} className="hidden md:block" />
