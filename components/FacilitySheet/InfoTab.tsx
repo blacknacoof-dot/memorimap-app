@@ -16,7 +16,7 @@ interface Props {
 }
 
 export const InfoTab: React.FC<Props> = ({
-  facility, isFavorite, onToggleFavorite, onViewMap, onViewPhotos,
+  facility, isFavorite, onToggleFavorite, onViewPhotos,
   onViewSangjoList, onClose, onLightboxOpen,
 }) => (
   <div className="space-y-6">
@@ -30,14 +30,6 @@ export const InfoTab: React.FC<Props> = ({
         <div className="flex items-center gap-2 text-gray-500 text-sm">
           <MapPin size={16} />
           <span>{facility.address}</span>
-          {onViewMap && (
-            <button
-              onClick={onViewMap}
-              className="text-primary text-xs font-bold border border-primary px-2 py-0.5 rounded-full ml-1 whitespace-nowrap min-w-fit"
-            >
-              지도 보기
-            </button>
-          )}
         </div>
       </div>
       <button

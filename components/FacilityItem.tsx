@@ -66,31 +66,31 @@ export const FacilityItem = React.memo(({ facility, onClick, isCompared, onToggl
     }
 
     return (
-        <div style={style} className="px-1 py-2"> {/* Wrapper for style prop and padding */}
+        <div style={style} className="px-1 py-1.5"> {/* Wrapper for style prop and padding */}
             <div
                 onClick={() => onClick(facility)}
                 data-testid={`facility-card-${facility.id}`}
-                className="bg-white p-4 rounded-xl shadow-sm border flex gap-4 cursor-pointer hover:bg-gray-50 transition-colors group h-full"
+                className="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200 flex gap-3 cursor-pointer hover:bg-slate-50 transition-colors group h-full"
             >
                 {facility.imageUrl && !facility.imageUrl.includes('placeholder') && !facility.imageUrl.includes('via.placeholder') ? (
                     <OptimizedImage
                         src={facility.imageUrl}
                         alt={facility.name}
-                        width={80}
-                        height={80}
-                        className="rounded-lg shrink-0"
+                        width={88}
+                        height={88}
+                        className="rounded-xl shrink-0"
                         objectFit="cover"
                         loading="lazy"
                         fallbackSrc={getFallbackByType(facility.type)}
                     />
                 ) : (
-                    <div className="w-20 h-20 rounded-lg bg-gray-100 shrink-0 flex items-center justify-center text-gray-400 text-[10px] text-center px-1">
+                    <div className="w-[88px] h-[88px] rounded-xl bg-slate-100 shrink-0 flex items-center justify-center text-slate-400 text-[10px] text-center px-1">
                         {facility.name.slice(0, 6)}
                     </div>
                 )}
                 <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                        <div className="text-xs text-primary font-bold shrink-0">
+                    <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+                        <div className="text-[12px] text-primary font-bold shrink-0">
                             {getCategoryLabel(facility.type || '') || facility.category}
                         </div>
                         {normalizedPlanId === 'PREMIUM' && (
@@ -116,23 +116,23 @@ export const FacilityItem = React.memo(({ facility, onClick, isCompared, onToggl
                             </div>
                         )}
                     </div>
-                    <h3 className="font-bold text-[15px] text-gray-800 leading-tight break-all line-clamp-2">{facility.name}</h3>
-                    <div className="text-xs text-gray-500 mt-1 truncate">{facility.address}</div>
+                    <h3 className="font-extrabold text-[16px] text-slate-900 leading-snug break-words line-clamp-2">{facility.name}</h3>
+                    <div className="text-[13px] text-slate-500 mt-1 truncate">{facility.address}</div>
                     <div className="flex items-center gap-1 mt-2">
-                        <span className="text-yellow-500 text-xs">★ {Math.round(facility.rating || 0)}</span>
-                        <span className="text-gray-400 text-xs">({facility.reviewCount || 0})</span>
+                        <span className="text-amber-500 text-xs">★ {Math.round(facility.rating || 0)}</span>
+                        <span className="text-slate-400 text-xs">({facility.reviewCount || 0})</span>
                     </div>
                 </div>
 
-                <div className="flex flex-col justify-end shrink-0 pl-2">
+                <div className="flex flex-col justify-center shrink-0 pl-1">
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
                             onToggleCompare(facility);
                         }}
-                        className={`p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full transition-colors border shadow-sm ${isCompared
+                        className={`p-2 min-w-[42px] min-h-[42px] flex items-center justify-center rounded-full transition-colors border shadow-sm ${isCompared
                             ? 'bg-primary text-white border-primary'
-                            : 'bg-white text-gray-400 border-gray-200 hover:border-primary hover:text-primary'
+                            : 'bg-white text-slate-400 border-slate-200 hover:border-primary hover:text-primary'
                             }`}
                         title={isCompared ? "비교함에서 제거" : "비교함에 추가"}
                     >
