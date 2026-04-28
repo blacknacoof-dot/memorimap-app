@@ -15,9 +15,97 @@ import UpgradePrompt from '../UpgradePrompt';
 interface Props {
     onClose: () => void;
     company?: FuneralCompany | null;
+    companies?: FuneralCompany[];
     onCompanySelect?: (company: FuneralCompany) => void;
+    onLoginRequired?: () => void;
     currentUser?: { id: string; name: string } | null;
 }
+
+const companyText = (company: FuneralCompany) => [
+    company.name,
+    company.description,
+    company.priceRange,
+    ...(company.features || []),
+    ...(company.benefits || []),
+    ...(company.specialties || []),
+    ...(company.supportPrograms || []),
+].join(' ').toLowerCase();
+
+const compareByQuality = (a: FuneralCompany, b: FuneralCompany) =>
+    b.rating - a.rating || b.reviewCount - a.reviewCount || a.name.localeCompare(b.name);
+
+const extractLowestPrice = (company: FuneralCompany) => {
+    const priceTokens = [
+        company.priceRange,
+        ...(company.products || []).map(product => String(product.price)),
+    ].join(' ').match(/\d[\d,]*/g);
+
+    if (!priceTokens?.length) return Number.MAX_SAFE_INTEGER;
+
+    return Math.min(...priceTokens.map(value => Number(value.replace(/,/g, ''))).filter(Number.isFinite));
+};
+
+const ranked = (
+    companies: FuneralCompany[],
+    score: (company: FuneralCompany) => number,
+    fallback: FuneralCompany[]
+) => {
+    const candidates = companies
+        .map(company => ({ company, score: score(company) }))
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score || compareByQuality(a.company, b.company))
+        .map(item => item.company);
+
+    return (candidates.length ? candidates : [...fallback].sort(compareByQuality)).slice(0, 3);
+};
+
+const recommendCompanies = (companies: FuneralCompany[], preferenceId?: string) => {
+    const pool = companies.length ? companies : FUNERAL_COMPANIES;
+
+    if (preferenceId === 'price') {
+        return ranked(pool, (company) => {
+            const price = extractLowestPrice(company);
+            const priceScore = price === Number.MAX_SAFE_INTEGER ? 0 : Math.max(1, 10000000 - price);
+            return priceScore + (company.id.includes('post') ? 100 : 0);
+        }, pool);
+    }
+
+    if (preferenceId === 'quality') {
+        return ranked(pool, (company) => {
+            const text = companyText(company);
+            const keywordScore = ['vip', '프리미엄', '고품격', '리무진']
+                .reduce((sum, keyword) => sum + (text.includes(keyword) ? 35 : 0), 0);
+            return company.rating * 100 + keywordScore;
+        }, pool);
+    }
+
+    if (preferenceId === 'safety') {
+        return ranked(pool, (company) => {
+            const text = companyText(company);
+            const keywordScore = ['보증', '대기업', '공제회', '신뢰', '투명']
+                .reduce((sum, keyword) => sum + (text.includes(keyword) ? 35 : 0), 0);
+            return company.reviewCount + keywordScore;
+        }, pool);
+    }
+
+    if (preferenceId === 'religion') {
+        return ranked(pool, (company) => {
+            const text = companyText(company);
+            return ['기독교', '천주교', '종교', '크리스찬', '실로암', '불교'].reduce((sum, keyword) => sum + (text.includes(keyword) ? 50 : 0), 0);
+        }, pool);
+    }
+
+    if (preferenceId === 'urgent') {
+        return ranked(pool, (company) => {
+            const text = companyText(company);
+            const keywordScore = ['후불', '즉시', '긴급', '24', '출동', '당일']
+                .reduce((sum, keyword) => sum + (text.includes(keyword) ? 50 : 0), 0);
+            return keywordScore + (company.id.includes('post') ? 100 : 0) + company.rating;
+        }, pool);
+    }
+
+    return [...pool].sort(compareByQuality).slice(0, 3);
+};
 
 // 고객 니즈 파악을 위한 키워드 버튼 (Maum-i Mode)
 const PREFERENCE_CHIPS = [
@@ -31,7 +119,7 @@ const PREFERENCE_CHIPS = [
 import { SangjoBrandScenario } from './SangjoBrandScenario';
 import { PetChatInterface } from './PetChatInterface';
 
-export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onCompanySelect, currentUser }) => {
+export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, companies = FUNERAL_COMPANIES, onCompanySelect, onLoginRequired, currentUser }) => {
     const { session } = useSession();
     const [activeCompany, setActiveCompany] = useState<FuneralCompany | null | undefined>(company);
 
@@ -51,6 +139,12 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
     const [quotaExceeded, setQuotaExceeded] = useState<QuotaCheckResult | null>(null);
 
     const handleCompanyConnect = (selectedCompany: FuneralCompany) => {
+        if (!currentUser) {
+            toast.info('상담 연결은 로그인 후 이용할 수 있습니다.');
+            onLoginRequired?.();
+            return;
+        }
+
         analytics.consultationSubmit(selectedCompany.id, selectedCompany.id.startsWith('pet_') ? 'pet' : 'sangjo');
         setActiveCompany(selectedCompany);
         if (onCompanySelect) {
@@ -96,7 +190,7 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
     }
 
     // Maum-i Mode (rule-based chip → recommendation)
-    const handleChipSelect = async (text: string) => {
+    const handleChipSelect = async (text: string, preferenceId?: string) => {
         // 첫 chip 클릭 시 쿼터 체크 (중복 방지)
         if (!quotaCheckedRef.current && currentUser) {
             try {
@@ -138,28 +232,20 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
 
         await new Promise(r => setTimeout(r, 800));
 
-        let recommended = FUNERAL_COMPANIES;
+        const recommended = recommendCompanies(companies, preferenceId);
         let filterMessage = "";
 
         if (text.includes('가성비') || text.includes('저렴') || text.includes('실속')) {
-            recommended = FUNERAL_COMPANIES.slice(0).sort(() => Math.random() - 0.5);
             filterMessage = "합리적인 가격과 실속을 중요하게 생각하시는군요!\n거품을 뺀 **가성비 최우수 업체**를 추천해 드립니다.";
         } else if (text.includes('서비스') || text.includes('품질') || text.includes('고급')) {
-            recommended = FUNERAL_COMPANIES.filter(c => c.rating >= 4.8);
             filterMessage = "마지막 가시는 길, 부족함이 없어야 하죠.\n고품격 의전과 리무진 서비스로 평판이 좋은 **프리미엄 업체**입니다.";
         } else if (text.includes('안전') || text.includes('튼튼') || text.includes('신뢰')) {
-            recommended = FUNERAL_COMPANIES.filter(c => c.reviewCount > 800);
             filterMessage = "무엇보다 믿을 수 있는 곳이 중요하죠.\n재무 건전성이 우수하고 **고객 신뢰도가 높은 대형 업체** 위주로 골랐습니다.";
         } else if (text.includes('기독교') || text.includes('종교')) {
-            recommended = FUNERAL_COMPANIES.filter(c => c.name.includes('크리스찬') || c.features.includes('기독교'));
-            if (recommended.length === 0) recommended = FUNERAL_COMPANIES.slice(0, 3);
             filterMessage = "종교 예식에 맞는 전문 지도사가 필요하시군요.\n**입관 예배와 전용 추모 절차**를 지원하는 특화 상품입니다.";
         } else if (text.includes('급해요') || text.includes('후불') || text.includes('당장')) {
-            recommended = FUNERAL_COMPANIES.filter(c => c.features.includes("후불제"));
-            if (recommended.length === 0) recommended = FUNERAL_COMPANIES.slice(0, 3);
             filterMessage = "급하신 상황이시군요.\n**후불제를 지원하고 빠른 대응이 가능한 업체**를 추천드립니다.\n카드를 확인하시고 상담 연결해 보세요.";
         } else {
-            recommended = FUNERAL_COMPANIES.slice(0, 3);
             filterMessage = "고객님의 요청 사항을 종합적으로 분석하여,\n현재 가장 만족도가 높은 **Top 3 업체**를 비교해 드립니다.";
         }
 
@@ -228,7 +314,7 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, onC
                             {PREFERENCE_CHIPS.map((chip) => (
                                 <button
                                     key={chip.id}
-                                    onClick={() => handleChipSelect(chip.value)}
+                                    onClick={() => handleChipSelect(chip.value, chip.id)}
                                     disabled={isLoading}
                                     className={`flex-shrink-0 border text-xs font-semibold px-3.5 py-2.5 min-h-[44px] rounded-full shadow-sm transition-all whitespace-nowrap active:scale-95
                                         ${chip.isEmergency

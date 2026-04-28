@@ -12,7 +12,7 @@ const loadNaverMapSdk = (): Promise<void> => {
     return Promise.reject(new Error('Naver Maps SDK can only load in the browser.'));
   }
 
-  if (window.naver?.maps?.Map) {
+  if (hasCompleteNaverMaps()) {
     return Promise.resolve();
   }
 
@@ -27,7 +27,13 @@ const loadNaverMapSdk = (): Promise<void> => {
   naverMapScriptPromise = new Promise<void>((resolve, reject) => {
     const existingScript = document.querySelector<HTMLScriptElement>('script[data-naver-map-sdk="true"]');
     if (existingScript) {
-      existingScript.addEventListener('load', () => resolve(), { once: true });
+      existingScript.addEventListener('load', () => {
+        if (hasCompleteNaverMaps()) {
+          resolve();
+          return;
+        }
+        reject(new Error('Naver Maps SDK loaded without required map APIs.'));
+      }, { once: true });
       existingScript.addEventListener('error', () => reject(new Error('Failed to load Naver Maps SDK.')), { once: true });
       return;
     }
@@ -37,7 +43,13 @@ const loadNaverMapSdk = (): Promise<void> => {
     script.defer = true;
     script.dataset.naverMapSdk = 'true';
     script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${NAVER_MAP_CLIENT_ID}`;
-    script.onload = () => resolve();
+    script.onload = () => {
+      if (hasCompleteNaverMaps()) {
+        resolve();
+        return;
+      }
+      reject(new Error('Naver Maps SDK loaded without required map APIs.'));
+    };
     script.onerror = () => reject(new Error('Failed to load Naver Maps SDK.'));
     document.head.appendChild(script);
   }).catch((error) => {
@@ -102,6 +114,21 @@ declare global {
   }
 }
 
+function hasCompleteNaverMaps(): boolean {
+  if (typeof window === 'undefined') return false;
+  const maps = window.naver?.maps as Partial<NaverMaps> | undefined;
+  return Boolean(
+    maps?.Map &&
+    maps?.LatLng &&
+    maps?.Marker &&
+    maps?.Size &&
+    maps?.Point &&
+    typeof maps?.Event?.addListener === 'function' &&
+    typeof maps?.Event?.removeListener === 'function' &&
+    typeof maps?.Event?.trigger === 'function'
+  );
+}
+
 interface MapProps {
   facilities: Facility[];
   onFacilitySelect: (facility: Facility) => void;
@@ -132,11 +159,12 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
   const markersRef = useRef<NaverMarker[]>([]);
   const clusterRef = useRef<MarkerClusteringInstance | null>(null);
   const [isMapReady, setIsMapReady] = useState(false);
+  const [mapLoadError, setMapLoadError] = useState<string | null>(null);
   const [isClusterReady, setIsClusterReady] = useState(false);
   const [_myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null);
   const locationMarkerRef = useRef<NaverMarker | null>(null);
   const moveToFallbackLocation = () => {
-    if (!mapInstance.current || !window.naver?.maps) return;
+    if (!mapInstance.current || !hasCompleteNaverMaps()) return;
     const fallbackLatLng = new window.naver.maps.LatLng(DEFAULT_MAP_CENTER[0], DEFAULT_MAP_CENTER[1]);
     mapInstance.current.setCenter(fallbackLatLng);
     mapInstance.current.setZoom(12);
@@ -180,8 +208,11 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
       try {
         await loadNaverMapSdk();
         if (!isMounted) return;
+        setMapLoadError(null);
         initMap();
       } catch {
+        if (!isMounted) return;
+        setMapLoadError('지도 SDK를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.');
         toast.error('지도 SDK를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
       }
     };
@@ -190,7 +221,8 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
       if (!mapElement.current || !isMounted) return;
 
       // ✅ [Crash Prevention] SDK Safety Check
-      if (!window.naver || !window.naver.maps || !window.naver.maps.Map) {
+      if (!hasCompleteNaverMaps()) {
+        setMapLoadError('지도 SDK를 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.');
         return;
       }
 
@@ -308,7 +340,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
     return icon;
   };
 
-  useEffect(() => {    if (!mapInstance.current || !window.naver || !isMapReady) return;
+  useEffect(() => {    if (!mapInstance.current || !hasCompleteNaverMaps() || !isMapReady) return;
 
     const useCluster = Boolean(isClusterReady && window.MarkerClustering);
     const nextFacilitySignature = `${useCluster ? 'cluster' : 'plain'}:${selectedFacilityId ?? ''}:${filteredFacilities
@@ -503,7 +535,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
   }, [filteredFacilities, isMapReady, isClusterReady, selectedFacilityId]);
 
   useEffect(() => {
-    if (!window.naver || !isMapReady) return;
+    if (!hasCompleteNaverMaps() || !isMapReady) return;
 
     for (const [facilityId, marker] of prevMarkerMapRef.current) {
       const markerState = prevMarkerStateRef.current.get(facilityId);
@@ -540,7 +572,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
   // 4. Handle Imperative Ref (FlyToLocation)
   useImperativeHandle(ref, () => ({
     flyToLocation: () => {
-      if (!mapInstance.current || !window.naver || !window.naver.maps) return;
+      if (!mapInstance.current || !hasCompleteNaverMaps()) return;
 
       if (!navigator.geolocation) {
         moveToFallbackLocation();
@@ -591,7 +623,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
       }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }); // ✅ [3-1] GPS timeout 추가
     },
     flyTo: (center: [number, number], zoom: number) => {
-      if (!mapInstance.current || !window.naver?.maps) return;
+      if (!mapInstance.current || !hasCompleteNaverMaps()) return;
       const latLng = new window.naver.maps.LatLng(center[0], center[1]);
       mapInstance.current.setCenter(latLng);
       mapInstance.current.setZoom(zoom);
@@ -612,8 +644,17 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
       {/* SDK 로드 + 지도 초기화 완료 전 로딩 오버레이 */}
       {!isMapReady && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 z-10">
-          <div className="w-10 h-10 border-4 border-gray-200 border-t-primary rounded-full animate-spin" />
-          <p className="mt-3 text-sm text-gray-500">지도를 불러오는 중...</p>
+          {mapLoadError ? (
+            <div className="max-w-[260px] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center shadow-sm">
+              <p className="text-sm font-bold text-slate-700">지도를 불러오지 못했습니다</p>
+              <p className="mt-1 text-xs leading-5 text-slate-500">{mapLoadError}</p>
+            </div>
+          ) : (
+            <>
+              <div className="w-10 h-10 border-4 border-gray-200 border-t-primary rounded-full animate-spin" />
+              <p className="mt-3 text-sm text-gray-500">지도를 불러오는 중...</p>
+            </>
+          )}
         </div>
       )}
     </div>

@@ -44,10 +44,6 @@ export const SangjoCompanyList: React.FC<Props> = ({
     } = useSangjoFavoriteStore();
 
     const handleOpenConsultation = () => {
-        if (!isLoggedIn) {
-            if (onOpenLogin) onOpenLogin();
-            return;
-        }
         setShowConsultation(true);
     };
 
@@ -200,10 +196,12 @@ export const SangjoCompanyList: React.FC<Props> = ({
             {showConsultation && (
                 <SangjoConsultationModal
                     onClose={() => setShowConsultation(false)}
+                    companies={companies}
                     onCompanySelect={(company) => {
                         setShowConsultation(false);
                         onCompanySelect(company, true);
                     }}
+                    onLoginRequired={onOpenLogin}
                     currentUser={user ? { id: user.id, name: user.fullName || user.firstName || '' } : null}
                 />
             )}
