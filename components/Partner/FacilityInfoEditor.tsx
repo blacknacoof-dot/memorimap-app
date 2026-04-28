@@ -44,7 +44,7 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
         setLoading(true);
         const client = await getAuthClient(session, { strict: true });
 
-        const [facilityResult, packagesResult, subscriptionResult] = await Promise.all([
+        const [facilityResult, packagesResult, subscriptionResult, companyResult] = await Promise.all([
             client.from('facilities')
                 .select('id, type, name, address, phone, description, operating_hours, images, features')
                 .eq('id', facilityId)
@@ -54,20 +54,28 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
                 .eq('facility_id', facilityId)
                 .order('sort_order'),
             getFacilitySubscription(facilityId, client),
+            client.from('funeral_companies')
+                .select('name, phone, description, features')
+                .eq('id', facilityId)
+                .maybeSingle(),
         ]);
 
         if (facilityResult.data) {
             const d = facilityResult.data;
+            const company = companyResult.data;
+            const effectiveIsSangjo = isSangjoProp ?? d.type === 'sangjo';
+            const facilityFeatures = Array.isArray(d.features) ? d.features : [];
+            const companyFeatures = Array.isArray(company?.features) ? company.features : [];
             setFacility({
                 id: d.id,
                 type: d.type || '',
-                name: d.name || '',
+                name: d.name || (effectiveIsSangjo ? company?.name || '' : ''),
                 address: d.address || '',
-                phone: d.phone || '',
-                description: d.description || '',
+                phone: d.phone || (effectiveIsSangjo ? company?.phone || '' : ''),
+                description: d.description || (effectiveIsSangjo ? company?.description || '' : ''),
                 operating_hours: d.operating_hours || '',
                 images: d.images || [],
-                features: Array.isArray(d.features) ? d.features : [],
+                features: facilityFeatures.length > 0 ? facilityFeatures : effectiveIsSangjo ? companyFeatures : [],
             });
         }
 

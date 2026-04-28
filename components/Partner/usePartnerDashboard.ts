@@ -14,6 +14,13 @@ import {
 
 export type ActivePartnerTab = 'overview' | 'ops' | 'consultations' | 'reservations' | 'revenue' | 'settings';
 
+function hasActivePlan(subscription: Subscription | null | undefined): subscription is Subscription {
+  return Boolean(
+    subscription?.plan_id
+    && (subscription.status === 'active' || subscription.status === 'cancelling'),
+  );
+}
+
 export function usePartnerDashboard(partnerId: string) {
   const [activeTab, setActiveTab] = useState<ActivePartnerTab>('consultations');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -102,8 +109,9 @@ export function usePartnerDashboard(partnerId: string) {
 
         setConsultations(merged);
         if (resResult.data) setReservations(resResult.data as Reservation[]);
-        if (subData) {
-          setSubscription(subData);
+        setSubscription(hasActivePlan(subData) ? subData : null);
+        setPayments([]);
+        if (subData?.id) {
           const { data: payData } = await client
             .from('subscription_payments')
             .select('*')
@@ -126,6 +134,11 @@ export function usePartnerDashboard(partnerId: string) {
 
       const consChannel = client.channel(`partner-cons-${facilityId}`)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'consultations', filter: `facility_id=eq.${facilityId}` }, (payload) => {
+          if (payload.eventType === 'DELETE') {
+            const deletedId = (payload.old as { id?: string }).id;
+            if (deletedId) setConsultations(prev => prev.filter(c => c.id !== deletedId));
+            return;
+          }
           if (payload.eventType === 'INSERT') {
             setConsultations(prev => [payload.new as Consultation, ...prev]);
             toast.info('새 상담 문의가 접수되었습니다.');
@@ -136,6 +149,11 @@ export function usePartnerDashboard(partnerId: string) {
 
       const resChannel = client.channel(`partner-res-${facilityId}`)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'reservations', filter: `facility_id=eq.${facilityId}` }, (payload) => {
+          if (payload.eventType === 'DELETE') {
+            const deletedId = (payload.old as { id?: string }).id;
+            if (deletedId) setReservations(prev => prev.filter(r => r.id !== deletedId));
+            return;
+          }
           if (payload.eventType === 'INSERT') {
             setReservations(prev => [payload.new as Reservation, ...prev]);
             toast.info('새 예약이 접수되었습니다.');
@@ -146,6 +164,11 @@ export function usePartnerDashboard(partnerId: string) {
 
       const contractChannel = client.channel(`partner-contracts-${facilityId}`)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'sangjo_contracts', filter: `sangjo_id=eq.${facilityId}` }, (payload) => {
+          if (payload.eventType === 'DELETE') {
+            const deletedId = (payload.old as { id?: string }).id;
+            if (deletedId) setConsultations(prev => prev.filter(c => c.id !== deletedId));
+            return;
+          }
           const persistedReadIds = getPersistedReadSangjoContractIds(session?.user?.id, facilityId);
           const mapped = mapSangjoContractToConsultation(payload.new as SangjoContract, persistedReadIds);
           if (payload.eventType === 'INSERT') {
