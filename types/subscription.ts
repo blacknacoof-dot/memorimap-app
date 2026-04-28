@@ -9,7 +9,7 @@ export type EndingNoteLevel = 'basic' | 'full' | 'full_pdf';
 export type UserQuotaType = 'ai_consult' | 'sangjo_compare' | 'favorite';
 
 /** 시설 쿼터 타입 */
-export type FacilityQuotaType = 'ai_chat' | 'sms';
+export type FacilityQuotaType = 'ai_chat';
 
 /** AI 상담 카테고리 */
 export type AiConsultCategory = 'funeral_home' | 'memorial_facility' | 'pet_funeral';
