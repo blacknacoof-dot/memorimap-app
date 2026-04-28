@@ -33,6 +33,13 @@ function getPlanDisplayName(subscription: Subscription | null): string {
     return PLAN_DISPLAY_NAMES[key] || key || '미구독';
 }
 
+function hasActivePlan(subscription: Subscription | null): subscription is Subscription {
+    return Boolean(
+        subscription?.plan_id
+        && (subscription.status === 'active' || subscription.status === 'cancelling'),
+    );
+}
+
 interface Props {
     consultations: Consultation[];
     reservations: Reservation[];
@@ -58,6 +65,10 @@ export const PartnerRevenueTab: React.FC<Props> = ({
         const d = new Date(r.visit_date);
         return d.getFullYear() === thisYear && d.getMonth() === thisMonth;
     });
+    const activeSubscription = hasActivePlan(subscription) ? subscription : null;
+    const currentPlan = activeSubscription
+        ? normalizeSubscriptionPlanId(activeSubscription.plan_id ?? activeSubscription.plan_name) ?? undefined
+        : undefined;
 
     return (
         <div className="space-y-6">
@@ -76,7 +87,7 @@ export const PartnerRevenueTab: React.FC<Props> = ({
                     <Suspense fallback={<div className="text-center py-8 text-slate-400 text-sm">로딩중...</div>}>
                         <SubscriptionPlans
                             type="sangjo"
-                            currentPlan={normalizeSubscriptionPlanId(subscription?.plan_id ?? subscription?.plan_name) ?? undefined}
+                            currentPlan={currentPlan}
                             facilityId={facilityId}
                             onSelectPlan={(planId) => {
                                 toast.success(`${planId} 플랜 신청이 접수되었습니다.`);
@@ -90,9 +101,9 @@ export const PartnerRevenueTab: React.FC<Props> = ({
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 <div className={`p-6 rounded-3xl text-white shadow-xl relative overflow-hidden ${
-                    subscription?.status === 'cancelling'
+                    activeSubscription?.status === 'cancelling'
                         ? 'bg-gradient-to-br from-amber-500 to-orange-600'
-                        : subscription
+                        : activeSubscription
                             ? 'bg-gradient-to-br from-emerald-500 to-teal-600'
                             : 'bg-gradient-to-br from-blue-600 to-indigo-700'
                 }`}>
@@ -105,28 +116,28 @@ export const PartnerRevenueTab: React.FC<Props> = ({
                             onClick={() => setShowPlanSelector(!showPlanSelector)}
                             className="text-[11px] font-bold bg-white/20 hover:bg-white/30 backdrop-blur-md px-3 py-1.5 rounded-lg transition-colors"
                         >
-                            {subscription ? '요금제 변경' : '요금제 선택'}
+                            {activeSubscription ? '요금제 변경' : '요금제 선택'}
                         </button>
                     </div>
                     <p className="text-[11px] font-bold text-white/80 uppercase tracking-widest mb-1">나의 요금제</p>
                     <h2 className="text-2xl font-black tracking-tight">
-                        {getPlanDisplayName(subscription)}
-                        {subscription && (
+                        {getPlanDisplayName(activeSubscription)}
+                        {activeSubscription && (
                             <span className={`ml-2 text-xs font-bold px-2 py-0.5 rounded-full align-middle ${
-                                subscription.status === 'cancelling' ? 'bg-white/30' : 'bg-white/20'
+                                activeSubscription.status === 'cancelling' ? 'bg-white/30' : 'bg-white/20'
                             }`}>
-                                {subscription.status === 'cancelling' ? '해지 예정' : '구독중'}
+                                {activeSubscription.status === 'cancelling' ? '해지 예정' : '구독중'}
                             </span>
                         )}
                     </h2>
-                    {subscription?.status === 'cancelling' && subscription?.next_billing_date && (
+                    {activeSubscription?.status === 'cancelling' && activeSubscription?.next_billing_date && (
                         <p className="text-[10px] text-white/80 mt-2">
-                            {new Date(subscription.next_billing_date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}까지 이용 가능
+                            {new Date(activeSubscription.next_billing_date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}까지 이용 가능
                         </p>
                     )}
-                    {subscription?.status !== 'cancelling' && subscription?.next_billing_date && (
+                    {activeSubscription?.status !== 'cancelling' && activeSubscription?.next_billing_date && (
                         <p className="text-[10px] text-white/70 mt-2">
-                            다음 결제: {new Date(subscription.next_billing_date).toLocaleDateString()}
+                            다음 결제: {new Date(activeSubscription.next_billing_date).toLocaleDateString()}
                         </p>
                     )}
                 </div>
@@ -166,7 +177,7 @@ export const PartnerRevenueTab: React.FC<Props> = ({
             <ActivityStats consultations={consultations} reservations={reservations} />
 
             {/* 수수료 절감 시뮬레이터 */}
-            <CommissionSimulator subscription={subscription} />
+            <CommissionSimulator subscription={activeSubscription} />
 
             {/* 결제 내역 */}
             <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
@@ -223,12 +234,12 @@ export const PartnerRevenueTab: React.FC<Props> = ({
 
             {/* 업그레이드 혜택 비교 */}
             <UpgradeBenefitComparison
-                subscription={subscription}
+                subscription={activeSubscription}
                 onUpgrade={() => setShowPlanSelector(true)}
             />
 
             {/* 구독 플랜 상세 */}
-            {subscription && (
+            {activeSubscription && (
                 <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
                     <h3 className="font-black text-slate-800 mb-4 flex items-center gap-2">
                         <Crown size={18} className="text-purple-600" />
@@ -237,24 +248,24 @@ export const PartnerRevenueTab: React.FC<Props> = ({
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="bg-slate-50 rounded-2xl p-4">
                             <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">플랜</p>
-                            <p className="font-black text-slate-800">{subscription.plan_name || '-'}</p>
+                            <p className="font-black text-slate-800">{activeSubscription.plan_name || '-'}</p>
                         </div>
                         <div className="bg-slate-50 rounded-2xl p-4">
                             <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">월 요금</p>
                             <p className="font-black text-slate-800">
-                                {subscription.plan_price ? `${Number(subscription.plan_price).toLocaleString()}원` : '-'}
+                                {activeSubscription.plan_price ? `${Number(activeSubscription.plan_price).toLocaleString()}원` : '-'}
                             </p>
                         </div>
                         <div className="bg-slate-50 rounded-2xl p-4">
                             <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">시작일</p>
                             <p className="font-black text-slate-800">
-                                {(subscription.started_at || subscription.start_date) ? new Date(subscription.started_at || subscription.start_date || '').toLocaleDateString() : '-'}
+                                {(activeSubscription.started_at || activeSubscription.start_date) ? new Date(activeSubscription.started_at || activeSubscription.start_date || '').toLocaleDateString() : '-'}
                             </p>
                         </div>
                         <div className="bg-slate-50 rounded-2xl p-4">
                             <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">다음 결제일</p>
                             <p className="font-black text-slate-800">
-                                {subscription.next_billing_date ? new Date(subscription.next_billing_date).toLocaleDateString() : '-'}
+                                {activeSubscription.next_billing_date ? new Date(activeSubscription.next_billing_date).toLocaleDateString() : '-'}
                             </p>
                         </div>
                     </div>

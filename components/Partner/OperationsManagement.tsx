@@ -30,7 +30,7 @@ const EMPTY_FORM: NewOperationForm = {
 
 export const OperationsManagement: React.FC<OperationsManagementProps> = ({ partnerId }) => {
     const [operations, setOperations] = useState<PartnerOperation[]>([]);
-    const [_loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
     const [showNewModal, setShowNewModal] = useState(false);
     const [form, setForm] = useState<NewOperationForm>(EMPTY_FORM);
     const [isSaving, setIsSaving] = useState(false);
@@ -39,14 +39,21 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
     const STAGES: PartnerOperation['operation_stage'][] = ['pending', 'dispatched', 'in_progress', 'completed'];
 
     const loadOperations = async () => {
-        const client = await getAuthClient(session, { strict: true });
-        const { data } = await client
-            .from('partner_operations')
-            .select('*')
-            .eq('partner_id', partnerId)
-            .order('created_at', { ascending: false });
-        if (data) setOperations(data as PartnerOperation[]);
-        setLoading(false);
+        setLoading(true);
+        try {
+            const client = await getAuthClient(session, { strict: true });
+            const { data, error } = await client
+                .from('partner_operations')
+                .select('*')
+                .eq('partner_id', partnerId)
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            setOperations((data || []) as PartnerOperation[]);
+        } catch {
+            toast.error('운영 현황을 불러오지 못했습니다.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -65,7 +72,7 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
                     schema: 'public',
                     table: 'partner_operations',
                     filter: `partner_id=eq.${partnerId}`
-                }, () => { loadOperations(); })
+                }, () => { void loadOperations(); })
                 .subscribe();
 
             cleanup = () => {
@@ -186,6 +193,11 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
                 </button>
             </div>
 
+            {loading && operations.length === 0 ? (
+                <div className="min-h-[240px] flex items-center justify-center text-sm text-slate-400">
+                    운영 현황을 불러오는 중입니다.
+                </div>
+            ) : (
             <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide min-h-[600px]">
                 {STAGES.map((stage) => {
                     const stageOps = operations.filter(op => op.operation_stage === stage);
@@ -216,6 +228,7 @@ export const OperationsManagement: React.FC<OperationsManagementProps> = ({ part
                     );
                 })}
             </div>
+            )}
 
             {/* 신규 작업 접수 모달 */}
             {showNewModal && (
