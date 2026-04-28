@@ -31,6 +31,30 @@ const isAbortRequestError = (error: unknown): boolean => {
   return false;
 };
 
+const NON_PRODUCTION_FACILITY_PATTERNS = [
+  /superadmin/i,
+  /subs-\d+/i,
+  /legacy-facility/i,
+  /ai-consult-flow/i,
+  /^ph장례식장$/i,
+  /\btest\b/i,
+  /\bqa\b/i,
+  /\bfixture\b/i,
+  /\bdemo\b/i,
+  /테스트/,
+  /샘플/,
+  /더미/,
+] as const;
+
+function isPublicFacilityCandidate(row: { name?: string; address?: string }) {
+  const haystack = [row.name, row.address]
+    .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+    .join(' ');
+
+  if (!haystack) return true;
+  return !NON_PRODUCTION_FACILITY_PATTERNS.some((pattern) => pattern.test(haystack));
+}
+
 export function useMapViewport({ setFacilities, setCurrentBounds, session, onViewportFetchStart }: UseMapViewportParams) {
   const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
   const [targetMapCenter, setTargetMapCenter] = useState<[number, number] | undefined>(undefined);
@@ -165,7 +189,12 @@ export function useMapViewport({ setFacilities, setCurrentBounds, session, onVie
             price_min?: number;
             [key: string]: unknown;
           }
-          const mappedFacilities: Facility[] = fetchedData.map((f: ViewFacilityRow) => {
+          const mappedFacilities: Facility[] = fetchedData
+            .filter((f: ViewFacilityRow) => isPublicFacilityCandidate({
+              name: f.name,
+              address: f.address,
+            }))
+            .map((f: ViewFacilityRow) => {
             const rawType = f.type || f.category || 'charnel';
             const normalizedType = normalizeType(rawType, f.name || '');
             const mappedCategory = getCategoryDb(normalizedType);

@@ -25,6 +25,9 @@ const BALANCE_CATEGORIES = ['funeral', 'charnel', 'park', 'natural', 'pet', 'sea
 const BALANCE_PER_CATEGORY = 3;
 
 const NON_PRODUCTION_FACILITY_PATTERNS = [
+  /superadmin/i,
+  /subs-\d+/i,
+  /legacy-facility/i,
   /ai-consult-flow/i,
   /ai-consult/i,
   /facmgrassign/i,
@@ -35,6 +38,9 @@ const NON_PRODUCTION_FACILITY_PATTERNS = [
   /\bqa\b/i,
   /\bfixture\b/i,
   /\bdemo\b/i,
+  /테스트/,
+  /샘플/,
+  /더미/,
 ] as const;
 
 function isPublicFacilityCandidate(row: { name?: string; address?: string }) {

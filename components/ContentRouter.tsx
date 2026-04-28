@@ -155,21 +155,21 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
   );
 
   const promoBanner = showPromo ? (
-    <div className="mb-3 md:hidden">
-      <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-amber-400 p-2.5 md:p-3 rounded-xl shadow-xl border border-amber-500/30 flex justify-between items-center">
+    <div className="standalone-hide mb-3 md:hidden">
+      <div className="bg-white text-slate-700 px-3 py-2.5 md:p-3 rounded-2xl shadow-sm border border-slate-200 flex justify-between items-center">
         <div className="flex items-center gap-2 md:gap-3">
-          <div className="bg-amber-500/20 p-1 md:p-1.5 rounded-lg shrink-0">
+          <div className="bg-amber-50 text-amber-600 p-1.5 rounded-lg shrink-0">
             <Ticket size={16} className="md:hidden" />
             <Ticket size={18} className="hidden md:block" />
           </div>
-          <div>
-            <p className="text-[9px] md:text-[10px] text-gray-400 mb-0.5 leading-none">오직 추모맵에서만</p>
-            <p className="text-xs md:text-sm font-bold leading-none">계약 시 5% 할인권 증정 🎁</p>
+          <div className="min-w-0">
+            <p className="text-[10px] md:text-[11px] text-slate-500 mb-0.5 leading-none">제휴 시설 혜택</p>
+            <p className="text-xs md:text-sm font-bold leading-none truncate">상담·예약 전 혜택을 확인하세요</p>
           </div>
         </div>
         <button
           onClick={() => setShowPromo(false)}
-          className="text-gray-500 hover:text-white transition-colors p-1 min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className="text-slate-400 hover:text-slate-700 transition-colors p-1 min-w-[36px] min-h-[36px] flex items-center justify-center"
         >
           <X size={14} className="md:hidden" />
           <X size={16} className="hidden md:block" />
@@ -180,20 +180,20 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
 
   const listView = () => (
     <div className="h-full relative">
-      <div className="list-view-shell h-full flex flex-col pt-20 md:pt-36 pb-4 bg-gray-50">
+      <div className="list-view-shell h-full flex flex-col pt-[6.2rem] md:pt-36 pb-4 bg-slate-50">
         <div className="px-4 shrink-0">
           {promoBanner}
           <div className="flex items-center justify-between mb-1">
-            <h2 className="font-bold text-lg">추천 시설 목록</h2>
+            <h2 className="font-extrabold text-xl tracking-tight text-slate-950">추천 시설 목록</h2>
             {isDataLoading && (
               <div className="text-xs text-primary flex items-center gap-1">
                 <Database size={12} className="animate-pulse" /> 로딩중...
               </div>
             )}
           </div>
-          <p className="text-xs text-gray-500 mb-2 md:hidden">내 주변 맞춤 추모 시설을 찾고 비교하세요</p>
+          <p className="text-sm text-slate-500 mb-2 md:hidden">내 주변 장례·추모 시설을 찾고 비교하세요</p>
         </div>
-        <div className="flex-1 px-4 min-h-0">
+        <div className="flex-1 px-3 min-h-0">
           <FacilityList
             facilities={filteredFacilities}
             onSelect={(facility) => {
@@ -288,20 +288,20 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
     case ViewState.LIST:
       return (
         <div className="h-full relative">
-          <div className="list-view-shell h-full flex flex-col pt-20 md:pt-36 pb-4 bg-gray-50">
+          <div className="list-view-shell h-full flex flex-col pt-[6.2rem] md:pt-36 pb-4 bg-slate-50">
             <div className="px-4 shrink-0">
               {promoBanner}
               <div className="flex items-center justify-between mb-1">
-                <h2 className="font-bold text-lg">추천 시설 목록</h2>
+                <h2 className="font-extrabold text-xl tracking-tight text-slate-950">추천 시설 목록</h2>
                 {isDataLoading && (
                   <div className="text-xs text-primary flex items-center gap-1">
                     <Database size={12} className="animate-pulse" /> 로딩중...
                   </div>
                 )}
               </div>
-              <p className="text-xs text-gray-500 mb-2 md:hidden">내 주변 장례·추모 시설을 한눈에 찾고 비교하세요</p>
+              <p className="text-sm text-slate-500 mb-2 md:hidden">내 주변 장례·추모 시설을 찾고 비교하세요</p>
             </div>
-            <div className="flex-1 px-4 min-h-0">
+            <div className="flex-1 px-3 min-h-0">
               <FacilityList
                 facilities={filteredFacilities}
                 onSelect={(facility) => {
