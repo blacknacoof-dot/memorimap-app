@@ -488,6 +488,7 @@ async function handleCancelled(
   payment: PortOnePayment,
 ): Promise<{ action: string }> {
   const paymentId = payment.id;
+  const now = new Date().toISOString();
   const actions: string[] = [];
 
   const { data: subPayment } = await db
@@ -503,28 +504,50 @@ async function handleCancelled(
     } else {
       await db
         .from("subscription_payments")
-        .update({ status: "refunded" })
+        .update({
+          status: "refunded",
+          refunded_at: now,
+          updated_at: now,
+        })
         .eq("id", subPayment.id)
         .neq("status", "refunded");
       actions.push("subscription_payment:refunded");
+    }
 
-      if (subPayment.payment_context === "facility" && subPayment.subscription_id) {
-        await db
-          .from("facility_subscriptions")
-          .update({ status: "cancelled", updated_at: new Date().toISOString() })
-          .eq("id", subPayment.subscription_id)
-          .neq("status", "cancelled");
-        actions.push("facility_subscription:cancelled");
-      }
+    if (subPayment.payment_context === "facility" && subPayment.subscription_id) {
+      await db
+        .from("facility_subscriptions")
+        .update({
+          status: "cancelled",
+          auto_renew: false,
+          billing_key: null,
+          billing_key_issued_at: null,
+          next_billing_date: null,
+          cancel_at_period_end: false,
+          cancelled_at: now,
+          cancelled_reason: "portone_payment_cancelled",
+          last_payment_error: null,
+          updated_at: now,
+        })
+        .eq("id", subPayment.subscription_id);
+      actions.push("facility_subscription:cancelled");
+    }
 
-      if (subPayment.payment_context === "personal" && subPayment.user_id) {
-        await db
-          .from("user_subscriptions")
-          .update({ status: "cancelled" })
-          .eq("user_id", subPayment.user_id)
-          .neq("status", "cancelled");
-        actions.push("user_subscription:cancelled");
-      }
+    if (subPayment.payment_context === "personal" && subPayment.user_id) {
+      await db
+        .from("user_subscriptions")
+        .update({
+          status: "cancelled",
+          auto_renew: false,
+          billing_key: null,
+          billing_key_issued_at: null,
+          cancel_at_period_end: false,
+          cancelled_at: now,
+          cancelled_reason: "portone_payment_cancelled",
+          last_payment_error: null,
+        })
+        .eq("user_id", subPayment.user_id);
+      actions.push("user_subscription:cancelled");
     }
   }
 
