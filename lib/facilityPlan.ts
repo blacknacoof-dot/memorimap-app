@@ -7,7 +7,6 @@ export interface FacilityPlanMeta {
     id: FacilityPlanId;
     displayName: string;
     photoLimit: number; // -1 = unlimited
-    smsQuota: number; // -1 = unlimited
     aiChatQuota: number; // -1 = unlimited
     priority: FacilityPlanPriority;
     badge: 'silver' | 'gold' | null;
@@ -18,7 +17,6 @@ const FACILITY_PLAN_META: Record<FacilityPlanId, FacilityPlanMeta> = {
         id: 'FREE',
         displayName: '무료체험',
         photoLimit: 3,
-        smsQuota: 0,
         aiChatQuota: 0,
         priority: 'normal',
         badge: null,
@@ -27,7 +25,6 @@ const FACILITY_PLAN_META: Record<FacilityPlanId, FacilityPlanMeta> = {
         id: 'BASIC',
         displayName: '라이트',
         photoLimit: 20,
-        smsQuota: 100,
         aiChatQuota: 100,
         priority: 'normal',
         badge: null,
@@ -36,7 +33,6 @@ const FACILITY_PLAN_META: Record<FacilityPlanId, FacilityPlanMeta> = {
         id: 'PREMIUM',
         displayName: '프리미엄',
         photoLimit: -1,
-        smsQuota: -1,
         aiChatQuota: -1,
         priority: 'high',
         badge: 'silver',
@@ -45,7 +41,6 @@ const FACILITY_PLAN_META: Record<FacilityPlanId, FacilityPlanMeta> = {
         id: 'ENTERPRISE',
         displayName: '엔터프라이즈',
         photoLimit: -1,
-        smsQuota: -1,
         aiChatQuota: -1,
         priority: 'top',
         badge: 'gold',

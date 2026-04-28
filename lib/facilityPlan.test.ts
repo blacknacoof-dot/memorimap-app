@@ -16,9 +16,9 @@ describe('facilityPlan', () => {
     });
 
     it('returns the enforced limits used by facility plan gating', () => {
-        expect(getFacilityPlanMeta('FREE')).toMatchObject({ photoLimit: 3, aiChatQuota: 0, smsQuota: 0 });
-        expect(getFacilityPlanMeta('BASIC')).toMatchObject({ photoLimit: 20, aiChatQuota: 100, smsQuota: 100 });
-        expect(getFacilityPlanMeta('PREMIUM')).toMatchObject({ photoLimit: -1, aiChatQuota: -1, smsQuota: -1 });
+        expect(getFacilityPlanMeta('FREE')).toMatchObject({ photoLimit: 3, aiChatQuota: 0 });
+        expect(getFacilityPlanMeta('BASIC')).toMatchObject({ photoLimit: 20, aiChatQuota: 100 });
+        expect(getFacilityPlanMeta('PREMIUM')).toMatchObject({ photoLimit: -1, aiChatQuota: -1 });
     });
 
     it('orders enterprise above premium above basic and free for exposure', () => {

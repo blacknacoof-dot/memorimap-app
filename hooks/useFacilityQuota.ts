@@ -4,8 +4,7 @@ import { useSession } from '../lib/auth';
 import type { FacilityQuotaType, QuotaCheckResult } from '../types/subscription';
 
 /**
- * 시설 쿼터 체크 훅 (AI 채팅 / SMS)
- * RPC 오류 시 호출부에서 중단 처리할 수 있도록 예외를 전달한다.
+ * Facility quota gate for AI chat usage.
  */
 export function useFacilityQuota() {
   const { session } = useSession();

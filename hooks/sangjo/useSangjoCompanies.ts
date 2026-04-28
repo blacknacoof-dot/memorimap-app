@@ -125,6 +125,35 @@ interface FacilityPackageRow {
   is_active?: boolean | null;
 }
 
+interface SangjoSubscriptionRow {
+  facility_id_uuid?: string | null;
+  plan_id?: string | null;
+  status?: string | null;
+  subscription_plans?: {
+    name_en?: string | null;
+    features?: Record<string, unknown> | null;
+  } | null;
+}
+
+const SANGJO_PLAN_RANK: Record<string, number> = {
+  SJ_ENTERPRISE: 4,
+  SJ_PROFESSIONAL: 3,
+  SJ_STARTER: 2,
+};
+
+const SANGJO_PRIORITY_RANK: Record<string, number> = {
+  top: 4,
+  high: 3,
+  normal: 1,
+};
+
+function getSangjoExposureRank(row?: SangjoSubscriptionRow): number {
+  if (!row || (row.status !== 'active' && row.status !== 'cancelling')) return 0;
+  const planId = String(row.subscription_plans?.name_en || row.plan_id || '').toUpperCase();
+  const priority = String(row.subscription_plans?.features?.priority || '').toLowerCase();
+  return Math.max(SANGJO_PLAN_RANK[planId] || 0, SANGJO_PRIORITY_RANK[priority] || 0);
+}
+
 function packageRowsToProducts(rows: FacilityPackageRow[]): SangjoProduct[] {
   return rows
     .filter((row) => row.is_active !== false && row.name)
@@ -172,7 +201,7 @@ export function useSangjoCompanies() {
         }).filter(Boolean) as string[];
         const allTargetIds = Array.from(new Set([...companyIds, ...staticIds]));
 
-        const [{ data: facilityRows }, { data: packageRows }, { data: allReviews }] = await Promise.all([
+        const [{ data: facilityRows }, { data: packageRows }, { data: allReviews }, { data: subscriptionRows }] = await Promise.all([
           supabase
             .from('facilities')
             .select('id, name, image_url, images, description, features, phone, price_range, ai_context, ai_welcome_message')
@@ -187,6 +216,11 @@ export function useSangjoCompanies() {
             .in('facility_id', allTargetIds)
             .eq('is_active', true)
             .order('created_at', { ascending: false }),
+          supabase
+            .from('facility_subscriptions')
+            .select('facility_id_uuid, plan_id, status, subscription_plans(name_en, features)')
+            .in('facility_id_uuid', companyIds)
+            .in('status', ['active', 'cancelling']),
         ]);
 
         const facilitiesById = new Map(
@@ -198,6 +232,9 @@ export function useSangjoCompanies() {
           if (!packagesByFacilityId.has(facilityId)) packagesByFacilityId.set(facilityId, []);
           packagesByFacilityId.get(facilityId)!.push(row);
         });
+        const subscriptionByCompanyId = new Map(
+          ((subscriptionRows || []) as SangjoSubscriptionRow[]).map((row) => [String(row.facility_id_uuid), row]),
+        );
 
         // 리뷰 그룹핑
         const reviewsByCompany = new Map<string, Array<Record<string, unknown>>>();
@@ -291,6 +328,9 @@ export function useSangjoCompanies() {
 
         // FUNERAL_COMPANIES 순서 유지
         mapped.sort((a, b) => {
+          const exposureDiff = getSangjoExposureRank(subscriptionByCompanyId.get(b.id))
+            - getSangjoExposureRank(subscriptionByCompanyId.get(a.id));
+          if (exposureDiff !== 0) return exposureDiff;
           const idxA = FUNERAL_COMPANIES.findIndex(fc => fc.name.replace(/\s/g, '') === a.name.replace(/\s/g, ''));
           const idxB = FUNERAL_COMPANIES.findIndex(fc => fc.name.replace(/\s/g, '') === b.name.replace(/\s/g, ''));
           return (idxA === -1 ? 999 : idxA) - (idxB === -1 ? 999 : idxB);

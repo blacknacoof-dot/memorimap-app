@@ -143,7 +143,7 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
         } else {
             setMessages(prev => [...prev, { id: Date.now(), sender: 'system', text: `✅ [정보 등록 완료] ${formData.name}님, 잠시만 기다려주세요.`, type: 'text' }]);
             setTimeout(() => {
-                setMessages(prev => [...prev, { id: Date.now(), sender: 'ai', text: `반갑습니다, **${formData.name}**님.\n**${formData.type}**에 대해 궁금하신 점을 말씀해 주세요.\n\n입력해주신 연락처(${formData.phone})로 상품 안내서를 문자 발송해 드렸습니다.`, type: 'text' }]);
+                setMessages(prev => [...prev, { id: Date.now(), sender: 'ai', text: `반갑습니다, **${formData.name}**님.\n**${formData.type}**에 대해 궁금하신 점을 말씀해 주세요.\n\n접수 내역과 안내는 마이페이지 상담 내역에서 확인하실 수 있습니다.`, type: 'text' }]);
             }, 1000);
         }
     };

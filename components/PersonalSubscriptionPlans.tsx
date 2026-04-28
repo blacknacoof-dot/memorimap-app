@@ -57,7 +57,7 @@ const personalPlans: PersonalPlan[] = [
         features: [
             { name: '시설 검색', included: true },
             { name: 'AI 상담', included: true, limit: '카테고리별 1회' },
-            { name: '상조 AI 비교상담', included: true, limit: '5회' },
+            { name: '상조 AI 비교상담', included: true, limit: '10회' },
             { name: '즐겨찾기', included: true, limit: '최대 5개' },
             { name: '엔딩노트', included: true, limit: '기본 항목' },
             { name: '예약 및 리뷰', included: true },
