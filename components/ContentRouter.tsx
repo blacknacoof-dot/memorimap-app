@@ -129,7 +129,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
         initialZoom={targetMapZoom || (userLocation.type === 'gps' ? 14 : undefined)}
       />
       {isVisible && (
-        <div className="absolute bottom-24 left-4 z-30 flex flex-col gap-3 pointer-events-none">
+        <div className="absolute bottom-[4.75rem] left-3 z-30 flex flex-col gap-2 pointer-events-none">
           <div className="flex flex-col gap-3 pointer-events-auto">
             {compareList.length > 0 && (
               <button
@@ -143,10 +143,10 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
               </button>
             )}
             <button
-              className="bg-white p-3 rounded-xl shadow-lg text-gray-700 active:scale-95 transition-transform"
+              className="bg-white p-2.5 rounded-xl shadow-lg text-slate-700 active:scale-95 transition-transform border border-slate-200"
               onClick={() => mapRef.current?.flyToLocation()}
             >
-              <Crosshair size={22} />
+              <Crosshair size={20} />
             </button>
           </div>
         </div>
@@ -180,7 +180,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
 
   const listView = () => (
     <div className="h-full relative">
-      <div className="list-view-shell h-full flex flex-col pt-[6.2rem] pb-4 bg-slate-50">
+      <div className="list-view-shell h-full flex flex-col pt-[6.75rem] pb-4 bg-slate-50">
         <div className="px-4 shrink-0">
           {promoBanner}
           <div className="flex items-center justify-between mb-1">
@@ -288,7 +288,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
     case ViewState.LIST:
       return (
         <div className="h-full relative">
-          <div className="list-view-shell h-full flex flex-col pt-[6.2rem] pb-4 bg-slate-50">
+          <div className="list-view-shell h-full flex flex-col pt-[6.75rem] pb-4 bg-slate-50">
             <div className="px-4 shrink-0">
               {promoBanner}
               <div className="flex items-center justify-between mb-1">

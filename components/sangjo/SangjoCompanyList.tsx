@@ -124,7 +124,7 @@ export const SangjoCompanyList: React.FC<Props> = ({
             </div>
 
             {/* Company List */}
-            <div className="flex-1 overflow-y-auto px-4 space-y-2.5 pb-32 no-scrollbar">
+            <div className="flex-1 overflow-y-auto px-4 space-y-2.5 pb-28 no-scrollbar">
                 {filteredCompanies.map(company => (
                     <SangjoCompanyCard
                         key={company.id}
@@ -153,11 +153,11 @@ export const SangjoCompanyList: React.FC<Props> = ({
             </div>
 
             {/* Floating AI Counselor + Compare Button */}
-            <div className="absolute bottom-[5.75rem] left-0 right-0 px-4 z-40 animate-in slide-in-from-bottom-4 duration-500">
+            <div className="absolute bottom-[5.15rem] left-0 right-0 px-3 z-40 animate-in slide-in-from-bottom-4 duration-500">
                 {compareList.length > 0 && (
                     <button
                         onClick={onShowComparison}
-                        className="absolute -top-14 right-8 bg-white text-primary p-3 rounded-full shadow-2xl border-2 border-primary flex items-center justify-center z-[210] hover:scale-110 active:scale-95 transition-all"
+                        className="absolute -top-11 right-7 bg-white text-primary p-2.5 rounded-full shadow-2xl border-2 border-primary flex items-center justify-center z-[210] hover:scale-110 active:scale-95 transition-all"
                     >
                         <Scale size={18} />
                         <span className="absolute -top-1.5 -right-1.5 bg-primary text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full border-2 border-white shadow-lg">
@@ -168,12 +168,12 @@ export const SangjoCompanyList: React.FC<Props> = ({
 
                 <div
                     onClick={handleOpenConsultation}
-                    className="w-full bg-white/95 backdrop-blur-md border border-amber-200/60 rounded-[20px] p-3.5 flex items-center justify-between group cursor-pointer active:scale-[0.98] transition-all hover:border-amber-400 shadow-[0_8px_30px_rgba(245,158,11,0.12)]"
+                    className="w-full bg-white/95 backdrop-blur-md border border-amber-200/60 rounded-2xl px-3 py-2.5 flex items-center justify-between group cursor-pointer active:scale-[0.98] transition-all hover:border-amber-400 shadow-[0_8px_30px_rgba(245,158,11,0.12)]"
                 >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
                         <div className="relative">
-                            <div className="w-10 h-10 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl flex items-center justify-center border border-amber-200 shadow-sm transition-transform group-hover:scale-110 duration-300">
-                                <Bot size={24} className="text-amber-500 animate-pulse" />
+                            <div className="w-9 h-9 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl flex items-center justify-center border border-amber-200 shadow-sm transition-transform group-hover:scale-110 duration-300">
+                                <Bot size={21} className="text-amber-500 animate-pulse" />
                             </div>
                             <span className="absolute -top-1 -right-1 flex h-3 w-3">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -183,10 +183,10 @@ export const SangjoCompanyList: React.FC<Props> = ({
                         <div className="min-w-0">
                             <div className="flex items-center gap-1.5 mb-0.5">
                                 <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded-md uppercase">AI 맞춤 추천</span>
-                                <p className="text-[10px] text-amber-600 font-bold tracking-tight">상조 비교가 고민되시나요?</p>
+                                <p className="text-[10px] text-amber-600 font-bold tracking-tight">상조 선택이 고민되시나요?</p>
                             </div>
-                            <h4 className="text-[14px] font-extrabold text-gray-900 flex items-center gap-1">
-                                통합 비교 AI '마음이'와 대화하기
+                            <h4 className="text-[13px] font-extrabold text-gray-900 flex items-center gap-1">
+                                AI 마음이와 비교 상담
                                 <div className="p-0.5 bg-amber-500 rounded-full text-white shadow-sm group-hover:translate-x-1 transition-transform">
                                     <ChevronRight size={10} strokeWidth={3} />
                                 </div>

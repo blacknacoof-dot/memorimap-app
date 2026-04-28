@@ -33,10 +33,10 @@ export const RecommendationStarter: React.FC<Props> = ({ onSelectIntent }) => {
     ] as const;
 
     return (
-        <div className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom,0px))] right-4 z-[210] flex flex-col items-end gap-4 pointer-events-none">
+        <div className="fixed bottom-[calc(5.2rem+env(safe-area-inset-bottom,0px))] right-3 z-[210] flex flex-col items-end gap-2 pointer-events-none">
             {/* Menu Overlay */}
             {isOpen && (
-                <div className="flex flex-col gap-3 mb-2 pointer-events-auto animate-in slide-in-from-bottom-5 fade-in duration-300">
+                <div className="flex flex-col gap-2 mb-1 pointer-events-auto animate-in slide-in-from-bottom-5 fade-in duration-300">
                     {menuItems.map((item, index) => (
                         <button
                             key={item.id}
@@ -44,17 +44,17 @@ export const RecommendationStarter: React.FC<Props> = ({ onSelectIntent }) => {
                                 setIsOpen(false);
                                 onSelectIntent(item.id);
                             }}
-                            className="flex items-center gap-3 bg-white p-3 rounded-2xl shadow-lg border border-gray-100 hover:scale-105 active:scale-95 transition-all text-left w-64 group"
+                            className="flex items-center gap-2.5 bg-white p-2.5 rounded-xl shadow-lg border border-gray-100 hover:scale-105 active:scale-95 transition-all text-left w-56 group"
                             style={{ animationDelay: `${index * 50}ms` }}
                         >
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm ${item.color}`}>
-                                <item.icon size={20} />
+                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white shadow-sm ${item.color}`}>
+                                <item.icon size={18} />
                             </div>
                             <div className="flex-1">
-                                <div className="font-bold text-gray-800 text-sm group-hover:text-primary transition-colors">
+                                <div className="font-bold text-gray-800 text-[13px] group-hover:text-primary transition-colors">
                                     {item.label}
                                 </div>
-                                <div className="text-[11px] text-gray-500">
+                                <div className="text-[10px] text-gray-500">
                                     {item.desc}
                                 </div>
                             </div>
@@ -66,20 +66,20 @@ export const RecommendationStarter: React.FC<Props> = ({ onSelectIntent }) => {
             {/* Main Trigger Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`pointer-events-auto relative group flex items-center justify-center w-14 h-14 rounded-2xl shadow-xl transition-all duration-300 ${isOpen ? 'bg-gray-800 rotate-90' : 'bg-[#fff9c4] hover:scale-110 border-2 border-orange-200'
+                className={`pointer-events-auto relative group flex items-center justify-center w-11 h-11 rounded-xl shadow-xl transition-all duration-300 ${isOpen ? 'bg-gray-800 rotate-90' : 'bg-[#fff9c4] hover:scale-110 border-2 border-orange-200'
                     }`}
             >
                 {isOpen ? (
-                    <X size={24} className="text-white" />
+                    <X size={18} className="text-white" />
                 ) : (
                     <>
                         {/* Character Icon */}
-                        <Bot size={28} className="text-orange-500" />
+                        <Bot size={22} className="text-orange-500" />
 
                         {/* Red Blinking Notification Dot */}
-                        <span className="absolute -top-1 -right-1 flex h-5 w-5">
+                        <span className="absolute -top-1 -right-1 flex h-4 w-4">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-5 w-5 bg-red-500 border-2 border-white"></span>
+                            <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 border-2 border-white"></span>
                         </span>
 
                         {/* Tooltip Label */}
