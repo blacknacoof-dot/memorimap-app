@@ -215,8 +215,10 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                 try {
                     const authClient = await getAuthClient(session);
                     const sub = await getFacilitySubscription(facilityId, authClient);
-                    if (sub && sub.plan_id) {
+                    if (sub?.plan_id && (sub.status === 'active' || sub.status === 'cancelling')) {
                         setSelectedPlan(normalizeSubscriptionPlanId(sub.plan_id) || sub.plan_id);
+                    } else {
+                        setSelectedPlan(null);
                     }
                 } catch (_e) {
                     // silent
