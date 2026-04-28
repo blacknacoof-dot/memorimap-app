@@ -127,6 +127,13 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack, onOpenLogin
         window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
     }, []);
 
+    const resetBillingActivationState = useCallback(() => {
+        sessionStorage.removeItem(PERSONAL_BILLING_PENDING_KEY);
+        sessionStorage.removeItem(PERSONAL_BILLING_INFLIGHT_KEY);
+        setIsPaymentOpen(false);
+        clearBillingRedirectParams();
+    }, [clearBillingRedirectParams]);
+
     const redirectToBillingActivation = useCallback((billingKey: string) => {
         const url = new URL(window.location.href);
         url.searchParams.set('billingKey', billingKey);
@@ -153,8 +160,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack, onOpenLogin
 
         if (code) {
             toast.error(message ? decodeURIComponent(message) : '카드 등록에 실패했습니다.');
-            sessionStorage.removeItem(PERSONAL_BILLING_PENDING_KEY);
-            clearBillingRedirectParams();
+            resetBillingActivationState();
             return;
         }
 
@@ -162,7 +168,10 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack, onOpenLogin
         if (sessionStorage.getItem(PERSONAL_BILLING_INFLIGHT_KEY) === billingKey) return;
 
         const pendingRaw = sessionStorage.getItem(PERSONAL_BILLING_PENDING_KEY);
-        if (!pendingRaw) return;
+        if (!pendingRaw) {
+            resetBillingActivationState();
+            return;
+        }
 
         const pending = JSON.parse(pendingRaw) as {
             userId: string;
@@ -173,7 +182,10 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack, onOpenLogin
             customerPhoneNumber: string;
         };
 
-        if (pending.userId !== userId) return;
+        if (pending.userId !== userId) {
+            resetBillingActivationState();
+            return;
+        }
 
         let cancelled = false;
         const activate = async () => {
@@ -203,10 +215,8 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack, onOpenLogin
                 await refetchUserPlan();
                 toast.success('정기결제가 시작되었습니다.');
             } finally {
-                sessionStorage.removeItem(PERSONAL_BILLING_INFLIGHT_KEY);
-                clearBillingRedirectParams();
                 if (!cancelled) {
-                    setIsPaymentOpen(false);
+                    resetBillingActivationState();
                 }
             }
         };
@@ -216,7 +226,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack, onOpenLogin
         return () => {
             cancelled = true;
         };
-    }, [clearBillingRedirectParams, isLoaded, refetchUserPlan, session, userId]);
+    }, [isLoaded, refetchUserPlan, resetBillingActivationState, session, userId]);
 
     const cancelPayment = useCallback(() => {
         const bodyChildren = document.body.children;
