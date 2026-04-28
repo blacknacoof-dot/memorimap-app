@@ -171,13 +171,13 @@ export const fetchPersonalSubscriptions = async (client: SupabaseClient) => {
     if (userIds.length > 0) {
         const { data: profiles, error: profileError } = await client
             .from('profiles')
-            .select('clerk_id, email, full_name')
-            .in('clerk_id', userIds);
+            .select('id, email, full_name')
+            .in('id', userIds);
 
         if (profileError) throw profileError;
 
         (profiles || []).forEach((profile) => {
-            profileMap.set(profile.clerk_id, {
+            profileMap.set(profile.id, {
                 email: profile.email,
                 full_name: profile.full_name,
             });
@@ -388,11 +388,40 @@ export const processExpiredPremiumGrants = async (client: SupabaseClient) => {
     return data;
 };
 
+const ALLOWED_USER_ROLES = new Set(['user', 'facility_admin', 'sangjo_admin', 'super_admin']);
+
+const isUuidString = (value: string) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+
 export const updateUserRole = async (userId: string, newRole: string, client: SupabaseClient, actorId?: string) => {
+    if (!ALLOWED_USER_ROLES.has(newRole)) {
+        throw new Error('Invalid user role');
+    }
+
+    if (!isUuidString(userId)) {
+        throw new Error('Invalid user id');
+    }
+
+    if (actorId && newRole !== 'super_admin' && userId === actorId) {
+        throw new Error('You cannot remove your own super admin role');
+    }
+
+    const { data: targetRows, error: targetError } = await client
+        .from('profiles')
+        .select('id')
+        .eq('id', userId)
+        .limit(1);
+
+    if (targetError) throw targetError;
+
+    if (!targetRows || targetRows.length === 0) {
+        throw new Error('User profile was not found');
+    }
+
     const { error } = await client
         .from('profiles')
         .update({ role: newRole })
-        .eq('clerk_id', userId);
+        .eq('id', targetRows[0].id);
 
     if (error) throw error;
 
@@ -732,6 +761,14 @@ export const updateSystemSetting = async (
     value: string | number | boolean | Record<string, unknown>,
     client: SupabaseClient,
 ) => {
+    if (key === 'commission_rate') {
+        const commissionValue = Number(value);
+        if (!Number.isFinite(commissionValue) || commissionValue < 0 || commissionValue > 100) {
+            throw new Error('commission_rate must be a number between 0 and 100');
+        }
+        value = commissionValue;
+    }
+
     const { error } = await client
         .from('system_settings')
         .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' });

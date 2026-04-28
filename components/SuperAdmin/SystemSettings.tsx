@@ -6,7 +6,7 @@ import { confirmAsync } from '../../src/components/common/ConfirmModal';
 import { useSuperAdminClient } from './SuperAdminGuard';
 
 export const SystemSettings = () => {
-    const [commission, setCommission] = useState('3.5');
+    const [commission, setCommission] = useState('10');
     const [maintenanceMode, setMaintenanceMode] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const client = useSuperAdminClient();
@@ -32,9 +32,14 @@ export const SystemSettings = () => {
 
     const handleSaveSystemSettings = async () => {
         if (isSaving) return;
+        const commissionValue = Number(commission);
+        if (!Number.isFinite(commissionValue) || commissionValue < 0 || commissionValue > 100) {
+            toast.error('수수료율은 0~100 사이의 숫자로 입력해주세요.');
+            return;
+        }
         setIsSaving(true);
         try {
-            await updateSystemSetting('commission_rate', commission, client);
+            await updateSystemSetting('commission_rate', commissionValue, client);
             toast.success('시스템 설정이 저장되었습니다.');
         } catch {
             toast.error('설정 저장 중 오류가 발생했습니다.');
@@ -95,6 +100,9 @@ export const SystemSettings = () => {
                                 id="commission-rate"
                                 name="commission-rate"
                                 type="number"
+                                min={0}
+                                max={100}
+                                step="0.1"
                                 value={commission}
                                 onChange={(e) => setCommission(e.target.value)}
                                 className="w-full text-sm p-2 pr-8 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500"

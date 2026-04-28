@@ -26,11 +26,12 @@ export function FacilityManagement({ initialSearch, onClearSearch }: { initialSe
 
     // Initial Search Logic — handleSearch 내부의 setHasSearched는 의도적 동기 호출
     useEffect(() => {
-        const offset = 0;
         const term = initialSearch || '';
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        handleSearch(offset, term);
-    }, [initialSearch, handleSearch]);
+        setSearchTerm(term);
+        setHasSearched(true);
+        void search(term, 0);
+    }, [initialSearch, search]);
 
     const totalPages = Math.ceil(totalCount / itemsPerPage);
     const filteredFacilities = facilities;
