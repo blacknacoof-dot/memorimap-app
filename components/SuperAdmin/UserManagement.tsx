@@ -12,7 +12,7 @@ export const UserManagement: React.FC = () => {
 
     const normalizedSearch = searchTerm.toLowerCase();
     const filteredUsers = users.filter((user) => {
-        const matchesSearch =
+        const matchesSearch = !normalizedSearch ||
             user.email?.toLowerCase().includes(normalizedSearch) ||
             user.full_name?.toLowerCase().includes(normalizedSearch);
         const matchesRole = roleFilter === 'all' || user.role === roleFilter;
@@ -92,6 +92,9 @@ export const UserManagement: React.FC = () => {
                                 </tr>
                             ) : (
                                 filteredUsers.map((user) => (
+                                    (() => {
+                                        const isCurrentAdmin = Boolean(currentAdmin?.id && user.id === currentAdmin.id);
+                                        return (
                                     <tr
                                         key={user.id}
                                         data-testid={`user-management-row-${user.id}`}
@@ -131,6 +134,7 @@ export const UserManagement: React.FC = () => {
                                                 <select
                                                     data-testid={`user-management-role-select-${user.id}`}
                                                     value={user.role}
+                                                    disabled={isCurrentAdmin}
                                                     onChange={async (e) => {
                                                         const newRole = e.target.value;
                                                         const element = e.target;
@@ -145,7 +149,7 @@ export const UserManagement: React.FC = () => {
                                                             element.value = user.role;
                                                         }
                                                     }}
-                                                    className="cursor-pointer rounded border bg-white px-2 py-1 text-xs outline-none transition-colors hover:border-gray-400 focus:ring-1 focus:ring-primary"
+                                                    className="cursor-pointer rounded border bg-white px-2 py-1 text-xs outline-none transition-colors hover:border-gray-400 focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
                                                 >
                                                     <option value="user">User</option>
                                                     <option value="facility_admin">Facility Admin</option>
@@ -159,6 +163,8 @@ export const UserManagement: React.FC = () => {
                                             {new Date(user.created_at).toLocaleDateString()}
                                         </td>
                                     </tr>
+                                        );
+                                    })()
                                 ))
                             )}
                         </tbody>

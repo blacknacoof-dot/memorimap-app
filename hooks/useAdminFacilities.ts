@@ -62,7 +62,9 @@ export function useAllFacilities() {
             if (count !== null) setTotalCount(count);
             setPage(targetPage);
         } catch {
-            // 에러는 빈 목록으로 자연 처리
+            setFacilities([]);
+            setTotalCount(0);
+            toast.error('시설 목록을 불러오지 못했습니다.');
         } finally {
             setLoading(false);
         }
