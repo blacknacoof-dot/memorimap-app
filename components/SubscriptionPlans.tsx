@@ -171,6 +171,14 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
         window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
     }, []);
 
+    const resetBillingActivationState = useCallback(() => {
+        sessionStorage.removeItem(FACILITY_BILLING_PENDING_KEY);
+        sessionStorage.removeItem(FACILITY_BILLING_INFLIGHT_KEY);
+        setIsPaymentOpen(false);
+        setIsProcessing(false);
+        clearBillingRedirectParams();
+    }, [clearBillingRedirectParams]);
+
     const cancelPayment = useCallback(() => {
         const bodyChildren = document.body.children;
         const appRoot = document.getElementById('root');
@@ -230,8 +238,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
         if (code) {
             const decodedMessage = message ? decodeURIComponent(message) : '카드 등록에 실패했습니다.';
             toast.error(decodedMessage);
-            sessionStorage.removeItem(FACILITY_BILLING_PENDING_KEY);
-            clearBillingRedirectParams();
+            resetBillingActivationState();
             return;
         }
 
@@ -239,7 +246,10 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
         if (sessionStorage.getItem(FACILITY_BILLING_INFLIGHT_KEY) === billingKey) return;
 
         const pendingRaw = sessionStorage.getItem(FACILITY_BILLING_PENDING_KEY);
-        if (!pendingRaw) return;
+        if (!pendingRaw) {
+            resetBillingActivationState();
+            return;
+        }
 
         const pending = JSON.parse(pendingRaw) as {
             facilityId: string;
@@ -250,7 +260,10 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
             customerPhoneNumber: string;
         };
 
-        if (pending.facilityId !== facilityId) return;
+        if (pending.facilityId !== facilityId) {
+            resetBillingActivationState();
+            return;
+        }
 
         let cancelled = false;
         const activate = async () => {
@@ -281,11 +294,8 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
                 onSelectPlan?.(pending.planId);
                 toast.success('정기결제가 시작되었습니다.');
             } finally {
-                sessionStorage.removeItem(FACILITY_BILLING_INFLIGHT_KEY);
-                clearBillingRedirectParams();
                 if (!cancelled) {
-                    setIsPaymentOpen(false);
-                    setIsProcessing(false);
+                    resetBillingActivationState();
                 }
             }
         };
@@ -295,7 +305,7 @@ export default function SubscriptionPlans({ onSelectPlan, currentPlan, facilityI
         return () => {
             cancelled = true;
         };
-    }, [clearBillingRedirectParams, facilityId, isLoaded, onSelectPlan, session]);
+    }, [facilityId, isLoaded, onSelectPlan, resetBillingActivationState, session]);
 
     const handleSelectPlan = async (plan: Plan) => {
         if (isProcessing) return;
