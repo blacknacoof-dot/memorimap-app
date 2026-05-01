@@ -1,0 +1,516 @@
+/* Capacitor/WebView only. This file is dynamically imported only when
+   Capacitor.isNativePlatform() is true. Do not move these rules to index.css. */
+
+:root.native-app,
+body.native-app,
+body.native-app #root {
+  width: 100%;
+  height: var(--app-height, 100dvh);
+  min-height: var(--app-height, 100dvh);
+  margin: 0;
+  background: #f7f9fb;
+  overflow: hidden;
+}
+
+.native-app-shell {
+  --app-safe-top: max(18px, env(safe-area-inset-top, 0px));
+  --app-safe-bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  --bottom-nav-height: 64px;
+  --app-content-bottom: calc(var(--bottom-nav-height) + var(--app-safe-bottom));
+  --native-content-height: calc(var(--app-height, 100dvh) - var(--app-content-bottom));
+  --native-safe-top: var(--app-safe-top);
+  --native-safe-bottom: var(--app-safe-bottom);
+  --native-map-header: 108px;
+  --native-list-header: 96px;
+  --native-page-header: 72px;
+  --native-tab-height: var(--bottom-nav-height);
+  --native-map-height: var(--native-content-height);
+  --native-bg: #f7f9fb;
+  --native-text: #17202f;
+  --native-muted: #687586;
+  --native-primary: #607985;
+  --native-border: rgba(15, 23, 42, 0.08);
+  --native-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+  min-height: var(--app-height, 100dvh);
+  height: var(--app-height, 100dvh);
+  background: var(--native-bg);
+  color: var(--native-text);
+  overflow: hidden;
+  font-size: 14px;
+}
+
+.native-app-shell .app-mobile-shell {
+  height: var(--app-height, 100dvh);
+  background: var(--native-bg);
+  overflow: hidden;
+}
+
+.native-app-shell [data-debug="app-mobile-shell"] {
+  height: var(--app-height, 100dvh) !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.native-app-shell .app-mobile-shell > div {
+  max-width: none;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+}
+
+.native-app-shell [data-debug="app-viewport"] {
+  max-width: none !important;
+  width: 100% !important;
+  height: var(--app-height, 100dvh) !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+}
+
+.native-app-shell .app-mobile-shell > div > div {
+  width: 100%;
+  height: var(--app-height, 100dvh);
+  min-height: var(--app-height, 100dvh);
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.native-app-shell [data-debug="app-frame"] {
+  width: 100% !important;
+  height: var(--app-height, 100dvh) !important;
+  min-height: var(--app-height, 100dvh) !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+
+.native-app-shell footer {
+  display: none !important;
+}
+
+/* Main content area remains full height; individual screens manage their spacing. */
+.native-app-shell .app-mobile-shell > div > div > .flex-1.relative.overflow-hidden {
+  min-height: 0;
+  flex: 0 0 var(--native-content-height) !important;
+  height: var(--native-content-height) !important;
+  max-height: var(--native-content-height) !important;
+  padding-bottom: 0 !important;
+  overflow: hidden !important;
+}
+
+.native-app-shell [data-debug="app-content"] {
+  min-height: 0 !important;
+  flex: 0 0 var(--native-content-height) !important;
+  height: var(--native-content-height) !important;
+  max-height: var(--native-content-height) !important;
+  padding-bottom: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Top overlay: compact controls, no large wrapper card. */
+.native-app-shell .app-mobile-shell > div > div > div.absolute.z-40 {
+  top: calc(var(--native-safe-top) + 6px) !important;
+  left: 16px !important;
+  right: 16px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  max-height: var(--native-map-header);
+  overflow: visible;
+}
+
+.native-app-shell .app-mobile-shell > div > div > div.absolute.z-40 > .flex {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 50px;
+}
+
+.native-app-shell [data-testid="topbar-menu-button"],
+.native-app-shell [title*="SOS"] {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  min-height: 48px !important;
+  padding: 0 !important;
+  border-radius: 16px !important;
+  border: 1px solid var(--native-border);
+  box-shadow: var(--native-shadow);
+}
+
+.native-app-shell [title*="SOS"] {
+  width: 52px !important;
+  min-width: 52px !important;
+  background: #dc2626 !important;
+}
+
+.native-app-shell [title*="SOS"] span {
+  font-size: 12px !important;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.native-app-shell [data-debug="smart-search"] > div {
+  height: 46px;
+  min-height: 46px;
+  border-radius: 18px !important;
+  border: 1px solid var(--native-border);
+  box-shadow: var(--native-shadow);
+}
+
+.native-app-shell [data-debug="smart-search"] > div > div {
+  height: 46px !important;
+  min-height: 46px !important;
+  padding-left: 12px !important;
+  padding-right: 10px !important;
+}
+
+.native-app-shell #smart-search-input {
+  min-width: 0;
+  font-size: 14px !important;
+  font-weight: 650;
+  line-height: 1.2;
+  color: var(--native-text);
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  word-break: keep-all;
+}
+
+.native-app-shell #smart-search-input::placeholder {
+  color: #99a3af;
+  opacity: 1;
+}
+
+.native-app-shell .app-mobile-shell > div > div > div.absolute.z-40 > .flex > .flex-1.bg-white {
+  height: 46px !important;
+  border-radius: 18px !important;
+  border: 1px solid var(--native-border);
+  box-shadow: var(--native-shadow);
+}
+
+.native-app-shell .app-mobile-shell > div > div > div.absolute.z-40 > .flex > .flex-1.bg-white span {
+  font-size: 17px !important;
+  color: var(--native-text);
+  letter-spacing: 0;
+}
+
+/* Category chips: one compact horizontal line. */
+.native-app-shell .filter-scroll {
+  width: calc(100vw - 32px);
+  margin-top: 8px;
+  margin-left: 0;
+  margin-right: 0;
+  max-height: 42px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.native-app-shell .filter-scroll > div {
+  gap: 8px;
+  padding: 0 0 2px;
+}
+
+.native-app-shell [data-testid^="filter-category-"] {
+  min-height: 38px !important;
+  height: 38px;
+  padding: 0 14px !important;
+  border-radius: 999px !important;
+  font-size: 13px !important;
+  line-height: 1;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  word-break: keep-all;
+}
+
+.native-app-shell .standalone-hide {
+  display: none !important;
+}
+
+/* List pages need enough top space because the original topbar is absolute. */
+.native-app-shell .list-view-shell {
+  padding-top: calc(var(--native-safe-top) + var(--native-list-header) + 10px) !important;
+  padding-bottom: 16px !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.native-app-shell .list-view-shell h2 {
+  font-size: 20px !important;
+  line-height: 1.25 !important;
+}
+
+.native-app-shell .list-view-shell p {
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+
+.native-app-shell [data-testid^="facility-card-"] {
+  min-height: 132px;
+  padding: 14px !important;
+  border-radius: 18px !important;
+  gap: 12px !important;
+}
+
+.native-app-shell [data-testid^="facility-card-"] img,
+.native-app-shell [data-testid^="facility-card-"] .w-\[88px\] {
+  width: 88px !important;
+  height: 88px !important;
+}
+
+.native-app-shell [data-testid^="facility-card-"] h3 {
+  font-size: 17px !important;
+  line-height: 1.25 !important;
+}
+
+.native-app-shell [data-testid^="facility-card-"] div {
+  letter-spacing: 0;
+}
+
+/* Keep map/fullscreen content available; the topbar floats over it without taking layout space. */
+.native-app-shell .app-mobile-shell > div > div > .flex-1.relative.overflow-hidden > .w-full.h-full.relative.z-0,
+.native-app-shell .app-mobile-shell > div > div > .flex-1.relative.overflow-hidden > .h-full.relative.bg-gray-50,
+.native-app-shell .app-mobile-shell > div > div > .flex-1.relative.overflow-hidden > .h-full.relative.bg-gray-50 > .absolute.inset-0,
+.native-app-shell .app-mobile-shell > div > div > .flex-1.relative.overflow-hidden > .h-full.relative.bg-gray-50 > .absolute.inset-0 > .w-full.h-full.relative.z-0,
+.native-app-shell .app-mobile-shell > div > div > .flex-1.relative.overflow-hidden > .h-full.relative.bg-gray-50 > .absolute.inset-0 > .w-full.h-full.relative.z-0 > div:first-child,
+.native-app-shell .app-mobile-shell > div > div > .flex-1.relative.overflow-hidden .w-full.h-full.relative.z-0,
+.native-app-shell .app-mobile-shell > div > div > .flex-1.relative.overflow-hidden .w-full.h-full.relative.z-0 > div:first-child,
+.native-app-shell .app-mobile-shell > div > div > .flex-1.relative.overflow-hidden .w-full.h-full.relative.z-0 > div:first-child > div:first-child,
+.native-app-shell .map-container,
+.native-app-shell [data-testid="map-container"] {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+.native-app-shell .app-mobile-shell > div > div > .flex-1.relative.overflow-hidden > .h-full.relative.bg-gray-50,
+.native-app-shell .app-mobile-shell > div > div > .flex-1.relative.overflow-hidden > .h-full.relative {
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.native-app-shell [data-debug="map-page"] {
+  position: relative;
+  width: 100%;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden;
+}
+
+.native-app-shell [data-debug="map-body"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+.native-app-shell [data-debug="map-container"],
+.native-app-shell [data-debug="map-container"] > div {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+.native-app-shell [data-debug="facility-bottom-sheet"] {
+  bottom: 0 !important;
+  z-index: 30;
+  transform: none !important;
+}
+
+.native-app-shell [data-debug="facility-bottom-sheet"] [data-debug="facility-list"] {
+  min-height: 0 !important;
+}
+
+/* My page: start below compact header and keep the last content above the fixed tab. */
+.native-app-shell .app-mobile-shell > div > div > .flex-1.relative.overflow-hidden > .h-full.overflow-y-auto.pt-16 {
+  padding-top: calc(var(--native-safe-top) + var(--native-page-header) + 12px) !important;
+  padding-bottom: 16px !important;
+}
+
+.native-app-shell .app-mobile-shell > div > div > .flex-1.relative.overflow-hidden > .flex.flex-col.items-center.justify-center.h-full {
+  padding-top: calc(var(--native-safe-top) + var(--native-page-header)) !important;
+  padding-bottom: 16px !important;
+}
+
+/* Sangjo tab: it has no TopBar, so it needs its own app safe-area and tab spacing. */
+.native-app-shell .app-mobile-shell > div > div > .flex-1.relative.overflow-hidden > .h-full.flex.flex-col.bg-gray-50.relative {
+  height: 100% !important;
+  min-height: 0 !important;
+  padding-top: calc(var(--native-safe-top) + 10px) !important;
+  padding-bottom: 0 !important;
+  overflow: hidden !important;
+}
+
+.native-app-shell .app-mobile-shell > div > div > .flex-1.relative.overflow-hidden > .h-full.flex.flex-col.bg-gray-50.relative > .flex-1.overflow-y-auto {
+  min-height: 0 !important;
+  padding-bottom: 96px !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.native-app-shell .app-mobile-shell > div > div > .flex-1.relative.overflow-hidden > .h-full.flex.flex-col.bg-gray-50.relative > .absolute.left-0.right-0.px-3.z-40 {
+  bottom: 8px !important;
+}
+
+.native-app-shell .app-mobile-shell > div > div > .flex-1.relative.overflow-hidden > .h-full.flex.flex-col.bg-gray-50.relative .bg-gradient-to-br.from-primary.to-blue-700 {
+  min-height: 96px;
+  padding: 12px !important;
+  overflow: visible !important;
+}
+
+.native-app-shell .app-mobile-shell > div > div > .flex-1.relative.overflow-hidden > .h-full.flex.flex-col.bg-gray-50.relative .bg-gradient-to-br.from-primary.to-blue-700 p {
+  font-size: 12px !important;
+  line-height: 1.45 !important;
+  white-space: normal !important;
+  overflow: visible !important;
+}
+
+.native-app-shell .app-mobile-shell > div > div > .flex-1.relative.overflow-hidden > .h-full.flex.flex-col.bg-gray-50.relative .bg-gradient-to-br.from-primary.to-blue-700 br {
+  display: none;
+}
+
+/* Bottom tab: fixed size and predictable safe-area handling. */
+.native-app-shell .shrink-0.border-t:has([data-testid^="bottom-nav-"]),
+.native-app-shell .app-mobile-shell > div > div > .shrink-0.border-t {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 320;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-height: var(--app-content-bottom) !important;
+  height: var(--app-content-bottom) !important;
+  padding: 6px 12px var(--native-safe-bottom) !important;
+  border-top: 1px solid var(--native-border);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 -2px 12px rgba(15, 23, 42, 0.04);
+}
+
+/* Native release should open directly into the app shell.
+   The web onboarding sheet is intentionally suppressed only in Capacitor. */
+.native-app-shell .fixed.inset-0.z-\[300\][role="dialog"][aria-modal="true"] {
+  display: none !important;
+}
+
+.native-app-shell .fixed.inset-0[role="dialog"][aria-modal="true"]:has(.animate-slide-up) {
+  display: none !important;
+}
+
+.native-app-shell [data-testid^="bottom-nav-"] {
+  min-width: 60px !important;
+  min-height: 50px !important;
+  height: 50px;
+}
+
+.native-app-shell [data-testid^="bottom-nav-"] svg {
+  width: 23px !important;
+  height: 23px !important;
+}
+
+.native-app-shell [data-testid^="bottom-nav-"] span {
+  margin-top: 2px !important;
+  font-size: 11.5px !important;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+
+.native-app-shell h1,
+.native-app-shell h2,
+.native-app-shell h3,
+.native-app-shell p,
+.native-app-shell span,
+.native-app-shell button,
+.native-app-shell input {
+  letter-spacing: 0;
+  word-break: keep-all;
+}
+
+/* App-only typography guardrails: prevent desktop-sized views from appearing as zoomed web pages. */
+.native-app-shell h1 {
+  font-size: clamp(22px, 6vw, 28px) !important;
+  line-height: 1.2 !important;
+}
+
+.native-app-shell h2 {
+  font-size: clamp(19px, 5.2vw, 22px) !important;
+  line-height: 1.25 !important;
+}
+
+.native-app-shell h3 {
+  font-size: clamp(16px, 4.6vw, 18px) !important;
+  line-height: 1.3 !important;
+}
+
+.native-app-shell p {
+  line-height: 1.45 !important;
+}
+
+.native-app-shell button {
+  letter-spacing: 0;
+}
+
+/* My page: keep profile and logged-out state readable but compact. */
+.native-app-shell .app-mobile-shell > div > div > .flex-1.relative.overflow-hidden > .h-full.overflow-y-auto.pt-16 h2,
+.native-app-shell .app-mobile-shell > div > div > .flex-1.relative.overflow-hidden > .flex.flex-col.items-center.justify-center.h-full h2 {
+  font-size: 22px !important;
+}
+
+.native-app-shell .app-mobile-shell > div > div > .flex-1.relative.overflow-hidden > .flex.flex-col.items-center.justify-center.h-full button {
+  min-height: 54px;
+  width: min(80vw, 320px);
+  border-radius: 16px !important;
+  font-size: 16px !important;
+}
+
+/* Admin surfaces are app-only density corrections, not desktop admin rewrites. */
+.native-app-shell [class*="Dashboard"] h1,
+.native-app-shell .fixed.inset-0 h1 {
+  font-size: 24px !important;
+  line-height: 1.25 !important;
+}
+
+.native-app-shell [class*="Dashboard"] h2,
+.native-app-shell .fixed.inset-0 h2 {
+  font-size: 20px !important;
+  line-height: 1.3 !important;
+}
+
+.native-app-shell [class*="Dashboard"] .text-2xl,
+.native-app-shell .fixed.inset-0 .text-2xl {
+  font-size: 22px !important;
+}
+
+.native-app-shell [class*="Dashboard"] .text-xl,
+.native-app-shell .fixed.inset-0 .text-xl {
+  font-size: 19px !important;
+}
+
+.native-app-shell [class*="Dashboard"] button,
+.native-app-shell .fixed.inset-0 button {
+  min-height: 44px;
+}
+
+.native-app-shell .sonner-toaster {
+  bottom: calc(var(--app-content-bottom) + 12px) !important;
+}
+
+/* App-only floating recommendation menu. Keep it above the fixed tab without covering it. */
+.native-app-shell [data-debug="ai-floating"] {
+  right: 12px !important;
+  bottom: calc(var(--app-content-bottom) + 12px) !important;
+  max-width: calc(100vw - 24px);
+}
+
+.native-app-shell [data-debug="ai-floating"] > .flex.flex-col {
+  max-height: calc(var(--app-height, 100dvh) - var(--native-safe-top) - var(--native-tab-height) - var(--native-safe-bottom) - 160px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.native-app-shell [data-debug="ai-floating"] > .flex.flex-col button {
+  width: min(72vw, 300px) !important;
+  min-height: 64px;
+  border-radius: 16px !important;
+}

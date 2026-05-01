@@ -80,7 +80,7 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
   }, [setQuery]);
 
   return (
-    <div ref={containerRef} className={`relative w-full ${className || ''}`}>
+    <div ref={containerRef} className={`relative w-full ${className || ''}`} data-debug="smart-search">
       {/* Search Input */}
       <div className={`bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden ring-1 ring-black/[0.03] ${
         isFocused ? 'ring-primary/30 border-primary/20' : ''
