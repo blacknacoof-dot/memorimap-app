@@ -53,10 +53,29 @@ export const AppMainLayout: React.FC<AppMainLayoutProps> = ({
   contentRouterProps,
   modalContainerProps,
 }) => {
+  const isNativeApp =
+    typeof document !== 'undefined' && document.body.classList.contains('native-app');
+  const nativeFullHeightStyle = isNativeApp
+    ? ({ height: 'var(--app-height, 100dvh)', minHeight: 0, overflow: 'hidden' } as React.CSSProperties)
+    : undefined;
+  const nativeFrameStyle = isNativeApp
+    ? ({ height: 'var(--app-height, 100dvh)', minHeight: 'var(--app-height, 100dvh)', overflow: 'hidden' } as React.CSSProperties)
+    : undefined;
+  const nativeContentStyle = isNativeApp
+    ? ({
+        flex: '0 0 var(--native-content-height)',
+        height: 'var(--native-content-height)',
+        maxHeight: 'var(--native-content-height)',
+        minHeight: 0,
+        overflow: 'hidden',
+        paddingBottom: 0,
+      } as React.CSSProperties)
+    : undefined;
+
   return (
-    <div className="app-mobile-shell h-full w-full relative bg-gray-100 flex justify-center overflow-x-hidden overflow-y-auto">
-      <div className="w-full md:max-w-md md:py-6">
-        <div className="w-full h-full bg-white relative shadow-2xl flex flex-col md:min-h-[calc(100dvh-7rem)]">
+    <div className="app-mobile-shell h-full w-full relative bg-gray-100 flex justify-center overflow-x-hidden overflow-y-auto" data-debug="app-mobile-shell" style={nativeFullHeightStyle}>
+      <div className="w-full md:max-w-md md:py-6" data-debug="app-viewport" style={nativeFullHeightStyle}>
+        <div className="w-full h-full bg-white relative shadow-2xl flex flex-col md:min-h-[calc(100dvh-7rem)]" data-debug="app-frame" style={nativeFrameStyle}>
         {roleError && import.meta.env.DEV && (
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[10000] w-[90%] max-w-md bg-red-50 border border-red-200 p-4 rounded-xl shadow-lg flex items-start gap-3">
             <AlertCircle className="text-red-500 shrink-0" size={20} />
@@ -89,7 +108,7 @@ export const AppMainLayout: React.FC<AppMainLayoutProps> = ({
           />
         )}
 
-        <div className="flex-1 relative overflow-hidden">
+        <div className="flex-1 relative overflow-hidden" data-debug="app-content" style={nativeContentStyle}>
           <Suspense fallback={<LoadingFallback />}>
             <ContentRouter {...contentRouterProps} />
           </Suspense>

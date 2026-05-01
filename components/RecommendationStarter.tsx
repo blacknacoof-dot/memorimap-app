@@ -33,7 +33,7 @@ export const RecommendationStarter: React.FC<Props> = ({ onSelectIntent }) => {
     ] as const;
 
     return (
-        <div className="fixed bottom-[calc(5.2rem+env(safe-area-inset-bottom,0px))] right-3 z-[210] flex flex-col items-end gap-2 pointer-events-none">
+        <div className="fixed bottom-[calc(5.2rem+env(safe-area-inset-bottom,0px))] right-3 z-[210] flex flex-col items-end gap-2 pointer-events-none" data-debug="ai-floating">
             {/* Menu Overlay */}
             {isOpen && (
                 <div className="flex flex-col gap-2 mb-1 pointer-events-auto animate-in slide-in-from-bottom-5 fade-in duration-300">

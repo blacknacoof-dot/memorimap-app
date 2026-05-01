@@ -38,7 +38,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ viewState, setViewState })
   if (!VISIBLE_VIEWS.has(viewState)) return null;
 
   return (
-    <div className="shrink-0 border-t border-gray-200 bg-white px-4 pt-1.5 pb-safe">
+    <div className="shrink-0 border-t border-gray-200 bg-white px-4 pt-1.5 pb-safe" data-debug="bottom-nav">
       <div className="flex items-center justify-around">
         {NAV_ITEMS.map(({ view, icon: Icon, label }) => (
           <button

@@ -114,6 +114,8 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
   } = props;
 
   const { session } = useSession();
+  const isNativeApp =
+    typeof document !== 'undefined' && document.body.classList.contains('native-app');
   const shouldKeepWarmMapMounted =
     keepMapMounted && (viewState === ViewState.MAP || viewState === ViewState.LIST);
 
@@ -223,6 +225,30 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
     </div>
   );
 
+  const nativeMapFacilitySheet = (
+    <div
+      className="native-facility-bottom-sheet absolute inset-x-0 bottom-0 z-20 flex min-h-[220px] max-h-[55%] h-[42%] flex-col overflow-hidden rounded-t-3xl border-t border-slate-200 bg-white/95 shadow-2xl backdrop-blur"
+      data-debug="facility-bottom-sheet"
+    >
+      <div className="flex shrink-0 justify-center pt-2 pb-1">
+        <div className="h-1.5 w-11 rounded-full bg-slate-300" />
+      </div>
+      <div className="flex min-h-0 flex-1 px-3 pb-3">
+        <FacilityList
+          facilities={filteredFacilities}
+          onSelect={(facility) => {
+            if (FEATURE_FLAGS.analytics) {
+              analytics.firstInteraction('card');
+            }
+            handleFacilitySelect(facility);
+          }}
+          compareList={compareList}
+          onToggleCompare={toggleCompare}
+        />
+      </div>
+    </div>
+  );
+
   // ADMIN - separate full-page layout (with role guard)
   if (viewState === ViewState.ADMIN) {
     if (isLoadingRole) {
@@ -265,13 +291,15 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
     const mapVisible = viewState === ViewState.MAP;
 
     return (
-      <div className="h-full relative bg-gray-50">
+      <div className="h-full relative bg-gray-50" data-debug="map-page">
         <div
           className={`absolute inset-0 ${mapVisible ? 'z-10 opacity-100 pointer-events-auto' : 'z-0 opacity-0 pointer-events-none'} transition-opacity duration-200`}
+          data-debug="map-body"
           aria-hidden={!mapVisible}
         >
           {mapView(mapVisible)}
         </div>
+        {isNativeApp && mapVisible && nativeMapFacilitySheet}
         {!mapVisible && (
           <div className="absolute inset-0 z-20 bg-gray-50">
             {listView()}
@@ -287,7 +315,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
 
     case ViewState.LIST:
       return (
-        <div className="h-full relative">
+        <div className="h-full relative" data-debug="map-page">
           <div className="list-view-shell h-full flex flex-col pt-[6.75rem] pb-4 bg-slate-50">
             <div className="px-4 shrink-0">
               {promoBanner}

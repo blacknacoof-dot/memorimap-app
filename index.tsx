@@ -4,8 +4,25 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
 import './index.css';
 import './lib/analytics';
+import { Capacitor } from '@capacitor/core';
 import { ClerkProviderWrapper } from './lib/auth';
 import { installChunkRecoveryHandlers } from './lib/chunkRecovery';
+
+const isNativeApp = Capacitor.isNativePlatform();
+
+if (isNativeApp) {
+  document.documentElement.classList.add('native-app');
+  document.body.classList.add('native-app');
+  try {
+    window.localStorage.setItem('memorimap_welcome_seen_v1', 'true');
+  } catch {
+    // Native startup should not be blocked when localStorage is unavailable.
+  }
+  void import('./src/native/native-app.css');
+  void import('./src/native/appViewport').then(({ installNativeViewportVars }) => {
+    installNativeViewportVars();
+  });
+}
 
 installChunkRecoveryHandlers({
   currentEntryUrl: import.meta.url,
@@ -78,7 +95,9 @@ root.render(
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <ClerkProviderWrapper>
-          <App />
+          <div className={isNativeApp ? 'native-app-shell' : undefined} data-debug={isNativeApp ? 'app-shell' : undefined}>
+            <App />
+          </div>
         </ClerkProviderWrapper>
       </QueryClientProvider>
     </ErrorBoundary>

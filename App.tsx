@@ -33,6 +33,8 @@ import { AppRouteLayout as RouteLayoutType, getInitialLayoutFromHash, resolveLeg
 const App: React.FC = () => {
   useProfileSync();
   const openChat = useChatStore(s => s.openChat);
+  const isNativeAppRuntime = () =>
+    typeof document !== 'undefined' && document.body.classList.contains('native-app');
 
   const mapRef = React.useRef<MapRef>(null);
   // Bootstrap refs: keep the map warmed from first mobile render and allow only one automatic list handoff.
@@ -45,6 +47,9 @@ const App: React.FC = () => {
     FEATURE_FLAGS.mobileListDefault && isMobileViewport()
   );
   const [viewState, setViewState] = useState<ViewState>(() => {
+    if (isNativeAppRuntime()) {
+      return ViewState.MAP;
+    }
     if (FEATURE_FLAGS.mobileListDefault) {
       if (shouldKeepMapMounted) {
         startedFromBootstrapMapRef.current = true;

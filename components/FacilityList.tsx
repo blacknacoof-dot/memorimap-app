@@ -60,7 +60,7 @@ export const FacilityList = React.memo<FacilityListProps>(({ facilities, onSelec
     }
 
     return (
-        <div className="flex-1 w-full h-full min-h-0 bg-transparent">
+        <div className="flex-1 w-full h-full min-h-0 bg-transparent" data-debug="facility-list">
             <Virtuoso
                 style={{ height: '100%', width: '100%' }}
                 totalCount={filteredFacilities.length}

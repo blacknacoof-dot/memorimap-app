@@ -640,7 +640,13 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
   // Render
   return (
     <div className="w-full h-full relative z-0">
-      <div ref={mapElement} style={{ width: '100%', height: '100%' }} />
+      <div
+        ref={mapElement}
+        className="map-container"
+        data-testid="map-container"
+        data-debug="map-container"
+        style={{ width: '100%', height: '100%' }}
+      />
       {/* SDK 로드 + 지도 초기화 완료 전 로딩 오버레이 */}
       {!isMapReady && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 z-10">
