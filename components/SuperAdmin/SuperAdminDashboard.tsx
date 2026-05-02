@@ -44,7 +44,7 @@ const SideMenuDrawer = ({ isOpen, onClose, onNavigate }: { isOpen: boolean; onCl
     };
 
     return (
-        <div className="fixed inset-0 z-[150] flex">
+        <div className="fixed inset-0 z-[150] flex" data-debug="super-admin-modal">
             {/* Background Overlay */}
             <div
                 className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
@@ -187,7 +187,7 @@ function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
     };
 
     return (
-        <div className="min-h-[100dvh] bg-slate-50 pb-20 font-sans relative">
+        <div className="min-h-[100dvh] bg-slate-50 pb-20 font-sans relative" data-debug="super-admin-page">
             {/* Side Menu Drawer Component */}
             <SideMenuDrawer
                 isOpen={isMenuOpen}
@@ -198,7 +198,7 @@ function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
                 }}
             />
 
-            <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
+            <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm" data-debug="super-admin-header">
                 <div className="max-w-5xl mx-auto px-4 h-14 md:h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2 md:gap-3">
                         {/* Menu Button (Trigger Drawer) */}
@@ -232,7 +232,7 @@ function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
                 </div>
 
                 {/* Tab Navigation */}
-                <div className="max-w-5xl mx-auto px-2 md:px-4 overflow-x-auto scrollbar-hide">
+                <div className="max-w-5xl mx-auto px-2 md:px-4 overflow-x-auto scrollbar-hide" data-debug="super-admin-filter-bar">
                     <div className="flex items-center gap-4 md:gap-6 min-w-max">
                         {[
                             { id: 'monitoring', label: '통합 관제', icon: MonitorStop },
@@ -257,7 +257,7 @@ function SuperAdminDashboardInner({ onBack }: { onBack?: () => void }) {
             </header>
 
             {/* 2. Main Content Area */}
-            <main className="max-w-5xl mx-auto p-4 md:p-6">
+            <main className="max-w-5xl mx-auto p-4 md:p-6" data-debug="super-admin-bottom-area">
                 {activeTab === 'subs' && (
                     <SubscriptionManager
                         onManage={(name) => {

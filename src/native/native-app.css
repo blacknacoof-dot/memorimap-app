@@ -105,8 +105,14 @@ body.native-app #root {
   overflow: hidden !important;
 }
 
+.native-app-shell [data-debug="app-content"][data-native-bottom-nav="hidden"] {
+  flex: 0 0 var(--app-height, 100dvh) !important;
+  height: var(--app-height, 100dvh) !important;
+  max-height: var(--app-height, 100dvh) !important;
+}
+
 /* Top overlay: compact controls, no large wrapper card. */
-.native-app-shell .app-mobile-shell > div > div > div.absolute.z-40 {
+.native-app-shell [data-debug="top-bar"] {
   top: calc(var(--native-safe-top) + 6px) !important;
   left: 16px !important;
   right: 16px !important;
@@ -119,7 +125,7 @@ body.native-app #root {
   overflow: visible;
 }
 
-.native-app-shell .app-mobile-shell > div > div > div.absolute.z-40 > .flex {
+.native-app-shell [data-debug="top-bar-row"] {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -181,14 +187,14 @@ body.native-app #root {
   opacity: 1;
 }
 
-.native-app-shell .app-mobile-shell > div > div > div.absolute.z-40 > .flex > .flex-1.bg-white {
+.native-app-shell [data-debug="top-bar-title"] {
   height: 46px !important;
   border-radius: 18px !important;
   border: 1px solid var(--native-border);
   box-shadow: var(--native-shadow);
 }
 
-.native-app-shell .app-mobile-shell > div > div > div.absolute.z-40 > .flex > .flex-1.bg-white span {
+.native-app-shell [data-debug="top-bar-title"] span {
   font-size: 17px !important;
   color: var(--native-text);
   letter-spacing: 0;
@@ -211,8 +217,8 @@ body.native-app #root {
 }
 
 .native-app-shell [data-testid^="filter-category-"] {
-  min-height: 38px !important;
-  height: 38px;
+  min-height: 44px !important;
+  height: 44px;
   padding: 0 14px !important;
   border-radius: 999px !important;
   font-size: 13px !important;
@@ -370,8 +376,7 @@ body.native-app #root {
 }
 
 /* Bottom tab: fixed size and predictable safe-area handling. */
-.native-app-shell .shrink-0.border-t:has([data-testid^="bottom-nav-"]),
-.native-app-shell .app-mobile-shell > div > div > .shrink-0.border-t {
+.native-app-shell [data-debug="bottom-nav"] {
   position: fixed;
   left: 0;
   right: 0;
@@ -390,11 +395,7 @@ body.native-app #root {
 
 /* Native release should open directly into the app shell.
    The web onboarding sheet is intentionally suppressed only in Capacitor. */
-.native-app-shell .fixed.inset-0.z-\[300\][role="dialog"][aria-modal="true"] {
-  display: none !important;
-}
-
-.native-app-shell .fixed.inset-0[role="dialog"][aria-modal="true"]:has(.animate-slide-up) {
+.native-app-shell [data-debug="welcome-sheet"] {
   display: none !important;
 }
 
@@ -429,22 +430,22 @@ body.native-app #root {
 
 /* App-only typography guardrails: prevent desktop-sized views from appearing as zoomed web pages. */
 .native-app-shell h1 {
-  font-size: clamp(22px, 6vw, 28px) !important;
-  line-height: 1.2 !important;
+  font-size: clamp(22px, 6vw, 28px);
+  line-height: 1.2;
 }
 
 .native-app-shell h2 {
-  font-size: clamp(19px, 5.2vw, 22px) !important;
-  line-height: 1.25 !important;
+  font-size: clamp(19px, 5.2vw, 22px);
+  line-height: 1.25;
 }
 
 .native-app-shell h3 {
-  font-size: clamp(16px, 4.6vw, 18px) !important;
-  line-height: 1.3 !important;
+  font-size: clamp(16px, 4.6vw, 18px);
+  line-height: 1.3;
 }
 
 .native-app-shell p {
-  line-height: 1.45 !important;
+  line-height: 1.45;
 }
 
 .native-app-shell button {
@@ -499,18 +500,743 @@ body.native-app #root {
 /* App-only floating recommendation menu. Keep it above the fixed tab without covering it. */
 .native-app-shell [data-debug="ai-floating"] {
   right: 12px !important;
-  bottom: calc(var(--app-content-bottom) + 12px) !important;
+  bottom: calc(var(--app-content-bottom) + 18px) !important;
   max-width: calc(100vw - 24px);
 }
 
-.native-app-shell [data-debug="ai-floating"] > .flex.flex-col {
-  max-height: calc(var(--app-height, 100dvh) - var(--native-safe-top) - var(--native-tab-height) - var(--native-safe-bottom) - 160px);
+.native-app-shell [data-debug="ai-menu-overlay"] {
+  max-height: calc(var(--app-height, 100dvh) - var(--native-safe-top) - var(--app-content-bottom) - 112px);
   overflow-y: auto;
   overscroll-behavior: contain;
 }
 
-.native-app-shell [data-debug="ai-floating"] > .flex.flex-col button {
+.native-app-shell [data-debug="ai-menu-card"] {
   width: min(72vw, 300px) !important;
   min-height: 64px;
   border-radius: 16px !important;
+}
+
+/* Full-screen AI modals must cover the fixed app tab and respect device insets. */
+.native-app-shell [data-debug="ai-modal"] {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 430 !important;
+  padding: 0 !important;
+}
+
+.native-app-shell [data-debug="ai-modal-panel"] {
+  box-sizing: border-box;
+  width: 100% !important;
+  height: var(--app-height, 100dvh) !important;
+  max-height: var(--app-height, 100dvh) !important;
+  border-radius: 0 !important;
+  padding-top: var(--native-safe-top) !important;
+  padding-bottom: var(--native-safe-bottom) !important;
+}
+
+.native-app-shell [data-debug="ai-chat-root"] {
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+.native-app-shell [data-debug="ai-header"] {
+  padding: 10px 20px 14px !important;
+  min-height: auto !important;
+  flex: 0 0 auto;
+}
+
+.native-app-shell [data-debug="ai-header"] > div:first-child {
+  gap: 12px !important;
+  margin-bottom: 10px !important;
+  min-width: 0;
+}
+
+.native-app-shell [data-debug="ai-avatar"] > div,
+.native-app-shell [data-debug="facility-ai-avatar"] > div {
+  width: 56px !important;
+  height: 56px !important;
+}
+
+.native-app-shell [data-debug="ai-avatar"] svg,
+.native-app-shell [data-debug="facility-ai-avatar"] svg {
+  width: 26px !important;
+  height: 26px !important;
+}
+
+.native-app-shell [data-debug="ai-title"],
+.native-app-shell [data-debug="facility-ai-title"] {
+  min-width: 0 !important;
+  overflow: hidden;
+}
+
+.native-app-shell [data-debug="ai-title"] h1,
+.native-app-shell [data-debug="facility-ai-title"] h1 {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 28px !important;
+  line-height: 1.12 !important;
+}
+
+.native-app-shell [data-debug="ai-title"] p,
+.native-app-shell [data-debug="facility-ai-title"] p {
+  font-size: 15px !important;
+  line-height: 1.25 !important;
+}
+
+.native-app-shell [data-debug="ai-header"] > div:last-child {
+  margin-top: 0 !important;
+  font-size: 11px !important;
+}
+
+.native-app-shell [data-debug="ai-header"] > div:last-child span {
+  padding: 5px 10px !important;
+  line-height: 1.2 !important;
+}
+
+.native-app-shell [data-debug="ai-close"] {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+  flex-shrink: 0 !important;
+}
+
+.native-app-shell [data-debug="ai-body"] {
+  min-height: 0 !important;
+  flex: 1 1 auto !important;
+  overflow-y: auto !important;
+  padding-top: 14px !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.native-app-shell [data-debug="ai-region-dropdown"] {
+  position: relative;
+  z-index: 2;
+}
+
+.native-app-shell [data-debug="ai-bottom-cta"],
+.native-app-shell [data-debug="ai-input-bar"] {
+  flex: 0 0 auto;
+  padding-bottom: max(12px, var(--native-safe-bottom)) !important;
+}
+
+/* Sangjo tab CTA: allow Korean copy to wrap instead of overflowing on narrow WebViews. */
+.native-app-shell [data-debug="sangjo-page"] {
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+.native-app-shell [data-debug="sangjo-scroll"] {
+  min-height: 0 !important;
+  padding-bottom: 112px !important;
+}
+
+.native-app-shell [data-debug="sangjo-ai-cta"] {
+  min-height: 76px;
+  align-items: center;
+}
+
+.native-app-shell .sangjo-ai-cta-text {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.native-app-shell .sangjo-ai-cta-text > div {
+  flex-wrap: wrap;
+  row-gap: 2px;
+}
+
+.native-app-shell .sangjo-ai-cta-title {
+  white-space: normal !important;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  line-height: 1.25 !important;
+}
+
+/* Facility admin header: keep controls from crowding the title on native width. */
+.native-app-shell [data-debug="admin-page"] {
+  padding-top: calc(var(--native-safe-top) + 16px) !important;
+  padding-bottom: calc(var(--native-safe-bottom) + 12px) !important;
+}
+
+.native-app-shell [data-debug="admin-scroll"] {
+  padding-bottom: 12px !important;
+}
+
+.native-app-shell [data-debug="admin-header"] {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start !important;
+}
+
+.native-app-shell [data-debug="admin-title"] {
+  min-width: 0;
+}
+
+.native-app-shell [data-debug="admin-title"] h1 {
+  font-size: 24px !important;
+  line-height: 1.2 !important;
+  margin-bottom: 6px !important;
+}
+
+.native-app-shell [data-debug="subscription-button"] {
+  min-height: 44px !important;
+  white-space: nowrap;
+  padding: 0 12px !important;
+}
+
+.native-app-shell [data-debug="admin-home-button"] {
+  min-width: 44px !important;
+  min-height: 44px !important;
+}
+
+.native-app-shell [data-debug="facility-info-card"] > div {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+.native-app-shell [data-debug="facility-info-card"] .facility-title-row {
+  align-items: flex-start !important;
+  flex-wrap: wrap;
+}
+
+.native-app-shell [data-debug="facility-info-card"] h3 {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  overflow-wrap: anywhere;
+  line-height: 1.25 !important;
+}
+
+.native-app-shell [data-debug="facility-info-card"] [data-testid="facility-edit-open-button"] {
+  width: 100%;
+  max-width: none;
+  padding: 10px 12px !important;
+  flex-direction: row !important;
+  justify-content: center;
+}
+
+.native-app-shell [data-debug="facility-info-card"] [data-testid="facility-edit-open-button"] span {
+  display: none;
+}
+
+.native-app-shell [data-debug="admin-status-tabs"] {
+  gap: 8px !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  padding-bottom: 8px !important;
+  margin-bottom: 12px !important;
+  padding-right: 16px !important;
+}
+
+.native-app-shell [data-debug="admin-status-tabs"] button {
+  flex: 0 0 auto !important;
+  min-width: max-content !important;
+}
+
+/* Sangjo detail tabs: fixed-width tab items prevent adjacent labels from visually merging. */
+.native-app-shell [data-debug="sangjo-detail-page"] {
+  bottom: var(--app-content-bottom) !important;
+  height: calc(var(--app-height, 100dvh) - var(--native-safe-top) - var(--app-content-bottom) - 8px) !important;
+  max-height: calc(var(--app-height, 100dvh) - var(--native-safe-top) - var(--app-content-bottom) - 8px) !important;
+  padding-bottom: 0 !important;
+}
+
+.native-app-shell [data-debug="sangjo-detail-tabs"] {
+  display: flex;
+  gap: 14px;
+  padding: 0 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+}
+
+.native-app-shell [data-debug="sangjo-detail-tab-item"] {
+  flex: 0 0 auto !important;
+  min-width: max-content;
+  padding: 14px 2px 12px !important;
+}
+
+.native-app-shell [data-debug="sangjo-detail-content"],
+.native-app-shell [data-debug="sangjo-detail-scroll"],
+.native-app-shell .sangjo-detail-content {
+  padding-top: 18px !important;
+  padding-bottom: 18px !important;
+}
+
+.native-app-shell [data-debug="sangjo-detail-bottom-action"] {
+  padding-bottom: 12px !important;
+}
+
+.native-app-shell [data-debug="facility-detail-page"] {
+  bottom: var(--app-content-bottom) !important;
+  height: calc(var(--app-height, 100dvh) - var(--native-safe-top) - var(--app-content-bottom) - 8px) !important;
+  max-height: calc(var(--app-height, 100dvh) - var(--native-safe-top) - var(--app-content-bottom) - 8px) !important;
+  padding-bottom: 0 !important;
+}
+
+.native-app-shell [data-debug="facility-detail-tabs"] {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.native-app-shell [data-debug="facility-detail-scroll"] {
+  padding-bottom: 18px !important;
+}
+
+.native-app-shell [data-debug="facility-detail-bottom-action"] {
+  padding-bottom: 12px !important;
+}
+
+/* Consultation and reservation modals: keep submit actions above device insets and compact on native. */
+.native-app-shell [data-debug="funeral-emergency-modal"],
+.native-app-shell [data-debug="phone-reservation-modal"] {
+  padding: calc(var(--native-safe-top) + 8px) 12px max(12px, var(--native-safe-bottom)) !important;
+  align-items: flex-end !important;
+}
+
+.native-app-shell [data-debug="funeral-emergency-modal"] > div,
+.native-app-shell [data-debug="phone-reservation-modal"] > div {
+  width: min(calc(100vw - 24px), 420px) !important;
+  max-height: calc(var(--app-height, 100dvh) - var(--native-safe-top) - var(--native-safe-bottom) - 24px) !important;
+  margin-inline: auto;
+}
+
+.native-app-shell [data-debug="funeral-emergency-header"],
+.native-app-shell [data-debug="phone-reservation-header"] {
+  padding-top: 14px !important;
+  padding-bottom: 14px !important;
+  min-height: auto !important;
+}
+
+.native-app-shell [data-debug="funeral-emergency-scroll"],
+.native-app-shell [data-debug="phone-reservation-scroll"] {
+  min-height: 0 !important;
+  padding: 18px !important;
+  padding-bottom: calc(var(--native-safe-bottom) + 72px) !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.native-app-shell [data-debug="funeral-emergency-bottom-action"],
+.native-app-shell [data-debug="phone-reservation-bottom-action"] {
+  position: sticky;
+  bottom: 0;
+  margin: 0 -18px;
+  padding: 8px 18px max(10px, var(--native-safe-bottom)) !important;
+  background: #fff;
+  z-index: 3;
+}
+
+.native-app-shell [data-debug="funeral-emergency-submit-button"],
+.native-app-shell [data-debug="phone-reservation-submit-button"] {
+  min-height: 48px !important;
+  height: 48px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-radius: 14px !important;
+  font-size: 14px !important;
+}
+
+/* Facility AI chat header: long facility names must stay inside the header controls. */
+.native-app-shell [data-debug="facility-ai-chat"] {
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+.native-app-shell [data-debug="facility-ai-header"] {
+  padding: 10px 20px 14px !important;
+  min-height: auto !important;
+}
+
+.native-app-shell [data-debug="facility-ai-header"] > div:first-child {
+  gap: 12px !important;
+  margin-bottom: 10px !important;
+  min-width: 0;
+}
+
+.native-app-shell [data-debug="facility-ai-title"] {
+  min-width: 0 !important;
+  overflow: hidden;
+}
+
+.native-app-shell [data-debug="facility-ai-title"] h1 {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 28px !important;
+  line-height: 1.12 !important;
+}
+
+.native-app-shell [data-debug="facility-ai-body"] {
+  min-height: 0 !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+  padding-top: 14px !important;
+}
+
+/* Sangjo AI panels: center the sheet and avoid asymmetric WebView padding. */
+.native-app-shell [data-debug="sangjo-ai-modal"] {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 430 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: calc(var(--native-safe-top) + 10px) 12px calc(var(--app-content-bottom) + 10px) !important;
+}
+
+.native-app-shell [data-debug="sangjo-ai-panel"] {
+  width: min(calc(100vw - 24px), 420px) !important;
+  height: min(76dvh, calc(var(--app-height, 100dvh) - var(--native-safe-top) - var(--app-content-bottom) - 24px)) !important;
+  max-height: calc(var(--app-height, 100dvh) - var(--native-safe-top) - var(--app-content-bottom) - 24px) !important;
+  margin-inline: auto !important;
+  border-radius: 18px !important;
+}
+
+.native-app-shell [data-debug="sangjo-ai-header"] {
+  padding: 10px 16px 12px !important;
+  min-height: auto !important;
+  gap: 10px !important;
+}
+
+.native-app-shell [data-debug="sangjo-ai-header"] h1,
+.native-app-shell [data-debug="sangjo-ai-header"] h3 {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 16px !important;
+}
+
+.native-app-shell [data-debug="sangjo-ai-header"] > div:first-child {
+  flex: 1 1 auto !important;
+  min-width: 0;
+}
+
+.native-app-shell [data-debug="sangjo-ai-title-wrap"] {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  gap: 10px !important;
+}
+
+.native-app-shell [data-debug="sangjo-ai-avatar"] {
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  flex-shrink: 0 !important;
+}
+
+.native-app-shell [data-debug="sangjo-ai-avatar"] > div {
+  width: 40px !important;
+  height: 40px !important;
+}
+
+.native-app-shell [data-debug="sangjo-ai-title"] {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  overflow: hidden;
+}
+
+.native-app-shell [data-debug="sangjo-ai-title"] h1 {
+  display: block;
+  max-width: 100%;
+  font-size: 24px !important;
+  line-height: 1.1 !important;
+  letter-spacing: 0 !important;
+}
+
+.native-app-shell [data-debug="sangjo-ai-title"] p {
+  font-size: 12px !important;
+  line-height: 1.25 !important;
+}
+
+.native-app-shell [data-debug="sangjo-ai-title-check"] {
+  width: 14px !important;
+  height: 14px !important;
+  flex-shrink: 0 !important;
+}
+
+.native-app-shell [data-debug="sangjo-ai-back"],
+.native-app-shell [data-debug="sangjo-ai-close"] {
+  flex-shrink: 0 !important;
+}
+
+.native-app-shell [data-debug="sangjo-ai-header"] button {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+  flex-shrink: 0 !important;
+}
+
+@media (max-width: 390px) {
+  .native-app-shell [data-debug="sangjo-ai-title"] h1 {
+    font-size: 22px !important;
+  }
+}
+
+.native-app-shell [data-debug="sangjo-ai-body"],
+.native-app-shell [data-debug="sangjo-ai-scroll"] {
+  min-height: 0 !important;
+  padding-left: 14px !important;
+  padding-right: 14px !important;
+}
+
+.native-app-shell [data-debug="sangjo-ai-menu-buttons"] {
+  padding-left: 14px !important;
+  padding-right: 14px !important;
+}
+
+/* Sangjo scenario chat: keep the bot avatar inside the bubble so narrow screens do not lose a left gutter. */
+.native-app-shell [data-debug="sangjo-ai-panel"] [data-debug="sangjo-scenario-bot-row"] {
+  position: relative;
+  display: block !important;
+  width: 100%;
+  padding-left: 0 !important;
+}
+
+.native-app-shell [data-debug="sangjo-ai-panel"] [data-debug="sangjo-scenario-bot-avatar"] {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  width: 36px !important;
+  height: 36px !important;
+  margin: 0 !important;
+  z-index: 2;
+}
+
+.native-app-shell [data-debug="sangjo-ai-panel"] [data-debug="sangjo-scenario-message-content"] {
+  max-width: 100% !important;
+  width: 100%;
+}
+
+.native-app-shell [data-debug="sangjo-ai-panel"] [data-debug="sangjo-scenario-bot-bubble"] {
+  position: relative;
+  width: 100%;
+  padding: 16px 16px 16px 62px !important;
+  border-radius: 18px !important;
+  line-height: 1.45 !important;
+}
+
+.native-app-shell [data-debug="sangjo-ai-panel"] [data-debug="sangjo-scenario-options"] {
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding-left: 0 !important;
+}
+
+.native-app-shell [data-debug="sangjo-ai-panel"] [data-debug="sangjo-scenario-options"] button {
+  min-height: 44px;
+  max-width: 100%;
+  width: fit-content;
+  min-width: 150px;
+  padding-left: 18px !important;
+  padding-right: 18px !important;
+}
+
+/* Ending note modal: compact the native dialog and keep footer actions above app chrome. */
+.native-app-shell [data-debug="ending-note-modal"] {
+  z-index: 440 !important;
+  padding: calc(var(--native-safe-top) + 12px) 14px calc(var(--app-content-bottom) + 12px) !important;
+}
+
+.native-app-shell [data-debug="ending-note-panel"] {
+  display: flex !important;
+  flex-direction: column !important;
+  width: min(calc(100vw - 28px), 420px) !important;
+  max-height: calc(var(--app-height, 100dvh) - var(--native-safe-top) - var(--app-content-bottom) - 24px) !important;
+  min-height: 0 !important;
+}
+
+.native-app-shell [data-debug="ending-note-header"] {
+  flex: 0 0 auto;
+  padding: 14px 18px !important;
+}
+
+.native-app-shell [data-debug="ending-note-title"] {
+  font-size: 24px !important;
+  line-height: 1.15 !important;
+  letter-spacing: 0 !important;
+  min-width: 0;
+}
+
+.native-app-shell [data-debug="ending-note-scroll"] {
+  flex: 1 1 auto;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 18px !important;
+  padding-bottom: calc(var(--native-safe-bottom) + 96px) !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.native-app-shell [data-debug="ending-note-footer"] {
+  flex: 0 0 auto;
+  gap: 10px !important;
+  padding: 10px 16px max(12px, var(--native-safe-bottom)) !important;
+}
+
+.native-app-shell [data-debug="ending-note-footer"] button {
+  min-height: 44px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Sangjo detail CTA: compact buttons, kept above the fixed bottom tab. */
+.native-app-shell [data-debug="sangjo-detail-page"] {
+  bottom: calc(var(--app-content-bottom) + 8px) !important;
+  height: calc(var(--app-height, 100dvh) - var(--native-safe-top) - var(--app-content-bottom) - 16px) !important;
+  max-height: calc(var(--app-height, 100dvh) - var(--native-safe-top) - var(--app-content-bottom) - 16px) !important;
+}
+
+.native-app-shell [data-debug="sangjo-detail-bottom-action"] {
+  padding: 8px 14px !important;
+  gap: 10px !important;
+}
+
+.native-app-shell [data-debug="sangjo-detail-ai-button"],
+.native-app-shell [data-debug="sangjo-detail-contract-button"] {
+  min-height: 48px !important;
+  height: 48px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-radius: 14px !important;
+  font-size: 14px !important;
+}
+
+.native-app-shell [data-debug="sangjo-detail-ai-button"] svg,
+.native-app-shell [data-debug="sangjo-detail-contract-button"] svg {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.native-app-shell [data-debug="partner-apply-page"] {
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.native-app-shell [data-debug="partner-apply-scroll"] {
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.native-app-shell [data-debug="partner-apply-footer-space"] {
+  padding-bottom: calc(var(--native-safe-bottom) + 24px) !important;
+}
+
+.native-app-shell [data-debug="business-upload-section"] {
+  margin-bottom: 4px !important;
+}
+
+/* Sangjo admin: keep mobile navigation below the Android status bar and preserve form controls. */
+.native-app-shell [data-debug="sangjo-admin-dashboard"] {
+  min-height: var(--app-height, 100dvh) !important;
+  height: var(--app-height, 100dvh) !important;
+  overflow: hidden !important;
+}
+
+.native-app-shell [data-debug="sangjo-admin-content"] {
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.native-app-shell [data-debug="sangjo-admin-topnav"] {
+  padding-top: calc(var(--native-safe-top) + 8px) !important;
+  padding-bottom: 10px !important;
+  padding-inline: 12px !important;
+  gap: 8px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.native-app-shell [data-debug="sangjo-admin-tab"] {
+  min-height: 42px !important;
+  height: 42px !important;
+  padding-inline: 12px !important;
+  border-radius: 12px !important;
+  flex: 0 0 auto !important;
+}
+
+.native-app-shell [data-debug="sangjo-admin-header"] {
+  flex: 0 0 52px !important;
+  min-height: 52px !important;
+  height: 52px !important;
+}
+
+.native-app-shell [data-debug="sangjo-admin-scroll"] {
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  padding: 16px !important;
+  padding-bottom: calc(var(--app-content-bottom) + 24px) !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.native-app-shell [data-debug="sangjo-admin-feature-input-row"] {
+  min-width: 0;
+  flex-wrap: nowrap;
+}
+
+.native-app-shell [data-debug="sangjo-admin-feature-input"] {
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+.native-app-shell [data-debug="sangjo-admin-feature-save"] {
+  min-width: 44px !important;
+  min-height: 44px !important;
+  flex: 0 0 auto !important;
+}
+
+/* Super admin: sticky header and wide data views must stay scrollable on mobile WebView. */
+.native-app-shell [data-debug="super-admin-page"] {
+  min-height: var(--app-height, 100dvh) !important;
+  height: var(--app-height, 100dvh) !important;
+  overflow-y: auto !important;
+  padding-bottom: calc(var(--app-content-bottom) + 16px) !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.native-app-shell [data-debug="super-admin-header"] {
+  top: 0 !important;
+  padding-top: var(--native-safe-top) !important;
+}
+
+.native-app-shell [data-debug="super-admin-header"] button {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.native-app-shell [data-debug="super-admin-filter-bar"] {
+  min-width: 0;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.native-app-shell [data-debug="super-admin-table-wrapper"] {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.native-app-shell [data-debug="super-admin-table-wrapper"] table {
+  min-width: 640px;
+}
+
+.native-app-shell [data-debug="super-admin-bottom-area"] {
+  padding: 16px !important;
+  padding-bottom: calc(var(--app-content-bottom) + 24px) !important;
+}
+
+.native-app-shell [data-debug="super-admin-modal"] {
+  padding-top: var(--native-safe-top) !important;
+  padding-bottom: var(--native-safe-bottom) !important;
 }

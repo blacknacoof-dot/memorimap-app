@@ -92,12 +92,12 @@ export default function EndingNoteEditModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[320] flex items-center justify-center bg-black/40 p-4 backdrop-blur-[2px] animate-in fade-in duration-200">
-      <div className="w-full max-w-sm overflow-hidden rounded-[24px] border border-gray-100 bg-white shadow-xl animate-in zoom-in-95 duration-200">
-        <div className="flex items-center justify-between border-b border-gray-50 bg-white p-5">
+    <div className="fixed inset-0 z-[320] flex items-center justify-center bg-black/40 p-4 backdrop-blur-[2px] animate-in fade-in duration-200" data-debug="ending-note-modal">
+      <div className="w-full max-w-sm overflow-hidden rounded-[24px] border border-gray-100 bg-white shadow-xl animate-in zoom-in-95 duration-200" data-debug="ending-note-panel">
+        <div className="flex items-center justify-between border-b border-gray-50 bg-white p-5" data-debug="ending-note-header">
           <div className="flex items-center gap-2">
             <div className="h-4 w-1.5 rounded-full bg-pink-500" />
-            <h2 className="text-sm font-bold text-gray-900">나의 엔딩노트 작성</h2>
+            <h2 className="text-sm font-bold text-gray-900" data-debug="ending-note-title">나의 엔딩노트 작성</h2>
           </div>
           <button
             onClick={onClose}
@@ -107,7 +107,7 @@ export default function EndingNoteEditModal({
           </button>
         </div>
 
-        <div className="custom-scrollbar max-h-[75dvh] space-y-6 overflow-y-auto p-5 md:max-h-[60dvh]">
+        <div className="custom-scrollbar max-h-[75dvh] space-y-6 overflow-y-auto p-5 md:max-h-[60dvh]" data-debug="ending-note-scroll">
           {endingNoteLevel === 'basic' && (
             <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
               <p className="text-[11px] font-medium leading-5 text-amber-800">
@@ -186,7 +186,7 @@ export default function EndingNoteEditModal({
           </div>
         </div>
 
-        <div className="flex gap-2 border-t border-gray-50 bg-white p-4">
+        <div className="flex gap-2 border-t border-gray-50 bg-white p-4" data-debug="ending-note-footer">
           <button
             onClick={onClose}
             className="flex-1 py-3 text-[11px] font-bold text-gray-400 transition-colors hover:text-gray-600"

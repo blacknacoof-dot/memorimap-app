@@ -163,6 +163,8 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
   const [isClusterReady, setIsClusterReady] = useState(false);
   const [_myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null);
   const locationMarkerRef = useRef<NaverMarker | null>(null);
+  const isNativeApp =
+    typeof document !== 'undefined' && document.body.classList.contains('native-app');
   const moveToFallbackLocation = () => {
     if (!mapInstance.current || !hasCompleteNaverMaps()) return;
     const fallbackLatLng = new window.naver.maps.LatLng(DEFAULT_MAP_CENTER[0], DEFAULT_MAP_CENTER[1]);
@@ -605,7 +607,11 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
         moveToFallbackLocation();
 
         if (err.code === err.PERMISSION_DENIED) {
-          toast.error('위치 권한이 꺼져 있습니다. 브라우저 설정에서 위치 권한을 허용해 주세요.');
+          toast.error(
+            isNativeApp
+              ? '위치 권한이 꺼져 있습니다. 앱 설정에서 위치 권한을 허용해 주세요.'
+              : '위치 권한이 꺼져 있습니다. 브라우저 설정에서 위치 권한을 허용해 주세요.'
+          );
           return;
         }
 

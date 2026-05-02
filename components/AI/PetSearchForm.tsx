@@ -230,7 +230,7 @@ const PetSearchForm: React.FC<FormProps> = ({
     // Login required
     if (!currentUser) {
         return (
-            <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
+            <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-4" data-debug="ai-login-card">
                 <p className="text-sm text-amber-800 font-bold mb-2">로그인이 필요합니다</p>
                 <p className="text-xs text-amber-700 mb-3">상담 접수를 위해 로그인해 주세요.</p>
                 <button onClick={() => onLoginRequired?.()} className="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold py-2.5 rounded-xl">
@@ -359,7 +359,7 @@ const PetSearchForm: React.FC<FormProps> = ({
     return (
         <div className="mt-3 bg-orange-50/50 border border-orange-100 rounded-xl p-4 space-y-4 animate-in fade-in duration-300">
             {/* Section 1: Pet Type */}
-            <div>
+            <div data-debug="ai-region-dropdown">
                 <label className="text-xs font-bold text-slate-700 mb-2 block">🐾 아이 종류</label>
                 <div className="flex gap-2">
                     {PET_TYPE_OPTIONS.map(opt => (
@@ -455,6 +455,7 @@ const PetSearchForm: React.FC<FormProps> = ({
                 onClick={handleSubmit}
                 disabled={!canSubmit}
                 className="w-full max-w-sm mx-auto bg-orange-500 hover:bg-orange-600 disabled:bg-slate-300 text-white text-sm font-bold py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+                data-debug="ai-bottom-cta"
             >
                 <Check size={16} /> 맞춤 동물장례식장 찾기
             </button>

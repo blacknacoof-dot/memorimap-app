@@ -22,7 +22,7 @@ export const UserManagement: React.FC = () => {
 
     return (
         <div className="space-y-4">
-            <div className="flex flex-wrap items-center gap-4 rounded-xl border bg-white p-4 shadow-sm">
+            <div className="flex flex-wrap items-center gap-4 rounded-xl border bg-white p-4 shadow-sm" data-debug="super-admin-filter-bar">
                 <div className="flex flex-1 items-center gap-2 rounded-lg border bg-gray-50 px-3 py-2">
                     <Search className="text-gray-400" size={18} />
                     <input
@@ -71,7 +71,7 @@ export const UserManagement: React.FC = () => {
             </div>
 
             <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto" data-debug="super-admin-table-wrapper">
                     <table className="w-full text-left text-sm text-gray-500">
                         <thead className="border-b bg-gray-50 text-xs uppercase text-gray-700">
                             <tr>

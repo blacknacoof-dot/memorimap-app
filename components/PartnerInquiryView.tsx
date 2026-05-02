@@ -221,7 +221,7 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack, onLoginClick }) =>
     }
 
     return (
-        <div className="h-full bg-gray-50 flex flex-col">
+        <div className="h-full bg-gray-50 flex flex-col" data-debug="partner-apply-page">
             {/* Header */}
             <div className="bg-white border-b sticky top-0 z-10 safe-top">
                 <div className="flex items-center h-14 px-4 gap-3">
@@ -232,7 +232,7 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack, onLoginClick }) =>
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto" data-debug="partner-apply-scroll">
                 {/* Helper Banner for Logged In User */}
                 {isSignedIn && user ? (
                     <div className="bg-blue-50 p-4 px-6 flex items-start gap-3 border-b border-blue-100">
@@ -270,7 +270,7 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack, onLoginClick }) =>
                 )}
 
                 {/* Form Section */}
-                <div className="p-4 pb-12">
+                <div className="p-4 pb-12" data-debug="partner-apply-footer-space">
                     <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-6 space-y-6">
 
                         {/* 1. Business Type */}
@@ -309,7 +309,7 @@ export const PartnerInquiryView: React.FC<Props> = ({ onBack, onLoginClick }) =>
                         </div>
 
                         {/* 2. File Upload (Business License) */}
-                        <div className="space-y-2">
+                        <div className="space-y-2" data-debug="business-upload-section">
                             <label className="text-sm font-bold text-gray-700 flex items-center gap-1">
                                 사업자등록증 첨부 <span className="text-red-500">*</span>
                             </label>

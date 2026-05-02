@@ -24,6 +24,7 @@ export const SangjoCompanyCard: React.FC<SangjoCompanyCardProps> = ({
             onClick={onSelect}
             className={`bg-white rounded-2xl p-2.5 shadow-sm border transition-all active:scale-[0.98] group relative ${isCompared ? 'border-primary ring-1 ring-primary/20 shadow-md' : 'border-gray-100 hover:shadow-md'
                 }`}
+            data-debug="sangjo-card"
         >
             {/* Favorite Button - Heart Icon */}
             <button

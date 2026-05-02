@@ -114,14 +114,14 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
     };
 
     return (
-        <div className="fixed inset-x-0 bottom-0 z-[250] bg-white rounded-t-3xl shadow-2xl transform transition-transform duration-300 max-h-[95dvh] h-[88dvh] md:h-[85dvh] flex flex-col md:max-w-md md:mx-auto pb-safe">
+        <div className="fixed inset-x-0 bottom-0 z-[250] bg-white rounded-t-3xl shadow-2xl transform transition-transform duration-300 max-h-[95dvh] h-[88dvh] md:h-[85dvh] flex flex-col md:max-w-md md:mx-auto pb-safe" data-debug="sangjo-detail-page">
             {/* Handle */}
             <div className="w-full flex justify-center pt-3 pb-1" onClick={onClose}>
                 <div className="w-12 h-1.5 bg-gray-300 rounded-full cursor-pointer"></div>
             </div>
 
             {/* Hero */}
-            <div className="relative h-32 md:h-48 shrink-0">
+            <div className="relative h-32 md:h-48 shrink-0" data-debug="sangjo-detail-hero">
                 <img src={company.imageUrl} alt={company.name} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
 
@@ -141,7 +141,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b overflow-x-auto no-scrollbar">
+            <div className="flex border-b overflow-x-auto no-scrollbar sangjo-detail-tabs" data-debug="sangjo-detail-tabs">
                 {[
                     { id: 'info', label: '정보' },
                     { id: 'gallery', label: '갤러리' },
@@ -152,6 +152,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                        data-debug="sangjo-detail-tab-item"
                         className={`flex-1 py-3 text-sm font-medium whitespace-nowrap ${activeTab === tab.id
                             ? 'text-primary border-b-2 border-primary'
                             : 'text-gray-400 hover:text-gray-700'}`}
@@ -162,7 +163,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-6 md:space-y-8 no-scrollbar">
+            <div className="sangjo-detail-content flex-1 overflow-y-auto p-5 space-y-6 md:space-y-8 no-scrollbar" data-debug="sangjo-detail-scroll">
                 {activeTab === 'info' && (
                     <InfoTab
                         company={company}
@@ -198,9 +199,10 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
             </div>
 
             {/* Footer CTA */}
-            <div className="p-4 border-t bg-white pb-safe flex gap-3 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] z-20">
+            <div className="p-4 border-t bg-white pb-safe flex gap-3 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] z-20" data-debug="sangjo-detail-bottom-action">
                 <button
                     onClick={onOpenAIConsult}
+                    data-debug="sangjo-detail-ai-button"
                     className="flex-1 bg-gray-100 text-gray-700 py-4 rounded-2xl font-bold active:scale-95 transition-transform flex items-center justify-center gap-2"
                 >
                     <Bot size={20} className="text-primary" />
@@ -208,6 +210,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
                 </button>
                 <button
                     onClick={onOpenContract}
+                    data-debug="sangjo-detail-contract-button"
                     className="flex-[1.5] bg-gray-900 text-amber-500 py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2"
                 >
                     <ShieldCheck size={20} />

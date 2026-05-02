@@ -283,18 +283,20 @@ export const FacilityInfoEditor: React.FC<FacilityInfoEditorProps> = ({ facility
                             </span>
                         ))}
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2" data-debug="sangjo-admin-feature-input-row">
                         <input
                             type="text"
                             value={newFeature}
                             onChange={e => setNewFeature(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addFeature())}
                             className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none"
+                            data-debug="sangjo-admin-feature-input"
                             placeholder="특징 입력 후 엔터 (예: 주차 가능, 24시간 운영)"
                         />
                         <button
                             onClick={addFeature}
                             className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all"
+                            data-debug="sangjo-admin-feature-save"
                         >
                             <Plus size={16} />
                         </button>

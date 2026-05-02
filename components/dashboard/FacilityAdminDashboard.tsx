@@ -146,9 +146,10 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
   }, [clearBillingRedirectParams, isLoaded, loadData, myFacilityId, session]);
 
   return (
-    <div className="h-full overflow-y-auto pt-4 md:pt-6 pb-20 md:pb-6 px-4 sm:px-6 md:px-8 bg-gray-50">
-      <div className="mb-6 flex justify-between items-start">
-        <div className="flex-1">
+    <div className="h-full overflow-y-auto pt-4 md:pt-6 pb-20 md:pb-6 px-4 sm:px-6 md:px-8 bg-gray-50" data-debug="admin-page">
+      <div data-debug="admin-scroll">
+      <div className="mb-6 flex justify-between items-start" data-debug="admin-header">
+        <div className="flex-1" data-debug="admin-title">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">업체 관리 대시보드</h1>
           <p className="text-sm text-gray-600">
             {myFacility ? `${myFacility.name} 관리 중` : '담당 시설 정보를 불러오는 중...'}
@@ -169,12 +170,14 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
           <button
             onClick={() => onNavigate(ViewState.SUBSCRIPTION_PLANS, { facilityId: myFacility?.id })}
             className="px-3 md:px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg font-medium hover:from-purple-600 hover:to-purple-700 transition-all shadow-md text-xs md:text-sm"
+            data-debug="subscription-button"
           >
             구독 관리
           </button>
           <button
             onClick={() => onNavigate(ViewState.MY_PAGE)}
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+            data-debug="admin-home-button"
             title="일반 화면으로 돌아가기"
           >
             <Home size={24} />
@@ -200,12 +203,12 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
       {myFacility ? (
         <div className="mb-6">
           <h2 className="text-lg font-bold text-gray-900 mb-3">시설 정보</h2>
-          <div className="bg-white rounded-xl p-4 md:p-5 border shadow-sm">
+          <div className="bg-white rounded-xl p-4 md:p-5 border shadow-sm" data-debug="facility-info-card">
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-2 min-w-0">
+                <div className="facility-title-row flex items-center gap-2 mb-2 min-w-0">
                   <Building2 size={18} className="text-primary shrink-0" />
-                  <h3 className="font-bold text-gray-900 truncate">{myFacility.name}</h3>
+                  <h3 className="font-bold text-gray-900 truncate" data-debug="facility-name">{myFacility.name}</h3>
                   {normalizedPlanId === 'PREMIUM' && (
                     <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold border border-purple-200">
                       PREMIUM
@@ -238,6 +241,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
                 onClick={() => setEditingFacility(myFacility)}
                 className="flex flex-col items-center gap-1 px-4 py-3 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-all shadow-md active:scale-95 group"
                 data-testid="facility-edit-open-button"
+                data-debug="facility-edit-button"
               >
                 <div className="flex items-center gap-2 font-bold whitespace-nowrap">
                   <Edit size={18} />
@@ -281,7 +285,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
         ))}
       </div>
 
-      <div className="flex gap-1.5 mb-4 overflow-x-auto pb-2">
+      <div className="flex gap-1.5 mb-4 overflow-x-auto pb-2" data-debug="admin-status-tabs">
         {[
           { key: 'pending', label: '예약 대기', count: reservations.filter(r => r.status === 'pending' || r.status === 'urgent').length },
           { key: 'consultations', label: '상담 문의', count: consultationCount, icon: MessageSquare, badge: true },
@@ -366,6 +370,7 @@ export const FacilityAdminDashboard: React.FC<Props> = ({ user, facilities, onNa
           }}
         />
       )}
+      </div>
     </div>
   );
 };

@@ -13,14 +13,21 @@ export const ScenarioMessages: React.FC<ScenarioMessagesProps> = ({ messages, th
     return (
         <>
             {messages.map((msg) => (
-                <div key={msg.id} className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'} animate-fadeIn`}>
+                <div
+                    key={msg.id}
+                    className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'} animate-fadeIn`}
+                    data-debug={msg.isUser ? 'sangjo-scenario-user-row' : 'sangjo-scenario-bot-row'}
+                >
                     {!msg.isUser && (
-                        <div className={`w-8 h-8 ${themeColor} rounded-full flex-shrink-0 flex items-center justify-center mr-2 mt-1 shadow-md border-2 border-white`}>
+                        <div
+                            className={`w-8 h-8 ${themeColor} rounded-full flex-shrink-0 flex items-center justify-center mr-2 mt-1 shadow-md border-2 border-white`}
+                            data-debug="sangjo-scenario-bot-avatar"
+                        >
                             <Bot className="w-4 h-4 text-white" />
                         </div>
                     )}
 
-                    <div className="max-w-[85%] space-y-2">
+                    <div className="max-w-[85%] space-y-2" data-debug="sangjo-scenario-message-content">
                         {/* Text Bubble */}
                         {msg.text && (
                             <div
@@ -29,6 +36,7 @@ export const ScenarioMessages: React.FC<ScenarioMessagesProps> = ({ messages, th
                                         ? `${themeColor} text-white rounded-tr-none shadow-md`
                                         : 'bg-white text-gray-700 border border-gray-100 rounded-tl-none'
                                     }`}
+                                data-debug={msg.isUser ? 'sangjo-scenario-user-bubble' : 'sangjo-scenario-bot-bubble'}
                             >
                                 {msg.text.split(/(\*\*[^*]+\*\*)/).map((part, i) =>
                                     part.startsWith('**') && part.endsWith('**')
@@ -84,7 +92,7 @@ export const ScenarioMessages: React.FC<ScenarioMessagesProps> = ({ messages, th
 
                         {/* Option Buttons */}
                         {msg.options && (
-                            <div className="flex flex-wrap gap-2 mt-2">
+                            <div className="flex flex-wrap gap-2 mt-2" data-debug="sangjo-scenario-options">
                                 {msg.options.map((opt, i) => (
                                     <button
                                         key={i}

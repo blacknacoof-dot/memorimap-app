@@ -81,7 +81,7 @@ export const SangjoCompanyList: React.FC<Props> = ({
     );
 
     return (
-        <div className="h-full flex flex-col bg-gray-50 relative">
+        <div className="h-full flex flex-col bg-gray-50 relative sangjo-page" data-debug="sangjo-page">
             {/* Search Header */}
             <div className="px-4 pt-4 mb-1.5 shrink-0">
                 <div className="flex items-center justify-between mb-1.5">
@@ -120,7 +120,7 @@ export const SangjoCompanyList: React.FC<Props> = ({
             </div>
 
             {/* Company List */}
-            <div className="flex-1 overflow-y-auto px-4 space-y-2.5 pb-28 no-scrollbar">
+            <div className="flex-1 overflow-y-auto px-4 space-y-2.5 pb-28 no-scrollbar sangjo-scroll" data-debug="sangjo-scroll">
                 {filteredCompanies.map(company => (
                     <SangjoCompanyCard
                         key={company.id}
@@ -164,7 +164,8 @@ export const SangjoCompanyList: React.FC<Props> = ({
 
                 <div
                     onClick={handleOpenConsultation}
-                    className="w-full bg-white/95 backdrop-blur-md border border-amber-200/60 rounded-2xl px-3 py-2.5 flex items-center justify-between group cursor-pointer active:scale-[0.98] transition-all hover:border-amber-400 shadow-[0_8px_30px_rgba(245,158,11,0.12)]"
+                    className="w-full bg-white/95 backdrop-blur-md border border-amber-200/60 rounded-2xl px-3 py-2.5 flex items-center justify-between group cursor-pointer active:scale-[0.98] transition-all hover:border-amber-400 shadow-[0_8px_30px_rgba(245,158,11,0.12)] sangjo-ai-cta"
+                    data-debug="sangjo-ai-cta"
                 >
                     <div className="flex items-center gap-2.5 min-w-0">
                         <div className="relative">
@@ -176,12 +177,12 @@ export const SangjoCompanyList: React.FC<Props> = ({
                                 <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-white"></span>
                             </span>
                         </div>
-                        <div className="min-w-0">
+                        <div className="min-w-0 sangjo-ai-cta-text">
                             <div className="flex items-center gap-1.5 mb-0.5">
                                 <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded-md uppercase">AI 맞춤 추천</span>
                                 <p className="text-[10px] text-amber-600 font-bold tracking-tight">상조 선택이 고민되시나요?</p>
                             </div>
-                            <h4 className="text-[13px] font-extrabold text-gray-900 flex items-center gap-1">
+                            <h4 className="text-[13px] font-extrabold text-gray-900 flex items-center gap-1 sangjo-ai-cta-title">
                                 AI 마음이와 비교 상담
                                 <div className="p-0.5 bg-amber-500 rounded-full text-white shadow-sm group-hover:translate-x-1 transition-transform">
                                     <ChevronRight size={10} strokeWidth={3} />

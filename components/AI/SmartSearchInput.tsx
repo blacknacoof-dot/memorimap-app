@@ -85,7 +85,7 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
       <div className={`bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden ring-1 ring-black/[0.03] ${
         isFocused ? 'ring-primary/30 border-primary/20' : ''
       }`}>
-        <div className={`flex items-center px-3 md:px-4 bg-white ${compact ? 'h-[42px] md:h-12' : 'h-14'}`}>
+        <div className={`flex items-center px-3 md:px-4 bg-white ${compact ? 'h-11 md:h-12' : 'h-14'}`}>
           <Search size={compact ? 16 : 20} className="text-slate-500 mr-2 md:mr-3 shrink-0 md:!w-[18px] md:!h-[18px]" />
           <input
             id="smart-search-input"

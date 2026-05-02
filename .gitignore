@@ -77,9 +77,14 @@ public/images/defaults/*/originals/
 playwright-report/
 test-results/
 .agent/
+.codex-*.mjs
+.codex-ui-audit/
+.codex-ui-audit-*.err
 
 # Build cache
 *.tsbuildinfo
+.gradle/
+.android-home/
 
 # Root-level work memos (keep docs in docs/)
 /*.txt

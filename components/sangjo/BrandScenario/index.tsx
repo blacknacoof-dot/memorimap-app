@@ -164,27 +164,27 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
     };
 
     return (
-        <div className="flex flex-col h-full bg-white relative font-sans">
+        <div className="flex flex-col h-full bg-white relative font-sans" data-debug="sangjo-ai-body">
             {/* Header */}
-            <div className={`${themeColor} p-4 flex items-center justify-between shadow-lg z-20 shrink-0`}>
-                <div className="flex items-center gap-3">
-                    <button onClick={onBack} className="text-white/80 hover:text-white mr-1 active:scale-90 transition-transform">
+            <div className={`${themeColor} p-4 flex items-center justify-between shadow-lg z-20 shrink-0`} data-debug="sangjo-ai-header">
+                <div className="flex items-center gap-3 min-w-0" data-debug="sangjo-ai-title-wrap">
+                    <button onClick={onBack} className="text-white/80 hover:text-white mr-1 active:scale-90 transition-transform" data-debug="sangjo-ai-back">
                         <ArrowLeft className="w-6 h-6" />
                     </button>
-                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center border-2 border-white/20 shadow-inner overflow-hidden">
+                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center border-2 border-white/20 shadow-inner overflow-hidden" data-debug="sangjo-ai-avatar">
                         {(logo.startsWith('/') || logo.startsWith('http'))
                             ? <img src={logo} alt="brand logo" className="w-full h-full object-cover" />
                             : <span className="text-lg">{logo}</span>}
                     </div>
-                    <div>
-                        <div className="flex items-center gap-1.5">
+                    <div className="min-w-0" data-debug="sangjo-ai-title">
+                        <div className="flex items-center gap-1.5 min-w-0">
                             <h1 className="font-bold text-white text-base tracking-tight">{company.name}</h1>
-                            <Check className="w-3.5 h-3.5 text-blue-300" />
+                            <Check className="w-3.5 h-3.5 text-blue-300 shrink-0" data-debug="sangjo-ai-title-check" />
                         </div>
                         <p className="text-[10px] text-white/80 font-medium tracking-wide opacity-90">공식 프리미엄 상담실</p>
                     </div>
                 </div>
-                <button onClick={onClose} className="p-2 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors border border-white/10">
+                <button onClick={onClose} className="p-2 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors border border-white/10" data-debug="sangjo-ai-close">
                     <X className="w-5 h-5" />
                 </button>
             </div>
@@ -196,12 +196,12 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
             </div>
 
             {/* Chat Area */}
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F8F9FA] scrollbar-thin scrollbar-thumb-gray-200">
+            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F8F9FA] scrollbar-thin scrollbar-thumb-gray-200" data-debug="sangjo-ai-scroll">
                 <ScenarioMessages messages={messages} themeColor={themeColor} onOptionClick={handleOptionClick} onProductConsult={handleAction} />
             </div>
 
             {/* Bottom Guide */}
-            <div className="bg-white border-t border-gray-100 px-4 py-3 shrink-0">
+            <div className="bg-white border-t border-gray-100 px-4 py-3 shrink-0" data-debug="sangjo-ai-menu-buttons">
                 <p className="text-xs text-gray-400 text-center">버튼을 눌러 상담을 진행하세요</p>
             </div>
 

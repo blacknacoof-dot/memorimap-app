@@ -240,7 +240,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
     // Login required
     if (!currentUser) {
         return (
-            <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
+            <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-4" data-debug="ai-login-card">
                 <p className="text-sm text-amber-800 font-bold mb-2">로그인이 필요합니다</p>
                 <p className="text-xs text-amber-700 mb-3">상담 접수를 위해 로그인해 주세요.</p>
                 <button onClick={() => onLoginRequired?.()} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2.5 rounded-xl">
@@ -374,7 +374,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
     return (
         <div className="mt-3 bg-indigo-50/50 border border-indigo-100 rounded-xl p-4 space-y-4 animate-in fade-in duration-300">
             {/* Section 1: Urgency */}
-            <div>
+            <div data-debug="ai-region-dropdown">
                 <label className="text-xs font-bold text-slate-700 mb-2 block">현재 상황</label>
                 <div className="flex flex-wrap gap-1.5">
                     {FUNERAL_URGENCY_OPTIONS.map(opt => (
@@ -463,6 +463,7 @@ const FuneralSearchForm: React.FC<FormProps> = ({
                 onClick={handleSubmit}
                 disabled={!canSubmit || isSaving}
                 className="w-full max-w-sm mx-auto bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white text-sm font-bold py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+                data-debug="ai-bottom-cta"
             >
                 {isSaving ? <Loader2 size={16} className="animate-spin" /> : <><Check size={16} /> {isDirectFacility ? '상담 신청' : '맞춤 장례식장 찾기'}</>}
             </button>

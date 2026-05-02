@@ -38,7 +38,7 @@ export const FilterBar = () => {
                                         toggleCategory(cat.id as FacilityCategoryType);
                                     }
                                 }}
-                                className={`px-3 py-1.5 rounded-full text-[11px] font-bold border whitespace-nowrap transition-colors flex-shrink-0 min-h-[34px] shadow-sm ${isSelected
+                                className={`px-3 py-1.5 rounded-full text-[11px] font-bold border whitespace-nowrap transition-colors flex-shrink-0 min-h-[44px] shadow-sm ${isSelected
                                     ? 'bg-primary text-white border-primary shadow-primary/15'
                                     : 'bg-white/95 backdrop-blur text-slate-700 hover:bg-white border-slate-200'
                                     }`}

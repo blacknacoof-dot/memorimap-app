@@ -22,6 +22,9 @@ if (isNativeApp) {
   void import('./src/native/appViewport').then(({ installNativeViewportVars }) => {
     installNativeViewportVars();
   });
+  void import('./lib/oauthRedirect').then(({ installNativeOAuthRedirectHandler }) => {
+    installNativeOAuthRedirectHandler();
+  });
 }
 
 installChunkRecoveryHandlers({

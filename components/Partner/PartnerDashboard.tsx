@@ -51,7 +51,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans">
+    <div className="min-h-screen bg-slate-50 flex font-sans" data-debug="sangjo-admin-dashboard">
       {/* Sidebar */}
       <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-slate-900 transition-all duration-300 flex-col z-50 hidden md:flex`}>
         <div className="p-6 flex items-center gap-3">
@@ -114,9 +114,9 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col h-[100dvh] md:h-screen overflow-y-auto overflow-x-hidden">
+      <main className="flex-1 flex flex-col h-[100dvh] md:h-screen overflow-y-auto overflow-x-hidden" data-debug="sangjo-admin-content">
         {/* Mobile Tab Nav */}
-        <div className="md:hidden flex overflow-x-auto scrollbar-hide bg-slate-900 px-2 py-2 gap-1">
+        <div className="md:hidden flex overflow-x-auto scrollbar-hide bg-slate-900 px-2 py-2 gap-1" data-debug="sangjo-admin-topnav">
           <button
             onClick={onLogout}
             className="flex-shrink-0 px-3 py-2 rounded-lg text-xs font-bold transition-colors whitespace-nowrap text-slate-400 hover:text-white"
@@ -130,6 +130,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
               className={`flex-shrink-0 px-3 py-2 min-h-[44px] flex items-center rounded-lg text-xs font-bold transition-colors whitespace-nowrap ${
                 activeTab === item.id ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
               }`}
+              data-debug="sangjo-admin-tab"
             >
               {item.label}
             </button>
@@ -143,7 +144,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
         </div>
 
         {/* Header */}
-        <header className="h-14 md:h-16 bg-white border-b border-slate-100 px-4 md:px-8 flex items-center justify-between z-40">
+        <header className="h-14 md:h-16 bg-white border-b border-slate-100 px-4 md:px-8 flex items-center justify-between z-40" data-debug="sangjo-admin-header">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -175,7 +176,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
         />
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-10 bg-slate-50">
+        <div className="flex-1 overflow-y-auto p-4 md:p-10 bg-slate-50" data-debug="sangjo-admin-scroll">
           <div className="max-w-[1400px] mx-auto">
             {activeTab === 'consultations' && (
               <PartnerConsultationsTab

@@ -93,6 +93,11 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
     });
 
     const isPhoneMode = mode === 'phone';
+    const modalDebug = isUrgent ? 'funeral-emergency-modal' : isPhoneMode ? 'phone-reservation-modal' : undefined;
+    const headerDebug = isUrgent ? 'funeral-emergency-header' : isPhoneMode ? 'phone-reservation-header' : undefined;
+    const scrollDebug = isUrgent ? 'funeral-emergency-scroll' : isPhoneMode ? 'phone-reservation-scroll' : undefined;
+    const actionDebug = isUrgent ? 'funeral-emergency-bottom-action' : isPhoneMode ? 'phone-reservation-bottom-action' : undefined;
+    const submitDebug = isUrgent ? 'funeral-emergency-submit-button' : isPhoneMode ? 'phone-reservation-submit-button' : undefined;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -100,10 +105,10 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
     };
 
     return (
-        <div className="fixed inset-0 z-[500] flex items-end justify-center sm:items-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
+        <div className="fixed inset-0 z-[500] flex items-end justify-center sm:items-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn" data-debug={modalDebug}>
             <div className={`bg-white w-full max-w-sm max-h-[calc(100dvh-2rem)] rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-slideUp ${isUrgent ? 'border-2 border-red-500' : isMemorial ? 'border-2 border-emerald-500' : ''}`}>
                 {/* Modal Header */}
-                <div className={`${headerColor} text-white p-5 pt-6 shadow-md shrink-0 flex justify-between items-center relative overflow-hidden`}>
+                <div className={`${headerColor} text-white p-5 pt-6 shadow-md shrink-0 flex justify-between items-center relative overflow-hidden`} data-debug={headerDebug}>
                     {isUrgent && (
                         <div className="absolute top-0 right-0 p-4 opacity-10">
                             <Smartphone size={64} />
@@ -133,7 +138,7 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
                 </div>
 
                 {/* Modal Body */}
-                <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1">
+                <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1" data-debug={scrollDebug}>
                     {!isUrgent && (
                         <p className="text-sm text-gray-500 mb-4 bg-gray-50 p-3 rounded-lg flex gap-2">
                             <Info className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
@@ -185,9 +190,10 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
                     </div>
 
                     {/* Submit Button */}
-                    <div className="p-4 pt-0 mt-auto z-20 bg-white border-t border-gray-100 safe-bottom">
+                    <div className="p-4 pt-0 mt-auto z-20 bg-white border-t border-gray-100 safe-bottom" data-debug={actionDebug}>
                         <button
                             onClick={handleSubmit}
+                            data-debug={submitDebug}
                             className={`w-full ${isMemorial ? 'bg-emerald-600 hover:bg-emerald-700' : isUrgent ? 'bg-red-600 hover:bg-red-700' : (isPetCompany ? 'bg-amber-600 hover:bg-amber-700' : 'bg-gray-900 hover:bg-gray-800')} text-white py-3.5 rounded-xl font-bold text-sm shadow-md active:scale-95 transition-all flex items-center justify-center gap-2`}
                         >
                             {isMemorial ? <Calendar size={18} /> : isUrgent ? <Smartphone size={18} className="animate-pulse" /> : (isPhoneMode ? <Phone size={18} /> : <FileText size={18} />)}

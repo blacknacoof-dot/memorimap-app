@@ -118,6 +118,8 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
     typeof document !== 'undefined' && document.body.classList.contains('native-app');
   const shouldKeepWarmMapMounted =
     keepMapMounted && (viewState === ViewState.MAP || viewState === ViewState.LIST);
+  const shouldShowNativeMapFacilitySheet =
+    false; // 지도 탭에서는 목록 바텀시트를 표시하지 않음. 목록은 LIST 탭에서만 표시.
 
   const mapView = (isVisible: boolean) => (
     <>
@@ -171,7 +173,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
         </div>
         <button
           onClick={() => setShowPromo(false)}
-          className="text-slate-400 hover:text-slate-700 transition-colors p-1 min-w-[36px] min-h-[36px] flex items-center justify-center"
+          className="text-slate-400 hover:text-slate-700 transition-colors p-1 min-w-[44px] min-h-[44px] flex items-center justify-center"
         >
           <X size={14} className="md:hidden" />
           <X size={16} className="hidden md:block" />
@@ -299,7 +301,7 @@ export const ContentRouter: React.FC<ContentRouterProps> = (props) => {
         >
           {mapView(mapVisible)}
         </div>
-        {isNativeApp && mapVisible && nativeMapFacilitySheet}
+        {isNativeApp && mapVisible && shouldShowNativeMapFacilitySheet && nativeMapFacilitySheet}
         {!mapVisible && (
           <div className="absolute inset-0 z-20 bg-gray-50">
             {listView()}

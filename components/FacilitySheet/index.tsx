@@ -67,7 +67,7 @@ export const FacilitySheet: React.FC<Props> = ({
         />
       )}
 
-      <div className="fixed inset-x-0 bottom-0 z-[210] bg-white rounded-t-3xl shadow-2xl transform transition-transform duration-300 max-h-[95dvh] h-[88dvh] md:h-[85dvh] flex flex-col md:max-w-md md:mx-auto pb-safe">
+      <div className="fixed inset-x-0 bottom-0 z-[210] bg-white rounded-t-3xl shadow-2xl transform transition-transform duration-300 max-h-[95dvh] h-[88dvh] md:h-[85dvh] flex flex-col md:max-w-md md:mx-auto pb-safe" data-debug="facility-detail-page">
         {/* Handle */}
         <div className="w-full flex justify-center pt-3 pb-1" onClick={onClose}>
           <div className="w-12 h-1.5 bg-gray-300 rounded-full cursor-pointer" />
@@ -162,7 +162,7 @@ export const FacilitySheet: React.FC<Props> = ({
         )}
 
         {/* Tabs */}
-        <div className="flex border-b overflow-x-auto no-scrollbar">
+        <div className="flex border-b overflow-x-auto no-scrollbar" data-debug="facility-detail-tabs">
           {tabs.map(tab => (
             <button
               key={tab.id}
@@ -178,7 +178,7 @@ export const FacilitySheet: React.FC<Props> = ({
         </div>
 
         {/* Scrollable Content */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 no-scrollbar">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 no-scrollbar" data-debug="facility-detail-scroll">
           {activeTab === 'info' && (
             <InfoTab
               facility={facility}
@@ -211,7 +211,7 @@ export const FacilitySheet: React.FC<Props> = ({
         </div>
 
         {/* Footer CTA */}
-        <div className="p-3 md:p-4 border-t bg-white pb-safe flex gap-2 md:gap-3 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] z-20">
+        <div className="p-3 md:p-4 border-t bg-white pb-safe flex gap-2 md:gap-3 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] z-20" data-debug="facility-detail-bottom-action">
           <button
             onClick={async () => {
               const shareData = { title: facility.name, text: `${facility.name} - ${facility.address}`, url: window.location.href };

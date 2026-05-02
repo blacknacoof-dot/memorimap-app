@@ -205,13 +205,13 @@ export const PetChatInterface: React.FC<ComponentProps> = ({ company, onClose, o
                 </div>
             )}
             {/* Header */}
-            <div className="bg-amber-900 text-white p-5 pt-6 shadow-md z-10 shrink-0">
+            <div className="bg-amber-900 text-white p-5 pt-6 shadow-md z-10 shrink-0" data-debug="sangjo-ai-header">
                 <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
                         <button onClick={onBack} className="mr-1 hover:text-amber-200">
                             <ChevronLeft className="text-white w-6 h-6" />
                         </button>
-                        <div className="relative">
+                        <div className="relative shrink-0" data-debug="sangjo-ai-avatar">
                             <div className="w-12 h-12 rounded-full bg-amber-800 flex items-center justify-center border-2 border-amber-600 overflow-hidden shadow-sm">
                                 {company.imageUrl ? (
                                     <img src={company.imageUrl} alt="profile" className="w-full h-full object-cover" />
@@ -221,7 +221,7 @@ export const PetChatInterface: React.FC<ComponentProps> = ({ company, onClose, o
                             </div>
                             <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-amber-900 rounded-full animate-pulse"></span>
                         </div>
-                        <div>
+                        <div className="min-w-0" data-debug="sangjo-ai-title">
                             <h1 className="font-bold text-lg leading-tight text-white">{company.name}</h1>
                             <p className="text-xs text-amber-200/80 flex items-center gap-1">
                                 <Sparkles className="w-3 h-3 text-amber-300" />
@@ -248,7 +248,7 @@ export const PetChatInterface: React.FC<ComponentProps> = ({ company, onClose, o
                 </div>
             </div>
             {/* Chat Body */}
-            <div className="flex-1 bg-stone-50 p-4 overflow-y-auto space-y-4" ref={scrollRef}>
+            <div className="flex-1 bg-stone-50 p-4 overflow-y-auto space-y-4" ref={scrollRef} data-debug="sangjo-ai-scroll">
                 <PetChatMessages
                     messages={messages}
                     isTyping={isTyping}
@@ -272,7 +272,7 @@ export const PetChatInterface: React.FC<ComponentProps> = ({ company, onClose, o
                 </div>
             </div>
             {/* Input Area */}
-            <div className="bg-white p-4 pt-2 pb-6">
+            <div className="bg-white p-4 pt-2 pb-6" data-debug="ai-input-bar">
                 <div className="flex gap-2 items-end">
                     <div className="flex-1 bg-stone-50 rounded-2xl border border-transparent focus-within:border-amber-300 focus-within:bg-white transition-all px-4 py-3">
                         <input

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
+import { getOAuthRedirectTo, rememberOAuthReturnPath } from '../lib/oauthRedirect';
 
 interface Props {
   onClose: () => void;
@@ -53,10 +54,12 @@ export const LoginModal: React.FC<Props> = ({ onClose, onLogin, onSignUpClick })
     setSocialLoading(provider);
 
     try {
+      rememberOAuthReturnPath();
+      const redirectTo = getOAuthRedirectTo();
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: window.location.origin,
+          redirectTo,
         },
       });
 

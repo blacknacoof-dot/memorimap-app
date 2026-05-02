@@ -67,12 +67,12 @@ export const parseAppRoute = (pathname: string, search: string): ParsedAppRoute 
     };
   }
 
-  if (normalizedPath === '/auth') {
+  if (normalizedPath === '/auth' || normalizedPath === '/auth/callback') {
     return {
       layout: 'main',
       viewState: ViewState.MAP,
-      action: 'open-login-modal',
-      canonicalPath: '/',
+      action: normalizedPath === '/auth' ? 'open-login-modal' : null,
+      canonicalPath: normalizedPath === '/auth/callback' ? '/' : '/',
     };
   }
 
@@ -142,6 +142,7 @@ export const resolveLegacyPathToHashUrl = (pathname: string, search: string): st
     '/subscription-plans',
     '/personal-subscription',
     '/auth',
+    '/auth/callback',
     '/external-browser-guide',
   ]);
 

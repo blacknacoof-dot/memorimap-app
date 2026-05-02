@@ -9,6 +9,8 @@
     "cypress:open": "cypress open",
     "build": "vite build",
     "preview": "vite preview",
+    "cap:sync": "npm run build && cap sync android",
+    "cap:open": "cap open android",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "typecheck": "tsc --noEmit",
     "dev:light": "set NODE_OPTIONS=--max-old-space-size=4096 && vite",
@@ -17,6 +19,9 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@capacitor/android": "^8.3.1",
+    "@capacitor/app": "^8.0.0",
+    "@capacitor/core": "^8.3.1",
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^5.2.2",
     "@supabase/supabase-js": "^2.87.3",
@@ -44,6 +49,7 @@
     "zustand": "^5.0.10"
   },
   "devDependencies": {
+    "@capacitor/cli": "^7.6.2",
     "@playwright/test": "^1.58.1",
     "@types/dompurify": "^3.0.5",
     "@types/leaflet": "^1.9.8",

@@ -36,7 +36,7 @@ export const RecommendationStarter: React.FC<Props> = ({ onSelectIntent }) => {
         <div className="fixed bottom-[calc(5.2rem+env(safe-area-inset-bottom,0px))] right-3 z-[210] flex flex-col items-end gap-2 pointer-events-none" data-debug="ai-floating">
             {/* Menu Overlay */}
             {isOpen && (
-                <div className="flex flex-col gap-2 mb-1 pointer-events-auto animate-in slide-in-from-bottom-5 fade-in duration-300">
+                <div className="flex flex-col gap-2 mb-1 pointer-events-auto animate-in slide-in-from-bottom-5 fade-in duration-300" data-debug="ai-menu-overlay">
                     {menuItems.map((item, index) => (
                         <button
                             key={item.id}
@@ -45,6 +45,7 @@ export const RecommendationStarter: React.FC<Props> = ({ onSelectIntent }) => {
                                 onSelectIntent(item.id);
                             }}
                             className="flex items-center gap-2.5 bg-white p-2.5 rounded-xl shadow-lg border border-gray-100 hover:scale-105 active:scale-95 transition-all text-left w-56 group"
+                            data-debug="ai-menu-card"
                             style={{ animationDelay: `${index * 50}ms` }}
                         >
                             <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white shadow-sm ${item.color}`}>
@@ -68,6 +69,7 @@ export const RecommendationStarter: React.FC<Props> = ({ onSelectIntent }) => {
                 onClick={() => setIsOpen(!isOpen)}
                 className={`pointer-events-auto relative group flex items-center justify-center w-11 h-11 rounded-xl shadow-xl transition-all duration-300 ${isOpen ? 'bg-gray-800 rotate-90' : 'bg-[#fff9c4] hover:scale-110 border-2 border-orange-200'
                     }`}
+                data-debug="ai-floating-button"
             >
                 {isOpen ? (
                     <X size={18} className="text-white" />

@@ -73,6 +73,7 @@ export const WelcomeSheet: React.FC<WelcomeSheetProps> = ({
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
+      data-debug="welcome-sheet"
       aria-label="추모맵 시작하기"
     >
       {/* 반투명 배경 - 앱 맥락 유지 */}

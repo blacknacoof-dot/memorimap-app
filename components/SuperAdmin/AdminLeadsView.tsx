@@ -97,7 +97,7 @@ export const AdminLeadsView: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center" data-debug="super-admin-filter-bar">
                 <div>
                     <h2 className="text-xl font-bold text-slate-800">상담 리드 관리</h2>
                     <p className="text-sm text-slate-500">AI 및 직접 상담 진입에서 생성된 리드 목록입니다.</p>
@@ -110,7 +110,7 @@ export const AdminLeadsView: React.FC = () => {
                 </button>
             </div>
 
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto" data-debug="super-admin-table-wrapper">
                 <table className="w-full text-left text-sm text-slate-600 min-w-[700px]">
                     <thead className="bg-slate-50 border-b border-slate-200 text-xs uppercase font-semibold text-slate-500">
                         <tr>

@@ -399,8 +399,8 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
 
       {/* Global AI Chat Overlay */}
       {aiChatFacility && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center p-0 md:p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="w-full h-full md:w-[420px] md:h-[85dvh] md:rounded-2xl overflow-hidden bg-white shadow-2xl relative animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-0 md:p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-300" data-debug="ai-modal">
+          <div className="w-full h-full md:w-[420px] md:h-[85dvh] md:rounded-2xl overflow-hidden bg-white shadow-2xl relative animate-in zoom-in-95 duration-300" data-debug="ai-modal-panel">
             <ChatInterface
               facility={aiChatFacility}
               currentUser={userInfo}

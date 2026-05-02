@@ -244,7 +244,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
     // Login required
     if (!currentUser && onLoginRequired) {
         return (
-            <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
+            <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-4" data-debug="ai-login-card">
                 <p className="text-sm text-amber-800 font-bold mb-2">로그인이 필요합니다</p>
                 <p className="text-xs text-amber-700 mb-3">상담 접수를 위해 로그인해 주세요.</p>
                 <button onClick={() => onLoginRequired?.()} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold py-2.5 rounded-xl">
@@ -379,7 +379,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
     return (
         <div className="mt-3 bg-emerald-50/50 border border-emerald-100 rounded-xl p-4 space-y-4 animate-in fade-in duration-300">
             {/* Section 1: Timing */}
-            <div>
+            <div data-debug="ai-region-dropdown">
                 <label className="text-xs font-bold text-slate-700 mb-2 block">안치 시기</label>
                 <div className="flex flex-wrap gap-1.5">
                     {MEMORIAL_TIMING_OPTIONS.map(opt => (
@@ -466,6 +466,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
                 onClick={handleSubmit}
                 disabled={!canSubmit || isSaving}
                 className="w-full max-w-sm mx-auto bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white text-sm font-bold py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+                data-debug="ai-bottom-cta"
             >
                 {isSaving ? <Loader2 size={16} className="animate-spin" /> : <><Check size={16} /> {isDirectFacility ? '상담 신청' : '맞춤 추모시설 찾기'}</>}
             </button>

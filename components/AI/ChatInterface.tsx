@@ -640,10 +640,11 @@ export const ChatInterface: React.FC<Props> = ({
         messages[messages.length - 1].action === 'SHOW_FORM_B' ||
         messages[messages.length - 1].action === 'SHOW_FORM_C'
     );
+    const isMaumiAssistant = facility.id === 'maum-i';
 
     return (
         <>
-        <div className="flex flex-col h-full bg-slate-50 relative overflow-hidden shadow-inner">
+        <div className="flex flex-col h-full bg-slate-50 relative overflow-hidden shadow-inner" data-debug={isMaumiAssistant ? 'ai-chat-root' : 'facility-ai-chat'}>
             {/* [NEW] Consultation Form Modal */}
             {isFormOpen && (
                 <ConsultationForm
@@ -709,16 +710,16 @@ export const ChatInterface: React.FC<Props> = ({
             )}
 
             {/* Header Area */}
-            <div className={`bg-slate-900 text-white p-5 pt-6 shadow-md z-10 shrink-0`}>
+            <div className={`bg-slate-900 text-white p-5 pt-6 shadow-md z-10 shrink-0`} data-debug={isMaumiAssistant ? 'ai-header' : 'facility-ai-header'}>
                 <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                        <div className="relative">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <div className="relative shrink-0" data-debug={isMaumiAssistant ? 'ai-avatar' : 'facility-ai-avatar'}>
                             <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 border-slate-500/30 overflow-hidden bg-slate-700`}>
                                 <Bot className="w-6 h-6 text-white" />
                             </div>
                             <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-slate-900 rounded-full animate-pulse"></span>
                         </div>
-                        <div>
+                        <div className="min-w-0 flex-1" data-debug={isMaumiAssistant ? 'ai-title' : 'facility-ai-title'}>
                             <h1 className="font-bold text-lg leading-tight">{facility.name}</h1>
                             <p className="text-xs text-slate-300 flex items-center gap-1 mt-0.5">
                                 <Sparkles className="w-3 h-3 text-yellow-400" />
@@ -730,6 +731,7 @@ export const ChatInterface: React.FC<Props> = ({
                     <button
                         onClick={onClose}
                         className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-white/20 rounded-full transition-colors"
+                        data-debug="ai-close"
                         title="상담 종료"
                     >
                         <X className="w-5 h-5 text-slate-300 hover:text-white" />
@@ -744,7 +746,7 @@ export const ChatInterface: React.FC<Props> = ({
             </div>
 
             {/* Chat Area */}
-            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 bg-slate-50 pb-4 no-scrollbar" ref={scrollRef}>
+            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 bg-slate-50 pb-4 no-scrollbar" ref={scrollRef} data-debug={isMaumiAssistant ? 'ai-body' : 'facility-ai-body'}>
                 {messages.map((msg, idx) => (
                     <div key={idx} className={`flex w-full animate-in fade-in slide-in-from-bottom-2 duration-300 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                         <div className={`${['SHOW_FORM_A', 'SHOW_FORM_B', 'SHOW_FORM_C'].includes(msg.action || '') ? 'max-w-full w-full' : 'max-w-[92%] sm:max-w-[85%]'} flex flex-col items-start gap-2`}>
@@ -891,7 +893,7 @@ export const ChatInterface: React.FC<Props> = ({
                         )}
 
                         {/* Input Area */}
-                        <div className="bg-white p-4 pt-2 pb-safe">
+                        <div className="bg-white p-4 pt-2 pb-safe" data-debug="ai-input-bar">
                             <div className="flex gap-2 items-end">
                                 <div className="flex-1 bg-slate-100 rounded-2xl border border-transparent focus-within:border-slate-300 focus-within:bg-white transition-all px-4 py-3">
                                     <input

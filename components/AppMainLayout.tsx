@@ -14,6 +14,15 @@ type ToastPayload = {
   type: 'success' | 'error' | 'info';
 } | null;
 
+const NATIVE_BOTTOM_NAV_VIEWS = new Set<ViewState>([
+  ViewState.MAP,
+  ViewState.LIST,
+  ViewState.MY_PAGE,
+  ViewState.SETTINGS,
+  ViewState.GUIDE,
+  ViewState.FUNERAL_COMPANIES,
+]);
+
 interface AppMainLayoutProps {
   viewState: ViewState;
   setViewState: (v: ViewState) => void;
@@ -55,6 +64,10 @@ export const AppMainLayout: React.FC<AppMainLayoutProps> = ({
 }) => {
   const isNativeApp =
     typeof document !== 'undefined' && document.body.classList.contains('native-app');
+  const nativeHasBottomNav = isNativeApp && NATIVE_BOTTOM_NAV_VIEWS.has(viewState);
+  const nativeContentHeight = nativeHasBottomNav
+    ? 'var(--native-content-height)'
+    : 'var(--app-height, 100dvh)';
   const nativeFullHeightStyle = isNativeApp
     ? ({ height: 'var(--app-height, 100dvh)', minHeight: 0, overflow: 'hidden' } as React.CSSProperties)
     : undefined;
@@ -63,9 +76,9 @@ export const AppMainLayout: React.FC<AppMainLayoutProps> = ({
     : undefined;
   const nativeContentStyle = isNativeApp
     ? ({
-        flex: '0 0 var(--native-content-height)',
-        height: 'var(--native-content-height)',
-        maxHeight: 'var(--native-content-height)',
+        flex: `0 0 ${nativeContentHeight}`,
+        height: nativeContentHeight,
+        maxHeight: nativeContentHeight,
         minHeight: 0,
         overflow: 'hidden',
         paddingBottom: 0,
@@ -108,7 +121,12 @@ export const AppMainLayout: React.FC<AppMainLayoutProps> = ({
           />
         )}
 
-        <div className="flex-1 relative overflow-hidden" data-debug="app-content" style={nativeContentStyle}>
+        <div
+          className="flex-1 relative overflow-hidden"
+          data-debug="app-content"
+          data-native-bottom-nav={nativeHasBottomNav ? 'visible' : 'hidden'}
+          style={nativeContentStyle}
+        >
           <Suspense fallback={<LoadingFallback />}>
             <ContentRouter {...contentRouterProps} />
           </Suspense>

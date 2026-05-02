@@ -43,19 +43,19 @@ export const TopBar: React.FC<TopBarProps> = ({
         viewState === ViewState.LIST
           ? 'top-0 left-0 right-0 px-3 py-2 md:p-4 bg-white/95 backdrop-blur shadow-sm'
           : 'top-2 left-3 right-3 md:top-4 md:left-4 md:right-4'
-      }`}>
-        <div className="flex items-center gap-1.5 md:gap-2">
+      }`} data-debug="top-bar">
+        <div className="flex items-center gap-1.5 md:gap-2" data-debug="top-bar-row">
           <button
             onClick={() => setIsMenuOpen(true)}
             data-testid="topbar-menu-button"
-            className="bg-white p-2 md:p-3 rounded-xl shadow-md text-gray-700 active:scale-95 transition-transform shrink-0 min-w-[42px] min-h-[42px] flex items-center justify-center"
+            className="bg-white p-2 md:p-3 rounded-xl shadow-md text-gray-700 active:scale-95 transition-transform shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
           >
             <Menu size={18} className="md:hidden" />
             <Menu size={20} className="hidden md:block" />
           </button>
 
           {viewState === ViewState.MY_PAGE ? (
-            <div className="flex-1 bg-white rounded-xl shadow-md flex items-center justify-center h-[42px] md:h-12">
+            <div className="flex-1 bg-white rounded-xl shadow-md flex items-center justify-center h-[42px] md:h-12" data-debug="top-bar-title">
               <span className="font-bold text-gray-800 text-sm md:text-base">내 정보</span>
             </div>
           ) : (
@@ -68,7 +68,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           {onSOS && viewState !== ViewState.MY_PAGE && (
             <button
               onClick={onSOS}
-              className="bg-red-600 text-white p-2 rounded-xl shadow-md active:scale-95 transition-transform shrink-0 min-w-[46px] min-h-[42px] flex items-center justify-center"
+              className="bg-red-600 text-white p-2 rounded-xl shadow-md active:scale-95 transition-transform shrink-0 min-w-[46px] min-h-[44px] flex items-center justify-center"
               title="긴급 장례 안내"
             >
               <span className="text-[10px] font-black leading-none">SOS</span>
@@ -84,7 +84,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           {viewState === ViewState.MY_PAGE && (
             <button
               onClick={() => setViewState(ViewState.SETTINGS)}
-              className="bg-white p-2 md:p-3 rounded-xl shadow-md text-gray-700 active:scale-95 transition-transform shrink-0 min-w-[42px] min-h-[42px] flex items-center justify-center"
+              className="bg-white p-2 md:p-3 rounded-xl shadow-md text-gray-700 active:scale-95 transition-transform shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
               <Settings size={18} className="md:hidden" />
               <Settings size={20} className="hidden md:block" />
@@ -115,7 +115,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </div>
             <button
               onClick={() => setShowPromo(false)}
-              className="text-slate-400 hover:text-slate-700 transition-colors p-1 min-w-[36px] min-h-[36px] flex items-center justify-center"
+              className="text-slate-400 hover:text-slate-700 transition-colors p-1 min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
               <X size={14} className="md:hidden" />
               <X size={16} className="hidden md:block" />
