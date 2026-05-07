@@ -18,7 +18,7 @@ export const FilterBar = () => {
     const resetCategories = useFilterStore(s => s.resetCategories);
 
     return (
-        <div className="w-full pointer-events-auto">
+        <div className="w-full pointer-events-auto" data-debug="filter-bar">
             {/* Category Filters */}
             <div className="overflow-x-auto filter-scroll touch-pan-x no-scrollbar">
                 <div className="flex gap-1.5 md:gap-2 px-1 pb-1 md:pb-2 w-max">

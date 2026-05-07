@@ -70,6 +70,7 @@ export const FacilityItem = React.memo(({ facility, onClick, isCompared, onToggl
             <div
                 onClick={() => onClick(facility)}
                 data-testid={`facility-card-${facility.id}`}
+                data-debug="facility-list-card"
                 className="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200 flex gap-3 cursor-pointer hover:bg-slate-50 transition-colors group h-full"
             >
                 {facility.imageUrl && !facility.imageUrl.includes('placeholder') && !facility.imageUrl.includes('via.placeholder') ? (
@@ -90,7 +91,7 @@ export const FacilityItem = React.memo(({ facility, onClick, isCompared, onToggl
                 )}
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
-                        <div className="text-[12px] text-primary font-bold shrink-0">
+                        <div className="text-[12px] text-primary font-bold shrink-0" data-debug="facility-list-card-meta">
                             {getCategoryLabel(facility.type || '') || facility.category}
                         </div>
                         {normalizedPlanId === 'PREMIUM' && (
@@ -116,8 +117,8 @@ export const FacilityItem = React.memo(({ facility, onClick, isCompared, onToggl
                             </div>
                         )}
                     </div>
-                    <h3 className="font-extrabold text-[16px] text-slate-900 leading-snug break-words line-clamp-2">{facility.name}</h3>
-                    <div className="text-[13px] text-slate-500 mt-1 truncate">{facility.address}</div>
+                    <h3 className="font-extrabold text-[16px] text-slate-900 leading-snug break-words line-clamp-2" data-debug="facility-list-card-title">{facility.name}</h3>
+                    <div className="text-[13px] text-slate-500 mt-1 truncate" data-debug="facility-list-card-address">{facility.address}</div>
                     <div className="flex items-center gap-1 mt-2">
                         <span className="text-amber-500 text-xs">★ {Math.round(facility.rating || 0)}</span>
                         <span className="text-slate-400 text-xs">({facility.reviewCount || 0})</span>
@@ -126,6 +127,7 @@ export const FacilityItem = React.memo(({ facility, onClick, isCompared, onToggl
 
                 <div className="flex flex-col justify-center shrink-0 pl-1">
                     <button
+                        data-debug="facility-list-card-compare-button"
                         onClick={(e) => {
                             e.stopPropagation();
                             onToggleCompare(facility);

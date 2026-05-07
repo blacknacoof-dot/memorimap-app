@@ -197,7 +197,7 @@ export const PetChatInterface: React.FC<ComponentProps> = ({ company, onClose, o
         if (action === 'CALL_MANAGER') window.location.href = `tel:${company.phone}`;
     };
     return (
-        <div className="flex flex-col h-full bg-white relative font-sans">
+        <div className="flex flex-col h-full bg-white relative font-sans" data-debug="pet-ai-chat">
             {/* Reservation Form Overlay */}
             {showReservation && (
                 <div className="absolute inset-0 z-50">
@@ -205,13 +205,13 @@ export const PetChatInterface: React.FC<ComponentProps> = ({ company, onClose, o
                 </div>
             )}
             {/* Header */}
-            <div className="bg-amber-900 text-white p-5 pt-6 shadow-md z-10 shrink-0" data-debug="sangjo-ai-header">
-                <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3 min-w-0">
-                        <button onClick={onBack} className="mr-1 hover:text-amber-200">
+            <div className="bg-amber-900 text-white p-5 pt-6 shadow-md z-10 shrink-0" data-debug="pet-ai-header">
+                <div className="flex items-center justify-between mb-4" data-debug="pet-ai-header-row">
+                    <div className="flex items-center gap-3 min-w-0" data-debug="pet-ai-title-wrap">
+                        <button onClick={onBack} className="mr-1 hover:text-amber-200" data-debug="pet-ai-back">
                             <ChevronLeft className="text-white w-6 h-6" />
                         </button>
-                        <div className="relative shrink-0" data-debug="sangjo-ai-avatar">
+                        <div className="relative shrink-0" data-debug="pet-ai-avatar">
                             <div className="w-12 h-12 rounded-full bg-amber-800 flex items-center justify-center border-2 border-amber-600 overflow-hidden shadow-sm">
                                 {company.imageUrl ? (
                                     <img src={company.imageUrl} alt="profile" className="w-full h-full object-cover" />
@@ -221,7 +221,7 @@ export const PetChatInterface: React.FC<ComponentProps> = ({ company, onClose, o
                             </div>
                             <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-amber-900 rounded-full animate-pulse"></span>
                         </div>
-                        <div className="min-w-0" data-debug="sangjo-ai-title">
+                        <div className="min-w-0" data-debug="pet-ai-title">
                             <h1 className="font-bold text-lg leading-tight text-white">{company.name}</h1>
                             <p className="text-xs text-amber-200/80 flex items-center gap-1">
                                 <Sparkles className="w-3 h-3 text-amber-300" />
@@ -229,40 +229,44 @@ export const PetChatInterface: React.FC<ComponentProps> = ({ company, onClose, o
                             </p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-amber-800 rounded-full transition-colors" title="닫기">
+                    <button onClick={onClose} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-amber-800 rounded-full transition-colors" title="닫기" data-debug="pet-ai-close">
                         <X className="w-6 h-6 text-amber-200 hover:text-white" />
                     </button>
                 </div>
-                <div className="flex justify-between items-center">
-                    <div className="flex gap-2 text-[11px] font-medium">
+                <div className="flex justify-between items-center" data-debug="pet-ai-actions-row">
+                    <div className="flex gap-2 text-[11px] font-medium" data-debug="pet-quick-actions">
                         <span className="bg-amber-800/50 px-2 py-1 rounded text-amber-100 border border-amber-700">개별 화장</span>
                         <span className="bg-amber-800/50 px-2 py-1 rounded text-amber-100 border border-amber-700">스톤 제작</span>
                     </div>
                     <button
                         onClick={() => handleActionClick('RESERVE')}
+                        data-debug="pet-quick-reserve"
                         className="bg-white hover:bg-amber-50 text-amber-900 px-3 py-1.5 rounded-full text-xs font-bold transition flex items-center gap-1 shadow-md active:scale-95"
                     >
                         <CalendarCheck size={14} />
-                        바로 예약하기
+                        <span>바로 예약하기</span>
                     </button>
                 </div>
             </div>
             {/* Chat Body */}
-            <div className="flex-1 bg-stone-50 p-4 overflow-y-auto space-y-4" ref={scrollRef} data-debug="sangjo-ai-scroll">
-                <PetChatMessages
-                    messages={messages}
-                    isTyping={isTyping}
-                    onActionClick={handleActionClick}
-                />
+            <div className="flex-1 bg-stone-50 p-4 overflow-y-auto space-y-4" ref={scrollRef} data-debug="pet-ai-body">
+                <div data-debug="pet-ai-message-list">
+                    <PetChatMessages
+                        messages={messages}
+                        isTyping={isTyping}
+                        onActionClick={handleActionClick}
+                    />
+                </div>
             </div>
             {/* FAQ Chips */}
-            <div className="bg-white border-t border-stone-100 p-3 pb-0">
+            <div className="bg-white border-t border-stone-100 p-3 pb-0" data-debug="pet-ai-quick-chips">
                 <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                     {FAQ_LIST.map((faq, idx) => (
                         <button
                             key={idx}
                             onClick={() => handleSendMessage(faq.question)}
                             disabled={isLoading}
+                            data-debug="pet-ai-input-field"
                             className="flex-shrink-0 bg-stone-50 border border-stone-200 hover:bg-amber-50 hover:border-amber-200 text-stone-600 hover:text-amber-900 text-xs py-2 px-3 rounded-full transition whitespace-nowrap flex items-center gap-1.5 active:scale-95"
                         >
                             <span>{faq.icon}</span>
@@ -272,7 +276,7 @@ export const PetChatInterface: React.FC<ComponentProps> = ({ company, onClose, o
                 </div>
             </div>
             {/* Input Area */}
-            <div className="bg-white p-4 pt-2 pb-6" data-debug="ai-input-bar">
+            <div className="bg-white p-4 pt-2 pb-6" data-debug="pet-ai-input-bar">
                 <div className="flex gap-2 items-end">
                     <div className="flex-1 bg-stone-50 rounded-2xl border border-transparent focus-within:border-amber-300 focus-within:bg-white transition-all px-4 py-3">
                         <input
@@ -290,6 +294,7 @@ export const PetChatInterface: React.FC<ComponentProps> = ({ company, onClose, o
                         onClick={() => handleSendMessage()}
                         disabled={!input.trim() || isLoading}
                         className="w-12 h-12 bg-amber-900 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-amber-800 active:scale-95 transition-all disabled:bg-stone-200 disabled:cursor-not-allowed"
+                        data-debug="pet-ai-send-button"
                     >
                         {isLoading ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} className="ml-0.5" />}
                     </button>

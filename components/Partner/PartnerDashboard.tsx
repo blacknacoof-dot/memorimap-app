@@ -144,7 +144,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ partnerId, o
         </div>
 
         {/* Header */}
-        <header className="h-14 md:h-16 bg-white border-b border-slate-100 px-4 md:px-8 flex items-center justify-between z-40" data-debug="sangjo-admin-header">
+        <header className={`${isSangjo ? 'hidden md:flex' : 'flex'} h-14 md:h-16 bg-white border-b border-slate-100 px-4 md:px-8 items-center justify-between z-40`} data-debug="sangjo-admin-header">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}

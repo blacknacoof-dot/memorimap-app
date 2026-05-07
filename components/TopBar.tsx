@@ -101,8 +101,8 @@ export const TopBar: React.FC<TopBarProps> = ({
 
       {/* Promo Banner */}
       {showPromo && viewState === ViewState.MAP && (
-        <div className="standalone-hide absolute left-3 right-3 md:left-4 md:right-4 z-20 animate-in fade-in slide-in-from-top-2 transition-all duration-300 top-[6.4rem] md:top-[9rem]">
-          <div className="bg-white/95 text-slate-700 px-3 py-2 md:p-3 rounded-xl shadow-lg border border-slate-200 flex justify-between items-center">
+        <div className="standalone-hide absolute left-3 right-3 md:left-4 md:right-4 z-20 animate-in fade-in slide-in-from-top-2 transition-all duration-300 top-[6.4rem] md:top-[9rem]" data-debug="map-benefit-banner">
+          <div className="bg-white/95 text-slate-700 px-3 py-2 md:p-3 rounded-xl shadow-lg border border-slate-200 flex justify-between items-center" data-debug="map-benefit-banner-card">
             <div className="flex items-center gap-2 md:gap-3">
               <div className="bg-amber-50 text-amber-600 p-1 md:p-1.5 rounded-lg shrink-0">
                 <Ticket size={16} className="md:hidden" />
@@ -115,6 +115,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </div>
             <button
               onClick={() => setShowPromo(false)}
+              data-debug="map-benefit-banner-close"
               className="text-slate-400 hover:text-slate-700 transition-colors p-1 min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
               <X size={14} className="md:hidden" />

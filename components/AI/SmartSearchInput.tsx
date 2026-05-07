@@ -116,16 +116,17 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
 
       {/* Smart Dropdown */}
       {showDropdown && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200" data-debug="smart-search-dropdown">
           {/* Quick Chips (empty input) */}
           {showQuickChips && (
-            <div className="p-2.5">
+            <div className="p-2.5" data-debug="search-suggestion-card">
               <p className="text-[10px] text-gray-300 font-medium mb-1.5">이렇게 검색해 보세요</p>
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-1" data-debug="search-suggestion-chips">
                 {QUICK_CHIPS.map((chip) => (
                   <button
                     key={chip.label}
                     onClick={() => handleChipClick(chip.label)}
+                    data-debug="search-suggestion-chip"
                     className="flex items-center gap-1 px-2 py-1 bg-gray-50/70 hover:bg-gray-100/90 rounded-full text-[11px] font-medium text-gray-400 hover:text-gray-600 transition-colors"
                   >
                     <span className="opacity-60 text-xs">{chip.icon}</span>
@@ -143,6 +144,7 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
               {isUrgent && (
                 <button
                   onClick={() => handleAction('urgent')}
+                  data-debug="emergency-cta"
                   className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-red-50 transition-colors border-b border-gray-50 group text-left"
                 >
                   <div className="bg-red-100 p-1.5 rounded-lg group-hover:scale-110 transition-transform shrink-0">
@@ -150,14 +152,14 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className="font-bold text-red-600 text-sm">긴급 장례 상담</span>
+                      <span className="font-bold text-red-600 text-sm" data-debug="emergency-cta-title">긴급 장례 상담</span>
                       {detectedRegion && (
                         <span className="text-xs font-semibold text-red-500 bg-red-50 px-1.5 py-0.5 rounded">
                           {detectedRegion}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-red-400 font-medium">전문가 바로 연결</p>
+                    <p className="text-xs text-red-400 font-medium" data-debug="emergency-cta-subtitle">전문가 바로 연결</p>
                   </div>
                 </button>
               )}

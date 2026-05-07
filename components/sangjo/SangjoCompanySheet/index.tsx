@@ -163,7 +163,7 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
             </div>
 
             {/* Content */}
-            <div className="sangjo-detail-content flex-1 overflow-y-auto p-5 space-y-6 md:space-y-8 no-scrollbar" data-debug="sangjo-detail-scroll">
+            <div className="sangjo-detail-content flex-1 overflow-y-auto p-5 space-y-6 md:space-y-8 no-scrollbar" data-debug="sangjo-detail-content">
                 {activeTab === 'info' && (
                     <InfoTab
                         company={company}

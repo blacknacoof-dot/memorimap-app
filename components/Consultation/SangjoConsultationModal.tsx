@@ -162,8 +162,8 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, com
     // Pet company → PetChatInterface
     if (activeCompany?.id.startsWith('pet_')) {
         return (
-            <div className="fixed inset-0 bg-black/50 z-[300] flex items-center justify-center p-4" data-debug="sangjo-ai-modal">
-                <div className="bg-white rounded-2xl w-full h-[80dvh] sm:h-[700px] max-w-md flex flex-col shadow-2xl overflow-hidden relative" data-debug="sangjo-ai-panel">
+            <div className="fixed inset-0 bg-black/50 z-[300] flex items-center justify-center p-4" data-debug="pet-ai-modal">
+                <div className="bg-white rounded-2xl w-full h-[80dvh] sm:h-[700px] max-w-md flex flex-col shadow-2xl overflow-hidden relative" data-debug="pet-ai-panel">
                     <PetChatInterface
                         company={activeCompany}
                         onClose={onClose}
@@ -273,7 +273,7 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, com
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 z-[300] flex items-center justify-center p-4" data-debug="sangjo-ai-modal">
+        <div className="fixed inset-0 bg-black/50 z-[300] flex items-center justify-center p-4" data-debug="sangjo-compare-ai-modal">
             <div className="bg-white rounded-2xl w-full max-w-md h-[80dvh] flex flex-col shadow-2xl overflow-hidden relative" data-debug="sangjo-ai-panel">
                 {/* Header */}
                 <div className="bg-gray-900 text-white p-4 flex justify-between items-center shrink-0" data-debug="sangjo-ai-header">
@@ -308,7 +308,7 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, com
                 </div>
 
                 {/* Bottom: Preference Chips only (no text input) */}
-                <div className="flex-shrink-0 bg-white border-t border-gray-100 z-20 pb-safe" data-debug="sangjo-ai-menu-buttons">
+                <div className="flex-shrink-0 bg-white border-t border-gray-100 z-20 pb-safe" data-debug="sangjo-compare-ai-footer">
                     <div className="px-4 pt-3 pb-2">
                         <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
                             {PREFERENCE_CHIPS.map((chip) => (

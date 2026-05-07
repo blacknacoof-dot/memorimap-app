@@ -26,6 +26,27 @@ function getViewportHeight() {
   return Math.max(...candidates, 0);
 }
 
+function getVisualViewportHeight() {
+  return Math.round(
+    window.visualViewport?.height ||
+    window.innerHeight ||
+    document.documentElement.clientHeight ||
+    0
+  );
+}
+
+function getVisualViewportOffsetTop() {
+  return Math.round(window.visualViewport?.offsetTop || 0);
+}
+
+function getKeyboardInset() {
+  if (!window.visualViewport) return 0;
+  return Math.max(
+    0,
+    Math.round(window.innerHeight - window.visualViewport.height - window.visualViewport.offsetTop)
+  );
+}
+
 function getRootVar(name: string) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
@@ -75,8 +96,11 @@ function logNativeLayoutMetrics() {
     docClientHeight: document.documentElement.clientHeight,
     bodyClientHeight: document.body.clientHeight,
     visualViewportHeight: window.visualViewport?.height,
+    visualViewportOffsetTop: window.visualViewport?.offsetTop,
+    keyboardInset: getRootVar('--native-keyboard-inset'),
     supportsDvh: CSS.supports("height: 100dvh"),
     appHeight: getRootVar('--app-height'),
+    nativeVisualViewportHeight: getRootVar('--native-visual-viewport-height'),
     bottomNavHeightVar: getRootVar('--bottom-nav-height'),
     safeBottom: getRootVar('--app-safe-bottom'),
     contentBottom: getRootVar('--app-content-bottom'),
@@ -91,11 +115,27 @@ function logNativeLayoutMetrics() {
   logRect('top bar', "[data-debug='top-bar']");
   logRect('top bar row', "[data-debug='top-bar-row']");
   logRect('top bar title', "[data-debug='top-bar-title']");
+  logRect('smart search input', "#smart-search-input");
+  logRect('smart search', "[data-debug='smart-search']");
+  logRect('filter bar', "[data-debug='filter-bar']");
+  logRect('smart search dropdown', "[data-debug='smart-search-dropdown']");
+  logRect('search suggestion card', "[data-debug='search-suggestion-card']");
+  logRect('search suggestion chips', "[data-debug='search-suggestion-chips']");
+  logRect('emergency cta', "[data-debug='emergency-cta']");
+  logRect('emergency cta title', "[data-debug='emergency-cta-title']");
+  logRect('emergency cta subtitle', "[data-debug='emergency-cta-subtitle']");
+  logRect('map benefit banner', "[data-debug='map-benefit-banner']");
+  logRect('map benefit banner close', "[data-debug='map-benefit-banner-close']");
   logRect('map page', "[data-debug='map-page']");
   logRect('map body', "[data-debug='map-body']");
   logRect('map container', "[data-debug='map-container']");
   logRect('map inner', "[data-debug='map-container'] > div");
   logRect('facility list', "[data-debug='facility-list']");
+  logRect('facility card', "[data-testid^='facility-card-']");
+  logRect('facility list card', "[data-debug='facility-list-card']");
+  logRect('facility list card title', "[data-debug='facility-list-card-title']");
+  logRect('facility list card meta', "[data-debug='facility-list-card-meta']");
+  logRect('facility list card compare button', "[data-debug='facility-list-card-compare-button']");
   logRect('facility bottom sheet', "[data-debug='facility-bottom-sheet']");
   logRect('bottom nav', "[data-debug='bottom-nav']");
   logRect('welcome sheet', "[data-debug='welcome-sheet']");
@@ -118,6 +158,17 @@ function logNativeLayoutMetrics() {
   logRect('ai region dropdown', "[data-debug='ai-region-dropdown']");
   logRect('ai bottom cta', "[data-debug='ai-bottom-cta']");
   logRect('ai input bar', "[data-debug='ai-input-bar']");
+  logRect('my page', "[data-debug='my-page']");
+  logRect('profile header', "[data-debug='profile-header']");
+  logRect('mypage profile', "[data-debug='profile-header']");
+  logRect('profile name row', "[data-debug='profile-name-row']");
+  logRect('profile name', "[data-debug='profile-name']");
+  logRect('mypage profile name', "[data-debug='profile-name']");
+  logRect('profile edit button', "[data-debug='profile-edit-button']");
+  logRect('profile email', "[data-debug='profile-email']");
+  logRect('mypage profile email', "[data-debug='profile-email']");
+  logRect('profile dashboard button', "[data-debug='profile-dashboard-button']");
+  logRect('mypage dashboard button', "[data-debug='profile-dashboard-button']");
   logRect('ending note modal', "[data-debug='ending-note-modal']");
   logRect('ending note panel', "[data-debug='ending-note-panel']");
   logRect('ending note header', "[data-debug='ending-note-header']");
@@ -143,8 +194,9 @@ function logNativeLayoutMetrics() {
   logRect('sangjo detail tabs', "[data-debug='sangjo-detail-tabs']");
   logRect('sangjo detail tab item', "[data-debug='sangjo-detail-tab-item']");
   logRect('sangjo detail content', "[data-debug='sangjo-detail-content']");
-  logRect('sangjo detail scroll', "[data-debug='sangjo-detail-scroll']");
+  logRect('sangjo detail scroll', ".sangjo-detail-content");
   logRect('sangjo detail bottom action', "[data-debug='sangjo-detail-bottom-action']");
+  logRect('sangjo detail bottom cta', "[data-debug='sangjo-detail-bottom-action']");
   logRect('sangjo detail ai button', "[data-debug='sangjo-detail-ai-button']");
   logRect('sangjo detail contract button', "[data-debug='sangjo-detail-contract-button']");
   logRect('facility detail page', "[data-debug='facility-detail-page']");
@@ -162,16 +214,38 @@ function logNativeLayoutMetrics() {
   logRect('facility ai title', "[data-debug='facility-ai-title']");
   logRect('facility ai body', "[data-debug='facility-ai-body']");
   logRect('sangjo ai modal', "[data-debug='sangjo-ai-modal']");
+  logRect('sangjo compare ai modal', "[data-debug='sangjo-compare-ai-modal']");
   logRect('sangjo ai panel', "[data-debug='sangjo-ai-panel']");
   logRect('sangjo ai header', "[data-debug='sangjo-ai-header']");
   logRect('sangjo ai title wrap', "[data-debug='sangjo-ai-title-wrap']");
   logRect('sangjo ai back', "[data-debug='sangjo-ai-back']");
   logRect('sangjo ai avatar', "[data-debug='sangjo-ai-avatar']");
   logRect('sangjo ai title', "[data-debug='sangjo-ai-title']");
+  logRect('sangjo ai subtitle', "[data-debug='sangjo-ai-subtitle']");
   logRect('sangjo ai title check', "[data-debug='sangjo-ai-title-check']");
   logRect('sangjo ai close', "[data-debug='sangjo-ai-close']");
+  logRect('pet ai header', "[data-debug='pet-ai-header']");
+  logRect('pet ai title', "[data-debug='pet-ai-title']");
+  logRect('pet chat root', "[data-debug='pet-ai-chat']");
+  logRect('pet quick reserve', "[data-debug='pet-quick-reserve']");
+  logRect('pet ai reserve button', "[data-debug='pet-quick-reserve']");
+  logRect('pet ai modal', "[data-debug='pet-ai-modal']");
+  logRect('pet ai panel', "[data-debug='pet-ai-panel']");
+  logRect('pet ai body', "[data-debug='pet-ai-body']");
+  logRect('pet ai message list', "[data-debug='pet-ai-message-list']");
+  logRect('pet ai quick chips', "[data-debug='pet-ai-quick-chips']");
+  logRect('pet ai input bar', "[data-debug='pet-ai-input-bar']");
+  logRect('pet ai input', "[data-debug='pet-ai-input-bar']");
+  logRect('pet ai input field', "[data-debug='pet-ai-input-field']");
+  logRect('pet ai send button', "[data-debug='pet-ai-send-button']");
   logRect('sangjo ai body', "[data-debug='sangjo-ai-body']");
   logRect('sangjo ai menu buttons', "[data-debug='sangjo-ai-menu-buttons']");
+  logRect('sangjo compare ai message', "[data-debug='sangjo-compare-ai-message']");
+  logRect('sangjo compare ai bot icon', "[data-debug='sangjo-compare-ai-bot-icon']");
+  logRect('sangjo compare ai card', "[data-debug='sangjo-compare-ai-card']");
+  logRect('sangjo compare ai card logo', "[data-debug='sangjo-compare-ai-card-logo']");
+  logRect('sangjo compare ai card title', "[data-debug='sangjo-compare-ai-card-title']");
+  logRect('sangjo compare ai footer', "[data-debug='sangjo-compare-ai-footer']");
   logRect('sangjo scenario bot row', "[data-debug='sangjo-scenario-bot-row']");
   logRect('sangjo scenario bot avatar', "[data-debug='sangjo-scenario-bot-avatar']");
   logRect('sangjo scenario bot bubble', "[data-debug='sangjo-scenario-bot-bubble']");
@@ -181,7 +255,6 @@ function logNativeLayoutMetrics() {
   logRect('phone reservation scroll', "[data-debug='phone-reservation-scroll']");
   logRect('phone reservation bottom action', "[data-debug='phone-reservation-bottom-action']");
   logRect('phone reservation submit button', "[data-debug='phone-reservation-submit-button']");
-  logRect('smart search', "[data-debug='smart-search']");
   logRect('sangjo admin dashboard', "[data-debug='sangjo-admin-dashboard']");
   logRect('sangjo admin topnav', "[data-debug='sangjo-admin-topnav']");
   logRect('sangjo admin tab', "[data-debug='sangjo-admin-tab']");
@@ -213,9 +286,18 @@ function scheduleNativeLayoutLog() {
 function setNativeViewportVars() {
   const height = getViewportHeight();
   if (height <= 0) return;
+  const visualHeight = getVisualViewportHeight();
+  const visualOffsetTop = getVisualViewportOffsetTop();
+  const keyboardInset = getKeyboardInset();
 
   document.documentElement.style.setProperty('--app-height', `${height}px`);
   document.body.style.setProperty('--app-height', `${height}px`);
+  document.documentElement.style.setProperty('--native-visual-viewport-height', `${visualHeight}px`);
+  document.body.style.setProperty('--native-visual-viewport-height', `${visualHeight}px`);
+  document.documentElement.style.setProperty('--native-visual-viewport-offset-top', `${visualOffsetTop}px`);
+  document.body.style.setProperty('--native-visual-viewport-offset-top', `${visualOffsetTop}px`);
+  document.documentElement.style.setProperty('--native-keyboard-inset', `${keyboardInset}px`);
+  document.body.style.setProperty('--native-keyboard-inset', `${keyboardInset}px`);
   scheduleNativeLayoutLog();
   if (resizeNotificationsRemaining > 0) {
     resizeNotificationsRemaining -= 1;

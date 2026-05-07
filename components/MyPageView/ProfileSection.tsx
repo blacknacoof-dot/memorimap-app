@@ -14,8 +14,8 @@ interface Props {
 export const ProfileSection: React.FC<Props> = ({
   user, userRole, userPhone, pendingCount, onEditProfile, onNavigate,
 }) => (
-  <div className="mb-3 flex items-center gap-3">
-    <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gray-200">
+  <div className="mb-3 flex items-center gap-3" data-debug="profile-header">
+    <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gray-200" data-debug="profile-avatar">
       {user.imageUrl ? (
         <img src={user.imageUrl} alt="Profile" className="h-full w-full rounded-full object-cover" />
       ) : (
@@ -37,14 +37,15 @@ export const ProfileSection: React.FC<Props> = ({
       )}
     </div>
 
-    <div className="min-w-0 flex-1">
-      <div className="flex min-w-0 items-center gap-1.5">
-        <h2 className="min-w-0 truncate break-keep whitespace-nowrap font-bold text-base">
+    <div className="min-w-0 flex-1" data-debug="profile-identity">
+      <div className="flex min-w-0 items-center gap-1.5" data-debug="profile-name-row">
+        <h2 className="min-w-0 truncate break-keep whitespace-nowrap font-bold text-base" data-debug="profile-name">
           {user.name || '이름 없음'}님
         </h2>
         <button
           type="button"
           onClick={onEditProfile}
+          data-debug="profile-edit-button"
           className="flex min-h-[44px] min-w-[44px] items-center justify-center text-gray-400 transition-colors hover:text-primary"
           title="프로필 수정"
         >
@@ -52,7 +53,7 @@ export const ProfileSection: React.FC<Props> = ({
         </button>
       </div>
 
-      <p className="truncate text-xs leading-tight text-gray-500">{user.email}</p>
+      <p className="truncate text-xs leading-tight text-gray-500" data-debug="profile-email">{user.email}</p>
       {userPhone ? (
         <p className="truncate text-xs leading-tight text-gray-500">{userPhone}</p>
       ) : (
@@ -71,6 +72,7 @@ export const ProfileSection: React.FC<Props> = ({
         type="button"
         onClick={() => onNavigate(ViewState.FACILITY_ADMIN)}
         className="ml-auto whitespace-nowrap rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-white shadow-md transition-colors hover:bg-amber-600"
+        data-debug="profile-dashboard-button"
       >
         시설 관리자
       </button>
@@ -81,6 +83,7 @@ export const ProfileSection: React.FC<Props> = ({
         type="button"
         onClick={() => onNavigate(ViewState.SANGJO_DASHBOARD)}
         className="ml-auto whitespace-nowrap rounded-lg bg-indigo-500 px-3 py-1.5 text-xs font-bold text-white shadow-md transition-colors hover:bg-indigo-600"
+        data-debug="profile-dashboard-button"
       >
         상조 대시보드
       </button>

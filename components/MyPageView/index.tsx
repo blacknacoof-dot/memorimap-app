@@ -67,7 +67,7 @@ export const MyPageView: React.FC<Props> = ({
   if (!user) return null;
 
   return (
-    <div className="h-full overflow-y-auto pt-16 pb-20 px-4 bg-gray-50">
+    <div className="h-full overflow-y-auto pt-16 pb-20 px-4 bg-gray-50" data-debug="my-page">
       <ProfileSection
         user={user}
         userRole={userRole}
