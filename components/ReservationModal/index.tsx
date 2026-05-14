@@ -16,12 +16,15 @@ const STEPS_URGENT = ['긴급 접수', '정보 확인', '접수 완료'];
 interface Props {
   facility: Facility;
   onClose: () => void;
-  onConfirm: (reservation: LegacyReservation) => void;
+  onConfirm: (reservation: LegacyReservation) => Promise<LegacyReservation | null | void> | LegacyReservation | null | void;
+  onCreatePendingReservation?: (reservation: LegacyReservation) => Promise<LegacyReservation | null>;
+  onFinalizePendingReservation?: (reservationId: string) => Promise<void>;
+  onCleanupPendingReservation?: (reservationId: string) => Promise<void>;
   reservationMode?: 'STANDARD' | 'URGENT';
 }
 
 export const ReservationModal: React.FC<Props> = ({
-  facility, onClose, onConfirm, reservationMode = 'STANDARD',
+  facility, onClose, onConfirm, onCreatePendingReservation, onFinalizePendingReservation, onCleanupPendingReservation, reservationMode = 'STANDARD',
 }) => {
   const isPetFacility = facility.type === 'pet' || facility.type === 'pet_funeral';
   const isMemorialFacility = ['cemetery', 'columbarium', 'natural_burial', 'sea_burial'].includes(facility.type || '');
@@ -34,7 +37,15 @@ export const ReservationModal: React.FC<Props> = ({
     formValues, register, errors, setValue,
     cancelPayment, handleDateSelect, handleNext, handlePaymentProcess, handleCompleteConfirm,
     availableDates, depositAmount,
-  } = useReservation({ facility, onClose, onConfirm, reservationMode });
+  } = useReservation({
+    facility,
+    onClose,
+    onConfirm,
+    onCreatePendingReservation,
+    onFinalizePendingReservation,
+    onCleanupPendingReservation,
+    reservationMode,
+  });
 
   useEffect(() => {
     if (step > 0 && step < 4) analytics.reservationStep(step, facility.id);

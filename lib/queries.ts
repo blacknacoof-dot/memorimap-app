@@ -1253,7 +1253,13 @@ export const getMyReservations = async (userId: string, client: SupabaseClient) 
         return [];
     }
 
-    return (data || []).map((item: ReservationRow) => ({
+    return (data || [])
+        .filter((item: ReservationRow) => !(
+            item.status === 'pending'
+            && Number(item.payment_amount ?? 0) > 0
+            && item.payment_verified === false
+        ))
+        .map((item: ReservationRow) => ({
         id: item.id,
         facility_id: item.facility_id,
         facility_name: item.facility_name || '시설',
@@ -1264,6 +1270,7 @@ export const getMyReservations = async (userId: string, client: SupabaseClient) 
         message: item.message,
         created_at: item.created_at,
         payment_id: item.payment_id,
+        payment_verified: item.payment_verified as boolean | undefined,
         contact_number: item.contact_number,
         special_requests: item.special_requests,
         purpose: item.purpose,

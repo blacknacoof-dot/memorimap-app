@@ -75,7 +75,10 @@ export interface ModalContainerProps {
   setIsBooking: (v: boolean) => void;
   isUrgentBooking: boolean;
   setIsUrgentBooking: (v: boolean) => void;
-  handleBookingConfirm: (r: Reservation) => void;
+  handleBookingConfirm: (r: Reservation) => Promise<Reservation | null | void> | Reservation | null | void;
+  handleCreatePendingReservation?: (r: Reservation) => Promise<Reservation | null>;
+  handleFinalizePendingReservation?: (reservationId: string) => Promise<void>;
+  handleCleanupPendingReservation?: (reservationId: string) => Promise<void>;
 
   // Funeral Company
   selectedFuneralCompany: FuneralCompany | null;
@@ -110,6 +113,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
     selectedFacility, setSelectedFacility, handleViewOnMap, handleAddReview,
     compareList, showComparison, setShowComparison, toggleCompare, removeFromCompare,
     isBooking, setIsBooking, isUrgentBooking, setIsUrgentBooking, handleBookingConfirm,
+    handleCreatePendingReservation, handleFinalizePendingReservation, handleCleanupPendingReservation,
     selectedFuneralCompany, setSelectedFuneralCompany,
     showSangjoAIConsult, setShowSangjoAIConsult, showSangjoContract, setShowSangjoContract,
     sangjoCompareList, showSangjoComparison, setShowSangjoComparison, removeFromSangjoCompare,
@@ -268,6 +272,9 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
           facility={selectedFacility}
           onClose={() => { setIsBooking(false); setIsUrgentBooking(false); }}
           onConfirm={handleBookingConfirm}
+          onCreatePendingReservation={handleCreatePendingReservation}
+          onFinalizePendingReservation={handleFinalizePendingReservation}
+          onCleanupPendingReservation={handleCleanupPendingReservation}
           reservationMode={isUrgentBooking ? 'URGENT' : 'STANDARD'}
         />
       )}

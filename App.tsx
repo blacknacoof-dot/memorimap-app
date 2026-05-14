@@ -156,7 +156,7 @@ const App: React.FC = () => {
   // Reservations
   const {
     reservations, setReservations: _setReservations,
-    handleBookingConfirm, handleUpdateReservation,
+    handleBookingConfirm, handleCreatePendingReservation, handleFinalizePendingReservation, handleCleanupPendingReservation, handleUpdateReservation,
     isBooking, setIsBooking,
   } = useReservations(isSignedIn || false, user, showToast, setShowLoginModal, setSelectedFacility, setViewState);
 
@@ -389,6 +389,9 @@ const App: React.FC = () => {
     isUrgentBooking,
     setIsUrgentBooking,
     handleBookingConfirm,
+    handleCreatePendingReservation,
+    handleFinalizePendingReservation,
+    handleCleanupPendingReservation,
     selectedFuneralCompany,
     setSelectedFuneralCompany,
     showSangjoAIConsult,

@@ -10,11 +10,22 @@ import { requestPayment, verifyPayment, PORTONE_CONFIG, getChannelKey, generateP
 interface UseReservationProps {
   facility: Facility;
   onClose: () => void;
-  onConfirm: (reservation: LegacyReservation) => void;
+  onConfirm: (reservation: LegacyReservation) => Promise<LegacyReservation | null | void> | LegacyReservation | null | void;
+  onCreatePendingReservation?: (reservation: LegacyReservation) => Promise<LegacyReservation | null>;
+  onFinalizePendingReservation?: (reservationId: string) => Promise<void>;
+  onCleanupPendingReservation?: (reservationId: string) => Promise<void>;
   reservationMode: 'STANDARD' | 'URGENT';
 }
 
-export function useReservation({ facility, onClose: _onClose, onConfirm, reservationMode }: UseReservationProps) {
+export function useReservation({
+  facility,
+  onClose: _onClose,
+  onConfirm,
+  onCreatePendingReservation,
+  onFinalizePendingReservation,
+  onCleanupPendingReservation,
+  reservationMode,
+}: UseReservationProps) {
   const [step, setStep] = useState(0);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
@@ -168,6 +179,7 @@ export function useReservation({ facility, onClose: _onClose, onConfirm, reserva
     setIsProcessingPayment(true);
     setHasPaymentFailed(false);
     const data = formValues;
+    let pendingReservationId: string | undefined;
 
     if (paymentMethod === 'TRANSFER' || reservationType === 'CONSULTATION') {
       setTimeout(() => {
@@ -185,6 +197,16 @@ export function useReservation({ facility, onClose: _onClose, onConfirm, reserva
     try {
       setIsPaymentOpen(true);
       const paymentId = generatePaymentId('pay');
+      const pendingLegacy = mapToLegacy(data, 'pending', depositAmount, paymentId);
+      pendingLegacy.special_requests = `[연락처: ${data.contact_number}] ${pendingLegacy.special_requests}`;
+      const savedPending = await (onCreatePendingReservation
+        ? onCreatePendingReservation(pendingLegacy)
+        : onConfirm(pendingLegacy));
+      pendingReservationId = savedPending?.id || pendingLegacy.id;
+      if (!pendingReservationId) {
+        throw new Error('예약 생성에 실패했습니다. 다시 시도해주세요.');
+      }
+
       const response = await requestPayment({
         storeId: PORTONE_CONFIG.STORE_ID,
         channelKey: getChannelKey('general'),
@@ -205,6 +227,8 @@ export function useReservation({ facility, onClose: _onClose, onConfirm, reserva
       const verification = await verifyPayment({
         paymentId: response.paymentId || paymentId,
         expectedAmount: depositAmount,
+        orderId: pendingReservationId,
+        paymentContext: 'reservation',
         clientPaymentResult: {
           paymentId: response.paymentId || paymentId,
           transactionId: response.transactionId,
@@ -221,11 +245,14 @@ export function useReservation({ facility, onClose: _onClose, onConfirm, reserva
         throw new Error(verification.error || '결제 검증에 실패했습니다. 고객센터에 문의해주세요.');
       }
 
-      const legacy = mapToLegacy(data, 'pending', depositAmount, response.paymentId || paymentId);
-      legacy.special_requests = `[연락처: ${data.contact_number}] ${legacy.special_requests}`;
-      onConfirm(legacy);
       setStep(4);
+      if (pendingReservationId && onFinalizePendingReservation) {
+        await onFinalizePendingReservation(pendingReservationId);
+      }
     } catch (error: unknown) {
+      if (pendingReservationId && onCleanupPendingReservation) {
+        await onCleanupPendingReservation(pendingReservationId);
+      }
       // Payment error handled by toast below
       const msg = error instanceof Error ? error.message : '';
       if (msg.includes('취소')) {

@@ -101,7 +101,13 @@ export const MyConsultations: React.FC<Props> = ({ userId, onViewFacility }) => 
                 source_kind: 'lead' as const,
                 source_label: 'AI 접수',
             } as ExtendedConsultation));
-            const reservationRows = (reservationsResult.data || []).map((row: Record<string, unknown>) => {
+            const reservationRows = (reservationsResult.data || [])
+                .filter((row: Record<string, unknown>) => !(
+                    row.status === 'pending'
+                    && Number(row.payment_amount ?? 0) > 0
+                    && row.payment_verified === false
+                ))
+                .map((row: Record<string, unknown>) => {
                 const rawStatus = String(row.status || 'pending');
                 const status = rawStatus === 'confirmed' ? 'accepted' : rawStatus === 'completed' ? 'completed' : 'waiting';
                 return {
