@@ -1,6 +1,27 @@
 # Vercel Ignore File
 # Exclude large development/data files from deployment
 
+# Local dependencies and build outputs
+node_modules/
+dist/
+build/
+.vite/
+.turbo/
+
+# Git and local agent/editor state
+.git/
+.agent/
+.antigravity/
+.claude/
+.codex-backups/
+.codex-deploy/
+.codex-ui-audit/
+
+# Native app and Gradle artifacts
+android/
+.android-home/
+.gradle/
+
 # Large Data & Backups
 backups/
 memorial_data_v1/
@@ -26,8 +47,17 @@ public/ai-test.html
 
 # Sensitive/Local
 .env
+.env.local
+.env.*
+.env.*.local
 .env.local.temp
 .env.local.template
+supabase/.branches
+supabase/.temp
+supabase/.env
+supabase/.env.*
+supabase/.secrets
+supabase/.secrets.*
 
 # Keep specific JSONs if needed (but exclude large ones)
 !package.json
