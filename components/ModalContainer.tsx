@@ -192,6 +192,12 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
     setHandoverContext(context || summary);
   };
 
+  const isPetAiChat = Boolean(
+    aiChatFacility
+    && aiChatFacility.id !== 'maum-i'
+    && (aiChatFacility.type === 'pet' || aiChatFacility.type === 'pet_funeral' || initialChatIntent === 'pet_funeral')
+  );
+
   return (
     <>
       {/* Side Menu */}
@@ -399,8 +405,14 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
 
       {/* Global AI Chat Overlay */}
       {aiChatFacility && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center p-0 md:p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-300" data-debug="ai-modal">
-          <div className="w-full h-full md:w-[420px] md:h-[85dvh] md:rounded-2xl overflow-hidden bg-white shadow-2xl relative animate-in zoom-in-95 duration-300" data-debug="ai-modal-panel">
+        <div
+          className={isPetAiChat ? 'fixed inset-0 z-[430] bg-white' : 'fixed inset-0 z-[300] flex items-center justify-center p-0 md:p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-300'}
+          data-debug={isPetAiChat ? 'pet-ai-modal' : 'ai-modal'}
+        >
+          <div
+            className={isPetAiChat ? 'w-full h-full bg-white overflow-hidden' : 'w-full h-full md:w-[420px] md:h-[85dvh] md:rounded-2xl overflow-hidden bg-white shadow-2xl relative animate-in zoom-in-95 duration-300'}
+            data-debug={isPetAiChat ? 'pet-ai-panel' : 'ai-modal-panel'}
+          >
             <ChatInterface
               facility={aiChatFacility}
               currentUser={userInfo}

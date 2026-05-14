@@ -349,7 +349,7 @@ body.native-app #root {
 }
 
 .native-app-shell [data-debug="top-bar"]:focus-within + [data-debug="map-benefit-banner"] {
-  top: calc(var(--native-safe-top) + 224px) !important;
+  display: none !important;
 }
 
 .native-app-shell [data-debug="map-benefit-banner-card"] {
@@ -1301,10 +1301,11 @@ body.native-app #root {
 
 .native-app-shell [data-debug="pet-ai-modal"] {
   position: fixed !important;
-  inset: auto 0 0 0 !important;
+  inset: var(--native-visual-viewport-offset-top, 0px) 0 var(--native-keyboard-inset, 0px) 0 !important;
   top: var(--native-visual-viewport-offset-top, 0px) !important;
-  height: var(--native-visual-viewport-height, var(--app-height, 100dvh)) !important;
-  max-height: var(--native-visual-viewport-height, var(--app-height, 100dvh)) !important;
+  bottom: var(--native-keyboard-inset, 0px) !important;
+  height: auto !important;
+  max-height: none !important;
   z-index: 430 !important;
   padding: 0 !important;
   align-items: stretch !important;
@@ -1440,9 +1441,20 @@ body.native-app #root {
   min-height: 0 !important;
   overflow-y: auto !important;
   padding: 14px 16px !important;
-  scroll-padding-bottom: 96px;
+  scroll-padding-bottom: 120px;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+}
+
+.native-app-shell [data-debug="pet-ai-message-list"] {
+  min-height: 100%;
+}
+
+.native-app-shell [data-debug="pet-ai-message-bubble"] {
+  max-width: min(88%, 360px) !important;
+  padding: 14px 16px !important;
+  font-size: 16px !important;
+  line-height: 1.45 !important;
 }
 
 .native-app-shell [data-debug="pet-ai-quick-chips"] {

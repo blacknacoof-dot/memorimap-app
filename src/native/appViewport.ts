@@ -233,6 +233,7 @@ function logNativeLayoutMetrics() {
   logRect('pet ai panel', "[data-debug='pet-ai-panel']");
   logRect('pet ai body', "[data-debug='pet-ai-body']");
   logRect('pet ai message list', "[data-debug='pet-ai-message-list']");
+  logRect('pet ai message bubble', "[data-debug='pet-ai-message-bubble']");
   logRect('pet ai quick chips', "[data-debug='pet-ai-quick-chips']");
   logRect('pet ai input bar', "[data-debug='pet-ai-input-bar']");
   logRect('pet ai input', "[data-debug='pet-ai-input-bar']");

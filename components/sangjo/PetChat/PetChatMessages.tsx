@@ -23,10 +23,13 @@ const PetChatMessages: React.FC<PetChatMessagesProps> = ({ messages, isTyping, o
         <>
             {messages.map((msg) => (
                 <div key={msg.id} className={`flex w-full ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[85%] p-4 text-sm leading-relaxed shadow-sm ${msg.sender === 'user'
+                    <div
+                        data-debug="pet-ai-message-bubble"
+                        className={`max-w-[85%] p-4 text-sm leading-relaxed shadow-sm ${msg.sender === 'user'
                         ? 'bg-amber-800 text-white rounded-2xl rounded-tr-sm'
                         : 'bg-white text-stone-800 border border-stone-200 rounded-2xl rounded-tl-sm'
-                        }`}>
+                        }`}
+                    >
                         <div
                             className="whitespace-pre-wrap"
                             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(msg.text) }}

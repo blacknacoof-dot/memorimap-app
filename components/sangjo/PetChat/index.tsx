@@ -37,7 +37,6 @@ export const PetChatInterface: React.FC<ComponentProps> = ({ company, onClose, o
             timestamp: new Date(),
             action: 'NONE' as AiActionType
         }]);
-        setTimeout(() => inputRef.current?.focus(), 100);
     }, [company]);
     // Auto Scroll
     useEffect(() => {

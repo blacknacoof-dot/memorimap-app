@@ -21,8 +21,10 @@ export const TopBar: React.FC<TopBarProps> = ({
   viewState, setViewState, isMenuOpen, setIsMenuOpen, showPromo, setShowPromo, onSOS,
 }) => {
   const setSearchQuery = useFilterStore(s => s.setSearchQuery);
+  const searchQuery = useFilterStore(s => s.searchQuery);
   const openChat = useChatStore(s => s.openChat);
   const isMainView = viewState === ViewState.MAP || viewState === ViewState.LIST || viewState === ViewState.MY_PAGE;
+  const shouldShowMapBenefitBanner = showPromo && viewState === ViewState.MAP && searchQuery.trim().length === 0;
 
   const handleSearchAction = useCallback((type: 'urgent' | 'search' | 'map', region: string) => {
     if (type === 'urgent') {
@@ -100,7 +102,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       </div>
 
       {/* Promo Banner */}
-      {showPromo && viewState === ViewState.MAP && (
+      {shouldShowMapBenefitBanner && (
         <div className="standalone-hide absolute left-3 right-3 md:left-4 md:right-4 z-20 animate-in fade-in slide-in-from-top-2 transition-all duration-300 top-[6.4rem] md:top-[9rem]" data-debug="map-benefit-banner">
           <div className="bg-white/95 text-slate-700 px-3 py-2 md:p-3 rounded-xl shadow-lg border border-slate-200 flex justify-between items-center" data-debug="map-benefit-banner-card">
             <div className="flex items-center gap-2 md:gap-3">
