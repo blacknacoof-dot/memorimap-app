@@ -520,7 +520,7 @@ serve(async (req: Request) => {
     // Service role client for DB operations (created once, reused)
     const supabaseAdmin = createClient(
         Deno.env.get('SUPABASE_URL')!,
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+        (Deno.env.get('MEMORIMAP_SERVICE_ROLE_KEY') ?? Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'))!,
         { auth: { persistSession: false, autoRefreshToken: false } }
     );
 

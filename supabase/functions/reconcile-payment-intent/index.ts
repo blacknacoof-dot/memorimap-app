@@ -105,7 +105,7 @@ serve(async (req: Request) => {
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const serviceRoleKey = (Deno.env.get("MEMORIMAP_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"));
   const portoneApiSecret = Deno.env.get("PORTONE_API_SECRET");
 
   if (!supabaseUrl || !serviceRoleKey || !portoneApiSecret) {

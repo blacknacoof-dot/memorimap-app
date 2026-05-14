@@ -115,7 +115,7 @@ serve(async (req) => {
         // Admin client (service role) to execute transaction
         const supabaseAdmin = createClient(
             Deno.env.get('SUPABASE_URL')!,
-            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+            (Deno.env.get('MEMORIMAP_SERVICE_ROLE_KEY') ?? Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'))!,
             { auth: { autoRefreshToken: false, persistSession: false } }
         )
 
@@ -332,7 +332,7 @@ serve(async (req) => {
         try {
             const supabaseErrorClient = createClient(
                 Deno.env.get('SUPABASE_URL') ?? '',
-                Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+                (Deno.env.get('MEMORIMAP_SERVICE_ROLE_KEY') ?? Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')) ?? '',
                 { auth: { persistSession: false } }
             );
             await logToDB(supabaseErrorClient, 'ERROR', 'Edge Function Exception', {

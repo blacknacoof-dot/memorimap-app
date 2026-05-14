@@ -33,7 +33,7 @@ function getClientKey(req: Request, userId?: string | null): string {
 
 export async function rateLimit(req: Request, options: RateLimitOptions): Promise<RateLimitResult> {
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
-  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  const serviceRoleKey = (Deno.env.get('MEMORIMAP_SERVICE_ROLE_KEY') ?? Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
 
   if (!supabaseUrl || !serviceRoleKey) {
     return { allowed: true };
