@@ -173,7 +173,8 @@ serve(async (req: Request) => {
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const serviceRoleKey = (Deno.env.get("MEMORIMAP_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"));
+  const cronSecret = Deno.env.get("CHARGE_SUBSCRIPTION_CRON_SECRET") ?? Deno.env.get("CRON_SECRET");
   const portoneApiSecret = Deno.env.get("PORTONE_API_SECRET");
 
   if (!supabaseUrl || !serviceRoleKey || !portoneApiSecret) {
@@ -184,7 +185,8 @@ serve(async (req: Request) => {
   }
 
   const authHeader = req.headers.get("Authorization") || "";
-  if (authHeader !== `Bearer ${serviceRoleKey}`) {
+  const invocationSecret = cronSecret ?? serviceRoleKey;
+  if (authHeader !== `Bearer ${invocationSecret}`) {
     return new Response(JSON.stringify({ error: "Forbidden" }), {
       status: 403,
       headers: { "Content-Type": "application/json" },
