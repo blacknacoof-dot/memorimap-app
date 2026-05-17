@@ -61,6 +61,7 @@ supabase/.secrets.*
 
 # Keep specific JSONs if needed (but exclude large ones)
 !package.json
+!package-lock.json
 !tsconfig.json
 !tsconfig.node.json
 !vercel.json
