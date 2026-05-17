@@ -245,6 +245,14 @@ export const SignUpModal: React.FC<Props> = ({ onClose, onLoginClick }) => {
                       <pre className="text-xs text-gray-600 whitespace-pre-wrap font-sans leading-relaxed">
                         {PRIVACY_POLICY}
                       </pre>
+                      <a
+                        href="https://memorimap.kr/privacy/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-3 inline-block text-xs font-medium text-primary hover:underline"
+                      >
+                        https://memorimap.kr/privacy/
+                      </a>
                     </div>
                   )}
                 </div>

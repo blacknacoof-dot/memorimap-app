@@ -428,13 +428,18 @@ export const SettingsView: React.FC<ViewProps> = ({ onBack, user: _user }) => {
 
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="p-4 border-b text-xs font-bold text-gray-400">정보</div>
-          <button className="w-full p-4 flex justify-between items-center border-b last:border-0 hover:bg-gray-50">
+          <a
+            href="https://memorimap.kr/privacy/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full p-4 flex justify-between items-center border-b last:border-0 hover:bg-gray-50"
+          >
             <div className="flex items-center gap-3">
               <Shield size={20} className="text-gray-600" />
               <span className="text-sm font-medium">개인정보 처리방침</span>
             </div>
             <ChevronLeft size={16} className="text-gray-300 rotate-180" />
-          </button>
+          </a>
           <button className="w-full p-4 flex justify-between items-center hover:bg-gray-50">
             <div className="flex items-center gap-3">
               <Info size={20} className="text-gray-600" />

@@ -300,6 +300,14 @@ export const LoginModal: React.FC<Props> = ({ onClose, onLogin, onSignUpClick })
                 회원가입
               </button>
             </p>
+            <a
+              href="https://memorimap.kr/privacy/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-block text-xs text-gray-500 hover:text-primary hover:underline"
+            >
+              개인정보처리방침
+            </a>
           </div>
         )}
       </div>
