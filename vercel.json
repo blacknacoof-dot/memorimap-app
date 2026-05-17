@@ -3,7 +3,7 @@
     "framework": "vite",
     "buildCommand": "npm run build",
     "outputDirectory": "dist",
-    "installCommand": "npm install",
+    "installCommand": "npm ci",
     "routes": [
         {
             "src": "/(.*)",
@@ -27,6 +27,10 @@
             "src": "/ai-test\\.html",
             "status": 404,
             "dest": "/404.html"
+        },
+        {
+            "src": "/privacy/?$",
+            "dest": "/privacy/index.html"
         },
         {
             "handle": "filesystem"
