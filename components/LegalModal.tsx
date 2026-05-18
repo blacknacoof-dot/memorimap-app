@@ -101,6 +101,14 @@ export const LegalModal: React.FC<Props> = ({ onClose, initialTab = 'privacy' })
             <div className="space-y-4">
               <h3 className="font-bold text-lg text-gray-900">개인정보처리방침</h3>
               <p>메모리맵은 관련 법령을 준수하며 이용자의 개인정보를 안전하게 처리합니다.</p>
+              <a
+                href="https://memorimap.kr/privacy/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex text-sm font-medium text-primary hover:underline"
+              >
+                https://memorimap.kr/privacy/
+              </a>
               <div>
                 <h4 className="font-bold text-gray-900 mb-1">1. 수집 항목</h4>
                 <ul className="list-disc pl-5 space-y-1">
