@@ -22,7 +22,8 @@ const DEV_ORIGINS = [
     "http://127.0.0.1:5173",
 ];
 
-const ALLOWED_ORIGINS = [...PRODUCTION_ORIGINS, ...DEV_ORIGINS];
+const IS_DEVELOPMENT = Deno.env.get("ENVIRONMENT") === "development";
+const ALLOWED_ORIGINS = IS_DEVELOPMENT ? [...PRODUCTION_ORIGINS, ...DEV_ORIGINS] : PRODUCTION_ORIGINS;
 
 function getCorsOrigin(req: Request): string {
     const origin = req.headers.get("Origin") || "";
