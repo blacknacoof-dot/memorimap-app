@@ -453,9 +453,14 @@ export const SettingsView: React.FC<ViewProps> = ({ onBack, user: _user }) => {
           </div>
         </div>
 
-        <button className="w-full mt-6 text-gray-400 text-xs underline p-2">
-          회원 탈퇴
-        </button>
+        <a
+          href="https://memorimap.kr/account-deletion/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block w-full mt-6 text-center text-gray-400 text-xs underline p-2"
+        >
+          회원 탈퇴 및 계정 삭제 안내
+        </a>
       </div>
     </div>
   );

@@ -33,6 +33,10 @@
             "dest": "/privacy/index.html"
         },
         {
+            "src": "/account-deletion/?$",
+            "dest": "/account-deletion/index.html"
+        },
+        {
             "handle": "filesystem"
         },
         {
