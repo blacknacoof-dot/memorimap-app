@@ -17,7 +17,8 @@ const DEV_ORIGINS = [
     'http://127.0.0.1:5173',
 ];
 
-const ALLOWED_ORIGINS = [...PRODUCTION_ORIGINS, ...DEV_ORIGINS];
+const IS_DEVELOPMENT = Deno.env.get('ENVIRONMENT') === 'development';
+const ALLOWED_ORIGINS = IS_DEVELOPMENT ? [...PRODUCTION_ORIGINS, ...DEV_ORIGINS] : PRODUCTION_ORIGINS;
 
 const getCorsHeaders = (req: Request) => {
     const origin = req.headers.get('origin');
@@ -131,13 +132,21 @@ serve(async (req) => {
         const { data: { user: verifiedUser }, error: authError } = await supabaseAuth.auth.getUser(token);
 
         if (!verifiedUser || authError) {
-            throw new Error('Invalid or expired token');
+            return new Response(JSON.stringify({ error: 'Invalid or expired token' }), {
+                status: 401,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
         }
 
         const userEmail = verifiedUser.email;
         const userId = verifiedUser.id;
 
-        if (!userEmail) throw new Error('No email in token');
+        if (!userEmail) {
+            return new Response(JSON.stringify({ error: 'Invalid or expired token' }), {
+                status: 401,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
+        }
 
         // [Security] Super Admin Role Check via DB (profiles 테이블 기준)
         const { data: adminCheck, error: adminCheckError } = await supabaseAdmin
@@ -147,8 +156,15 @@ serve(async (req) => {
             .eq('role', 'super_admin')
             .maybeSingle();
 
-        if (adminCheckError || !adminCheck) {
-            return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 403, headers: getCorsHeaders(req) })
+        if (adminCheckError) {
+            throw adminCheckError
+        }
+
+        if (!adminCheck) {
+            return new Response(JSON.stringify({ error: 'Forbidden' }), {
+                status: 403,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
         }
 
         const user = {
