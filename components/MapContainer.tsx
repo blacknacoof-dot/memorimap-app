@@ -105,6 +105,7 @@ interface MarkerClusteringInstance {
   setMap: (map: NaverMapInstance | null) => void;
   setMarkers?: (markers: NaverMarker[]) => void;
   redraw?: () => void;
+  _redraw?: () => void;
 }
 
 declare global {
@@ -230,6 +231,8 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
     if (clusterRef.current) {
       if (typeof clusterRef.current.redraw === 'function') {
         clusterRef.current.redraw();
+      } else if (typeof clusterRef.current._redraw === 'function') {
+        clusterRef.current._redraw();
       } else if (typeof clusterRef.current.setMarkers === 'function') {
         clusterRef.current.setMarkers(markersRef.current);
       }
@@ -579,6 +582,14 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
       size: new window.naver.maps.Size(size, size),
       anchor: new window.naver.maps.Point(size / 2, size / 2),
     });
+    const redrawCluster = () => {
+      if (!clusterRef.current) return;
+      if (typeof clusterRef.current.redraw === 'function') {
+        clusterRef.current.redraw();
+      } else if (typeof clusterRef.current._redraw === 'function') {
+        clusterRef.current._redraw();
+      }
+    };
 
     if (useCluster && markersRef.current.length > 0) {
       if (!clusterRef.current) {        clusterRef.current = new window.MarkerClustering({
@@ -606,8 +617,12 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
         });
       } else if (markersChanged && typeof clusterRef.current.setMarkers === 'function') {
         clusterRef.current.setMarkers(markersRef.current);
+        redrawCluster();
+        window.requestAnimationFrame(redrawCluster);
       } else if (markersChanged && typeof clusterRef.current.redraw === 'function') {
         clusterRef.current.redraw();
+      } else if (markersChanged && typeof clusterRef.current._redraw === 'function') {
+        clusterRef.current._redraw();
       } else if (markersChanged) {        clusterRef.current.setMap(null);
         clusterRef.current = new window.MarkerClustering({
           minClusterSize: 2,
