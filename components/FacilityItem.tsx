@@ -130,7 +130,7 @@ export const FacilityItem = React.memo(({ facility, onClick, isCompared, onToggl
                             e.stopPropagation();
                             onToggleCompare(facility);
                         }}
-                        className={`p-2 min-w-[42px] min-h-[42px] flex items-center justify-center rounded-full transition-colors border shadow-sm ${isCompared
+                        className={`p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full transition-colors border shadow-sm ${isCompared
                             ? 'bg-primary text-white border-primary'
                             : 'bg-white text-slate-400 border-slate-200 hover:border-primary hover:text-primary'
                             }`}

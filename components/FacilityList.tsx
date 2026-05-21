@@ -51,7 +51,7 @@ export const FacilityList = React.memo<FacilityListProps>(({ facilities, onSelec
                 </div>
                 <button
                     onClick={() => { resetCategories(); setSearchQuery(''); }}
-                    className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium active:scale-95 transition-transform"
+                    className="px-4 py-2 min-h-[44px] bg-primary text-white rounded-lg text-sm font-medium active:scale-95 transition-transform"
                 >
                     조건 변경하기
                 </button>

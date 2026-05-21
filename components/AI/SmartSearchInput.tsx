@@ -85,7 +85,7 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
       <div className={`bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden ring-1 ring-black/[0.03] ${
         isFocused ? 'ring-primary/30 border-primary/20' : ''
       }`}>
-        <div className={`flex items-center px-3 md:px-4 bg-white ${compact ? 'h-[42px] md:h-12' : 'h-14'}`}>
+        <div className={`flex items-center px-3 md:px-4 bg-white ${compact ? 'h-11 md:h-12' : 'h-14'}`}>
           <Search size={compact ? 16 : 20} className="text-slate-500 mr-2 md:mr-3 shrink-0 md:!w-[18px] md:!h-[18px]" />
           <input
             id="smart-search-input"
@@ -126,7 +126,7 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
                   <button
                     key={chip.label}
                     onClick={() => handleChipClick(chip.label)}
-                    className="flex items-center gap-1 px-2 py-1 bg-gray-50/70 hover:bg-gray-100/90 rounded-full text-[11px] font-medium text-gray-400 hover:text-gray-600 transition-colors"
+                    className="flex items-center gap-1 px-2 py-1 min-h-[44px] md:min-h-0 bg-gray-50/70 hover:bg-gray-100/90 rounded-full text-[11px] font-medium text-gray-400 hover:text-gray-600 transition-colors"
                   >
                     <span className="opacity-60 text-xs">{chip.icon}</span>
                     <span>{chip.label}</span>
@@ -143,7 +143,7 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
               {isUrgent && (
                 <button
                   onClick={() => handleAction('urgent')}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-red-50 transition-colors border-b border-gray-50 group text-left"
+                  className="w-full min-h-[44px] flex items-center gap-2.5 px-3 py-2.5 hover:bg-red-50 transition-colors border-b border-gray-50 group text-left"
                 >
                   <div className="bg-red-100 p-1.5 rounded-lg group-hover:scale-110 transition-transform shrink-0">
                     <AlertCircle size={16} className="text-red-600" />
@@ -166,7 +166,7 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
               {detectedRegion && (
                 <button
                   onClick={() => handleAction('search')}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-blue-50 transition-colors border-b border-gray-50 group text-left"
+                  className="w-full min-h-[44px] flex items-center gap-2.5 px-3 py-2.5 hover:bg-blue-50 transition-colors border-b border-gray-50 group text-left"
                 >
                   <div className="bg-blue-100 p-1.5 rounded-lg group-hover:scale-110 transition-transform shrink-0">
                     <Building2 size={16} className="text-blue-600" />
@@ -182,7 +182,7 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
               {detectedRegion && (
                 <button
                   onClick={() => handleAction('map')}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-emerald-50 transition-colors group text-left"
+                  className="w-full min-h-[44px] flex items-center gap-2.5 px-3 py-2.5 hover:bg-emerald-50 transition-colors group text-left"
                 >
                   <div className="bg-emerald-100 p-1.5 rounded-lg group-hover:scale-110 transition-transform shrink-0">
                     <MapIcon size={16} className="text-emerald-600" />
