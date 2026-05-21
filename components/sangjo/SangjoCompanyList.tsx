@@ -120,7 +120,7 @@ export const SangjoCompanyList: React.FC<Props> = ({
             </div>
 
             {/* Company List */}
-            <div className="flex-1 overflow-y-auto px-4 space-y-2.5 pb-28 no-scrollbar">
+            <div className="flex-1 overflow-y-auto px-4 space-y-2.5 pb-[calc(env(safe-area-inset-bottom)+11rem)] md:pb-28 no-scrollbar">
                 {filteredCompanies.map(company => (
                     <SangjoCompanyCard
                         key={company.id}
