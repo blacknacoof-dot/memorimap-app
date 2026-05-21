@@ -309,23 +309,23 @@ export const MyConsultations: React.FC<Props> = ({ userId, onViewFacility }) => 
                             className={`bg-white rounded-2xl border-2 ${statusConfig.color} p-4 transition hover:shadow-md`}
                         >
                             {/* Header */}
-                            <div className="flex items-start justify-between mb-3">
-                                <div className="flex items-center gap-3">
-                                    <div className={`p-2 rounded-full ${statusConfig.color}`}>
+                            <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2 mb-3">
+                                <div className="flex min-w-0 flex-1 items-start gap-3">
+                                    <div className={`shrink-0 p-2 rounded-full ${statusConfig.color}`}>
                                         <StatusIcon size={18} />
                                     </div>
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-bold text-slate-800">
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                                            <span className="whitespace-nowrap font-bold leading-tight text-slate-800">
                                                 {statusConfig.label}
                                             </span>
                                             {consultation.source_label && (
-                                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/70 text-slate-600 border border-slate-200 font-bold">
+                                                <span className="inline-flex items-center whitespace-nowrap rounded-full border border-slate-200 bg-white/70 px-2 py-0.5 text-[10px] font-bold leading-tight text-slate-600">
                                                     {consultation.source_label}
                                                 </span>
                                             )}
                                             {consultation.urgency === 'deceased' && (
-                                                <span className="text-xs px-2 py-0.5 rounded-full bg-red-500 text-white font-bold">
+                                                <span className="whitespace-nowrap rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white">
                                                     긴급
                                                 </span>
                                             )}
@@ -333,7 +333,7 @@ export const MyConsultations: React.FC<Props> = ({ userId, onViewFacility }) => 
                                         <p className="text-xs text-slate-500">{statusConfig.description}</p>
                                     </div>
                                 </div>
-                                <span className="text-xs text-slate-400">
+                                <span className="ml-auto max-w-[112px] shrink-0 text-right text-[11px] leading-snug text-slate-400 sm:max-w-none sm:text-xs">
                                     {formatDate(consultation.created_at)}
                                 </span>
                             </div>
