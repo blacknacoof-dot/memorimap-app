@@ -144,7 +144,8 @@ export function useMapViewport({ setFacilities, setCurrentBounds, session, onVie
 
     mapDebounceRef.current = setTimeout(async () => {
       const nextBoundsSignature = getBoundsSignature(bounds);
-      if (!hasMeaningfulBoundsChange(previousRequestedBoundsRef.current, bounds)) return;
+      const shouldForceRefresh = (bounds as LatLngBounds & { forceRefresh?: boolean }).forceRefresh === true;
+      if (!shouldForceRefresh && !hasMeaningfulBoundsChange(previousRequestedBoundsRef.current, bounds)) return;
       previousRequestedBoundsRef.current = nextBoundsSignature;
       onViewportFetchStart?.();
       // ? [5-3] 이전 요청 취소 + 새 컨트롤러 생성

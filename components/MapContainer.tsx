@@ -161,6 +161,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
   const [isMapReady, setIsMapReady] = useState(false);
   const [mapLoadError, setMapLoadError] = useState<string | null>(null);
   const [isClusterReady, setIsClusterReady] = useState(false);
+  const [visibleRenderVersion, setVisibleRenderVersion] = useState(0);
   const [_myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null);
   const locationMarkerRef = useRef<NaverMarker | null>(null);
   const moveToFallbackLocation = () => {
@@ -176,23 +177,76 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
   const resizeTimerIds = useRef<number[]>([]);
   // ✅ [1-2b] ResizeObserver 저장용 ref
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const visibilityObserverRef = useRef<MutationObserver | null>(null);
   // ✅ [1-2c] 마커 클릭 리스너 핸들 저장용 ref (per-marker Map)
   const markerListenerMapRef = useRef<Map<string, unknown>>(new Map());
   // ✅ 아이콘 캐시 (카테고리별 — getMarkerHtml 반복 호출 방지)
   const iconCacheRef = useRef<Map<string, Record<string, unknown>>>(new Map());
   // ✅ onFacilitySelect 최신 참조 유지 (리스너 재등록 최소화)
   const onFacilitySelectRef = useRef(onFacilitySelect);
+  const onBoundsChangeRef = useRef(onBoundsChange);
   const latestFacilitiesRef = useRef(facilities);
+  const initialBoundsEmittedRef = useRef(false);
+  const lastEmittedBoundsSignatureRef = useRef('');
+  const lastVisibilityStateRef = useRef<boolean | null>(null);
   useEffect(() => { onFacilitySelectRef.current = onFacilitySelect; }, [onFacilitySelect]);
+  useEffect(() => { onBoundsChangeRef.current = onBoundsChange; }, [onBoundsChange]);
   useEffect(() => { latestFacilitiesRef.current = facilities; }, [facilities]);
 
   // facilities prop은 useFacilityData에서 이미 카테고리/검색 필터링 완료
   const filteredFacilities = facilities;
 
+  const emitCurrentBounds = (_reason: string, options: { force?: boolean; markInitial?: boolean } = {}) => {
+    if (!mapInstance.current || !onBoundsChangeRef.current) return;
+
+    try {
+      const bounds = mapInstance.current.getBounds();
+      if (!bounds) return;
+
+      const ne = bounds.getNE();
+      const sw = bounds.getSW();
+      const zoom = mapInstance.current.getZoom();
+      const signature = [sw.lat(), sw.lng(), ne.lat(), ne.lng(), zoom].join(':');
+
+      if (!options.force && signature === lastEmittedBoundsSignatureRef.current) return;
+
+      lastEmittedBoundsSignatureRef.current = signature;
+      if (options.markInitial) {
+        initialBoundsEmittedRef.current = true;
+      }
+      const nextBounds = new LeafletCompatibleBounds(sw.lat(), sw.lng(), ne.lat(), ne.lng(), zoom);
+      if (options.force) {
+        (nextBounds as LeafletCompatibleBounds & { forceRefresh?: boolean }).forceRefresh = true;
+      }
+      onBoundsChangeRef.current(nextBounds);
+    } catch {
+      // Bounds can be unavailable while the Naver map is still measuring layout.
+    }
+  };
+
+  const redrawVisibleMarkers = () => {
+    if (!mapInstance.current) return;
+
+    if (clusterRef.current) {
+      if (typeof clusterRef.current.redraw === 'function') {
+        clusterRef.current.redraw();
+      } else if (typeof clusterRef.current.setMarkers === 'function') {
+        clusterRef.current.setMarkers(markersRef.current);
+      }
+      return;
+    }
+
+    markersRef.current.forEach((marker) => {
+      marker.setMap(null);
+      marker.setMap(mapInstance.current);
+    });
+  };
+
   // 1. Initialize Map
   useEffect(() => {    if (!mapElement.current) return;
 
     let isMounted = true;
+    let handleVisibilityInteraction: (() => void) | null = null;
     const registerTimeout = (callback: () => void, delay: number): number => {
       const timeoutId = window.setTimeout(callback, delay);
       resizeTimerIds.current.push(timeoutId);
@@ -250,13 +304,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
         // Event Listeners
         // ✅ [1-2a] idle 리스너 핸들을 ref에 저장
         idleListenerRef.current = window.naver.maps.Event.addListener(map, 'idle', () => {
-          if (onBoundsChange) {
-            const bounds = map.getBounds();
-            const ne = bounds.getNE();
-            const sw = bounds.getSW();
-            const fakeBounds = new LeafletCompatibleBounds(sw.lat(), sw.lng(), ne.lat(), ne.lng(), map.getZoom());
-            onBoundsChange(fakeBounds);
-          }
+          emitCurrentBounds('idle');
         });
 
         setIsMapReady(true);
@@ -269,10 +317,22 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
               mapElement.current.clientHeight
             ));
             window.naver.maps.Event.trigger(map, 'resize');
+            emitCurrentBounds('resize');
           }
         };
         // ✅ [1-2b] setTimeout ID를 ref에 저장
-        registerTimeout(triggerResize, 0);
+        registerTimeout(() => {
+          if (!initialBoundsEmittedRef.current) {
+            emitCurrentBounds('initial', { force: true, markInitial: true });
+          }
+          triggerResize();
+        }, 0);
+        registerTimeout(() => {
+          if (!initialBoundsEmittedRef.current) {
+            emitCurrentBounds('initial-retry', { force: true, markInitial: true });
+          }
+          triggerResize();
+        }, 100);
         registerTimeout(triggerResize, 300);
         registerTimeout(triggerResize, 1000);
 
@@ -282,6 +342,60 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
           resizeObserverRef.current.observe(mapElement.current);
           // 3초 후 observer 해제 (초기 로드용)
           registerTimeout(() => resizeObserverRef.current?.disconnect(), 3000);
+        }
+
+        if (typeof MutationObserver !== 'undefined') {
+          const syncVisibleBounds = () => {
+            const visibilityContainer = mapElement.current?.closest('[aria-hidden]');
+            if (!visibilityContainer) return;
+
+            const isVisible = visibilityContainer.getAttribute('aria-hidden') !== 'true';
+
+            if (!isVisible) {
+              lastVisibilityStateRef.current = false;
+              return;
+            }
+
+            if (lastVisibilityStateRef.current === true) return;
+            lastVisibilityStateRef.current = true;
+
+            registerTimeout(() => {
+              triggerResize();
+              const center = map.getCenter();
+              map.setCenter(new window.naver.maps.LatLng(center.lat() + 0.000001, center.lng()));
+              map.setCenter(center);
+              setVisibleRenderVersion((version) => version + 1);
+              redrawVisibleMarkers();
+              emitCurrentBounds('visible', { force: true });
+            }, 0);
+            registerTimeout(() => {
+              triggerResize();
+              redrawVisibleMarkers();
+            }, 120);
+          };
+
+          syncVisibleBounds();
+          let visibleSyncAttempts = 0;
+          const scheduleVisibleSync = () => {
+            if (!isMounted || visibleSyncAttempts >= 80 || lastVisibilityStateRef.current === true) return;
+            visibleSyncAttempts += 1;
+            registerTimeout(() => {
+              syncVisibleBounds();
+              scheduleVisibleSync();
+            }, 250);
+          };
+          scheduleVisibleSync();
+          handleVisibilityInteraction = () => {
+            registerTimeout(syncVisibleBounds, 250);
+            registerTimeout(syncVisibleBounds, 600);
+          };
+          document.addEventListener('click', handleVisibilityInteraction, true);
+          visibilityObserverRef.current = new MutationObserver(syncVisibleBounds);
+          visibilityObserverRef.current.observe(document.body, {
+            attributes: true,
+            attributeFilter: ['aria-hidden', 'class'],
+            subtree: true,
+          });
         }
 
         if (!window.MarkerClustering) {
@@ -312,6 +426,11 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
       // ✅ [1-2b] ResizeObserver 해제
       resizeObserverRef.current?.disconnect();
       resizeObserverRef.current = null;
+      visibilityObserverRef.current?.disconnect();
+      visibilityObserverRef.current = null;
+      if (handleVisibilityInteraction) {
+        document.removeEventListener('click', handleVisibilityInteraction, true);
+      }
       // ✅ [1-2a] idle 리스너 해제
       if (idleListenerRef.current && window.naver?.maps?.Event) {
         window.naver.maps.Event.removeListener(idleListenerRef.current);
@@ -343,7 +462,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
   useEffect(() => {    if (!mapInstance.current || !hasCompleteNaverMaps() || !isMapReady) return;
 
     const useCluster = Boolean(isClusterReady && window.MarkerClustering);
-    const nextFacilitySignature = `${useCluster ? 'cluster' : 'plain'}:${selectedFacilityId ?? ''}:${filteredFacilities
+    const nextFacilitySignature = `${useCluster ? 'cluster' : 'plain'}:${visibleRenderVersion}:${selectedFacilityId ?? ''}:${filteredFacilities
       .map((facility) => [
         facility.id,
         facility.lat ?? '',
@@ -532,7 +651,7 @@ const MapComponent = forwardRef<MapRef, MapProps>(({ facilities, onFacilitySelec
       markerListenerMapRef.current.delete(id);
     }
 
-  }, [filteredFacilities, isMapReady, isClusterReady, selectedFacilityId]);
+  }, [filteredFacilities, isMapReady, isClusterReady, selectedFacilityId, visibleRenderVersion]);
 
   useEffect(() => {
     if (!hasCompleteNaverMaps() || !isMapReady) return;
