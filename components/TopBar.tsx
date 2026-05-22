@@ -41,7 +41,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       {/* Header — Android mobile browser friendly stack */}
       <div className={`absolute z-40 transition-all duration-300 ${
         viewState === ViewState.LIST
-          ? 'top-0 left-0 right-0 px-3 py-2 md:p-4 bg-white/95 backdrop-blur shadow-sm'
+          ? 'top-0 left-0 right-0 px-3 py-2 md:p-4 bg-white md:bg-white/95 md:backdrop-blur shadow-none md:shadow-sm'
           : 'top-2 left-3 right-3 md:top-4 md:left-4 md:right-4'
       }`}>
         <div className="flex items-center gap-1.5 md:gap-2">
