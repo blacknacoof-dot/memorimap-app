@@ -93,8 +93,8 @@ export const TopBar: React.FC<TopBarProps> = ({
         </div>
 
         {viewState !== ViewState.MY_PAGE && !isMenuOpen && (
-          <div className="mt-2 pointer-events-auto">
-            <FilterBar />
+          <div className="mt-1 pointer-events-auto">
+            <FilterBar align={viewState === ViewState.LIST ? 'end' : 'start'} />
           </div>
         )}
       </div>
