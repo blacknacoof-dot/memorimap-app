@@ -29,17 +29,17 @@ export const GuideView: React.FC<ViewProps> = ({ onBack }) => {
         <div className="bg-white p-5 rounded-xl shadow-sm border">
           <h3 className="font-bold text-lg mb-2 text-primary">장례 3일장 절차</h3>
           <ul className="space-y-3 text-sm text-gray-600">
-            <li className="flex gap-3">
-              <span className="bg-gray-100 text-gray-800 font-bold px-2 py-0.5 rounded h-fit">1일차</span>
-              <p>임종 및 운구, 빈소 설치, 부고 알림, 상주 상복 착용</p>
+            <li className="flex gap-3 items-start">
+              <span className="bg-gray-100 text-gray-800 font-bold px-2 py-0.5 rounded inline-flex w-14 shrink-0 items-center justify-center whitespace-nowrap text-center leading-5">1일차</span>
+              <p className="flex-1 min-w-0">임종 및 운구, 빈소 설치, 부고 알림, 상주 상복 착용</p>
             </li>
-            <li className="flex gap-3">
-              <span className="bg-gray-100 text-gray-800 font-bold px-2 py-0.5 rounded h-fit">2일차</span>
-              <p>염습 및 입관, 성복제(기독교는 입관예배), 조문객 맞이</p>
+            <li className="flex gap-3 items-start">
+              <span className="bg-gray-100 text-gray-800 font-bold px-2 py-0.5 rounded inline-flex w-14 shrink-0 items-center justify-center whitespace-nowrap text-center leading-5">2일차</span>
+              <p className="flex-1 min-w-0">염습 및 입관, 성복제(기독교는 입관예배), 조문객 맞이</p>
             </li>
-            <li className="flex gap-3">
-              <span className="bg-gray-100 text-gray-800 font-bold px-2 py-0.5 rounded h-fit">3일차</span>
-              <p>발인제, 화장장 이동 및 화장, 장지 이동 및 안치</p>
+            <li className="flex gap-3 items-start">
+              <span className="bg-gray-100 text-gray-800 font-bold px-2 py-0.5 rounded inline-flex w-14 shrink-0 items-center justify-center whitespace-nowrap text-center leading-5">3일차</span>
+              <p className="flex-1 min-w-0">발인제, 화장장 이동 및 화장, 장지 이동 및 안치</p>
             </li>
           </ul>
         </div>
