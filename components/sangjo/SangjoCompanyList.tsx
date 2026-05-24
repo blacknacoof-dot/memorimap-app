@@ -81,7 +81,7 @@ export const SangjoCompanyList: React.FC<Props> = ({
     );
 
     return (
-        <div className="h-full flex flex-col bg-gray-50 relative">
+        <div className="h-full flex flex-col bg-gray-50 relative" data-native-sangjo-list="true">
             {/* Search Header */}
             <div className="px-4 pt-4 mb-1.5 shrink-0">
                 <div className="flex items-center justify-between mb-1.5">

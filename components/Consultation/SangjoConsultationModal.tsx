@@ -273,17 +273,17 @@ export const SangjoConsultationModal: React.FC<Props> = ({ onClose, company, com
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 z-[300] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/50 z-[300] flex items-center justify-center p-4" data-native-sangjo-consultation="true">
             <div className="bg-white rounded-2xl w-full max-w-md h-[80dvh] flex flex-col shadow-2xl overflow-hidden relative">
                 {/* Header */}
                 <div className="bg-gray-900 text-white p-4 flex justify-between items-center shrink-0">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center text-white ring-2 ring-white/20">
                             <ShieldCheck size={20} />
                         </div>
-                        <div>
-                            <h3 className="font-bold text-lg leading-tight">'마음이' (통합 비교 AI)</h3>
-                            <p className="text-xs text-amber-400 font-bold">상조 업체 비교 분석 센터</p>
+                        <div className="min-w-0">
+                            <h3 className="font-bold text-base sm:text-lg leading-tight whitespace-nowrap truncate">'마음이' (통합 비교 AI)</h3>
+                            <p className="text-xs text-amber-400 font-bold truncate">상조 업체 비교 분석 센터</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-white/10 rounded-full transition-colors shrink-0">

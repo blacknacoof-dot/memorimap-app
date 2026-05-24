@@ -13,14 +13,21 @@ export const ScenarioMessages: React.FC<ScenarioMessagesProps> = ({ messages, th
     return (
         <>
             {messages.map((msg) => (
-                <div key={msg.id} className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'} animate-fadeIn`}>
+                <div
+                    key={msg.id}
+                    className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'} animate-fadeIn`}
+                    data-sangjo-brand-message={!msg.isUser ? 'true' : undefined}
+                >
                     {!msg.isUser && (
-                        <div className={`w-8 h-8 ${themeColor} rounded-full flex-shrink-0 flex items-center justify-center mr-2 mt-1 shadow-md border-2 border-white`}>
+                        <div
+                            className={`w-8 h-8 ${themeColor} rounded-full flex-shrink-0 flex items-center justify-center mr-2 mt-1 shadow-md border-2 border-white`}
+                            data-sangjo-brand-avatar="true"
+                        >
                             <Bot className="w-4 h-4 text-white" />
                         </div>
                     )}
 
-                    <div className="max-w-[85%] space-y-2">
+                    <div className="max-w-[85%] space-y-2" data-sangjo-brand-message-body={!msg.isUser ? 'true' : undefined}>
                         {/* Text Bubble */}
                         {msg.text && (
                             <div
@@ -30,6 +37,12 @@ export const ScenarioMessages: React.FC<ScenarioMessagesProps> = ({ messages, th
                                         : 'bg-white text-gray-700 border border-gray-100 rounded-tl-none'
                                     }`}
                             >
+                                {!msg.isUser && (
+                                    <div className="hidden" data-sangjo-brand-inline-label="true">
+                                        <Bot className="w-3 h-3" />
+                                        <span>AI 상담</span>
+                                    </div>
+                                )}
                                 {msg.text.split(/(\*\*[^*]+\*\*)/).map((part, i) =>
                                     part.startsWith('**') && part.endsWith('**')
                                         ? <strong key={i}>{part.slice(2, -2)}</strong>

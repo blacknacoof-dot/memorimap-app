@@ -197,7 +197,7 @@ export const PetChatInterface: React.FC<ComponentProps> = ({ company, onClose, o
         if (action === 'CALL_MANAGER') window.location.href = `tel:${company.phone}`;
     };
     return (
-        <div className="flex flex-col h-full bg-white relative font-sans">
+        <div className="flex flex-col h-full bg-white relative font-sans" data-native-ai-chat-modal="true">
             {/* Reservation Form Overlay */}
             {showReservation && (
                 <div className="absolute inset-0 z-50">
@@ -205,7 +205,7 @@ export const PetChatInterface: React.FC<ComponentProps> = ({ company, onClose, o
                 </div>
             )}
             {/* Header */}
-            <div className="bg-amber-900 text-white p-5 pt-6 shadow-md z-10 shrink-0">
+            <div className="bg-amber-900 text-white p-5 pt-6 shadow-md z-10 shrink-0" data-native-ai-chat-header="true">
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                         <button onClick={onBack} className="mr-1 hover:text-amber-200">

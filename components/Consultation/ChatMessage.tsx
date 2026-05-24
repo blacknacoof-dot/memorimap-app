@@ -13,11 +13,16 @@ interface Props {
 
 export const ChatMessage: React.FC<Props> = ({ message, isStreaming, onCompanySelect }) => {
     const isUser = message.role === 'user';
+    const hasRecommendation = !!message.recommendation?.length;
 
     return (
-        <div className={`flex gap-3 mb-4 ${isUser ? 'justify-end' : 'justify-start'}`}>
+        <div
+            className={`flex gap-3 mb-4 ${isUser ? 'justify-end' : 'justify-start'}`}
+            data-chat-message-role={isUser ? 'user' : 'model'}
+            data-has-recommendation={hasRecommendation ? 'true' : undefined}
+        >
             {!isUser && (
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1" data-chat-avatar="true">
                     <Bot size={16} className="text-primary" />
                 </div>
             )}
@@ -27,7 +32,14 @@ export const ChatMessage: React.FC<Props> = ({ message, isStreaming, onCompanySe
                     ? 'bg-primary text-white rounded-tr-none'
                     : 'bg-white border text-gray-800 rounded-tl-none'
                     }`}
+                data-chat-bubble="true"
             >
+                {!isUser && hasRecommendation && (
+                    <div className="hidden" data-chat-inline-ai-label="true">
+                        <Bot size={13} />
+                        <span>마음이 추천</span>
+                    </div>
+                )}
                 <div className="prose prose-sm max-w-none prose-p:my-0 prose-ul:my-1 prose-li:my-0">
                     {isUser ? (
                         message.text
@@ -36,11 +48,11 @@ export const ChatMessage: React.FC<Props> = ({ message, isStreaming, onCompanySe
                     )}
                 </div>
                 {message.recommendation && (
-                    <div className="mt-3 space-y-2">
+                    <div className="mt-3 space-y-2" data-chat-recommendations="true">
                         {message.recommendation.map((company: FuneralCompany) => (
-                            <div key={company.id} className="flex bg-gray-50 rounded-xl border border-gray-100 overflow-hidden hover:shadow-sm transition-shadow">
+                            <div key={company.id} className="flex bg-gray-50 rounded-xl border border-gray-100 overflow-hidden hover:shadow-sm transition-shadow" data-chat-recommendation-card="true">
                                 {/* Thumbnail */}
-                                <div className="relative w-20 h-20 shrink-0 bg-gray-200">
+                                <div className="relative w-20 h-20 shrink-0 bg-gray-200" data-chat-recommendation-thumbnail="true">
                                     <img
                                         src={company.imageUrl || '/images/defaults/sangjo_default.jpg'}
                                         alt={company.name}
