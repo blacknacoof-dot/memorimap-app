@@ -262,7 +262,7 @@ export const FacilitySheet: React.FC<Props> = ({
             data-testid="facility-sheet-book-button"
             className="flex-1 bg-primary text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/30 active:scale-95 transition-transform text-sm"
           >
-            {facility.type === 'funeral' ? '바로예약하기' : '방문 예약하기'}
+            {facility.type === 'funeral' ? '바로 예약하기' : '방문 예약하기'}
           </button>
         </div>
       </div>
