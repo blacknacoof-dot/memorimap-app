@@ -592,25 +592,25 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack, onOpenLogin
                     <div className="grid grid-cols-2 gap-2">
                         <button
                             onClick={() => { setLegalTab('business'); setShowLegalModal(true); }}
-                            className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                            className="flex min-h-[48px] items-center justify-center rounded-xl border border-slate-200 px-2 py-3 text-center text-[13px] font-medium leading-tight text-slate-700 hover:bg-slate-50"
                         >
                             사업자 정보
                         </button>
                         <button
                             onClick={() => { setLegalTab('refund'); setShowLegalModal(true); }}
-                            className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                            className="flex min-h-[48px] items-center justify-center rounded-xl border border-slate-200 px-2 py-3 text-center text-[13px] font-medium leading-tight text-slate-700 hover:bg-slate-50"
                         >
                             환불/해지 정책
                         </button>
                         <button
                             onClick={() => { setLegalTab('terms'); setShowLegalModal(true); }}
-                            className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                            className="flex min-h-[48px] items-center justify-center rounded-xl border border-slate-200 px-2 py-3 text-center text-[13px] font-medium leading-tight text-slate-700 hover:bg-slate-50"
                         >
                             이용약관
                         </button>
                         <button
                             onClick={() => { setLegalTab('privacy'); setShowLegalModal(true); }}
-                            className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                            className="flex min-h-[48px] items-center justify-center rounded-xl border border-slate-200 px-2 py-3 text-center text-[13px] font-medium leading-tight text-slate-700 hover:bg-slate-50"
                         >
                             개인정보처리방침
                         </button>

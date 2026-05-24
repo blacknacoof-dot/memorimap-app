@@ -206,19 +206,19 @@ export const SupportView: React.FC<ViewProps> = ({ onBack, user }) => {
         <div className="grid grid-cols-2 gap-3">
           <a
             href="tel:031-975-3335"
-            className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-xl border hover:bg-gray-100 transition-colors"
+            className="flex min-h-[112px] flex-col items-center justify-center px-2 py-4 bg-gray-50 rounded-xl border hover:bg-gray-100 transition-colors text-center"
           >
             <Phone className="text-primary mb-2" size={24} />
-            <span className="font-bold text-gray-800">031-975-3335</span>
-            <span className="text-xs text-gray-500">평일 09:00 ~ 18:00</span>
+            <span className="whitespace-nowrap text-[15px] font-bold tracking-tight text-gray-800 tabular-nums">031-975-3335</span>
+            <span className="mt-0.5 text-[11px] leading-snug text-gray-500">평일 09:00 ~ 18:00</span>
           </a>
           <button
             onClick={() => { setShowInquiry(!showInquiry); setSubmitted(false); }}
-            className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-colors ${showInquiry ? 'bg-primary/10 border-primary' : 'bg-gray-50 hover:bg-gray-100'}`}
+            className={`flex min-h-[112px] flex-col items-center justify-center px-2 py-4 rounded-xl border text-center transition-colors ${showInquiry ? 'bg-primary/10 border-primary' : 'bg-gray-50 hover:bg-gray-100'}`}
           >
             <Mail className={`mb-2 ${showInquiry ? 'text-primary' : 'text-primary'}`} size={24} />
             <span className="font-bold text-gray-800">1:1 문의</span>
-            <span className="text-xs text-gray-500">24시간 접수 가능</span>
+            <span className="mt-0.5 text-[11px] leading-snug text-gray-500">24시간 접수 가능</span>
           </button>
         </div>
       </div>
