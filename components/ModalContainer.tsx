@@ -340,7 +340,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
         <Suspense fallback={<SuspenseSpinner />}>
           <SangjoConsultationModal
             company={selectedFuneralCompany}
-            onClose={() => { setShowSangjoAIConsult(false); setSelectedFuneralCompany(null); }}
+            onClose={() => setShowSangjoAIConsult(false)}
             currentUser={userInfo ? { id: userInfo.id, name: userInfo.name } : null}
           />
         </Suspense>
@@ -351,7 +351,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
         <Suspense fallback={<SuspenseSpinner />}>
           <SangjoContractModal
             company={selectedFuneralCompany}
-            onClose={() => { setShowSangjoContract(false); setSelectedFuneralCompany(null); }}
+            onClose={() => setShowSangjoContract(false)}
             onConfirm={async (data) => {
               try {
                 const client = await getAuthClient(session, { strict: true });
