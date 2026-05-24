@@ -26,7 +26,6 @@ export const SangjoCompanyList: React.FC<Props> = ({
     compareList,
     onToggleCompare,
     onShowComparison,
-    isLoggedIn = false,
     onOpenLogin
 }) => {
     const [searchQuery, setSearchQuery] = useState('');
