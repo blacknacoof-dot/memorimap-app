@@ -18,6 +18,7 @@ import {
 } from '@/constants/maumAiConstants';
 import { addSearchHistory } from '@/utils/searchHistory';
 import { ConsultationForm } from '../Consultation/BrandChatHelpers';
+import { filterVisibleFacilities } from '@/lib/facilityVisibility';
 // BookingPreStep 제거 — 바로 긴급 출동 접수 모달로 진입
 
 // Safe Highlighting Component
@@ -166,7 +167,7 @@ const MemorialSearchForm: React.FC<FormProps> = ({
         setIsLoadingRecommendations(true);
         try {
             const recs = await getIntelligentRecommendations(0, 0, 'memorial', location);
-            setRecommendedFacilities(recs.slice(0, 5));
+            setRecommendedFacilities(filterVisibleFacilities(recs).slice(0, 5));
         } catch {
             // recommendations fetch failed
         } finally {

@@ -17,6 +17,7 @@ import { logger } from '../../utils/logger';
 import type { AiConsultCategory, QuotaCheckResult } from '../../types/subscription';
 import UpgradePrompt from '../UpgradePrompt';
 import { checkAiConsultationQuota } from '../../lib/aiConsultationQuota';
+import { filterVisibleFacilities, isFacilityMapHold } from '../../lib/facilityVisibility';
 
 interface Props {
     facility: Facility;
@@ -438,7 +439,7 @@ export const ChatInterface: React.FC<Props> = ({
                     // Try User Query-based Search
                     const results = await getIntelligentRecommendations(searchLat, searchLng, category, regionText);
                     if (results && results.length > 0) {
-                        realResults = results as Facility[];
+                        realResults = filterVisibleFacilities(results as Facility[]);
                     }
                 } catch (e) {
                     logToSystem('ERROR', 'Real DB Search failed', traceId, { error: e });                }
@@ -613,6 +614,8 @@ export const ChatInterface: React.FC<Props> = ({
 
     // [New] Handle Reserve with Deep Handover
     const handleReserve = async (candidate: Facility) => {
+        if (isFacilityMapHold(candidate)) return;
+
         try {
             if (currentLeadId) {
                 // Handing over lead to facility
