@@ -27,6 +27,20 @@ import { useUserPlan } from '../hooks/useUserPlan';
 const PERSONAL_BILLING_PENDING_KEY = 'pendingPersonalBillingActivation';
 const PERSONAL_BILLING_INFLIGHT_KEY = 'pendingPersonalBillingActivationInFlight';
 
+type CapacitorBridge = {
+    isNativePlatform?: () => boolean;
+    getPlatform?: () => string;
+};
+
+const isCapacitorNativeApp = () => {
+    if (typeof window === 'undefined') return false;
+    const bridge = (window as Window & { Capacitor?: CapacitorBridge }).Capacitor;
+    if (!bridge) return false;
+    if (typeof bridge.isNativePlatform === 'function') return bridge.isNativePlatform();
+    const platform = bridge.getPlatform?.();
+    return platform === 'android' || platform === 'ios';
+};
+
 interface PersonalPlanFeature {
     name: string;
     included: boolean;
@@ -112,7 +126,10 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack, onOpenLogin
     const cancelExpiresAt = userPlanData?.expires_at ?? '';
     const isBetaPremium = userPlanData?.is_beta_premium === true;
     const isLoading = !isLoaded || isUserPlanLoading;
-    const isNativeApp = typeof document !== 'undefined' && document.body.classList.contains('native-app');
+    const isNativeApp = (
+        (typeof document !== 'undefined' && document.body.classList.contains('native-app'))
+        || isCapacitorNativeApp()
+    );
     const privacyPolicyButtonLabel = isNativeApp ? '개인정보 처리' : '개인정보처리방침';
     const effectiveCurrentPlan = isGuestCheckout ? null : (currentPlan || selectedPlan).toUpperCase();
     const effectiveIsCancelling = isGuestCheckout ? false : isCancelling;
