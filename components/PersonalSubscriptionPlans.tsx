@@ -112,6 +112,8 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack, onOpenLogin
     const cancelExpiresAt = userPlanData?.expires_at ?? '';
     const isBetaPremium = userPlanData?.is_beta_premium === true;
     const isLoading = !isLoaded || isUserPlanLoading;
+    const isNativeApp = typeof document !== 'undefined' && document.body.classList.contains('native-app');
+    const privacyPolicyButtonLabel = isNativeApp ? '개인정보 처리' : '개인정보처리방침';
     const effectiveCurrentPlan = isGuestCheckout ? null : (currentPlan || selectedPlan).toUpperCase();
     const effectiveIsCancelling = isGuestCheckout ? false : isCancelling;
     const effectiveCancelExpiresAt = isGuestCheckout ? null : cancelExpiresAt;
@@ -612,7 +614,7 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack, onOpenLogin
                             onClick={() => { setLegalTab('privacy'); setShowLegalModal(true); }}
                             className="flex min-h-[48px] items-center justify-center rounded-xl border border-slate-200 px-2 py-3 text-center text-[13px] font-medium leading-tight text-slate-700 hover:bg-slate-50"
                         >
-                            개인정보처리방침
+                            {privacyPolicyButtonLabel}
                         </button>
                     </div>
                 </div>
