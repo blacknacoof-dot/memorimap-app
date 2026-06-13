@@ -354,7 +354,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
             onClose={() => { setShowSangjoContract(false); setSelectedFuneralCompany(null); }}
             onConfirm={async (data) => {
               try {
-                const client = await getAuthClient(session, { strict: true });
+                const client = await getAuthClient(session);
                 const sangjoId = await resolveSangjoDbId(String(data.companyId), data.companyName, client);
                 const contractNum = `SC-${Date.now()}`;
                 await saveSangjoContract({
@@ -377,8 +377,9 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
                   client
                 ).catch(() => { /* 타임라인 실패는 상담 저장에 영향 없음 */ });
                 showToast('상담 신청이 완료되었습니다!');
-              } catch (_err) {
+              } catch (err) {
                 showToast('상담 신청 중 오류가 발생했습니다.', 'error');
+                throw err;
               }
             }}
           />

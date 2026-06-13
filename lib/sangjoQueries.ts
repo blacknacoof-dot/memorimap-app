@@ -97,8 +97,7 @@ export const addTimelineEvent = async (contractNumber: string, event: string, no
             notes,
             photo_url: photoUrl,
             created_at: new Date().toISOString()
-        }])
-        .select();
+        }]);
 
     if (error) {
         // Error adding timeline event
