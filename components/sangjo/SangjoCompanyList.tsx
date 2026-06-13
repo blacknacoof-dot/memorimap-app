@@ -120,7 +120,7 @@ export const SangjoCompanyList: React.FC<Props> = ({
             </div>
 
             {/* Company List */}
-            <div className="flex-1 overflow-y-auto px-4 space-y-2.5 pb-[calc(env(safe-area-inset-bottom)+11rem)] md:pb-28 no-scrollbar">
+            <div className="flex-1 overflow-y-auto px-4 space-y-2.5 pb-[calc(env(safe-area-inset-bottom)+5.75rem)] md:pb-24 no-scrollbar">
                 {filteredCompanies.map(company => (
                     <SangjoCompanyCard
                         key={company.id}
@@ -145,11 +145,11 @@ export const SangjoCompanyList: React.FC<Props> = ({
                     </div>
                 )}
 
-                <div className="h-10" />
+                <div className="h-2" />
             </div>
 
             {/* Floating AI Counselor + Compare Button */}
-            <div className="absolute bottom-[5.15rem] left-0 right-0 px-3 z-40 animate-in slide-in-from-bottom-4 duration-500">
+            <div className="absolute bottom-3 left-0 right-0 px-3 z-40 animate-in slide-in-from-bottom-4 duration-500">
                 {compareList.length > 0 && (
                     <button
                         onClick={onShowComparison}
