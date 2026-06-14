@@ -10,6 +10,7 @@ data/*.sql
 *.csv
 *.sql
 *.json
+!public/.well-known/assetlinks.json
 
 # Documentation & Tools
 docs/

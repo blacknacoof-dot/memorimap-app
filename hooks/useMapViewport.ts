@@ -13,6 +13,7 @@ interface LatLngBounds {
 }
 import { fetchFacilitiesInView } from '../lib/queries';
 import { normalizeType, getCategoryDb, selectFacilityImage, formatPriceRange } from '../utils/facilityNormalizer';
+import { filterVisibleFacilities } from '../lib/facilityVisibility';
 
 interface UseMapViewportParams {
   setFacilities: React.Dispatch<React.SetStateAction<Facility[]>>;
@@ -190,7 +191,7 @@ export function useMapViewport({ setFacilities, setCurrentBounds, session, onVie
             price_min?: number;
             [key: string]: unknown;
           }
-          const mappedFacilities: Facility[] = fetchedData
+          const mappedFacilities: Facility[] = filterVisibleFacilities(fetchedData
             .filter((f: ViewFacilityRow) => isPublicFacilityCandidate({
               name: f.name,
               address: f.address,
@@ -220,7 +221,7 @@ export function useMapViewport({ setFacilities, setCurrentBounds, session, onVie
               features: {},
               images: f.images || []
             };
-          });
+          }));
           const nextSignature = normalizeFacilities(mappedFacilities)
             .map((facility) => [facility.id, facility.lat, facility.lng, facility.category ?? '', facility.type ?? ''].join(':'))
             .join('|');

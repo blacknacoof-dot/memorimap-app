@@ -2,7 +2,7 @@
  * useFacilityData - App.tsx facility data hook
  * Phase 4-2: facilities, selectedFacility, fetchFacilities, filteredFacilities, fetchFacilityDetails, handleFacilitySelect
  */
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef, type Dispatch, type SetStateAction } from 'react';
 import { Facility, ViewState } from '../types';
 
 /** Leaflet-compatible bounds interface. */
@@ -19,6 +19,7 @@ import { useFilterStore } from '../stores/useFilterStore';
 import { logger } from '../utils/logger';
 import { createSignedStorageImageUrl } from '../lib/security/storageImage';
 import { resolveFacilityDetailImages } from '../lib/facilityImageResolver';
+import { filterVisibleFacilities, isFacilityMapHold } from '../lib/facilityVisibility';
 
 // Balance the first screen by category.
 const BALANCE_CATEGORIES = ['funeral', 'charnel', 'park', 'natural', 'pet', 'sea'] as const;
@@ -113,8 +114,8 @@ interface UseFacilityDataParams {
 }
 
 export function useFacilityData({ viewState, showToast, disableInitialFetch = false }: UseFacilityDataParams) {
-  const [facilities, setFacilities] = useState<Facility[]>(FACILITIES);
-  const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
+  const [facilities, setFacilitiesState] = useState<Facility[]>(() => filterVisibleFacilities(FACILITIES));
+  const [selectedFacility, setSelectedFacilityState] = useState<Facility | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [currentBounds, setCurrentBounds] = useState<LatLngBounds | null>(null);
   // [2-3a] Ignore stale facility detail responses by request id.
@@ -125,6 +126,24 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
   const unavailableDetailIdsRef = useRef<Set<string>>(new Set());
 
   const { searchQuery, selectedCategories } = useFilterStore();
+
+  const setFacilities = useCallback<Dispatch<SetStateAction<Facility[]>>>((value) => {
+    setFacilitiesState((prev) => {
+      const next = typeof value === 'function'
+        ? (value as (previous: Facility[]) => Facility[])(prev)
+        : value;
+      return filterVisibleFacilities(next);
+    });
+  }, []);
+
+  const setSelectedFacility = useCallback<Dispatch<SetStateAction<Facility | null>>>((value) => {
+    setSelectedFacilityState((prev) => {
+      const next = typeof value === 'function'
+        ? (value as (previous: Facility | null) => Facility | null)(prev)
+        : value;
+      return isFacilityMapHold(next) ? null : next;
+    });
+  }, []);
 
   // Fetch Facilities from Supabase
   useEffect(() => {
@@ -164,7 +183,7 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
             packages?: Facility['products'];
             [key: string]: unknown;
           }
-          const mappedFacilities: Facility[] = (data as FacilityRow[])
+          const mappedFacilities: Facility[] = filterVisibleFacilities((data as FacilityRow[])
             .filter((item) => isPublicFacilityCandidate({
               name: item.name,
               address: item.address,
@@ -209,7 +228,7 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
               priceInfo: null,
               products: Array.isArray(item.packages) ? item.packages : []
             };
-          });
+          }));
           setFacilities(balanceFirstScreen(mappedFacilities));
         } else {
           // DB empty or RPC error
@@ -268,6 +287,11 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
 
   // Fetch Facility Details
   const fetchFacilityDetails = useCallback(async (facilityId: string) => {
+    if (isFacilityMapHold(facilityId)) {
+      setSelectedFacility(null);
+      return;
+    }
+
     const requestId = ++latestRequestIdRef.current;  // [2-3a] latest request id
 
     try {
@@ -295,6 +319,11 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
 
       if (data) {
         const realUuid = data.id;
+
+        if (isFacilityMapHold(realUuid)) {
+          setSelectedFacility(null);
+          return;
+        }
 
         const [subscriptionResult, rawReviewsResult, resolvedImagesResult] = await Promise.allSettled([
           getFacilitySubscription(realUuid, supabase),
@@ -431,6 +460,11 @@ export function useFacilityData({ viewState, showToast, disableInitialFetch = fa
 
   // Handle Facility Select
   const handleFacilitySelect = useCallback(async (facility: Facility) => {
+    if (isFacilityMapHold(facility)) {
+      setSelectedFacility(null);
+      return;
+    }
+
     logger.debug('handleFacilitySelect CLICKED:', facility.name, facility.id, 'Loaded:', facility.isDetailLoaded);
     const shouldFetchDetail =
       isSupabaseConfigured() &&
