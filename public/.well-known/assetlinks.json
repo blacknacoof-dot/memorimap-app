@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.atomcare.memorimap",
+      "sha256_cert_fingerprints": [
+        "3A:8C:78:84:F3:A1:07:85:6B:29:01:60:1F:3B:67:B1:DF:83:58:CD:B4:07:C2:1B:2C:31:96:73:21:70:1F:B6"
+      ]
+    }
+  }
+]
