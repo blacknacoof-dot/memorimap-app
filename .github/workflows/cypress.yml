@@ -36,13 +36,21 @@ jobs:
         run: npx wait-on http://localhost:5173
 
       - name: Run Cypress tests
-        run: npx cypress run --headless
+        run: npx cypress run --headless --reporter junit --reporter-options "mochaFile=cypress/results/results-[hash].xml,toConsole=true"
         env:
           CYPRESS_BASE_URL: http://localhost:5173
+          CYPRESS_ADMIN_EMAIL: ${{ secrets.CYPRESS_ADMIN_EMAIL }}
+          CYPRESS_ADMIN_PASSWORD: ${{ secrets.CYPRESS_ADMIN_PASSWORD }}
+          CYPRESS_SUPER_ADMIN_EMAIL: ${{ secrets.CYPRESS_SUPER_ADMIN_EMAIL }}
+          CYPRESS_SUPER_ADMIN_PASSWORD: ${{ secrets.CYPRESS_SUPER_ADMIN_PASSWORD }}
 
-      - name: Upload Cypress videos (optional)
+      - name: Upload Cypress artifacts (optional)
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: cypress-videos
-          path: cypress/videos
+          name: cypress-artifacts
+          path: |
+            cypress/videos
+            cypress/screenshots
+            cypress/results
+          if-no-files-found: warn
