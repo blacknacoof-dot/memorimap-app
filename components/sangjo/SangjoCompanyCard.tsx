@@ -1,6 +1,7 @@
 import React from 'react';
 import { FuneralCompany } from '../../types';
 import { Star, ShieldCheck, HeartHandshake, Scale, Check, Heart } from 'lucide-react';
+import { SangjoImage } from './SangjoImage';
 
 interface SangjoCompanyCardProps {
     company: FuneralCompany;
@@ -54,10 +55,11 @@ export const SangjoCompanyCard: React.FC<SangjoCompanyCardProps> = ({
             </button>
             <div className="flex gap-3">
                 <div className="relative shrink-0">
-                    <img
-                        src={company.imageUrl}
+                    <SangjoImage
+                        imageUrl={company.imageUrl}
                         alt={company.name}
-                        className="w-16 h-16 rounded-lg object-cover bg-gray-100"
+                        companyName={company.name}
+                        wrapperClassName="w-16 h-16 rounded-lg"
                     />
                     <div className="absolute -top-1.5 -left-1.5 bg-white rounded-full p-0.5 shadow-sm border border-gray-50">
                         <ShieldCheck size={14} className="text-green-500" />
