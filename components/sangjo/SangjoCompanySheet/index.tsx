@@ -11,6 +11,7 @@ import { PriceTab } from './PriceTab';
 import { GalleryTab } from './GalleryTab';
 import { ReviewTab } from './ReviewTab';
 import UpgradePrompt from '../../UpgradePrompt';
+import { SangjoImage } from '../SangjoImage';
 
 interface Props {
     company: FuneralCompany;
@@ -122,7 +123,12 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
 
             {/* Hero */}
             <div className="relative h-32 md:h-48 shrink-0">
-                <img src={company.imageUrl} alt={company.name} className="w-full h-full object-cover" />
+                <SangjoImage
+                    imageUrl={company.imageUrl}
+                    alt={company.name}
+                    companyName={company.name}
+                    wrapperClassName="w-full h-full"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
 
                 <button

@@ -9,20 +9,11 @@ import { FUNERAL_COMPANIES } from '../../data/sangjoCompanyDefaults';
 import { generateDefaultReviews } from '../../types/sangjo';
 import type { FuneralCompany, Review, SangjoProduct } from '../../types';
 import { toast } from 'sonner';
-
-// 갤러리 이미지 풀
-const ALL_SANGJO_GALLERY = Array.from({ length: 19 }, (_, i) =>
-  `/images/sangjo/gallery/sangjo_gallery_${i + 1}.jpg`
-);
-
-function pickRandomGallery(companyIndex: number): string[] {
-  const shuffled = [...ALL_SANGJO_GALLERY].sort((a, b) => {
-    const ha = (companyIndex * 7 + a.charCodeAt(a.length - 5)) % 19;
-    const hb = (companyIndex * 7 + b.charCodeAt(b.length - 5)) % 19;
-    return ha - hb;
-  });
-  return shuffled.slice(0, 4);
-}
+import {
+  getSangjoGalleryImages,
+  getSangjoRepresentativeImage,
+  isGalleryImagePath,
+} from '../../lib/sangjoImage';
 
 function buildProducts(min: number, max: number) {
   const mid = Math.round((min + max) / 2 / 10000) * 10000;
@@ -87,6 +78,10 @@ interface DbRow {
   rating?: number;
   review_count?: number;
   image_url?: string;
+  logo_url?: string | null;
+  logoUrl?: string | null;
+  representative_image?: string | null;
+  representativeImage?: string | null;
   description?: string;
   features?: string[];
   phone?: string;
@@ -246,7 +241,7 @@ export function useSangjoCompanies() {
           }
         });
 
-        const mapped: FuneralCompany[] = data.map((item: DbRow, idx: number) => {
+        const mapped: FuneralCompany[] = data.map((item: DbRow) => {
           const staticMatch = FUNERAL_COMPANIES.find(c => c.name.replace(/\s/g, '') === item.name.replace(/\s/g, ''));
           const dbId = item.id.toString().trim();
           const staticId = staticMatch?.id?.toString().trim();
@@ -264,14 +259,28 @@ export function useSangjoCompanies() {
               ? staticMatch.products
               : parseProducts(item as Record<string, unknown>, staticMatch);
 
-          const primaryImage = item.image_url || facilityMatch?.image_url || staticMatch?.imageUrl || '/images/default_sangjo.png';
-          const galleryImages = (item.gallery_images && item.gallery_images.length > 0)
+          const primaryImage = getSangjoRepresentativeImage({
+            companyName: item.name,
+            logoUrl: item.logo_url || item.logoUrl,
+            representativeImage: item.representative_image || item.representativeImage,
+            staticImageUrl: staticMatch?.imageUrl,
+            imageUrl: item.image_url,
+            facilityImageUrl: facilityMatch?.image_url,
+          });
+          const explicitGalleryImages = (item.gallery_images && item.gallery_images.length > 0)
             ? item.gallery_images
             : (item.images && item.images.length > 0)
               ? item.images
               : (facilityMatch?.images && facilityMatch.images.length > 0)
                 ? facilityMatch.images
-                : [primaryImage, ...pickRandomGallery(idx)];
+                : staticMatch?.galleryImages || [];
+          const galleryImages = getSangjoGalleryImages(
+            explicitGalleryImages.length > 0
+              ? explicitGalleryImages
+              : [item.image_url, facilityMatch?.image_url].filter(isGalleryImagePath),
+            primaryImage,
+            item.name,
+          );
 
           const facilityAiContext = facilityMatch?.ai_context;
           const aiWelcomeMessage =
