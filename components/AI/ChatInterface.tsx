@@ -17,6 +17,7 @@ import { logger } from '../../utils/logger';
 import type { AiConsultCategory, QuotaCheckResult } from '../../types/subscription';
 import UpgradePrompt from '../UpgradePrompt';
 import { checkAiConsultationQuota } from '../../lib/aiConsultationQuota';
+import { filterVisibleFacilities, isFacilityMapHold } from '../../lib/facilityVisibility';
 
 interface Props {
     facility: Facility;
@@ -438,7 +439,7 @@ export const ChatInterface: React.FC<Props> = ({
                     // Try User Query-based Search
                     const results = await getIntelligentRecommendations(searchLat, searchLng, category, regionText);
                     if (results && results.length > 0) {
-                        realResults = results as Facility[];
+                        realResults = filterVisibleFacilities(results as Facility[]);
                     }
                 } catch (e) {
                     logToSystem('ERROR', 'Real DB Search failed', traceId, { error: e });                }
@@ -613,6 +614,8 @@ export const ChatInterface: React.FC<Props> = ({
 
     // [New] Handle Reserve with Deep Handover
     const handleReserve = async (candidate: Facility) => {
+        if (isFacilityMapHold(candidate)) return;
+
         try {
             if (currentLeadId) {
                 // Handing over lead to facility
@@ -643,7 +646,7 @@ export const ChatInterface: React.FC<Props> = ({
 
     return (
         <>
-        <div className="flex flex-col h-full bg-slate-50 relative overflow-hidden shadow-inner">
+        <div className="flex flex-col h-full bg-slate-50 relative overflow-hidden shadow-inner" data-native-ai-chat-modal="true">
             {/* [NEW] Consultation Form Modal */}
             {isFormOpen && (
                 <ConsultationForm
@@ -709,7 +712,7 @@ export const ChatInterface: React.FC<Props> = ({
             )}
 
             {/* Header Area */}
-            <div className={`bg-slate-900 text-white p-5 pt-6 shadow-md z-10 shrink-0`}>
+            <div className={`bg-slate-900 text-white p-5 pt-6 shadow-md z-10 shrink-0`} data-native-ai-chat-header="true">
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                         <div className="relative">

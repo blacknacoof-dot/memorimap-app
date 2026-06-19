@@ -12,6 +12,7 @@ import {
     PET_WEIGHT_OPTIONS,
     PET_SERVICE_OPTIONS,
 } from '@/constants/maumAiConstants';
+import { filterVisibleFacilities } from '@/lib/facilityVisibility';
 
 // Safe Highlighting Component
 const SafeHighlight = ({ text, highlight }: { text: string, highlight: string }) => {
@@ -144,7 +145,7 @@ const PetSearchForm: React.FC<FormProps> = ({
             const lat = userLocation?.lat || 0;
             const lng = userLocation?.lng || 0;
             const results = await getIntelligentRecommendations(lat, lng, 'pet', region);
-            setRecommendedFacilities(results.slice(0, 5));
+            setRecommendedFacilities(filterVisibleFacilities(results).slice(0, 5));
         } catch (_e) {
             // pet recommendations fetch failed
         } finally {

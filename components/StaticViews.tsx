@@ -29,17 +29,17 @@ export const GuideView: React.FC<ViewProps> = ({ onBack }) => {
         <div className="bg-white p-5 rounded-xl shadow-sm border">
           <h3 className="font-bold text-lg mb-2 text-primary">장례 3일장 절차</h3>
           <ul className="space-y-3 text-sm text-gray-600">
-            <li className="flex gap-3">
-              <span className="bg-gray-100 text-gray-800 font-bold px-2 py-0.5 rounded h-fit">1일차</span>
-              <p>임종 및 운구, 빈소 설치, 부고 알림, 상주 상복 착용</p>
+            <li className="flex gap-3 items-start">
+              <span className="bg-gray-100 text-gray-800 font-bold px-2 py-0.5 rounded inline-flex w-14 shrink-0 items-center justify-center whitespace-nowrap text-center leading-5">1일차</span>
+              <p className="flex-1 min-w-0">임종 및 운구, 빈소 설치, 부고 알림, 상주 상복 착용</p>
             </li>
-            <li className="flex gap-3">
-              <span className="bg-gray-100 text-gray-800 font-bold px-2 py-0.5 rounded h-fit">2일차</span>
-              <p>염습 및 입관, 성복제(기독교는 입관예배), 조문객 맞이</p>
+            <li className="flex gap-3 items-start">
+              <span className="bg-gray-100 text-gray-800 font-bold px-2 py-0.5 rounded inline-flex w-14 shrink-0 items-center justify-center whitespace-nowrap text-center leading-5">2일차</span>
+              <p className="flex-1 min-w-0">염습 및 입관, 성복제(기독교는 입관예배), 조문객 맞이</p>
             </li>
-            <li className="flex gap-3">
-              <span className="bg-gray-100 text-gray-800 font-bold px-2 py-0.5 rounded h-fit">3일차</span>
-              <p>발인제, 화장장 이동 및 화장, 장지 이동 및 안치</p>
+            <li className="flex gap-3 items-start">
+              <span className="bg-gray-100 text-gray-800 font-bold px-2 py-0.5 rounded inline-flex w-14 shrink-0 items-center justify-center whitespace-nowrap text-center leading-5">3일차</span>
+              <p className="flex-1 min-w-0">발인제, 화장장 이동 및 화장, 장지 이동 및 안치</p>
             </li>
           </ul>
         </div>
@@ -206,19 +206,19 @@ export const SupportView: React.FC<ViewProps> = ({ onBack, user }) => {
         <div className="grid grid-cols-2 gap-3">
           <a
             href="tel:031-975-3335"
-            className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-xl border hover:bg-gray-100 transition-colors"
+            className="flex min-h-[112px] flex-col items-center justify-center px-2 py-4 bg-gray-50 rounded-xl border hover:bg-gray-100 transition-colors text-center"
           >
             <Phone className="text-primary mb-2" size={24} />
-            <span className="font-bold text-gray-800">031-975-3335</span>
-            <span className="text-xs text-gray-500">평일 09:00 ~ 18:00</span>
+            <span className="whitespace-nowrap text-[15px] font-bold tracking-tight text-gray-800 tabular-nums">031-975-3335</span>
+            <span className="mt-0.5 text-[11px] leading-snug text-gray-500">평일 09:00 ~ 18:00</span>
           </a>
           <button
             onClick={() => { setShowInquiry(!showInquiry); setSubmitted(false); }}
-            className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-colors ${showInquiry ? 'bg-primary/10 border-primary' : 'bg-gray-50 hover:bg-gray-100'}`}
+            className={`flex min-h-[112px] flex-col items-center justify-center px-2 py-4 rounded-xl border text-center transition-colors ${showInquiry ? 'bg-primary/10 border-primary' : 'bg-gray-50 hover:bg-gray-100'}`}
           >
             <Mail className={`mb-2 ${showInquiry ? 'text-primary' : 'text-primary'}`} size={24} />
             <span className="font-bold text-gray-800">1:1 문의</span>
-            <span className="text-xs text-gray-500">24시간 접수 가능</span>
+            <span className="mt-0.5 text-[11px] leading-snug text-gray-500">24시간 접수 가능</span>
           </button>
         </div>
       </div>

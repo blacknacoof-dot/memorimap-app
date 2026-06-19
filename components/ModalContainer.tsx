@@ -13,7 +13,7 @@ import { useConversationStore, generateContextSummary } from '../stores/conversa
 import { useFilterStore } from '../stores/useFilterStore';
 import { useChatStore } from '../stores/useChatStore';
 import { useSession } from '../lib/auth';
-import { getAuthClient } from '../lib/supabaseClient';
+import { getAuthClient, isInvalidAuthSessionError } from '../lib/supabaseClient';
 import { saveSangjoContract, resolveSangjoDbId, addTimelineEvent } from '../lib/sangjoQueries';
 import { ConsultationForm } from './sangjo/ConsultationForm';
 import { createLead, createConsultationFromLead } from '../lib/queries';
@@ -303,7 +303,11 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
               }
               setDirectConsultFacility(null);
               showToast('상담 신청이 완료되었습니다! 10분 내로 연락드립니다.', 'success');
-            } catch {
+            } catch (error) {
+              if (isInvalidAuthSessionError(error)) {
+                showToast('로그인 세션이 만료되었습니다. 다시 로그인해 주세요.', 'error');
+                return;
+              }
               showToast('상담 신청 중 오류가 발생했습니다.', 'error');
             }
           }}
@@ -340,7 +344,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
         <Suspense fallback={<SuspenseSpinner />}>
           <SangjoConsultationModal
             company={selectedFuneralCompany}
-            onClose={() => { setShowSangjoAIConsult(false); setSelectedFuneralCompany(null); }}
+            onClose={() => setShowSangjoAIConsult(false)}
             currentUser={userInfo ? { id: userInfo.id, name: userInfo.name } : null}
           />
         </Suspense>
@@ -351,7 +355,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
         <Suspense fallback={<SuspenseSpinner />}>
           <SangjoContractModal
             company={selectedFuneralCompany}
-            onClose={() => { setShowSangjoContract(false); setSelectedFuneralCompany(null); }}
+            onClose={() => setShowSangjoContract(false)}
             onConfirm={async (data) => {
               try {
                 const client = await getAuthClient(session, { strict: true });
@@ -378,6 +382,10 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
                 ).catch(() => { /* 타임라인 실패는 상담 저장에 영향 없음 */ });
                 showToast('상담 신청이 완료되었습니다!');
               } catch (_err) {
+                if (isInvalidAuthSessionError(_err)) {
+                  showToast('로그인 세션이 만료되었습니다. 다시 로그인해 주세요.', 'error');
+                  return;
+                }
                 showToast('상담 신청 중 오류가 발생했습니다.', 'error');
               }
             }}

@@ -147,18 +147,18 @@ export const FuneralCompanySheet: React.FC<Props> = ({ company, onClose, onOpenA
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b overflow-x-auto no-scrollbar">
+            <div className="flex border-b overflow-x-auto no-scrollbar" data-native-sangjo-detail-tabs="true">
                 {[
                     { id: 'info', label: '정보' },
                     { id: 'gallery', label: '갤러리' },
                     { id: 'reviews', label: '후기' },
-                    { id: 'benefits', label: '제휴혜택' },
-                    { id: 'price', label: '서비스구성' },
+                    { id: 'benefits', label: '제휴 혜택' },
+                    { id: 'price', label: '서비스 구성' },
                 ].map(tab => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                        className={`flex-1 py-3 text-sm font-medium whitespace-nowrap ${activeTab === tab.id
+                        className={`flex-none min-w-[74px] px-2 py-3 inline-flex items-center justify-center text-center text-[13px] font-medium whitespace-nowrap ${activeTab === tab.id
                             ? 'text-primary border-b-2 border-primary'
                             : 'text-gray-400 hover:text-gray-700'}`}
                     >

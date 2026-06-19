@@ -7,7 +7,7 @@ import { Product, BotMessage, ScenarioStep, PRODUCTS, BUDGET_OPTIONS, SCALE_OPTI
 import { ScenarioMessages } from './ScenarioMessages';
 import { generateSangjoContractNumber } from '../../../lib/sangjo/contractNumber';
 import { saveSangjoContract, resolveSangjoDbId, addTimelineEvent } from '../../../lib/sangjoQueries';
-import { getAuthClient, supabase } from '../../../lib/supabaseClient';
+import { getAuthClient, isInvalidAuthSessionError, supabase } from '../../../lib/supabaseClient';
 
 interface Props {
     company: FuneralCompany;
@@ -145,6 +145,10 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
                 client
             ).catch(() => { /* 타임라인 실패는 상담 저장에 영향 없음 */ });
         } catch (_e) {
+            if (isInvalidAuthSessionError(_e)) {
+                toast.error('로그인 세션이 만료되었습니다. 다시 로그인해 주세요.');
+                return;
+            }
             toast.error('상담 접수 저장에 실패했습니다.');
             return;
         }

@@ -27,6 +27,20 @@ import { useUserPlan } from '../hooks/useUserPlan';
 const PERSONAL_BILLING_PENDING_KEY = 'pendingPersonalBillingActivation';
 const PERSONAL_BILLING_INFLIGHT_KEY = 'pendingPersonalBillingActivationInFlight';
 
+type CapacitorBridge = {
+    isNativePlatform?: () => boolean;
+    getPlatform?: () => string;
+};
+
+const isCapacitorNativeApp = () => {
+    if (typeof window === 'undefined') return false;
+    const bridge = (window as Window & { Capacitor?: CapacitorBridge }).Capacitor;
+    if (!bridge) return false;
+    if (typeof bridge.isNativePlatform === 'function') return bridge.isNativePlatform();
+    const platform = bridge.getPlatform?.();
+    return platform === 'android' || platform === 'ios';
+};
+
 interface PersonalPlanFeature {
     name: string;
     included: boolean;
@@ -112,6 +126,11 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack, onOpenLogin
     const cancelExpiresAt = userPlanData?.expires_at ?? '';
     const isBetaPremium = userPlanData?.is_beta_premium === true;
     const isLoading = !isLoaded || isUserPlanLoading;
+    const isNativeApp = (
+        (typeof document !== 'undefined' && document.body.classList.contains('native-app'))
+        || isCapacitorNativeApp()
+    );
+    const privacyPolicyButtonLabel = isNativeApp ? '개인정보 처리' : '개인정보처리방침';
     const effectiveCurrentPlan = isGuestCheckout ? null : (currentPlan || selectedPlan).toUpperCase();
     const effectiveIsCancelling = isGuestCheckout ? false : isCancelling;
     const effectiveCancelExpiresAt = isGuestCheckout ? null : cancelExpiresAt;
@@ -592,27 +611,27 @@ export default function PersonalSubscriptionPlans({ onBack: _onBack, onOpenLogin
                     <div className="grid grid-cols-2 gap-2">
                         <button
                             onClick={() => { setLegalTab('business'); setShowLegalModal(true); }}
-                            className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                            className="flex min-h-[48px] items-center justify-center rounded-xl border border-slate-200 px-2 py-3 text-center text-[13px] font-medium leading-tight text-slate-700 hover:bg-slate-50"
                         >
                             사업자 정보
                         </button>
                         <button
                             onClick={() => { setLegalTab('refund'); setShowLegalModal(true); }}
-                            className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                            className="flex min-h-[48px] items-center justify-center rounded-xl border border-slate-200 px-2 py-3 text-center text-[13px] font-medium leading-tight text-slate-700 hover:bg-slate-50"
                         >
                             환불/해지 정책
                         </button>
                         <button
                             onClick={() => { setLegalTab('terms'); setShowLegalModal(true); }}
-                            className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                            className="flex min-h-[48px] items-center justify-center rounded-xl border border-slate-200 px-2 py-3 text-center text-[13px] font-medium leading-tight text-slate-700 hover:bg-slate-50"
                         >
                             이용약관
                         </button>
                         <button
                             onClick={() => { setLegalTab('privacy'); setShowLegalModal(true); }}
-                            className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                            className="flex min-h-[48px] items-center justify-center rounded-xl border border-slate-200 px-2 py-3 text-center text-[13px] font-medium leading-tight text-slate-700 hover:bg-slate-50"
                         >
-                            개인정보처리방침
+                            {privacyPolicyButtonLabel}
                         </button>
                     </div>
                 </div>
