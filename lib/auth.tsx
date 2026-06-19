@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { supabase } from './supabaseClient';
+import { isInvalidAuthSessionError as isSharedInvalidAuthSessionError, supabase } from './supabaseClient';
 import type { Session } from '@supabase/supabase-js';
 import { runLogoutCleanup } from './logoutCleanup';
 
@@ -47,6 +47,7 @@ function wrapUser(session: Session | null): WrappedUser | null {
 }
 
 function isInvalidSessionError(error: unknown): boolean {
+  if (isSharedInvalidAuthSessionError(error)) return true;
   if (!error || typeof error !== 'object') return false;
 
   const maybeError = error as {
@@ -68,6 +69,7 @@ function isInvalidSessionError(error: unknown): boolean {
   return (
     message.includes('invalid jwt') ||
     message.includes('jwt expired') ||
+    message.includes('invalid refresh token') ||
     message.includes('refresh_token_not_found') ||
     message.includes('refresh token not found') ||
     message.includes('session_not_found') ||
@@ -83,6 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     let mounted = true;
+    let appStateListener: { remove: () => Promise<void> | void } | null = null;
 
     const clearInvalidSession = async () => {
       try {
@@ -96,6 +99,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!mounted) return;
       setSession(null);
       setIsLoaded(true);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('open-login-modal'));
+      }
     };
 
     const resolveSession = async (nextSession: Session | null) => {
@@ -132,9 +138,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     // Initial session
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      void resolveSession(s);
-    });
+    const revalidateStoredSession = () => {
+      supabase.auth.getSession().then(({ data: { session: s } }) => {
+        void resolveSession(s);
+      });
+    };
+
+    revalidateStoredSession();
+
+    const handleFocus = () => revalidateStoredSession();
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') revalidateStoredSession();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    if ((window as Window & { Capacitor?: { isNativePlatform?: () => boolean; getPlatform?: () => string } }).Capacitor?.isNativePlatform?.()) {
+      void import('@capacitor/app')
+        .then(({ App }) => App.addListener('appStateChange', ({ isActive }) => {
+          if (isActive) revalidateStoredSession();
+        }))
+        .then(handle => {
+          if (!mounted) {
+            void handle.remove();
+            return;
+          }
+          appStateListener = handle;
+        })
+        .catch(() => {
+          // Native appStateChange is only available inside the Capacitor runtime.
+        });
+    }
 
     // Listen for auth changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
@@ -143,6 +178,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => {
       mounted = false;
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (appStateListener) void appStateListener.remove();
       subscription.unsubscribe();
     };
   }, [queryClient]);
