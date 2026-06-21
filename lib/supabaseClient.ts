@@ -107,7 +107,10 @@ const createInvalidAuthSessionError = () => {
   return error;
 };
 
-async function ensureCurrentSessionIsUsable(accessToken: string): Promise<void> {
+async function ensureCurrentSessionIsUsable(
+  accessToken: string,
+  options: { openLoginOnInvalid?: boolean } = {}
+): Promise<void> {
   const { data, error } = await supabase.auth.getUser(accessToken);
   if (!error && data.user) return;
 
@@ -126,19 +129,21 @@ async function ensureCurrentSessionIsUsable(accessToken: string): Promise<void> 
     throw refreshError;
   }
 
-  await clearInvalidAuthSession({ openLogin: true });
+  await clearInvalidAuthSession({ openLogin: options.openLoginOnInvalid ?? true });
   throw createInvalidAuthSessionError();
 }
 
 export async function getAuthClient(
   session: { access_token?: string | null } | null | undefined,
-  options?: { strict?: boolean }
+  options?: { strict?: boolean; openLoginOnInvalid?: boolean }
 ): Promise<SupabaseClient> {
   const strict = options?.strict ?? false;
   const providedAccessToken = session?.access_token;
   if (providedAccessToken) {
     try {
-      await ensureCurrentSessionIsUsable(providedAccessToken);
+      await ensureCurrentSessionIsUsable(providedAccessToken, {
+        openLoginOnInvalid: options?.openLoginOnInvalid,
+      });
       return supabase;
     } catch (error) {
       if (isInvalidAuthSessionError(error)) {
@@ -152,7 +157,9 @@ export async function getAuthClient(
   const { data: { session: currentSession } } = await supabase.auth.getSession();
   if (currentSession?.access_token) {
     try {
-      await ensureCurrentSessionIsUsable(currentSession.access_token);
+      await ensureCurrentSessionIsUsable(currentSession.access_token, {
+        openLoginOnInvalid: options?.openLoginOnInvalid,
+      });
       return supabase;
     } catch (error) {
       if (isInvalidAuthSessionError(error)) {

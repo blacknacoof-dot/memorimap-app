@@ -124,7 +124,7 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
 
         try {
             const { data: { session: currentSession } } = await supabase.auth.getSession();
-            const client = await getAuthClient(currentSession, { strict: true });
+            const client = await getAuthClient(currentSession, { openLoginOnInvalid: false });
             const serviceType = isUrgent ? '긴급 출동' : (isPhone ? '전화 상담' : ((formData.type as string) || '채팅 상담'));
             const customerName = (formData.name as string) || '익명 고객';
             const customerPhone = (formData.phone as string) || '';
