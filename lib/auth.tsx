@@ -85,7 +85,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     let mounted = true;
-    let appStateListener: { remove: () => Promise<void> | void } | null = null;
 
     const clearInvalidSession = async () => {
       try {
@@ -154,23 +153,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    if ((window as Window & { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.()) {
-      void import('@capacitor/app')
-        .then(({ App }) => App.addListener('appStateChange', ({ isActive }) => {
-          if (isActive) revalidateStoredSession();
-        }))
-        .then(handle => {
-          if (!mounted) {
-            void handle.remove();
-            return;
-          }
-          appStateListener = handle;
-        })
-        .catch(() => {
-          // Native appStateChange is only available inside the Capacitor runtime.
-        });
-    }
-
     // Listen for auth changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
       void resolveSession(s);
@@ -180,7 +162,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       mounted = false;
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      if (appStateListener) void appStateListener.remove();
       subscription.unsubscribe();
     };
   }, [queryClient]);
