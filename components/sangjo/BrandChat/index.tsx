@@ -126,6 +126,11 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
                 client
             ).catch(() => { /* 타임라인 실패는 상담 저장에 영향 없음 */ });
         } catch (_e) {
+            const { isInvalidAuthSessionError } = await import('../../../lib/supabaseClient');
+            if (isInvalidAuthSessionError(_e)) {
+                toast.error('로그인 세션이 만료되었습니다. 다시 로그인해 주세요.');
+                return;
+            }
             toast.error('상담 접수 저장에 실패했습니다.');
             return;
         }
