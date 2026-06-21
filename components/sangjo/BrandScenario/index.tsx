@@ -7,13 +7,16 @@ import { Product, BotMessage, ScenarioStep, PRODUCTS, BUDGET_OPTIONS, SCALE_OPTI
 import { ScenarioMessages } from './ScenarioMessages';
 import { generateSangjoContractNumber } from '../../../lib/sangjo/contractNumber';
 import { saveSangjoContract, resolveSangjoDbId, addTimelineEvent } from '../../../lib/sangjoQueries';
-import { getAuthClient, isInvalidAuthSessionError, supabase } from '../../../lib/supabaseClient';
+import { getConsultationSubmitClient, isInvalidAuthSessionError, supabase } from '../../../lib/supabaseClient';
 
 interface Props {
     company: FuneralCompany;
     onClose: () => void;
     onBack: () => void;
 }
+
+const normalizeConsultationPhone = (value: unknown) => String(value ?? '').trim();
+const hasUsableConsultationPhone = (value: string) => value.replace(/\D/g, '').length >= 10;
 
 export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack }) => {
     const [messages, setMessages] = useState<BotMessage[]>([]);
@@ -121,13 +124,20 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
         const isUrgent = formMode === 'urgent';
         const isPhone = formMode === 'phone';
         const contractNumber = generateSangjoContractNumber(isUrgent);
+        const normalizedCustomerName = String(formData.name || '').trim() || '익명 고객';
+        const normalizedCustomerPhone = normalizeConsultationPhone(formData.phone);
+
+        if (!hasUsableConsultationPhone(normalizedCustomerPhone)) {
+            toast.error('연락처를 다시 확인해주세요.');
+            return;
+        }
 
         try {
             const { data: { session: currentSession } } = await supabase.auth.getSession();
-            const client = await getAuthClient(currentSession, { openLoginOnInvalid: false });
+            const { client, clientKind } = await getConsultationSubmitClient(currentSession);
             const serviceType = isUrgent ? '긴급 출동' : (isPhone ? '전화 상담' : ((formData.type as string) || '채팅 상담'));
-            const customerName = (formData.name as string) || '익명 고객';
-            const customerPhone = (formData.phone as string) || '';
+            const customerName = normalizedCustomerName;
+            const customerPhone = normalizedCustomerPhone;
             const dbSangjoId = await resolveSangjoDbId(company.id, company.name, client);
             await saveSangjoContract({
                 id: crypto.randomUUID(), contract_number: contractNumber, sangjo_id: dbSangjoId,
@@ -135,7 +145,7 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
                 status: '상담신청', application_type: 'CONSULTATION',
                 preferred_call_time: (formData.time as string) || '', total_price: 0,
                 emergency_level: isUrgent ? 'critical' : 'normal', created_at: new Date().toISOString(),
-            }, client);
+            }, client, { clientKind });
             // 타임라인 기록
             await addTimelineEvent(
                 contractNumber,

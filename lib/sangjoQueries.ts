@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+import type { SupabaseClientKind } from './supabaseClient';
 import { SangjoContract, Partner, PartnerConversation, PartnerOperation, PlatformNotice } from '../types';
 
 export interface SangjoTimelineEvent {
@@ -25,15 +26,75 @@ export const resolveSangjoDbId = async (
     return resolveCompanyId(companyId, companyName, client);
 };
 
-export const saveSangjoContract = async (contract: SangjoContract, client: SupabaseClient) => {
+type SangjoSubmitStage = 'duplicate-check' | 'duplicate-close' | 'insert' | 'timeline-insert';
+
+const maskName = (name?: string) => {
+    const trimmed = (name || '').trim();
+    if (!trimmed) return '(empty)';
+    return `${trimmed.slice(0, 1)}*`;
+};
+
+const maskPhone = (phone?: string) => {
+    const digits = (phone || '').replace(/\D/g, '');
+    if (!digits) return '(empty)';
+    return `***${digits.slice(-4)}`;
+};
+
+const sanitizeSubmitError = (error: unknown) => {
+    if (!error || typeof error !== 'object') return { message: String(error) };
+    const e = error as { status?: number; code?: string; message?: string; details?: string; hint?: string };
+    return {
+        status: e.status,
+        code: e.code,
+        message: e.message,
+        details: e.details,
+        hint: e.hint,
+    };
+};
+
+const logSangjoSubmit = (
+    level: 'info' | 'warn',
+    stage: SangjoSubmitStage,
+    contract: Pick<SangjoContract, 'customer_name' | 'customer_phone' | 'contract_number' | 'application_type'>,
+    clientKind: SupabaseClientKind | 'unknown',
+    error?: unknown
+) => {
+    const payload = {
+        stage,
+        clientKind,
+        contractNumber: contract.contract_number,
+        applicationType: contract.application_type,
+        customer: {
+            name: maskName(contract.customer_name),
+            phone: maskPhone(contract.customer_phone),
+        },
+        ...(error ? { error: sanitizeSubmitError(error) } : {}),
+    };
+
+    if (level === 'warn') {
+        console.warn('[sangjo-submit]', payload);
+        return;
+    }
+    console.info('[sangjo-submit]', payload);
+};
+
+export const saveSangjoContract = async (
+    contract: SangjoContract,
+    client: SupabaseClient,
+    options: { clientKind?: SupabaseClientKind } = {}
+) => {
+    const clientKind = options.clientKind || 'unknown';
     // 동일 고객(전화번호) 활성 계약 1건 제한
     if (contract.customer_phone) {
-        const { data: existing } = await client
+        const { data: existing, error: duplicateError } = await client
             .from('sangjo_contracts')
             .select('id, contract_number, sangjo_id')
             .eq('customer_phone', contract.customer_phone)
             .in('status', ['상담신청', '예약대기', '계약진행'])
             .limit(1);
+        if (duplicateError) {
+            logSangjoSubmit('warn', 'duplicate-check', contract, clientKind, duplicateError);
+        }
         if (existing && existing.length > 0) {
             await client
                 .from('sangjo_contracts')
@@ -47,8 +108,10 @@ export const saveSangjoContract = async (contract: SangjoContract, client: Supab
         .insert([contract]);
 
     if (error) {
+        logSangjoSubmit('warn', 'insert', contract, clientKind, error);
         throw error;
     }
+    logSangjoSubmit('info', 'insert', contract, clientKind);
     return contract;
 };
 
@@ -88,7 +151,7 @@ export const updateContractStatus = async (contractNumber: string, status: strin
     return data;
 };
 
-export const addTimelineEvent = async (contractNumber: string, event: string, notes: string | undefined, photoUrl: string | undefined, client: SupabaseClient) => {
+export const addTimelineEvent = async (contractNumber: string, event: string, notes: string | undefined, photoUrl: string | undefined, client: SupabaseClient, options: { clientKind?: SupabaseClientKind } = {}) => {
     const { data, error } = await client
         .from('sangjo_contract_timeline')
         .insert([{
@@ -102,6 +165,12 @@ export const addTimelineEvent = async (contractNumber: string, event: string, no
 
     if (error) {
         // Error adding timeline event
+        console.warn('[sangjo-submit]', {
+            stage: 'timeline-insert',
+            clientKind: options.clientKind || 'unknown',
+            contractNumber,
+            error: sanitizeSubmitError(error),
+        });
         throw error;
     }
     return data;

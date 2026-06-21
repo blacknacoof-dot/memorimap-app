@@ -16,6 +16,9 @@ interface Props {
     onBack: () => void;
 }
 
+const normalizeConsultationPhone = (value: unknown) => String(value ?? '').trim();
+const hasUsableConsultationPhone = (value: string) => value.replace(/\D/g, '').length >= 10;
+
 export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }) => {
     const isPetCompany = company.id.startsWith('pet_');
     const config = buildBrandConfig(company, isPetCompany);
@@ -100,17 +103,23 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
         const isUrgent = formMode === 'urgent';
         const isPhone = formMode === 'phone';
         const contractNumber = generateSangjoContractNumber(isUrgent);
+        const normalizedCustomerPhone = normalizeConsultationPhone(formData.phone);
+
+        if (!hasUsableConsultationPhone(normalizedCustomerPhone)) {
+            toast.error('연락처를 다시 확인해주세요.');
+            return;
+        }
 
         try {
             const { saveSangjoContract, resolveSangjoDbId, addTimelineEvent } = await import('../../../lib/sangjoQueries');
             const {
                 supabase,
-                getAuthClient,
+                getConsultationSubmitClient,
             } = await import('../../../lib/supabaseClient');
             const { data: { session: currentSession } } = await supabase.auth.getSession();
-            const client = await getAuthClient(currentSession, { openLoginOnInvalid: false });
+            const { client, clientKind } = await getConsultationSubmitClient(currentSession);
             const customerName = (formData.name as string) || '익명 고객';
-            const customerPhone = (formData.phone as string) || '';
+            const customerPhone = normalizedCustomerPhone;
             const serviceType = isUrgent ? '긴급 출동' : (isPhone ? '전화 상담' : ((formData.type as string) || '채팅 상담'));
             const dbSangjoId = await resolveSangjoDbId(company.id, company.name, client);
             await saveSangjoContract({
@@ -119,7 +128,7 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
                 status: '상담신청', application_type: 'CONSULTATION',
                 preferred_call_time: (formData.time as string) || '', total_price: 0,
                 emergency_level: isUrgent ? 'critical' : 'normal', created_at: new Date().toISOString()
-            }, client);
+            }, client, { clientKind });
             // 타임라인 기록
             await addTimelineEvent(
                 contractNumber,

@@ -15,6 +15,23 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
+let publicAnonClient: SupabaseClient | null = null;
+
+export type SupabaseClientKind = 'authenticated' | 'public-anon' | 'cleanup-after-invalid';
+
+export const getPublicAnonClient = (): SupabaseClient => {
+  if (!publicAnonClient) {
+    publicAnonClient = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
+    });
+  }
+  return publicAnonClient;
+};
+
 // Legacy exports kept for older call sites while auth is centralized on the shared client.
 export const setSupabaseAuth = async (_token: string | null) => {};
 
@@ -172,4 +189,34 @@ export async function getAuthClient(
 
   if (strict) throw new Error('Authenticated session is required.');
   return supabase;
+}
+
+export async function getConsultationSubmitClient(
+  session: { access_token?: string | null } | null | undefined
+): Promise<{ client: SupabaseClient; clientKind: SupabaseClientKind }> {
+  const providedAccessToken = session?.access_token;
+  if (providedAccessToken) {
+    try {
+      await ensureCurrentSessionIsUsable(providedAccessToken, { openLoginOnInvalid: false });
+      return { client: supabase, clientKind: 'authenticated' };
+    } catch (error) {
+      if (!isInvalidAuthSessionError(error)) throw error;
+      await clearInvalidAuthSession({ openLogin: false });
+      return { client: getPublicAnonClient(), clientKind: 'cleanup-after-invalid' };
+    }
+  }
+
+  const { data: { session: currentSession } } = await supabase.auth.getSession();
+  if (currentSession?.access_token) {
+    try {
+      await ensureCurrentSessionIsUsable(currentSession.access_token, { openLoginOnInvalid: false });
+      return { client: supabase, clientKind: 'authenticated' };
+    } catch (error) {
+      if (!isInvalidAuthSessionError(error)) throw error;
+      await clearInvalidAuthSession({ openLogin: false });
+      return { client: getPublicAnonClient(), clientKind: 'cleanup-after-invalid' };
+    }
+  }
+
+  return { client: getPublicAnonClient(), clientKind: 'public-anon' };
 }
