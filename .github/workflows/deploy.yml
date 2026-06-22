@@ -84,19 +84,23 @@ jobs:
           wait-on: 'http://localhost:5173'
           wait-on-timeout: 120
           browser: chrome
-          headless: true
+          publish-summary: false
         env:
           CYPRESS_ADMIN_EMAIL: ${{ secrets.CYPRESS_ADMIN_EMAIL }}
           CYPRESS_ADMIN_PASSWORD: ${{ secrets.CYPRESS_ADMIN_PASSWORD }}
           CYPRESS_SUPER_ADMIN_EMAIL: ${{ secrets.CYPRESS_SUPER_ADMIN_EMAIL }}
           CYPRESS_SUPER_ADMIN_PASSWORD: ${{ secrets.CYPRESS_SUPER_ADMIN_PASSWORD }}
       
-      - name: 📤 Upload Cypress Screenshots
+      - name: 📤 Upload Cypress Artifacts
         uses: actions/upload-artifact@v4
-        if: failure()
+        if: always()
         with:
-          name: cypress-screenshots
-          path: cypress/screenshots/
+          name: cypress-artifacts
+          path: |
+            cypress/videos
+            cypress/screenshots
+            cypress/results
+          if-no-files-found: warn
           retention-days: 7
 
   # =============================================
