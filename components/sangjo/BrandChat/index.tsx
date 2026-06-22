@@ -148,14 +148,14 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
         }
 
         if (isPhone) {
-            setMessages(prev => [...prev, { id: Date.now(), sender: 'system', text: `✅ [전화 상담 예약 완료] ${formData.name}님, 요청하신 시간에 연락드리겠습니다.`, type: 'text' }]);
+            setMessages(prev => [...prev, { id: Date.now(), sender: 'system', text: `✅ [전화 상담 예약 완료]`, type: 'text' }]);
             setTimeout(() => {
-                setMessages(prev => [...prev, { id: Date.now(), sender: 'ai', text: `접수가 완료되었습니다. 담당 팀장님께 내용을 전달했습니다.\n요청 시간(**${formData.time}**)에 **${formData.phone}** 번호로 연락드리겠습니다.`, type: 'text' }]);
+                setMessages(prev => [...prev, { id: Date.now(), sender: 'ai', text: `전화 상담 예약 완료\n\n${formData.name}님, 상담 신청이 접수되었습니다.\n입력하신 연락처(${formData.phone})로 확인 후 순차적으로 안내드리겠습니다.`, type: 'text' }]);
             }, 1000);
         } else if (isUrgent) {
-            setMessages(prev => [...prev, { id: Date.now(), sender: 'system', text: `🚨 [긴급 접수 완료] ${formData.name}님, 접수번호 ${contractNumber}`, type: 'text' }]);
+            setMessages(prev => [...prev, { id: Date.now(), sender: 'system', text: `🚨 [긴급 장례 상담 접수 완료]`, type: 'text' }]);
             setTimeout(() => {
-                setMessages(prev => [...prev, { id: Date.now(), sender: 'ai', text: `긴급 접수가 확정되었습니다. (접수번호: ${contractNumber})\n담당 팀장이 **3분 이내**에 ${formData.phone}으로 전화를 드려 안내해 드립니다.`, type: 'text' }]);
+                setMessages(prev => [...prev, { id: Date.now(), sender: 'ai', text: `긴급 장례 상담 접수 완료\n\n${formData.name}님, 긴급 장례 상담 요청이 접수되었습니다.\n입력하신 연락처(${formData.phone})로 확인 후 빠르게 안내드리겠습니다.`, type: 'text' }]);
             }, 1000);
         } else {
             setMessages(prev => [...prev, { id: Date.now(), sender: 'system', text: `✅ [정보 등록 완료] ${formData.name}님, 잠시만 기다려주세요.`, type: 'text' }]);

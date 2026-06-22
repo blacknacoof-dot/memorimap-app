@@ -164,9 +164,9 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
         }
 
         const completeText = isUrgent
-            ? `🚨 **긴급 접수 완료** (접수번호: ${contractNumber})\n\n${formData.name}님, 담당 팀장이 **3분 이내**에 ${formData.phone}으로 연락드립니다.`
+            ? `🚨 **긴급 장례 상담 접수 완료**\n\n${formData.name}님, 긴급 장례 상담 요청이 접수되었습니다.\n입력하신 연락처(${formData.phone})로 확인 후 빠르게 안내드리겠습니다.`
             : isPhone
-                ? `✅ **전화 상담 예약 완료**\n\n${formData.name}님, 요청하신 시간(${formData.time})에 ${formData.phone}으로 연락드리겠습니다.`
+                ? `✅ **전화 상담 예약 완료**\n\n${formData.name}님, 상담 신청이 접수되었습니다.\n입력하신 연락처(${formData.phone})로 확인 후 순차적으로 안내드리겠습니다.`
                 : `✅ **상담 접수 완료** (접수번호: ${contractNumber})\n\n${formData.name}님, 담당 상담사가 빠른 시일 내에 연락드리겠습니다.`;
 
         addMessages([{ text: completeText, options: [{ label: '🏠 메인 메뉴', action: 'MAIN', variant: 'default' }, { label: '✕ 닫기', action: 'CLOSE', variant: 'default' }] }]);
