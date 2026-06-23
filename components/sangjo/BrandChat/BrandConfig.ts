@@ -43,8 +43,8 @@ function buildDefaultProducts(name: string): ProductData[] {
         },
         {
             id: 3, title: `${name} VIP`, price: "월 55,000원", totalPrice: "6,600,000원",
-            desc: "최고의 예우를 위한 고품격 서비스",
-            features: ["VIP 의전 팀장", "솔송나무 관", "전국 리무진 무제한", "추모 영상 제작"]
+            desc: "고품격 의전을 위한 상세 상담 서비스",
+            features: ["전문 의전 상담", "솔송나무 관", "전국 리무진 안내", "추모 영상 제작"]
         }
     ];
 }

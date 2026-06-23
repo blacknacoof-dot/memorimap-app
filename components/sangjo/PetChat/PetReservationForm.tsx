@@ -40,7 +40,7 @@ const PetReservationForm: React.FC<PetReservationFormProps> = ({ onClose, compan
                 <h3 className="text-xl font-bold text-stone-800 mb-2">예약 신청 완료</h3>
                 <p className="text-stone-500 text-center mb-6 text-sm">
                     {formData.petName}의 장례 예약이 접수되었습니다.<br />
-                    입력하신 연락처로 담당자가<br />확인 후 10분 내로 연락드리겠습니다.
+                    입력하신 연락처로 확인 후<br />순차적으로 안내드리겠습니다.
                 </p>
                 <button
                     onClick={onClose}

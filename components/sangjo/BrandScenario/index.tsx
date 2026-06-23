@@ -43,7 +43,7 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
     useEffect(() => {
         setMessages([{
             id: 1,
-            text: `안녕하세요! **${company.name}** 공식 상담 채널입니다.\n\n추모맵을 통해 가입하시면 **최대 100만원 상당의 독점 혜택**을 받으실 수 있습니다.\n\n아래 메뉴를 선택해 주세요.`,
+            text: `안녕하세요! **${company.name}** 공식 상담 채널입니다.\n\n상조 상품과 상담 절차를 차분히 안내드리겠습니다.\n\n아래 메뉴를 선택해 주세요.`,
             options: getMainMenuOptions(),
         }]);
     }, [company.name]);
@@ -167,7 +167,7 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
             ? `🚨 **긴급 장례 상담 접수 완료**\n\n${formData.name}님, 긴급 장례 상담 요청이 접수되었습니다.\n입력하신 연락처(${formData.phone})로 확인 후 빠르게 안내드리겠습니다.`
             : isPhone
                 ? `✅ **전화 상담 예약 완료**\n\n${formData.name}님, 상담 신청이 접수되었습니다.\n입력하신 연락처(${formData.phone})로 확인 후 순차적으로 안내드리겠습니다.`
-                : `✅ **상담 접수 완료** (접수번호: ${contractNumber})\n\n${formData.name}님, 담당 상담사가 빠른 시일 내에 연락드리겠습니다.`;
+                : `✅ **상담 접수 완료** (접수번호: ${contractNumber})\n\n${formData.name}님, 상담 신청이 접수되었습니다.\n입력하신 연락처(${formData.phone})로 확인 후 순차적으로 안내드리겠습니다.`;
 
         addMessages([{ text: completeText, options: [{ label: '🏠 메인 메뉴', action: 'MAIN', variant: 'default' }, { label: '✕ 닫기', action: 'CLOSE', variant: 'default' }] }]);
     };
@@ -206,7 +206,7 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
             {/* Notice Bar */}
             <div className="bg-[#F0FDF4] border-b border-green-100 px-4 py-2 flex items-center gap-2 text-xs text-green-800 font-medium shrink-0">
                 <Shield className="w-3.5 h-3.5 text-green-600" />
-                <span>공정위 등록업체 &bull; 선수금 100% 안전 보장</span>
+                <span>공정위 등록업체 &bull; 선수금 보호 제도 안내</span>
             </div>
 
             {/* Chat Area */}

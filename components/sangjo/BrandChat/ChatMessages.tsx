@@ -148,8 +148,8 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, isTyping, 
                                         <h4 className="font-bold text-gray-900 text-sm">상담 예약 센터</h4>
                                         <p className="text-xs text-gray-500 mt-0.5">
                                             {isPetCompany
-                                                ? <>반려동물 장례지도사가 10분 내로<br />직접 전화를 드립니다.</>
-                                                : <>전문 장례지도사가 10분 내로<br />직접 전화를 드립니다.</>
+                                                ? <>상담 신청 정보를 남겨주시면<br />확인 후 순차적으로 안내드리겠습니다.</>
+                                                : <>상담 신청 정보를 남겨주시면<br />확인 후 순차적으로 안내드리겠습니다.</>
                                             }
                                         </p>
                                     </div>

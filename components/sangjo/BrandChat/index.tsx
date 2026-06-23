@@ -61,7 +61,7 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
                 }, 500);
             } else if (response.action === 'URGENT_DISPATCH') {
                 setTimeout(() => {
-                    setMessages(prev => [...prev, { id: Date.now() + 1, sender: 'ai', text: "가장 가까운 의전 팀을 즉시 배정하겠습니다. 현재 위치를 접수해주세요.", type: 'text' }]);
+                    setMessages(prev => [...prev, { id: Date.now() + 1, sender: 'ai', text: "긴급 장례 상담 정보를 남겨주시면 확인 후 빠르게 안내드리겠습니다.", type: 'text' }]);
                     setFormMode('urgent');
                     setIsFormOpen(true);
                 }, 500);
@@ -71,7 +71,7 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
                 }, 500);
             } else if (response.action === 'CALL_MANAGER') {
                 setTimeout(() => {
-                    setMessages(prev => [...prev, { id: Date.now() + 1, sender: 'ai', text: "담당자와 바로 연결해 드릴까요?", type: 'action_request' }]);
+                    setMessages(prev => [...prev, { id: Date.now() + 1, sender: 'ai', text: "전화 상담 신청 정보를 남겨주시겠어요?", type: 'action_request' }]);
                 }, 500);
             }
         } catch (_error) {
@@ -198,7 +198,7 @@ export const BrandChatInterface: React.FC<Props> = ({ company, onClose, onBack }
             {/* Notice Bar */}
             <div className="bg-[#F0FDF4] border-b border-green-100 px-4 py-2 flex items-center gap-2 text-xs text-green-800 font-medium shrink-0">
                 <Shield className="w-3.5 h-3.5 text-green-600" />
-                <span>공정위 등록업체 • 선수금 100% 안전 보장</span>
+                <span>공정위 등록업체 • 선수금 보호 제도 안내</span>
             </div>
 
             {/* Chat Area */}

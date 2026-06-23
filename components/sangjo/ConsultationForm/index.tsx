@@ -72,7 +72,7 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
         burialMethod: '',
 
         // Common / Legacy
-        time: '즉시 출동',
+        time: '긴급 상담',
         type: isUrgent ? '긴급 접수' : isMemorial ? '추모시설 상담' : '장례 예약 상담',
         location: '',
 
@@ -134,14 +134,16 @@ export const ConsultationForm: React.FC<FormProps> = ({ company, onClose, onSubm
 
                 {/* Modal Body */}
                 <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1">
-                    {!isUrgent && (
+                    {(isUrgent || !isMemorial) && (
                         <p className="text-sm text-gray-500 mb-4 bg-gray-50 p-3 rounded-lg flex gap-2">
                             <Info className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
                             <span>
-                                {isPhoneMode
+                                {isUrgent
+                                    ? "긴급 장례 상담 정보를 남겨주시면 확인 후 빠르게 안내드리겠습니다."
+                                    : isPhoneMode
                                     ? (isPetCompany
-                                        ? "연락처를 남겨주시면 반려동물 장례지도사가 10분 내로 연락드립니다."
-                                        : "연락처를 남겨주시면 담당 팀장이 확인 후 10분 내로 연락드립니다.")
+                                        ? "상담 신청 정보를 남겨주시면 확인 후 순차적으로 안내드리겠습니다."
+                                        : "상담 신청 정보를 남겨주시면 확인 후 순차적으로 안내드리겠습니다.")
                                     : "원활한 상담을 위해 고객님의 기본 정보를 입력해 주세요."}
                             </span>
                         </p>
