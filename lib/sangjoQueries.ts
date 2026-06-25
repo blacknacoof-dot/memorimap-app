@@ -89,22 +89,23 @@ export const updateContractStatus = async (contractNumber: string, status: strin
 };
 
 export const addTimelineEvent = async (contractNumber: string, event: string, notes: string | undefined, photoUrl: string | undefined, client: SupabaseClient) => {
-    const { data, error } = await client
+    const payload = {
+        contract_number: contractNumber,
+        event,
+        notes,
+        photo_url: photoUrl,
+        created_at: new Date().toISOString()
+    };
+
+    const { error } = await client
         .from('sangjo_contract_timeline')
-        .insert([{
-            contract_number: contractNumber,
-            event,
-            notes,
-            photo_url: photoUrl,
-            created_at: new Date().toISOString()
-        }])
-        .select();
+        .insert([payload]);
 
     if (error) {
         // Error adding timeline event
         throw error;
     }
-    return data;
+    return [payload];
 };
 
 export const getTimelineEvents = async (contract_number: string, client: SupabaseClient) => {
