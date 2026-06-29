@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { ArrowLeft, X, Check, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { FuneralCompany } from '../../../types';
@@ -13,6 +14,32 @@ interface Props {
     company: FuneralCompany;
     onClose: () => void;
     onBack: () => void;
+}
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const FREEDLIFE_SANGJO_ID = '7fd43013-842d-4cbb-94ca-8ca0dc3ac785';
+const STATIC_SANGJO_ID_MAP: Record<string, string> = {
+    fc_new_1: FREEDLIFE_SANGJO_ID,
+    '프리드라이프': FREEDLIFE_SANGJO_ID,
+};
+
+function normalizeCompanyName(name: string): string {
+    return name.replace(/\s/g, '');
+}
+
+async function resolveStableSangjoId(company: FuneralCompany, client: SupabaseClient): Promise<string> {
+    const companyId = String(company.id || '').trim();
+    if (UUID_PATTERN.test(companyId)) return companyId;
+
+    const companyName = String(company.name || '').trim();
+    const knownId = STATIC_SANGJO_ID_MAP[companyId] || STATIC_SANGJO_ID_MAP[normalizeCompanyName(companyName)];
+    if (knownId) return knownId;
+
+    const resolvedId = await resolveSangjoDbId(companyId, companyName, client);
+    if (!UUID_PATTERN.test(resolvedId)) {
+        throw new Error('Resolved sangjo_id is not a valid UUID.');
+    }
+    return resolvedId;
 }
 
 export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack }) => {
@@ -121,6 +148,7 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
         const isUrgent = formMode === 'urgent';
         const isPhone = formMode === 'phone';
         const contractNumber = generateSangjoContractNumber(isUrgent);
+        let submitStage: 'session' | 'resolve_sangjo_id' | 'insert_contract' | 'insert_timeline' = 'session';
 
         try {
             const { data: { session: currentSession } } = await supabase.auth.getSession();
@@ -128,7 +156,9 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
             const serviceType = isUrgent ? '긴급 출동' : (isPhone ? '전화 상담' : ((formData.type as string) || '채팅 상담'));
             const customerName = (formData.name as string) || '익명 고객';
             const customerPhone = (formData.phone as string) || '';
-            const dbSangjoId = await resolveSangjoDbId(company.id, company.name, client);
+            submitStage = 'resolve_sangjo_id';
+            const dbSangjoId = await resolveStableSangjoId(company, client);
+            submitStage = 'insert_contract';
             await saveSangjoContract({
                 id: crypto.randomUUID(), contract_number: contractNumber, sangjo_id: dbSangjoId,
                 customer_name: customerName, customer_phone: customerPhone, service_type: serviceType,
@@ -137,6 +167,7 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
                 emergency_level: isUrgent ? 'critical' : 'normal', created_at: new Date().toISOString(),
             }, client);
             // 타임라인 기록
+            submitStage = 'insert_timeline';
             await addTimelineEvent(
                 contractNumber,
                 isUrgent ? '긴급 상담 접수' : '상담 신청',
@@ -144,7 +175,15 @@ export const SangjoBrandScenario: React.FC<Props> = ({ company, onClose, onBack 
                 undefined,
                 client
             ).catch(() => { /* 타임라인 실패는 상담 저장에 영향 없음 */ });
-        } catch (_e) {
+        } catch (error) {
+            console.error('[sangjo-consultation-submit]', {
+                stage: submitStage,
+                companyId: company.id,
+                companyName: company.name,
+                contractNumber,
+                errorCode: typeof error === 'object' && error !== null && 'code' in error ? (error as { code?: string }).code : undefined,
+                errorMessage: error instanceof Error ? error.message : String(error),
+            });
             toast.error('상담 접수 저장에 실패했습니다.');
             return;
         }
