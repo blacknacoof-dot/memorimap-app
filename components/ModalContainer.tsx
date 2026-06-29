@@ -354,7 +354,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = (props) => {
             onClose={() => { setShowSangjoContract(false); setSelectedFuneralCompany(null); }}
             onConfirm={async (data) => {
               try {
-                const client = await getAuthClient(session, { strict: true });
+                const client = await getAuthClient(session);
                 const sangjoId = await resolveSangjoDbId(String(data.companyId), data.companyName, client);
                 const contractNum = `SC-${Date.now()}`;
                 await saveSangjoContract({
