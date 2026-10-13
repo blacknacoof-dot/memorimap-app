@@ -1,0 +1,33 @@
+name: AdSense ads.txt isolated validation
+
+on:
+  pull_request:
+    paths:
+      - public/ads.txt
+      - tests/security/adsTxtContracts.spec.ts
+      - vercel.json
+      - .github/workflows/ads-txt-contract.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ads-text-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - name: Security and ads.txt contract tests
+        run: npx vitest run tests/security/adsTxtContracts.spec.ts tests/security/releaseConfig.spec.ts
+      - name: Build static assets
+        run: npm run build
+      - name: Verify published ads.txt artifact
+        run: |
+          test -f dist/ads.txt
+          grep -Fx 'google.com, pub-4865485908744524, DIRECT, f08c47fec0942fa0' dist/ads.txt
+          if grep -Eiq '<html|<!doctype|<script' dist/ads.txt; then exit 1; fi
